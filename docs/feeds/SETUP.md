@@ -2,17 +2,17 @@
 
 Updated 2026-09-15 for the completed implementation (Claude continuation). Codex's foundation notes are kept where still accurate; statements marked **historical** describe the foundation phase. Source-by-source evidence is in [SOURCE-VERIFICATION.md](SOURCE-VERIFICATION.md), contracts in [CONTRACTS.md](CONTRACTS.md), and the work log in [CLAUDE-CONTINUATION-REPORT.md](CLAUDE-CONTINUATION-REPORT.md).
 
-Pushes, deployments and production migrations remain the **owner's** steps. Nothing in this phase pushed, deployed, redeployed or called a deploy hook.
+Pushes, deployments and production migrations remain the **owner's** steps. Claude never pushed, deployed, redeployed or called a deploy hook; at the owner's request it set the two non-secret feed switches listed below.
 
 ## Resources
 
 | Resource | Verified configuration |
 | --- | --- |
-| Project | Vercel `kiriya` (`prj_4bNqxPCD4r6198yn2GyyzxtasHbM`), repository `iamnaym0ri/kiriya`, branch `main` at `09acb16` (the whole feed implementation is uncommitted in the working tree) |
+| Project | Vercel `kiriya` (`prj_4bNqxPCD4r6198yn2GyyzxtasHbM`), repository `iamnaym0ri/kiriya`, branch `main` at `3ab64dc` ("new pipeline", pushed by the owner 2026-09-15) |
 | Runtime / plan | Vite, Node 24.x, Hobby, Fluid Compute, region `iad1` |
-| Production deployment | `dpl_6qz5cNkXbkCYAcRcFPPiq2Vi7ACM`, a redeploy of `09acb16`: **pre-foundation code**. No feed routes, tables or migrations are live (Vercel REST API and live route checks from the local machine, 2026-09-15) |
+| Production deployment | `dpl_He264EJ34k4b9ShzH9bDyhxV4MFg`, commit `3ab64dc` ("new pipeline"), READY 2026-09-15 21:17 UTC. Migrations 0001/0002 applied; all eight crons registered. Production checks passed on Vercel at 21:22 UTC (database, Blob, OpenAI, YouTube, Tumblr, Bluesky; see SOURCE-VERIFICATION.md) |
 | Domain | `kiriya.love` / `www.kiriya.love` |
-| Database | Neon `kiriyaa` (`store_UBEwZtrCDJOvBWok`) attached to Production and Preview (managed `kData_*`); an explicit `DATABASE_URL` also exists and wins in code |
+| Database | Neon `kiriyaa` (`store_UBEwZtrCDJOvBWok`) attached to Production and Preview (managed `kData_*`). The code prefers an explicit `DATABASE_URL`, but the production runtime has none, so `kData_DATABASE_URL` is effective (Production checks) |
 | Blob | Private `kiriya-blob` (`store_8ohnEeAoelCzSaL3`) attached to Production and Preview (`BLOB_STORE_ID`, `BLOB_WEBHOOK_PUBLIC_KEY`); uploads config reports `presigned` mode |
 | Function | `api/index.js` with `maxDuration: 300` and `includeFiles: node_modules/@ffmpeg-installer/linux-x64/**` (ffmpeg for frame sampling, run as a separate process) |
 
@@ -22,16 +22,16 @@ All names are server-side. Never add a `VITE_` copy of a secret. Sensitive value
 
 | Name | Status (2026-09-15) | Action |
 | --- | --- | --- |
-| `FEEDS_ENABLED` | `false` (Production + Preview) | Keep `false` until activation. New value **`manual`** lets admin run stages (a reviewed first real edition) while cron, continuations and catch-up stay off. `true` turns on nightly automation |
+| `FEEDS_ENABLED` | **Production `true`, Preview `false`** (set 2026-09-15 21:3x UTC at the owner's request; takes effect from the next production deployment) | `manual` = admin stage runs only; `true` = nightly automation plus catch-up. Preview stays `false` because it shares the production database |
 | `OPENAI_FEED_MODEL` / `OPENAI_FEED_FALLBACK_MODEL` | `gpt-5.6-luna` / `gpt-5.4-mini-2026-03-17` | Keep |
 | `FEED_MONTHLY_BUDGET_USD` | `5` | Keep. The hard ceiling for this feed path |
-| `FEED_MAX_REQUESTS_PER_RUN` | `24` | **Recommend `60`** (code default 60, max 120). Each image check is 2 provider requests (moderation + vision); with 24, the nightly check needs many more continuations. Set it before the deploy you activate |
-| `OPENAI_API_KEY` | Exists, Sensitive, Production + Preview | Verified only by deployed Production checks |
-| `YOUTUBE_API_KEY` | Exists, Sensitive | Same. ≈40 quota units/day plus rechecks (10,000/day quota) |
-| `TUMBLR_API_KEY` | Exists, Sensitive | Same. Needed by `tumblr-maomao` and `tumblr-cosplay`; `tumblr-memes` works keyless |
-| `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD` | Exist, Sensitive | Optional upgrade over keyless search; reads only, never posts |
+| `FEED_MAX_REQUESTS_PER_RUN` | **`60`** (Production + Preview, set 2026-09-15) | Code default 60, max 120. Each image check is 2 provider requests (moderation + vision) |
+| `OPENAI_API_KEY` | Sensitive; **verified on Vercel 2026-09-15** (moderation, Luna, mini fallback, vision) | – |
+| `YOUTUBE_API_KEY` | Sensitive; **verified on Vercel** (channel, video status, SG region) | ≈40 quota units/day plus rechecks (10,000/day quota) |
+| `TUMBLR_API_KEY` | Sensitive; **verified on Vercel** (tagged request 200) | Needed by `tumblr-maomao` and `tumblr-cosplay`; `tumblr-memes` works keyless |
+| `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD` | Sensitive; **verified on Vercel** (session plus one search, no writes) | Used for reads only, never posts |
 | `CRON_SECRET` | Exists, Sensitive | Required: Vercel cron bearer and authenticated continuations |
-| `DATABASE_URL`, `kData_DATABASE_URL` | Both exist | Production checks report which wins and whether they are the same host/database/Neon endpoint, without printing either |
+| `DATABASE_URL`, `kData_DATABASE_URL` | **Production runtime uses `kData_DATABASE_URL`** (no explicit `DATABASE_URL` present there); migrations 3/3 | – |
 | `BLOB_STORE_ID`, `BLOB_WEBHOOK_PUBLIC_KEY`, `BLOB_READ_WRITE_TOKEN` | Existing | Keep; saved copies use the same private store as uploads |
 | `DANBOORU_USER_ID` | Absent | Optional: a Danbooru account ID for the User-Agent, as Danbooru's API docs request |
 | `FEED_MODEL_PRICES_JSON` | Absent | Optional dated price overrides; unknown model prices block the paid path |
@@ -71,7 +71,7 @@ Hobby crons run once a day each, somewhere within the scheduled hour. Durable ru
 | Daily pacing | 2 × monthly ÷ 30 (≈US$0.33/day) | Pipeline requests pause for the rest of the Singapore day; diagnostics/owner tools are exempt but still inside the monthly ceiling |
 | Check share | 70% of the daily pacing | Paid inspection stops early, `check` finishes, and today's edition uses what is approved |
 | Paid checks queued per build | maomao 45, music 35, dressup 45, meme 15, merch 45 | Only the items most likely to be planned get vision/frame checks; the rest wait |
-| Provider requests per invocation | `FEED_MAX_REQUESTS_PER_RUN` (recommend 60) | `invocation_request_limit` checkpoints and continues |
+| Provider requests per invocation | `FEED_MAX_REQUESTS_PER_RUN` (60) | `invocation_request_limit` checkpoints and continues |
 | Cumulative per build/stage | check 720, plan-write 90, events 40, maintenance 80, diagnostics 8, admin-tools 40 | `request_limit` pauses the stage |
 | Diagnostic spend | US$0.50/month | Production checks refuse further paid probes after that |
 | Web search | ≤5 tool calls per weekly scout | Accounted like other paid requests |

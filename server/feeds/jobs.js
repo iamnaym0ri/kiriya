@@ -262,53 +262,71 @@ export async function checkQueue(db, build, config = feedConfig()) {
 }
 
 async function check(ctx) {
-  const queue = ctx.run.checkpoint.queue ?? (await checkQueue(ctx.db, ctx.build, ctx.config));
+  let queue = ctx.run.checkpoint.queue ?? (await checkQueue(ctx.db, ctx.build, ctx.config));
   let position = ctx.run.checkpoint.position ?? 0;
+  let retried = ctx.run.checkpoint.retried ?? false;
+  let budgetStopped = ctx.run.checkpoint.budgetStopped ?? false;
   const blocked = await blocklist(ctx.db);
   const stats = { ...(ctx.run.stats ?? {}) };
   const save = (extra = {}) =>
-    checkpointRun(ctx.db, ctx.run, { queue, position }, {
+    checkpointRun(ctx.db, ctx.run, { queue, position, retried, budgetStopped }, {
       checked: stats.checked ?? 0,
       queued: queue.length,
       last_approved: stats.last_approved ?? 0,
       last_rejected: stats.last_rejected ?? 0,
       last_pending: stats.last_pending ?? 0,
+      skippedForDailyBudget: stats.skippedForDailyBudget ?? 0,
       ...extra,
     });
   if (!ctx.run.checkpoint.queue) await save();
   let processed = 0;
-  while (position < queue.length) {
-    // Moving media needs download/decoding time on top of provider calls.
-    if (processed >= ctx.workLimit || Date.now() + 45000 > ctx.deadline) {
-      await save();
-      return false;
-    }
-    const [item] = await ctx.db.select().from(s.feedItems).where(eq(s.feedItems.id, queue[position]));
-    if (item && item.safetyStatus === "pending" && item.visibility === "active") {
-      // Daily pacing: stop paid inspection early and let today's plan use what is approved so far.
+  for (;;) {
+    while (position < queue.length) {
+      // Moving media needs download/decoding time on top of provider calls.
+      if (processed >= ctx.workLimit || Date.now() + 45000 > ctx.deadline) {
+        await save();
+        return false;
+      }
+      const [item] = await ctx.db.select().from(s.feedItems).where(eq(s.feedItems.id, queue[position]));
+      // Daily pacing: once paid inspection reaches its share of the day, remaining paid items stay
+      // pending for a later build; free text checks (and the retry pass) still run, and today's plan
+      // uses what is approved.
       if (
+        item?.safetyStatus === "pending" &&
         paidCheck(item) &&
         ctx.config.dailyLimitMicros &&
-        (await spentToday(ctx.db)) >= ctx.config.dailyLimitMicros * (ctx.config.checkDailyShare ?? 0.7)
+        (budgetStopped ||
+          (await spentToday(ctx.db)) >= ctx.config.dailyLimitMicros * (ctx.config.checkDailyShare ?? 0.7))
       ) {
-        await save({ stoppedForDailyBudget: queue.length - position });
-        return true;
+        budgetStopped = true;
+        stats.skippedForDailyBudget = (stats.skippedForDailyBudget ?? 0) + 1;
+      } else if (item && item.safetyStatus === "pending" && item.visibility === "active") {
+        await assertLease(ctx.db, ctx.run);
+        const result = await checkItem(item, ctx.provider, {
+          blocklist: blocked,
+          tuning: ctx.settings.tuning,
+          source: ctx.registry.find((e) => e.id === item.source),
+        });
+        await setSafety(ctx.db, item, result, ctx.run);
+        stats.checked = (stats.checked ?? 0) + 1;
+        stats[`last_${result.status}`] = (stats[`last_${result.status}`] ?? 0) + 1;
       }
-      await assertLease(ctx.db, ctx.run);
-      const result = await checkItem(item, ctx.provider, {
-        blocklist: blocked,
-        tuning: ctx.settings.tuning,
-        source: ctx.registry.find((e) => e.id === item.source),
-      });
-      await setSafety(ctx.db, item, result, ctx.run);
-      stats.checked = (stats.checked ?? 0) + 1;
-      stats[`last_${result.status}`] = (stats[`last_${result.status}`] ?? 0) + 1;
+      position++;
+      processed++;
+      // Re-checking an item after a lost checkpoint reuses its settled provider results, so the
+      // position only needs saving every few items.
+      if (position % 8 === 0) await save();
     }
-    position++;
-    processed++;
-    // Re-checking an item after a lost checkpoint reuses its settled provider results, so the
-    // position only needs saving every few items.
-    if (position % 8 === 0) await save();
+    // One retry pass per build for queued items that a transient failure left pending.
+    if (retried) break;
+    retried = true;
+    const again = rows(
+      await ctx.db.execute(sql`SELECT id FROM feed_items WHERE safety_status='pending' AND visibility='active'
+        AND reason='safety_unavailable' AND id IN (SELECT jsonb_array_elements_text(${jsonSql(queue)}))`),
+    ).map((r) => r.id);
+    if (!again.length) break;
+    queue = [...queue, ...again];
+    await save({ retryQueued: again.length });
   }
   await save();
   return true;

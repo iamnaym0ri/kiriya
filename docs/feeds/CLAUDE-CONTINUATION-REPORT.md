@@ -74,6 +74,24 @@ Continuation of Codex's feed foundation, following [`../execute.md`](../execute.
   - a real edition through the real provider path
 - **Switches:** `FEEDS_ENABLED` was left `false`. No environment variable, budget or credential was changed.
 
+### Update after the owner's deploy (2026-09-15, 21:17–21:35 UTC)
+- **Deployment:** the owner pushed commit `3ab64dc`, deployed as `dpl_He264EJ34k4b9ShzH9bDyhxV4MFg`. The build applied migrations, passed the leak check and registered all 8 crons.
+- **Production checks:** passed on Vercel (database, Blob, OpenAI, YouTube, Tumblr, Bluesky). Details and the Blob test artifact ID are in SOURCE-VERIFICATION.md.
+- **Settings:** at the owner's request, `FEEDS_ENABLED=true` (Production only; Preview stays `false`) and `FEED_MAX_REQUESTS_PER_RUN=60`. They take effect from the owner's next redeploy.
+
+### First production run (2026-09-15, 21:30–22:10 UTC, build `1e8fd438`, Singapore day 2026-09-16)
+- **events:** one invocation, 81 s, 11 provider requests. 12 verified events seeded, 10 of 11 official pages accepted with verbatim dates, 1 TBC, 0 failed; scout 2 proposed and 0 verified; lexicon kept 4 of 41 candidates.
+- **fetch-a:** one invocation, 115 s. All 25 enabled sources `ok` from Vercel, including Cloudflare-fronted Danbooru, Fandom and Crunchyroll.
+- **fetch-b:** two invocations, 244 s (deadline checkpoint) plus 102 s. All sources `ok`, including the first live YouTube, keyed Tumblr and Bluesky login calls. About 470 candidates collected in total.
+- **check: bug found.** An invocation that reached `FEED_MAX_REQUESTS_PER_RUN` swallowed `invocation_request_limit` inside `checkItem`. The rest of that invocation's items became `pending: safety_unavailable` and the queue moved past them: 101 items after 197 of 204 queue positions (71 approved, 15 rejected). The runner was stopped. Fixed locally:
+  - `moderate.js` passes `invocation_request_limit` and `request_in_progress` through.
+  - `check` gets one retry pass per build for queued items left `safety_unavailable`.
+  - After the daily-budget stop, paid items are skipped for the day while text checks and the retry continue.
+  - Tests cover all three.
+- **events: bug found.** Undated scout mentions of already-dated editions ("AFA Singapore 2026") created duplicate TBC rows. The two duplicates were hidden through admin → Events. A wrongly hidden Comiket 110 row was restored. Fixed locally: `upsertEvent` skips an undated candidate that names no edition beyond the dated row's own year or number.
+- **Spend so far:** US$0.038 (diagnostics US$0.0002, events US$0.029, check about US$0.009).
+- **Not yet published.** The fix needs the owner's push; the same build then resumes the check (including the retry pass), plan-write and publish.
+
 ## 3. Phase log
 
 ### Phase A — Maomao, source lifecycle, saves

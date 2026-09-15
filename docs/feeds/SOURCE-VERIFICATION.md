@@ -120,4 +120,21 @@ No accounts were created, no challenge or access control was bypassed, and no cr
 
 ## Production verification
 
-Production (`kiriya.love`, deployment `dpl_6qz5cNkXbkCYAcRcFPPiq2Vi7ACM`) runs pre-foundation commit `09acb16`, so **no source has been exercised from Vercel**. After the owner deploys this revision, run admin → kiriya's feeds → **Production checks**. It verifies the effective database target and migrations, private Blob I/O with a disposable object, OpenAI (moderation, primary, fallback, vision), YouTube (2 units), Tumblr (1 request) and Bluesky (session plus one search). Then run a first bounded build with the pipeline still off for cron, and record per-source health from the admin panel. Update this matrix with the Vercel results; don't reuse the local results above as Vercel evidence.
+**Production checks, 2026-09-15 21:22 UTC**
+- **Run:** executed by the deployed function on Vercel (`vercel production iad1`), deployment `dpl_He264EJ34k4b9ShzH9bDyhxV4MFg`, commit `3ab64dc`. Triggered from `/admin` → Production checks; results are redacted.
+
+| Check | Result |
+| --- | --- |
+| Database | ok: effective variable `kData_DATABASE_URL` (no explicit `DATABASE_URL` in the production runtime), migrations applied 3 of 3 tracked, feed tables present |
+| Blob | ok: private put, private read (bytes match), anonymous read **401**, delete confirmed. Test artifact `saves/diagnostic-2026-09-16-c8367aae.png` (test ID `2026-09-16-c8367aae`) created and deleted by the check |
+| OpenAI | ok: `omni-moderation-latest` (not flagged), `gpt-5.6-luna`, `gpt-5.4-mini-2026-03-17` and a Luna vision probe, 8.1 s in total |
+| YouTube Data API | ok: channel found; sample video embeddable, allowed in SG, not age-restricted; 2 quota units |
+| Tumblr API | ok: HTTP 200, 1 tagged item |
+| Bluesky | ok: app-password session created, 1 search result, no writes |
+
+- **Deployment state:**
+  - The build log shows production configuration valid, migrations applied, build and leak check passed.
+  - Function `api/index.js`: `maxDuration: 300` with ffmpeg included; npm skipped the package's `chmod` install script, but the published tarball already stores the binary as `0755`.
+  - All eight cron jobs are registered.
+- **Before the checks:** the switch was `FEEDS_ENABLED=false` (no builds, runs, events or storage measurement yet).
+- **Collection still pending:** these checks prove credentials, storage and database from Vercel. Per-source collection from Vercel's network is recorded when the first pipeline run completes (admin → source health).

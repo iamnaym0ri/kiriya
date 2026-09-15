@@ -50,9 +50,13 @@ export const VisionSchema = z
 
 // Kinds whose visuals ARE the slide. Their section needs the section's subject in the image.
 const VISUAL_KINDS = new Set(["image", "clip", "meme", "cosplay"]);
+// Runner conditions, not item problems: they stop the stage (to checkpoint or pause) instead of
+// marking the item pending. `invocation_request_limit` was missing in the first production run.
 const PASS_THROUGH = [
   "paused_for_budget",
   "request_limit",
+  "invocation_request_limit",
+  "request_in_progress",
   "deadline",
   "lease_lost",
   "request_uncertain",

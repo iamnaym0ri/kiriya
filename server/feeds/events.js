@@ -78,11 +78,39 @@ async function savePageState(db, state, run) {
     ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=now()`);
 }
 
+// Edition markers in a name: a year ("2026") or an edition number ("110", "C109").
+const editionMarkers = (name) => String(name ?? "").match(/\d{2,4}/g) ?? [];
+
+/**
+ * An undated candidate duplicates a dated upcoming row of the same event when it names no other
+ * edition: no markers, or only markers the dated row already has (its year or its own number).
+ * "AFA Singapore 2026" duplicates the dated 2026 AFA row; "Comic Market 110" is a new edition.
+ */
+export function duplicatesDatedEdition(candidateName, dated) {
+  const markers = editionMarkers(candidateName);
+  if (!markers.length) return true;
+  const known = new Set([
+    ...editionMarkers(dated.name),
+    ...[dated.starts_on, dated.ends_on].filter(Boolean).map((d) => String(d).slice(0, 4)),
+  ]);
+  return markers.every((m) => known.has(m));
+}
+
 /** Upserts a verified or TBC event. Owner-confirmed rows keep their confirmed dates. */
 export async function upsertEvent(db, descriptor, candidate, { confidence, evidence, now = new Date() }) {
   const startsOn = isoDay(candidate.startsOn);
   const endsOn = isoDay(candidate.endsOn) ?? startsOn;
-  const id = eventId(descriptor.id, startsOn, candidate.name ?? descriptor.name);
+  const name = candidate.name ?? descriptor.name;
+  // An unverified mention of an edition that is already dated must not add a second, TBC row.
+  if (!startsOn) {
+    const dated = rows(
+      await db.execute(sql`SELECT id, name, starts_on::text AS starts_on, ends_on::text AS ends_on FROM events
+        WHERE id LIKE ${`${descriptor.id}:%`} AND starts_on IS NOT NULL AND status='upcoming'`),
+    );
+    const same = dated.find((row) => duplicatesDatedEdition(name, row));
+    if (same) return same.id;
+  }
+  const id = eventId(descriptor.id, startsOn, name);
   await db.execute(sql`INSERT INTO events(id,name,city,country,venue,starts_on,ends_on,tier,url,source_url,confidence,date_evidence,last_verified_at,status,tags,hers)
     VALUES (${id},${candidate.name ?? descriptor.name},${candidate.city ?? descriptor.city ?? null},${descriptor.country ?? null},${candidate.venue ?? null},
       ${startsOn}::date,${endsOn}::date,${descriptor.tier},${descriptor.officialUrl ?? candidate.sourceUrl},${evidence?.sourceUrl ?? null},${confidence},

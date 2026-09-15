@@ -887,6 +887,56 @@ try {
     );
   });
 
+  await test("The check stage stops cleanly at the request cap and retries transient failures once (first production run)", async () => {
+    const { FeedError, feedConfig } = await import("../server/feeds/config.js");
+    const { runStage } = await import("../server/feeds/jobs.js");
+    const clean = {
+      flagged: false,
+      categories: Object.fromEntries(Object.keys(THRESHOLDS).map((k) => [k, false])),
+      category_scores: Object.fromEntries(Object.keys(THRESHOLDS).map((k) => [k, 0.001])),
+    };
+    const capped = {
+      views: async () => [{ kind: "still", mediaIndex: 0, type: "image" }],
+      moderate: async () => {
+        throw new FeedError("invocation_request_limit", 429);
+      },
+      vision: async () => ({}),
+    };
+    await assert.rejects(
+      checkItem(row({ tags: { characters: ["maomao"] } }), capped, { source: { mediaPolicy: "still_only" } }),
+      (e) => e.code === "invocation_request_limit",
+    );
+
+    const build = await createBuild(db, localDay(), { mode: "live", force: true });
+    for (const stage of ["fetch-a", "fetch-b"])
+      await db.execute(sql`INSERT INTO feed_runs(build_id,stage,day,status) VALUES (${build.id}::uuid,${stage},${build.day}::date,'done')`);
+    const flaky = await ingestItem(db, normalizeItem(rawItem(70, { kind: "lore", media: [], title: "a lore note that fails once" })));
+    const steady = await ingestItem(db, normalizeItem(rawItem(71, { kind: "lore", media: [], title: "a lore note that passes" })));
+    let failedOnce = false;
+    const provider = {
+      moderate: async (item) => {
+        if (item.id === flaky && !failedOnce) {
+          failedOnce = true;
+          throw new Error("transient upstream failure");
+        }
+        return clean;
+      },
+      vision: async () => ({}),
+    };
+    const result = await runStage(db, {
+      buildId: build.id,
+      stage: "check",
+      config: { ...feedConfig(), enabled: true, fixtureMode: false },
+      providerFactory: () => provider,
+      registry: [copySource()],
+    });
+    assert.equal(result.outcome, "completed");
+    const status = async (id) => (await db.select().from(s.feedItems).where(eq(s.feedItems.id, id)))[0].safetyStatus;
+    assert.equal(failedOnce, true);
+    assert.equal(await status(steady), "approved");
+    assert.equal(await status(flaky), "approved", "the retry pass re-checks a transient failure in the same build");
+  });
+
   await test("FEEDS_ENABLED=manual allows owner stage runs but keeps cron, continuations and catch-up off", async () => {
     const { feedConfig } = await import("../server/feeds/config.js");
     const { runStage, claimCatchUp } = await import("../server/feeds/jobs.js");
@@ -1009,6 +1059,21 @@ try {
     assert.equal(sgcc.starts_on, "2026-12-05");
     const later = await seedVerifiedEvents({ db, build: { day: "2027-12-31" } }, { events });
     assert.equal(later.seeded, 0, "past editions are not re-seeded");
+
+    // An undated mention of an edition that already has dates doesn't add a TBC twin (seen in the
+    // first production run); a new edition number or year still becomes its own TBC row.
+    const { duplicatesDatedEdition } = await import("../server/feeds/events.js");
+    const afaRow = { name: "AFA Singapore", starts_on: "2026-11-27", ends_on: "2026-11-29" };
+    assert.equal(duplicatesDatedEdition("AFA Singapore 2026", afaRow), true);
+    assert.equal(duplicatesDatedEdition("AFA Singapore", afaRow), true);
+    assert.equal(duplicatesDatedEdition("AFA Singapore 2027", afaRow), false);
+    const c109 = { name: "Comic Market 109 (Comiket 109)", starts_on: "2026-12-29", ends_on: "2026-12-31" };
+    assert.equal(duplicatesDatedEdition("Comic Market 110 (Comiket 110)", c109), false);
+    const sgccDescriptor = { id: "singapore-comic-con", name: "Singapore Comic Con", tier: "sg", officialUrl: "https://www.singaporecomiccon.com/" };
+    const twin = await upsertEvent(db, sgccDescriptor, { name: "Singapore Comic Con 2026", startsOn: null }, { confidence: "unconfirmed", evidence: {} });
+    assert.equal(twin, "singapore-comic-con:2026");
+    const [{ n }] = rows(await db.execute(sql`SELECT count(*)::int AS n FROM events WHERE id LIKE 'singapore-comic-con:%'`));
+    assert.equal(n, 1);
   });
 
   await test("Diagnostics compare database targets without exposing connection details", () => {
