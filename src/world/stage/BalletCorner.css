@@ -1,0 +1,130 @@
+.ballet {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-5);
+  border-radius: var(--r-xl);
+  background: linear-gradient(160deg, var(--pink-50), var(--pink-100) 60%, var(--purple-100));
+  box-shadow: var(--shadow-1);
+}
+
+.ballet__head {
+  --icon-fill: var(--pink-200);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--s-3);
+  align-items: start;
+}
+
+.ballet__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--white);
+  color: var(--pink-700);
+}
+
+.ballet__title {
+  font-size: var(--t-lg);
+}
+
+.ballet__term {
+  font-size: var(--t-sm);
+  color: var(--text-soft);
+}
+
+.ballet__term strong {
+  color: var(--pink-700);
+}
+
+.barre {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--s-4);
+  align-items: center;
+  padding: var(--s-4);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+
+.barre__ring {
+  --p: 0;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--surface) 0 60%, transparent 61%),
+    conic-gradient(var(--pink-500) calc(var(--p) * 360deg), var(--pink-100) 0);
+}
+
+.barre__ring span {
+  font-weight: 800;
+  font-size: var(--t-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.barre__now {
+  font-weight: 800;
+  font-size: var(--t-lg);
+}
+
+.barre__next {
+  font-size: var(--t-sm);
+  color: var(--text-soft);
+}
+
+.barre__controls {
+  display: flex;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+}
+
+.balance {
+  display: grid;
+  gap: var(--s-2);
+  justify-items: center;
+  text-align: center;
+}
+
+.balance__line {
+  font-size: var(--t-sm);
+  color: var(--text-soft);
+}
+
+.balance__button {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  padding: var(--s-5);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1), inset 0 0 0 2px var(--pink-200);
+  transition: background-color var(--dur-2);
+}
+
+.balance__button[data-running="true"] {
+  background: var(--pink-500);
+  color: var(--white);
+  box-shadow: var(--shadow-pink);
+}
+
+.balance__time {
+  font-size: var(--t-4xl);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.balance__label {
+  font-weight: 700;
+  font-size: var(--t-sm);
+}
+
+.balance__best {
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--pink-700);
+}

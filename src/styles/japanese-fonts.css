@@ -1,0 +1,6 @@
+/* Only loaded inside the private world. Each weight is split into ~120 small unicode-range slices,
+   so a phone downloads just the slices holding the kana and kanji a card actually shows. */
+@import "@fontsource/m-plus-rounded-1c/400.css";
+@import "@fontsource/m-plus-rounded-1c/500.css";
+@import "@fontsource/m-plus-rounded-1c/700.css";
+@import "@fontsource/m-plus-rounded-1c/800.css";

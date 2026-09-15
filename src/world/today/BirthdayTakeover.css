@@ -1,0 +1,71 @@
+.birthday-gift {
+  background: #ede0ee;
+  border: 1px solid #dbc6e2;
+  padding: 40px 45px;
+  display: grid;
+  grid-template-columns: 1fr 0.8fr;
+  align-items: center;
+  gap: 35px;
+  margin-bottom: 52px;
+}
+.birthday-gift__copy .micro-label {
+  color: #876390;
+  font-size: 9px;
+  margin-bottom: 22px;
+}
+.birthday-gift h2 {
+  font: 400 45px/1.1 var(--font-literary);
+  letter-spacing: -0.035em;
+}
+.birthday-gift h2 em {
+  color: #94739c;
+}
+.birthday-gift__copy > p:not(.micro-label) {
+  max-width: 350px;
+  font-size: 15px;
+  line-height: 1.8;
+  margin: 20px 0;
+}
+.birthday-gift__copy .handwritten {
+  font-size: 23px;
+}
+.birthday-gift__cake {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.birthday-gift__cake p {
+  font-size: 12px;
+  color: #80628c;
+}
+.birthday-star {
+  position: absolute;
+  top: 20px;
+  right: 15%;
+  color: #a087ab;
+  width: 25px;
+}
+.birthday-flame {
+  transform-origin: 105px 77px;
+  animation: birthday-flicker 2s ease-in-out infinite alternate;
+}
+@keyframes birthday-flicker {
+  to {
+    transform: rotate(4deg) scale(0.94, 1.04);
+  }
+}
+@media (max-width: 650px) {
+  .birthday-gift {
+    padding: 28px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    margin-bottom: 36px;
+  }
+  .birthday-gift h2 {
+    font-size: 36px;
+  }
+  .birthday-gift__copy > p:not(.micro-label) {
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,51 @@
+.bday-banner {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: var(--s-2);
+  padding: var(--s-6);
+  overflow: hidden;
+  border-radius: var(--r-xl);
+  color: var(--white);
+  background:
+    radial-gradient(circle at 90% 10%, rgb(255 255 255 / 0.35), transparent 40%),
+    var(--grad-signature);
+  box-shadow: var(--shadow-pink);
+}
+
+.bday-banner__ribbon {
+  position: absolute;
+  right: var(--s-5);
+  top: var(--s-4);
+  display: flex;
+  gap: var(--s-2);
+  font-size: var(--t-xl);
+  opacity: 0.85;
+}
+
+.bday-banner__ribbon span:nth-child(2) {
+  color: var(--pink-100);
+  animation: bday-float 3s var(--ease-in-out) infinite;
+}
+
+@keyframes bday-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+
+.bday-banner__title {
+  max-width: 16ch;
+  font-size: var(--t-2xl);
+  line-height: 1.1;
+}
+
+.bday-banner__line {
+  color: var(--pink-50);
+  font-weight: 500;
+  margin-bottom: var(--s-2);
+}

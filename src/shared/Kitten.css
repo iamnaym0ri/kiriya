@@ -1,0 +1,168 @@
+.kitten {
+  --fur: #fffaf4;
+  --ginger: #f1a46c;
+  --patch: #2b1b35;
+  --line: #2b1b35;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 880;
+  width: 64px;
+  height: 64px;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.kitten__body {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  border-radius: 40%;
+  transition: scale var(--dur-2) var(--ease-out);
+  filter: drop-shadow(0 4px 6px rgb(25 8 58 / 0.18));
+}
+
+.kitten__body svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.kitten[data-facing="left"] .kitten__body svg {
+  scale: -1 1;
+}
+
+.kitten__fur { fill: var(--fur); }
+.kitten__ginger { fill: var(--ginger); }
+.kitten__black { fill: var(--patch); }
+.kitten__stroke,
+.kitten__outline {
+  stroke: var(--line);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+.kitten__outline { fill: none; }
+.kitten__outline-wide { fill: none; stroke: var(--line); stroke-width: 7.5; stroke-linecap: round; }
+.kitten__tail-fur { fill: none; stroke: var(--ginger); stroke-width: 4; stroke-linecap: round; }
+.kitten__tail-tip { fill: none; stroke: var(--patch); stroke-width: 4; stroke-linecap: round; }
+.kitten__inner-ear { fill: var(--pink-300); }
+.kitten__eye { fill: var(--line); }
+.kitten__sleepy-eyes { fill: none; stroke: var(--line); stroke-width: 1.6; stroke-linecap: round; opacity: 0; }
+.kitten__nose { fill: var(--pink-400); }
+.kitten__mouth { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-linecap: round; }
+.kitten__blush { fill: var(--pink-300); opacity: 0.55; }
+.kitten__whisker { stroke: var(--line); stroke-width: 1; stroke-linecap: round; opacity: 0.7; }
+.kitten__collar { fill: none; stroke: var(--purple-600); stroke-width: 3; stroke-linecap: round; }
+.kitten__bell { fill: #ffd166; stroke: var(--line); stroke-width: 1; }
+
+.kitten__leg {
+  fill: var(--fur);
+  stroke: var(--line);
+  stroke-width: 1.8;
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+}
+
+.kitten__tail {
+  transform-box: view-box;
+  transform-origin: 16px 40px;
+  animation: kitten-tail 2.6s var(--ease-in-out) infinite;
+}
+
+.kitten__eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: kitten-blink 4.8s infinite;
+}
+
+@keyframes kitten-tail {
+  0%, 100% { rotate: -6deg; }
+  50% { rotate: 8deg; }
+}
+
+@keyframes kitten-blink {
+  0%, 92%, 100% { scale: 1 1; }
+  95% { scale: 1 0.1; }
+}
+
+/* walking: little alternating steps, a bob, and a busier tail */
+.kitten[data-mode="walk"] .kitten__leg--a { animation: kitten-step 0.32s ease-in-out infinite alternate; }
+.kitten[data-mode="walk"] .kitten__leg--b { animation: kitten-step 0.32s ease-in-out infinite alternate-reverse; }
+.kitten[data-mode="walk"] .kitten__torso,
+.kitten[data-mode="walk"] .kitten__head { animation: kitten-bob 0.32s ease-in-out infinite alternate; }
+.kitten[data-mode="walk"] .kitten__tail { animation-duration: 0.9s; }
+
+@keyframes kitten-step {
+  from { rotate: -14deg; }
+  to { rotate: 14deg; }
+}
+
+@keyframes kitten-bob {
+  from { translate: 0 0; }
+  to { translate: 0 -1.5px; }
+}
+
+/* napping: tucked legs, closed eyes, slow breathing */
+.kitten[data-mode="nap"] .kitten__legs { opacity: 0; }
+.kitten[data-mode="nap"] .kitten__torso,
+.kitten[data-mode="nap"] .kitten__head { translate: 0 8px; }
+.kitten[data-mode="nap"] .kitten__eyes { opacity: 0; animation: none; }
+.kitten[data-mode="nap"] .kitten__sleepy-eyes { opacity: 1; }
+.kitten[data-mode="nap"] .kitten__torso { animation: kitten-breathe 3s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+.kitten[data-mode="nap"] .kitten__tail { animation-duration: 6s; }
+
+@keyframes kitten-breathe {
+  0%, 100% { scale: 1 1; }
+  50% { scale: 1.03 1.07; }
+}
+
+.kitten[data-mode="happy"] .kitten__body {
+  animation: kitten-hop 0.5s var(--ease-out) 2;
+}
+
+@keyframes kitten-hop {
+  0%, 100% { translate: 0 0; }
+  40% { translate: 0 -12px; }
+}
+
+.kitten__bubble {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  translate: -50% -2px;
+  padding: 3px 10px 4px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+  color: var(--pink-600);
+  font-size: var(--t-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  animation: kitten-pop 0.35s var(--ease-out);
+}
+
+.kitten__zzz {
+  position: absolute;
+  right: -2px;
+  top: 4px;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--purple-500);
+  animation: kitten-zzz 2.4s ease-in-out infinite;
+}
+
+.kitten__zzz span {
+  font-size: 10px;
+  margin-left: 2px;
+  vertical-align: super;
+}
+
+@keyframes kitten-pop {
+  from { scale: 0.6; opacity: 0; }
+  to { scale: 1; opacity: 1; }
+}
+
+@keyframes kitten-zzz {
+  0%, 100% { translate: 0 0; opacity: 0.4; }
+  50% { translate: 3px -6px; opacity: 1; }
+}

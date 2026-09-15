@@ -1,0 +1,269 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: clip;
+  background: var(--page);
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+  font-family: var(--font-ui);
+  font-size: var(--t-md);
+  line-height: 1.55;
+  font-weight: 400;
+  color: var(--text);
+  background: var(--page);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--dur-3) var(--ease-out);
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+dl,
+dd,
+figure,
+blockquote {
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+a {
+  color: var(--lead);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 2.5px solid var(--colead);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: var(--purple-200);
+  color: var(--purple-950);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- shared primitives ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: 48px;
+  padding: 0 var(--s-6);
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  font-size: var(--t-md);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    transform var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-2) var(--ease-out),
+    background-color var(--dur-2) var(--ease-out),
+    opacity var(--dur-2);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn--primary {
+  color: var(--white);
+  background: var(--grad-signature);
+  box-shadow: var(--shadow-pink);
+}
+
+.btn--soft {
+  color: var(--lead-deep);
+  background: var(--surface-tint);
+}
+
+.btn--ghost {
+  color: var(--lead-deep);
+  box-shadow: inset 0 0 0 1.5px var(--line-strong);
+}
+
+.btn--night {
+  color: var(--purple-50);
+  background: var(--purple-950);
+}
+
+.btn--small {
+  min-height: 36px;
+  padding: 0 var(--s-4);
+  font-size: var(--t-sm);
+}
+
+.field {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 var(--s-5);
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  font-size: var(--t-lg);
+  transition:
+    border-color var(--dur-2),
+    box-shadow var(--dur-2);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--lead);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--lead) 18%, transparent);
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+/* Spinning record/CD discs share one animation. */
+@keyframes songcard-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* ---------- sparkle bursts (see shared/effects.js) ---------- */
+
+.burst {
+  position: fixed;
+  z-index: 1500;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.burst span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: 1;
+  font-size: var(--size, 18px);
+  color: var(--tone, var(--pink-500));
+  text-shadow: 0 1px 2px rgb(25 8 58 / 0.25);
+  animation: burst-fly 0.85s cubic-bezier(0.15, 0.75, 0.3, 1) forwards;
+}
+
+@keyframes burst-fly {
+  from {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  to {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Backdrop behind the passphrase sheet when a private page is opened while locked. */
+.world-locked {
+  min-height: 100dvh;
+  background: var(--grad-dawn);
+}
+
+/* ---------- die-cut sticker look ---------- */
+
+.sticker-art {
+  overflow: visible;
+  filter:
+    drop-shadow(2px 0 0 var(--white))
+    drop-shadow(-2px 0 0 var(--white))
+    drop-shadow(0 2px 0 var(--white))
+    drop-shadow(0 -2px 0 var(--white))
+    drop-shadow(0 5px 8px rgb(25 8 58 / 0.22));
+}

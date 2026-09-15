@@ -1,0 +1,67 @@
+.door {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-3);
+  padding: var(--s-8) var(--s-6);
+  border-radius: var(--r-xl);
+  text-align: center;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 30%, var(--pink-50), transparent 70%),
+    var(--surface);
+  box-shadow: var(--shadow-1), inset 0 0 0 1.5px var(--purple-100);
+}
+
+.door__chest {
+  width: 120px;
+  height: auto;
+  margin-bottom: var(--s-1);
+  filter: drop-shadow(0 12px 18px rgb(99 43 181 / 0.2));
+}
+
+.door__wood {
+  fill: var(--purple-800);
+}
+
+.door__drawer {
+  fill: var(--purple-700);
+  stroke: var(--purple-900);
+  stroke-width: 1;
+}
+
+.door__drawer--glow {
+  fill: var(--pink-500);
+  stroke: var(--pink-700);
+  animation: door-glow 2.8s var(--ease-in-out) infinite;
+}
+
+@keyframes door-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgb(249 108 171 / 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgb(249 108 171 / 0.9));
+  }
+}
+
+.door__heart {
+  fill: var(--white);
+}
+
+.door__knob {
+  fill: var(--purple-300);
+}
+
+.door__foot {
+  fill: var(--purple-900);
+}
+
+.door__title {
+  font-size: var(--t-xl);
+}
+
+.door__line {
+  max-width: 30ch;
+  color: var(--text-soft);
+  margin-bottom: var(--s-2);
+}

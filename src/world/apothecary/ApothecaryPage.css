@@ -1,0 +1,346 @@
+.apo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-6);
+}
+
+.apo__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-2);
+}
+
+.apo__title {
+  font-size: var(--t-2xl);
+}
+
+.apo__lead,
+.apo__hint {
+  color: var(--text-soft);
+}
+
+.apo__hint {
+  font-size: var(--t-sm);
+  margin: -6px var(--s-1) var(--s-3);
+}
+
+.apo__section-title {
+  font-size: var(--t-xl);
+  margin-bottom: var(--s-3);
+  padding-inline: var(--s-1);
+}
+
+/* countdown */
+.apo-count {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-3);
+  padding: var(--s-6) var(--s-4);
+  border-radius: var(--r-xl);
+  text-align: center;
+  color: var(--text-on-night);
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 0%, rgb(121 176 107 / 0.25), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgb(229 47 140 / 0.25), transparent 70%),
+    var(--grad-night);
+  box-shadow: var(--shadow-3);
+}
+
+.apo-count__title {
+  font-size: var(--t-lg);
+  color: var(--pink-200);
+}
+
+.apo-count__clock {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-2);
+  width: 100%;
+  max-width: 420px;
+}
+
+.apo-count__unit {
+  display: grid;
+  gap: 2px;
+  padding: var(--s-3) 0;
+  border-radius: var(--r-md);
+  background: rgb(255 255 255 / 0.07);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+
+.apo-count__unit b {
+  font-size: var(--t-3xl);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.apo-count__unit small {
+  font-size: var(--t-xs);
+  color: var(--purple-200);
+}
+
+.apo-count__when {
+  font-size: var(--t-sm);
+  color: var(--purple-100);
+}
+
+.apo-count__more {
+  display: grid;
+  gap: 4px;
+  font-size: var(--t-sm);
+  color: var(--purple-200);
+}
+
+.apo-count__more strong {
+  color: var(--white);
+}
+
+/* case files */
+.deck__card {
+  position: relative;
+  display: grid;
+  gap: var(--s-3);
+  min-height: 190px;
+  padding: var(--s-6) var(--s-5) var(--s-5);
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(90deg, var(--pink-200) 0 6px, transparent 6px),
+    repeating-linear-gradient(to bottom, transparent 0 29px, var(--purple-100) 29px 30px),
+    var(--surface);
+  box-shadow: var(--shadow-2);
+}
+
+.deck__number {
+  position: absolute;
+  top: -12px;
+  left: var(--s-5);
+  padding: 3px 12px;
+  border-radius: 8px;
+  background: var(--purple-950);
+  color: var(--pink-200);
+  font-size: var(--t-xs);
+  font-weight: 800;
+}
+
+.deck__text {
+  font-size: var(--t-lg);
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.deck__spoiler {
+  position: relative;
+  display: grid;
+  place-items: center;
+  text-align: left;
+}
+
+.deck__spoiler span {
+  filter: blur(8px);
+  font-size: var(--t-lg);
+  line-height: 1.6;
+  user-select: none;
+}
+
+.deck__spoiler strong {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--s-4);
+  text-align: center;
+  color: var(--lead-deep);
+}
+
+.deck__source {
+  justify-self: start;
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--text-faint);
+}
+
+.deck__controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-2);
+  margin-top: var(--s-3);
+}
+
+/* quiz */
+.quiz {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-5);
+  border-radius: var(--r-xl);
+  background: var(--grad-dawn);
+  box-shadow: var(--shadow-1);
+}
+
+.quiz__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.quiz__title {
+  margin: 0;
+  padding: 0;
+}
+
+.quiz__streak {
+  font-size: var(--t-sm);
+  font-weight: 800;
+  color: var(--colead-deep);
+}
+
+.quiz__herb {
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  text-align: center;
+  font-size: var(--t-xl);
+  font-weight: 800;
+}
+
+.quiz__choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.quiz__choice {
+  min-height: 52px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  font-weight: 800;
+  transition:
+    background-color var(--dur-2),
+    color var(--dur-2);
+}
+
+.quiz__choice[data-state="right"] {
+  background: var(--purple-600);
+  color: var(--white);
+}
+
+.quiz__choice[data-state="wrong"] {
+  background: var(--pink-600);
+  color: var(--white);
+}
+
+.quiz__reveal {
+  display: grid;
+  gap: var(--s-3);
+  justify-items: start;
+  font-size: var(--t-sm);
+}
+
+/* herb cabinet */
+.cabinet__drawers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px;
+  border-radius: var(--r-lg);
+  background: var(--purple-800);
+  box-shadow: inset 0 0 0 3px var(--purple-900), var(--shadow-2);
+}
+
+.drawer-tile {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 84px;
+  padding: var(--s-2) 6px var(--s-3);
+  border-radius: 6px;
+  background: var(--purple-700);
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.22);
+  color: var(--purple-50);
+  transition:
+    transform var(--dur-2) var(--ease-out),
+    background-color var(--dur-2);
+}
+
+.drawer-tile[aria-pressed="true"] {
+  background: var(--pink-500);
+  transform: translateY(4px);
+}
+
+.drawer-tile__knob {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--purple-300);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.3);
+}
+
+.drawer-tile__label {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.drawer-tile__no {
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+  font-size: 9px;
+  opacity: 0.5;
+}
+
+.herb-sheet {
+  display: grid;
+  gap: var(--s-2);
+  margin-top: var(--s-3);
+  padding: var(--s-5);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+
+.herb-sheet header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+
+.herb-sheet h3 {
+  font-size: var(--t-lg);
+}
+
+.herb-sheet__kind {
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--t-xs);
+  font-weight: 800;
+  text-transform: capitalize;
+  background: var(--purple-100);
+  color: var(--purple-800);
+}
+
+.herb-sheet__kind[data-kind="poison"] {
+  background: var(--purple-950);
+  color: var(--pink-300);
+}
+
+.herb-sheet__series {
+  font-size: var(--t-sm);
+  font-style: italic;
+  color: var(--text-soft);
+}
+
+.herb-sheet a {
+  justify-self: start;
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--text-faint);
+}

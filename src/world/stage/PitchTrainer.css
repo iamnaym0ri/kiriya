@@ -1,0 +1,133 @@
+.pitch {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-5);
+  border-radius: var(--r-xl);
+  color: var(--text-on-night);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgb(57 197 187 / 0.2), transparent 70%),
+    var(--grad-night);
+  box-shadow: var(--shadow-2);
+}
+
+.pitch__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-3);
+}
+
+.pitch__title {
+  font-size: var(--t-lg);
+}
+
+.pitch__hint {
+  font-size: var(--t-sm);
+  color: var(--purple-200);
+}
+
+.pitch__score {
+  display: grid;
+  justify-items: end;
+  line-height: 1;
+}
+
+.pitch__score span {
+  font-size: var(--t-3xl);
+  font-weight: 800;
+  color: var(--pink-300);
+}
+
+.pitch__score small {
+  font-size: var(--t-xs);
+  color: var(--purple-200);
+}
+
+.pitch__meter {
+  position: relative;
+  height: 220px;
+  border-radius: var(--r-md);
+  background:
+    repeating-linear-gradient(to top, rgb(255 255 255 / 0.06) 0 1px, transparent 1px 11px),
+    rgb(255 255 255 / 0.04);
+  overflow: hidden;
+}
+
+.pitch__band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: linear-gradient(90deg, rgb(57 197 187 / 0.12), rgb(57 197 187 / 0.22), rgb(57 197 187 / 0.12));
+}
+
+.pitch__target {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 0;
+  border-top: 2px dashed var(--pink-300);
+}
+
+.pitch__target span {
+  position: absolute;
+  left: 0;
+  top: -26px;
+  font-size: var(--t-sm);
+  font-weight: 800;
+  color: var(--pink-200);
+}
+
+.pitch__target i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -3px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--pink-400);
+  transform-origin: left center;
+  transition: transform 80ms linear;
+}
+
+.pitch__dot {
+  position: absolute;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  margin: 0 0 -11px -11px;
+  border-radius: 50%;
+  background: var(--purple-300);
+  box-shadow: 0 0 18px 4px rgb(181 137 255 / 0.6);
+  transition: bottom 60ms linear;
+}
+
+.pitch__dot[data-in-tune="true"] {
+  background: #39c5bb;
+  box-shadow: 0 0 22px 6px rgb(57 197 187 / 0.7);
+}
+
+.pitch__readout {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--s-3);
+  min-height: 2.4em;
+}
+
+.pitch__note {
+  font-size: var(--t-3xl);
+  font-weight: 800;
+}
+
+.pitch__cents {
+  font-weight: 700;
+  color: var(--purple-200);
+}
+
+.pitch__cents[data-in-tune="true"] {
+  color: #7ae0d8;
+}
+
+.pitch__error {
+  font-size: var(--t-sm);
+  color: var(--pink-200);
+}

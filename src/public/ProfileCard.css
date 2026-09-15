@@ -1,0 +1,164 @@
+.pcard-tilt {
+  border-radius: var(--r-xl);
+  transform-style: preserve-3d;
+}
+
+.pcard {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  margin-top: 66px;
+  padding: 82px var(--s-6) var(--s-6);
+  text-align: center;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, var(--purple-50), transparent 70%),
+    var(--surface);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-3);
+}
+
+/* A thin black lace edge along the bottom: the one "alt" stitch on an otherwise clean card. */
+.pcard__lace {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  bottom: -9px;
+  height: 10px;
+  background:
+    radial-gradient(circle at 50% 3px, var(--white) 1.6px, transparent 2px),
+    radial-gradient(circle at 50% 0, var(--black) 7px, transparent 7.5px);
+  background-size: 14px 10px;
+  background-repeat: round no-repeat;
+  pointer-events: none;
+}
+
+.pcard__avatar {
+  position: absolute;
+  top: -66px;
+  left: 50%;
+  translate: -50% 0;
+}
+
+.pcard__initial {
+  font-family: var(--font-mark);
+  font-size: 64px;
+  line-height: 1;
+  translate: 0 -4px;
+  background: var(--grad-signature);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.pcard__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+}
+
+.pcard__badge {
+  --icon-fill: var(--badge-fill);
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  color: var(--badge-ink);
+  background: var(--badge-bg);
+  box-shadow: inset 0 0 0 1px var(--badge-ring);
+  transition:
+    transform var(--dur-2) var(--ease-out),
+    box-shadow var(--dur-2);
+}
+
+.pcard__badge[data-active="true"] {
+  transform: translateY(-3px) rotate(-4deg);
+  box-shadow:
+    inset 0 0 0 1.5px var(--badge-ink),
+    0 8px 16px -8px var(--badge-ink);
+}
+
+.pcard__badge[data-badge="vocaloid"] { --badge-bg: var(--purple-100); --badge-ink: var(--purple-700); --badge-fill: var(--purple-300); --badge-ring: var(--purple-200); }
+.pcard__badge[data-badge="apothecary"] { --badge-bg: var(--pink-100); --badge-ink: var(--pink-700); --badge-fill: var(--pink-300); --badge-ring: var(--pink-200); }
+.pcard__badge[data-badge="artist"] { --badge-bg: var(--purple-200); --badge-ink: var(--purple-800); --badge-fill: var(--white); --badge-ring: var(--purple-300); }
+.pcard__badge[data-badge="cosplay"] { --badge-bg: var(--pink-200); --badge-ink: var(--pink-800); --badge-fill: var(--white); --badge-ring: var(--pink-300); }
+.pcard__badge[data-badge="ballet"] { --badge-bg: var(--white); --badge-ink: var(--purple-600); --badge-fill: var(--pink-200); --badge-ring: var(--purple-200); }
+.pcard__badge[data-badge="fashion"] { --badge-bg: var(--purple-950); --badge-ink: var(--pink-300); --badge-fill: var(--purple-700); --badge-ring: var(--purple-900); }
+.pcard__badge[data-badge="birthday"] { --badge-bg: var(--grad-signature); --badge-ink: var(--white); --badge-fill: var(--pink-300); --badge-ring: transparent; }
+
+.pcard__badge-label {
+  min-height: 1.6em;
+  margin-top: var(--s-2);
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--lead);
+}
+
+.pcard__bio {
+  min-height: 3.2em;
+  max-width: 30ch;
+  margin-top: var(--s-1);
+  font-size: var(--t-lg);
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+.pcard__bio-cursor {
+  color: var(--colead);
+  font-weight: 400;
+  margin-left: 1px;
+}
+
+.pcard__socials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-2);
+  margin-top: var(--s-5);
+}
+
+.pcard__social {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 42px;
+  padding: 0 var(--s-4) 0 var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--surface-tint);
+  color: var(--purple-900);
+  font-size: var(--t-sm);
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color var(--dur-2);
+}
+
+.pcard__social:hover {
+  background: var(--purple-200);
+}
+
+.brand-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.pcard__views {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--s-5);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.pcard__views svg {
+  width: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}

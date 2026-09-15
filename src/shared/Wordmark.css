@@ -1,0 +1,30 @@
+.wordmark {
+  display: inline-flex;
+  font-family: var(--font-mark);
+  font-weight: 400;
+  line-height: 0.86;
+  letter-spacing: 0.01em;
+  /* A thin pale edge lifts the gradient letters off white and off the dark night surfaces alike. */
+  filter: drop-shadow(0 2px 0 var(--purple-100)) drop-shadow(0 10px 18px rgb(126 57 223 / 0.18));
+}
+
+.wordmark__letter {
+  display: inline-block;
+  background: var(--grad-signature);
+  background-size: 600% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Each letter shows its own slice of one continuous gradient. */
+.wordmark__letter:nth-child(1) { background-position: 0% 0; }
+.wordmark__letter:nth-child(2) { background-position: 20% 0; }
+.wordmark__letter:nth-child(3) { background-position: 40% 0; }
+.wordmark__letter:nth-child(4) { background-position: 60% 0; }
+.wordmark__letter:nth-child(5) { background-position: 80% 0; }
+.wordmark__letter:nth-child(n + 6) { background-position: 100% 0; }
+
+.wordmark--sm { font-size: 48px; }
+.wordmark--md { font-size: 72px; }
+.wordmark--lg { font-size: clamp(84px, 24vw, 120px); }

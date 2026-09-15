@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "Silent public entrance: no audio or provider iframe before a playback choice.",
+    "Public passphrase door opens the authenticated home.",
+    "Authenticated day payload only exposes the retained collection.",
+    "phone (390 × 844): all eight private surfaces fit without horizontal overflow.",
+    "desktop (1440 × 1000): all eight private surfaces fit without horizontal overflow.",
+    "narrow (320 × 760): all eight private surfaces fit without horizontal overflow.",
+    "tablet (820 × 1180): all eight private surfaces fit without horizontal overflow.",
+    "landscape (844 × 390): all eight private surfaces fit without horizontal overflow.",
+    "Compact phone section menu navigates and closes.",
+    "Drawing, undo/redo, save and authenticated media work; public media fetch is denied.",
+    "Saved artwork enlarges; Escape dismisses the native dialog.",
+    "Cosplay photograph upload, private access and full-size viewing work.",
+    "Maomao image switching and explicit manga-spoiler reveal work.",
+    "Exactly one visible provider player, at least 200 × 200; SPA navigation preserves it, close removes it.",
+    "Gift, letters and candle replay work for September 15, September 22 and November 4.",
+    "Uploaded recording plays, reports duration, pauses, resumes and closes without an event error.",
+    "Recording upload is private; explicitly starring it enables public playback; byte-range responses work.",
+    "Lock returns to public view and removes private API access.",
+    "No uncaught application errors."
+  ],
+  "errors": [],
+  "errorDetails": []
+}

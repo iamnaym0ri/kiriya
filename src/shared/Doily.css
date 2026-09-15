@@ -1,0 +1,53 @@
+.doily {
+  position: relative;
+  width: var(--doily-size);
+  aspect-ratio: 1;
+  flex: none;
+}
+
+.doily__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 10px 22px rgb(99 43 181 / 0.22));
+}
+
+.doily__edge {
+  fill: var(--white);
+  stroke: var(--black);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.doily__eyelet {
+  fill: var(--black);
+}
+
+.doily__stitch {
+  fill: none;
+  stroke: var(--colead);
+  stroke-width: 3.5;
+  stroke-dasharray: 1 7;
+  stroke-linecap: round;
+}
+
+.doily__photo {
+  position: absolute;
+  inset: 20%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%, var(--pink-100), transparent 60%),
+    var(--purple-100);
+  box-shadow: inset 0 0 0 2px var(--purple-200);
+}
+
+.doily__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

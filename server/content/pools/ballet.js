@@ -1,0 +1,62 @@
+// PRIVATE pool. Ballet: a term of the day, famous ballets, and gentle practice reminders.
+// Reminders stay general; nothing here replaces her teacher.
+
+export const balletTerms = [
+  { id: "bt-plie", term: "plié", say: "plee-AY", meaning: "bent: a smooth bend of the knees, the warm-up of warm-ups" },
+  { id: "bt-tendu", term: "battement tendu", say: "bat-MAHN tahn-DEW", meaning: "stretched: the foot slides out along the floor until only the tip touches" },
+  { id: "bt-degage", term: "dégagé", say: "day-ga-ZHAY", meaning: "disengaged: like a tendu, but the foot brushes just off the floor" },
+  { id: "bt-rond", term: "rond de jambe", say: "rawn duh ZHAHMB", meaning: "circle of the leg: the foot traces a half-circle" },
+  { id: "bt-fondu", term: "fondu", say: "fawn-DEW", meaning: "melted: the supporting leg bends slowly as the working leg folds in" },
+  { id: "bt-frappe", term: "frappé", say: "fra-PAY", meaning: "struck: a quick, sharp extension from the ankle" },
+  { id: "bt-adagio", term: "adagio", say: "a-DAH-zhee-oh", meaning: "slowly: the slow, controlled section of class" },
+  { id: "bt-grand-battement", term: "grand battement", say: "grahn bat-MAHN", meaning: "big beat: a controlled high kick" },
+  { id: "bt-releve", term: "relevé", say: "ruhl-VAY", meaning: "raised: rising onto demi-pointe or pointe" },
+  { id: "bt-saute", term: "sauté", say: "soh-TAY", meaning: "jumped: any movement done with a jump" },
+  { id: "bt-pirouette", term: "pirouette", say: "peer-oo-ET", meaning: "whirl: a turn on one leg" },
+  { id: "bt-arabesque", term: "arabesque", say: "a-ra-BESK", meaning: "a pose on one leg with the other extended straight behind" },
+  { id: "bt-attitude", term: "attitude", say: "a-tee-TEWD", meaning: "a pose with the lifted leg bent, like a softer arabesque" },
+  { id: "bt-chasse", term: "chassé", say: "sha-SAY", meaning: "chased: one foot chases the other along the floor" },
+  { id: "bt-glissade", term: "glissade", say: "glee-SAHD", meaning: "glide: a small travelling step, often before a jump" },
+  { id: "bt-jete", term: "jeté", say: "zhuh-TAY", meaning: "thrown: a jump from one leg to the other" },
+  { id: "bt-grand-jete", term: "grand jeté", say: "grahn zhuh-TAY", meaning: "big throw: the flying split leap" },
+  { id: "bt-assemble", term: "assemblé", say: "a-sahm-BLAY", meaning: "assembled: a jump that brings both legs together in the air" },
+  { id: "bt-sissonne", term: "sissonne", say: "see-SAWN", meaning: "a jump from two feet landing on one" },
+  { id: "bt-echappe", term: "échappé", say: "ay-sha-PAY", meaning: "escaped: the feet spring apart from a closed position" },
+  { id: "bt-fouette", term: "fouetté", say: "fweh-TAY", meaning: "whipped: the leg whips around to keep a turn going" },
+  { id: "bt-balance", term: "balancé", say: "ba-lahn-SAY", meaning: "rocking step: a waltz-like sway from side to side" },
+  { id: "bt-port-de-bras", term: "port de bras", say: "por duh BRAH", meaning: "carriage of the arms" },
+  { id: "bt-epaulement", term: "épaulement", say: "ay-pohl-MAHN", meaning: "shouldering: the angle of the shoulders and head that makes a pose come alive" },
+  { id: "bt-croise", term: "croisé", say: "krwah-ZAY", meaning: "crossed: the legs look crossed from the audience's view" },
+  { id: "bt-efface", term: "effacé", say: "eh-fa-SAY", meaning: "shaded: the body angled open to the audience" },
+  { id: "bt-en-dehors", term: "en dehors", say: "ahn duh-OR", meaning: "outward: turning away from the supporting leg" },
+  { id: "bt-en-dedans", term: "en dedans", say: "ahn duh-DAHN", meaning: "inward: turning toward the supporting leg" },
+  { id: "bt-soutenu", term: "soutenu", say: "soot-NEW", meaning: "sustained: a tight turn on both feet" },
+  { id: "bt-chaines", term: "chaînés", say: "sheh-NAY", meaning: "chains: fast, linked turns travelling in a line" },
+  { id: "bt-passe", term: "passé", say: "pa-SAY", meaning: "passed: the foot passes the knee of the supporting leg" },
+  { id: "bt-coupe", term: "coupé", say: "koo-PAY", meaning: "cut: the foot cuts in at the ankle" },
+  { id: "bt-changement", term: "changement", say: "shahnzh-MAHN", meaning: "change: a jump that switches which foot is in front" },
+  { id: "bt-reverence", term: "révérence", say: "ray-vay-RAHNS", meaning: "the bow or curtsy at the end of class" },
+];
+
+export const balletLore = [
+  { id: "bl-swan-lake", text: "Swan Lake premiered at the Bolshoi Theatre in 1877. The version most companies dance today comes from the 1895 Petipa–Ivanov revival.", source: "https://en.wikipedia.org/wiki/Swan_Lake" },
+  { id: "bl-fouettes", text: "Odile's famous 32 fouettés in Swan Lake were first danced by Pierina Legnani.", source: "https://en.wikipedia.org/wiki/Pierina_Legnani" },
+  { id: "bl-nutcracker", text: "The Nutcracker premiered in St Petersburg in 1892, with music by Tchaikovsky.", source: "https://en.wikipedia.org/wiki/The_Nutcracker" },
+  { id: "bl-giselle", text: "Giselle premiered in Paris in 1841, and it's still one of the most danced Romantic ballets.", source: "https://en.wikipedia.org/wiki/Giselle" },
+  { id: "bl-sleeping-beauty", text: "The Sleeping Beauty premiered in 1890 with choreography by Marius Petipa.", source: "https://en.wikipedia.org/wiki/The_Sleeping_Beauty_(ballet)" },
+  { id: "bl-coppelia", text: "Coppélia (1870) is a comedy about a life-size dancing doll. Very dollcore of it.", source: "https://en.wikipedia.org/wiki/Copp%C3%A9lia" },
+  { id: "bl-firebird", text: "The Firebird (1910) made Igor Stravinsky famous overnight.", source: "https://en.wikipedia.org/wiki/The_Firebird" },
+  { id: "bl-don-quixote", text: "Don Quixote's big pas de deux, full of fouettés and leaps, is a gala favourite all over the world.", source: "https://en.wikipedia.org/wiki/Don_Quixote_(ballet)" },
+];
+
+export const balletReminders = [
+  { id: "br-warm", text: "Warm up before you stretch deep. Warm muscles are happier muscles." },
+  { id: "br-turnout", text: "Turnout comes from the hips. Let the knees follow the toes instead of twisting them." },
+  { id: "br-spot", text: "Spotting tip: pick one point at eye level and whip your head back to it every turn." },
+  { id: "br-water", text: "Class plus Singapore heat means a proper water bottle, not a sip at the break." },
+  { id: "br-rest", text: "Rest days are part of training. Muscles get stronger while they recover." },
+  { id: "br-feet", text: "Look after your feet tonight: trimmed nails, a check for blisters, and a moment to let them breathe." },
+  { id: "br-pain", text: "Sore is normal; sharp pain isn't. If something hurts in a new way, tell your teacher." },
+  { id: "br-arms", text: "Next class, give your port de bras as much attention as your feet. Arms are where the story is." },
+  { id: "br-breathe", text: "Breathe out through the hard parts of an adagio. Holding your breath shows in the shoulders." },
+];

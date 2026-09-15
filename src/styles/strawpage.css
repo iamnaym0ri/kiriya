@@ -1,0 +1,1295 @@
+/* A personal scrapbook: decorative edges, clear reading surfaces. */
+:root {
+  --font-hand:
+    "Gaegu", "Birthday Japanese", "Apple Color Emoji", "Segoe UI Emoji",
+    "Birthday Emoji", cursive;
+  --font-pixel:
+    "DotGothic16", "Birthday Japanese", "Apple Color Emoji", "Segoe UI Emoji",
+    "Birthday Emoji", monospace;
+  --font-literary: var(--font-hand);
+  --font-ui:
+    "M PLUS Rounded 1c", "Birthday Japanese", "Apple Color Emoji",
+    "Segoe UI Emoji", "Birthday Emoji", system-ui, sans-serif;
+  --ink: #54385f;
+  --text: #54385f;
+  --paper: #fff9fd;
+}
+:root .handwritten {
+  font-family: var(--font-hand);
+  font-style: normal;
+}
+:root .section-heading h1,
+:root .section-heading h2 {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: clamp(40px, 4.7vw, 62px);
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+}
+:root .section-heading h1 em,
+:root .section-heading h2 em {
+  font-style: normal;
+  font-weight: 400;
+  color: #a06f9e;
+}
+:root .micro-label {
+  letter-spacing: 0.1em;
+}
+:root .editorial-section {
+  border-top: 1px dashed #b996cd9c;
+  padding-block: 57px;
+}
+:root .section-heading .micro-label {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+}
+:root .note-slip {
+  border: 1px solid #ddc5e1;
+  border-radius: 3px;
+  box-shadow: 4px 5px 0 #e8dcef66;
+}
+:root .note-slip p {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.8;
+  color: #71517b;
+}
+:root .note-slip .micro-label {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+}
+:root .button-plum {
+  background: #755180;
+  border-color: #755180;
+  border-radius: 6px;
+  box-shadow: 0 3px 0 #51375f;
+  transition:
+    transform 0.18s,
+    box-shadow 0.18s,
+    background 0.18s;
+}
+:root .button-plum:hover {
+  background: #896298;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 #51375f;
+}
+:root .button-plum:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #51375f;
+}
+:root .button-plum:disabled {
+  box-shadow: none;
+  opacity: 0.6;
+  transform: none;
+}
+:root .button-paper {
+  border-style: dashed;
+}
+:root .world-mast {
+  height: 78px;
+  background: #fff9fdf2;
+  border-bottom: 1px dashed #c7a5d2;
+  gap: 20px;
+}
+:root .world-mast__actions {
+  gap: 10px;
+}
+:root .world-bookmarks {
+  gap: 24px;
+}
+:root .world-bookmarks a {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+}
+:root .world-bookmarks a.active::after {
+  height: auto;
+  width: auto;
+  background: none;
+  content: "♡";
+  font-size: 11px;
+  bottom: -2px;
+  left: calc(50% - 5px);
+}
+:root .world-content {
+  padding-top: 26px;
+}
+:root .world-mobile-menu {
+  border-bottom-style: dashed;
+}
+:root .world-footer {
+  border-top-style: dashed;
+}
+:root .world-footer .handwritten {
+  font-size: 25px;
+}
+:root .home-dateline {
+  font-family: var(--font-pixel);
+  margin-bottom: 15px;
+  font-size: 9px;
+}
+:root .home-dateline > span:last-child {
+  color: #9d6090;
+}
+:root .home-opening {
+  gap: 50px;
+  padding-bottom: 36px;
+  align-items: center;
+}
+:root .home-welcome > .handwritten {
+  font-size: 44px;
+  line-height: 1;
+  margin-bottom: 5px;
+  color: #a06394;
+  rotate: -3deg;
+}
+:root .home-welcome h1 {
+  font-size: clamp(115px, 10vw, 157px);
+  margin-top: 0;
+  margin-bottom: 4px;
+  color: #55365f;
+  text-shadow: 3px 4px 0 #fff6;
+}
+:root .home-welcome h1 > span {
+  font-family: var(--font-hand);
+  font-size: 49px;
+  top: 0;
+  right: -49px;
+  animation: heart-hello 4s ease-in-out infinite;
+}
+@keyframes heart-hello {
+  0%,
+  100% {
+    transform: rotate(-12deg) scale(0.95);
+  }
+  50% {
+    transform: rotate(5deg) scale(1.05);
+  }
+}
+:root .home-welcome__line {
+  font: 700 39px/1 var(--font-hand);
+  max-width: 430px;
+  letter-spacing: -0.025em;
+}
+:root .home-welcome__line em {
+  font-style: normal;
+  color: #ae7fa8;
+}
+:root .home-welcome__description {
+  font-size: 14px;
+  margin-top: 14px;
+  line-height: 1.85;
+  max-width: 420px;
+}
+:root .home-welcome__links {
+  gap: 24px;
+  margin-block: 13px 21px;
+}
+:root .home-welcome__links .text-link {
+  font-size: 13px;
+}
+:root .home-gift-link {
+  font-size: 12px;
+}
+:root .home-discovery .note-slip {
+  padding: 16px 21px;
+  background: #fffaf8e8;
+  border: 1px dashed #c8a0c8;
+  rotate: -1.2deg;
+  max-width: 430px;
+}
+:root .home-discovery .note-slip p {
+  font: 24px/1.2 var(--font-hand);
+}
+:root .home-discovery .note-slip .micro-label {
+  font-size: 9px;
+}
+:root .home-discovery .note-slip__source {
+  font-size: 11px;
+}
+:root .home-collage {
+  padding-top: 23px;
+}
+:root .home-portrait {
+  rotate: 5deg;
+  margin: 0 8px 0 24px;
+  border: 7px double #c2a3cd;
+  border-radius: 44% 44% 4px 4px / 24% 24% 4px 4px;
+  padding: 12px;
+  background: #fffaff;
+  box-shadow: 7px 8px 0 #d4bcdd66;
+}
+:root .home-portrait .portrait-frame__mat {
+  border-radius: 45% 45% 2px 2px / 27% 27% 2px 2px;
+  aspect-ratio: 1.02;
+}
+:root .home-portrait .handwritten {
+  font-size: 23px;
+}
+:root .home-portrait .paper-tape {
+  display: none;
+}
+:root .home-portrait figcaption {
+  padding: 8px 4px 0;
+}
+:root .home-collage__bow {
+  position: absolute;
+  top: -5px;
+  left: 48%;
+  z-index: 3;
+  width: 99px;
+  height: 75px;
+}
+:root .home-collage__star {
+  top: 28px;
+  right: -5px;
+  width: 39px;
+}
+:root .home-collage__music {
+  margin: 14px 4px 0 72px;
+  rotate: -5deg;
+}
+:root .home-collage .maomao-buddy {
+  position: absolute;
+  z-index: 4;
+  bottom: 48px;
+  left: -42px;
+}
+:root .home-collage .maomao-buddy .buddy-bubble {
+  rotate: -6deg;
+}
+:root .home-surprise {
+  font-size: 22px;
+  margin-top: 20px;
+  margin-right: 8px;
+}
+:root .home-keepsake {
+  bottom: -18px;
+  font-size: 13px;
+  rotate: 3deg;
+  border-style: dashed;
+  border-radius: 9px;
+}
+:root .birthday-stamps {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin: 17px 0 19px;
+}
+:root .birthday-stamps > span {
+  font: 10px var(--font-pixel);
+  padding: 7px 10px;
+  background: #f7e4ef;
+  border: 1px dashed #bc86b1;
+  color: #916187;
+  rotate: -3deg;
+  box-shadow: 2px 2px 0 #fff9fd;
+}
+:root .birthday-stamps > span:nth-child(2) {
+  rotate: 3deg;
+  background: #e3d8ef;
+  color: #806099;
+}
+:root .birthday-stamps > span:nth-child(3) {
+  rotate: -1deg;
+  background: #e0eeea;
+  color: #527e73;
+}
+:root .home-section-index {
+  border-top: 1px dashed #c4a4d0;
+  border-bottom: 1px dashed #c4a4d0;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  padding-block: 4px;
+  margin-top: 12px;
+}
+:root .home-section-index a {
+  font-family: var(--font-hand);
+  font-size: 20px;
+}
+:root .home-section-index > span {
+  font-size: 9px;
+  letter-spacing: 0.02em;
+}
+:root .lookbook-photo > img {
+  border-radius: 4px;
+  box-shadow: 4px 5px 0 #d5bce060;
+}
+:root .lookbook-photo {
+  transition: transform 0.25s;
+}
+:root .lookbook-photo:hover {
+  transform: translateY(-5px) rotate(1deg);
+}
+:root .lookbook-photo__caption strong {
+  font-size: 30px;
+  font-weight: 700;
+}
+:root .lookbook-photo__credit {
+  font-size: 11px;
+  line-height: 1.6;
+}
+:root .lookbook-foot .handwritten {
+  font-size: 27px;
+}
+:root .collection-label {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+}
+:root .sketchbook-spread {
+  border: 1px solid #d5bcda;
+  border-radius: 5px 18px 18px 5px;
+  box-shadow:
+    5px 6px 0 #fff9fd,
+    6px 7px 0 #cdb1d4;
+  background: #fffaf7;
+}
+:root .sketchbook-spread::before {
+  left: 54%;
+  width: 12px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 20px,
+    #b5a6bc 20px 24px,
+    transparent 24px 42px
+  );
+  top: 20px;
+  bottom: 20px;
+  border-inline: 1px solid #e0d6e1;
+}
+:root .sketchbook-tab {
+  font: 23px var(--font-hand);
+  background: #eed2e4;
+}
+:root .sketchbook-margin .note-slip p {
+  font: 27px/1.2 var(--font-hand);
+}
+:root .sketchbook-note {
+  font: 22px var(--font-hand);
+}
+:root .sketchbook-work .handwritten {
+  font-size: 24px;
+}
+:root .sketchbook-work {
+  transition: transform 0.3s;
+}
+:root .sketchbook-work:hover {
+  transform: rotate(2deg) translateY(-3px);
+}
+:root .music-object {
+  background: #554062;
+  border: 1px solid #735582;
+  box-shadow: 4px 5px 0 #d3bbdd80;
+  border-radius: 9px;
+}
+:root .music-object:hover {
+  background: #654b74;
+}
+:root .music-object__copy strong {
+  font: 700 31px/0.95 var(--font-hand);
+}
+:root .music-object__copy small {
+  font-size: 11px;
+}
+:root .music-object__listen {
+  font-size: 11px;
+}
+:root .music-object__sleeve > img {
+  rotate: -5deg;
+}
+:root .music-object__disc {
+  animation: disc-turn 8s linear infinite;
+  animation-play-state: paused;
+}
+:root .music-object:hover .music-object__disc {
+  animation-play-state: running;
+}
+:root .record-sleeve:hover .record-sleeve__image {
+  transform: translateY(-5px) rotate(-2deg);
+}
+:root .record-sleeve__image {
+  transition: transform 0.25s;
+  border-radius: 3px;
+}
+:root .record-sleeve > strong {
+  font: 700 25px/1 var(--font-hand);
+}
+:root .record-sleeve > small {
+  font-size: 11px;
+}
+:root .record-sleeve__label {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+}
+:root .kagamine-strip h2 {
+  font: 700 46px var(--font-hand);
+}
+@keyframes disc-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+:root .gift-margin {
+  border: 1px dashed #b895c5;
+  border-radius: 6px;
+  background: #ead7eccc;
+  position: relative;
+}
+:root .gift-margin h2 {
+  font: 700 36px/1.1 var(--font-hand);
+}
+:root .gift-margin h2 em {
+  font-style: normal;
+}
+:root .gift-margin p {
+  font-size: 13px;
+}
+:root .identity-paper {
+  background: #fff8fcee;
+  border: 1px solid #e1c9e8;
+  box-shadow:
+    6px 7px 0 #f8effb9c,
+    0 15px 45px #55356314;
+  padding-top: 35px;
+}
+:root .identity-paper::before {
+  border-style: dashed;
+  border-color: #cfaedc;
+}
+:root .identity-hello {
+  font: 700 33px var(--font-hand);
+  margin-top: 25px;
+  color: #a06394;
+}
+:root .identity-name {
+  color: #55365f;
+  text-shadow: 3px 4px 0 #e5d6ed60;
+}
+:root .identity-name > span {
+  animation: heart-hello 4s ease-in-out infinite;
+}
+:root .identity-dedication {
+  font: 26px/1.1 var(--font-hand);
+}
+:root .identity-paper__bow {
+  position: absolute;
+  left: calc(50% - 40px);
+  top: -30px;
+  z-index: 4;
+}
+:root .identity-paper__top > .micro-label {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+}
+:root .identity-portrait {
+  border: 6px double #c4a0cd;
+  padding: 10px;
+  border-radius: 44% 44% 4px 4px / 20% 20% 4px 4px;
+}
+:root .identity-portrait .portrait-frame__mat {
+  border-radius: 43% 43% 0 0 / 23% 23% 0 0;
+}
+:root .identity-portrait .paper-tape {
+  display: none;
+}
+:root .identity-portrait .handwritten {
+  font-size: 26px;
+}
+:root .identity-collection .maomao-buddy {
+  position: absolute;
+  right: -50px;
+  bottom: -18px;
+  z-index: 5;
+}
+:root .identity-music {
+  width: 370px;
+  margin-left: -15px;
+  margin-top: 7px;
+}
+:root .identity-side-note {
+  font: 23px/1 var(--font-hand);
+  margin-right: 100px;
+}
+:root .public-mast {
+  min-height: 74px;
+  padding-block: 13px;
+}
+:root .public-mast__actions {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+}
+:root .public-mast__note {
+  font-family: var(--font-hand);
+  font-size: 21px;
+}
+:root .identity-scene {
+  margin-top: 35px;
+  margin-bottom: 45px;
+}
+:root .public-footer {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+}
+:root .public-mast .tiny-wordmark {
+  font-size: 38px;
+}
+:root .identity-door {
+  font-size: 12px;
+}
+:root .identity-interests {
+  margin-top: 12px;
+}
+:root .identity-more summary {
+  font: 18px var(--font-hand);
+  padding-block: 6px;
+  min-height: 36px;
+}
+:root .studio .studio__title,
+:root .settings .settings__title,
+:root .letters .letters__title {
+  font: 700 52px/1 var(--font-hand);
+}
+:root .letters .envelope__title {
+  font: 700 34px/1 var(--font-hand);
+}
+:root .birthday-gift h2 {
+  font-family: var(--font-hand);
+  font-size: 54px !important;
+  line-height: 0.95 !important;
+}
+:root .birthday-gift h2 em {
+  font-style: normal;
+}
+:root .birthday-gift .handwritten {
+  font-size: 32px;
+}
+:root .letter-paper {
+  font-family: Georgia, serif;
+}
+:root .letter-paper .letter__body {
+  font-size: 19px;
+}
+:root .settings .settings-card h2 {
+  font: 700 30px var(--font-hand);
+}
+:root .music-page .stage__section-title {
+  font: 700 42px var(--font-hand);
+}
+:root .listening-room strong {
+  font: 700 30px/1 var(--font-hand);
+}
+:root .world-dialog__head h2 {
+  font: 700 36px/1 var(--font-hand);
+}
+:root .studio .canvas-wrap {
+  border: 1px solid #d7bfdd;
+  box-shadow:
+    5px 5px 0 #fffaf6,
+    6px 6px 0 #cfb4d8;
+}
+:root .studio__head {
+  margin-top: 22px;
+}
+:root .notebook-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin: 12px auto 25px;
+  max-width: 600px;
+  padding: 10px 17px;
+  background: #e9d7ed;
+  border: 1px dashed #bf9ecc;
+  border-radius: 4px;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+}
+:root .notebook-toolbar .quiet-button {
+  font: 18px var(--font-hand);
+}
+@media (max-width: 1100px) {
+  :root .home-opening {
+    gap: 30px;
+  }
+  :root .home-collage .maomao-buddy {
+    left: -18px;
+    bottom: 36px;
+  }
+  :root .home-collage__music {
+    margin-left: 78px;
+  }
+  :root .identity-collection .maomao-buddy {
+    right: -23px;
+  }
+  :root .world-mast__actions {
+    gap: 5px;
+  }
+  :root .world-bookmarks {
+    gap: 17px;
+  }
+}
+@media (max-width: 800px) {
+  :root .identity-collection .maomao-buddy {
+    bottom: -20px;
+    right: -25px;
+  }
+  :root .identity-collection .maomao-buddy .buddy-bubble {
+    width: 145px;
+    font-size: 18px;
+  }
+  :root .identity-music {
+    width: 90%;
+    margin-left: -15px;
+  }
+  :root .home-welcome__line {
+    font-size: 34px;
+  }
+  :root .world-bookmarks {
+    gap: 14px;
+  }
+  :root .world-mast {
+    padding-inline: 25px;
+  }
+  :root .world-mast__actions .motion-toggle > span:last-child {
+    display: none;
+  }
+}
+@media (max-width: 720px) {
+  :root .world-mast {
+    height: 70px;
+    padding-inline: 19px;
+  }
+  :root .world-mobile-menu {
+    top: 70px;
+  }
+  :root .world-mast__actions {
+    gap: 0;
+  }
+  :root .world-mast .tiny-wordmark {
+    font-size: 32px;
+  }
+  :root .world-letter-link {
+    margin-right: 1px;
+  }
+  :root .world-content {
+    padding-top: 22px;
+  }
+  :root .home-dateline {
+    font-size: 8px;
+    gap: 8px;
+  }
+  :root .home-section-index > span {
+    font-size: 8px;
+  }
+  :root .home-welcome > .handwritten {
+    font-size: 35px;
+  }
+  :root .home-welcome h1 {
+    font-size: 121px;
+    width: max-content;
+  }
+  :root .home-welcome h1 > span {
+    font-size: 37px;
+    right: -33px;
+  }
+  :root .home-welcome__line {
+    font-size: 34px;
+    max-width: 350px;
+  }
+  :root .home-welcome__description {
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  :root .home-welcome__links {
+    gap: 18px;
+    margin-block: 8px 17px;
+  }
+  :root .home-welcome__links .text-link {
+    font-size: 12px;
+  }
+  :root .home-gift-link {
+    font-size: 11px;
+  }
+  :root .home-opening {
+    gap: 0;
+  }
+  :root .birthday-stamps {
+    margin-block: 12px 18px;
+    gap: 8px;
+  }
+  :root .birthday-stamps > span {
+    font-size: 9px;
+    padding: 6px 8px;
+  }
+  :root .home-collage {
+    margin-top: 9px;
+    padding-inline: 5px;
+  }
+  :root .home-portrait {
+    margin-left: 15px;
+    margin-right: 6px;
+    rotate: 3deg;
+  }
+  :root .home-portrait .portrait-frame__mat {
+    aspect-ratio: 1.12;
+  }
+  :root .home-portrait .handwritten {
+    font-size: 22px;
+  }
+  :root .home-collage__bow {
+    width: 82px;
+    height: 62px;
+    top: -4px;
+    left: 40%;
+  }
+  :root .home-collage .maomao-buddy {
+    left: -9px;
+    bottom: 29px;
+  }
+  :root .home-collage .maomao-buddy .buddy-bubble {
+    width: 144px;
+    font-size: 18px;
+  }
+  :root .home-collage__music {
+    margin: 24px 2px 0 62px;
+    rotate: -3deg;
+  }
+  :root .home-collage__music .music-object {
+    padding: 17px 13px;
+    gap: 6px;
+  }
+  :root .home-collage__music .music-object__sleeve {
+    width: 55px;
+    flex-basis: 55px;
+    height: 69px;
+  }
+  :root .home-collage__music .music-object__sleeve > img {
+    width: 49px;
+    height: 69px;
+    border-width: 3px;
+  }
+  :root .home-collage__music .music-object__disc {
+    width: 58px;
+    height: 58px;
+    right: -12px;
+    top: 5px;
+  }
+  :root .home-collage__music .music-object__copy {
+    padding-left: 8px;
+  }
+  :root .home-collage__music .music-object__copy > .micro-label {
+    font-size: 6px;
+  }
+  :root .home-collage__music .music-object__copy strong {
+    font-size: 27px;
+  }
+  :root .home-collage__music .music-object__copy small {
+    font-size: 9px;
+  }
+  :root .home-collage__music .music-object__listen {
+    font-size: 9px;
+  }
+  :root .home-surprise {
+    font-size: 21px;
+    margin-top: 28px;
+  }
+  :root .home-discovery {
+    margin-top: 27px;
+  }
+  :root .home-discovery .note-slip p {
+    font-size: 24px;
+  }
+  :root .home-section-index {
+    margin-top: 7px;
+  }
+  :root .editorial-section {
+    padding-block: 42px;
+  }
+  :root .section-heading h1,
+  :root .section-heading h2 {
+    font-size: 42px;
+  }
+  :root .lookbook-photo__caption strong {
+    font-size: 26px;
+  }
+  :root .lookbook-foot .handwritten {
+    font-size: 26px;
+  }
+  :root .record-sleeve > strong {
+    font-size: 22px;
+  }
+  :root .record-sleeve > small {
+    font-size: 10px;
+  }
+  :root .public-mast__actions {
+    gap: 10px;
+  }
+  :root .public-mast {
+    padding-inline: 22px;
+  }
+  :root .public-mast .tiny-wordmark {
+    font-size: 32px;
+  }
+  :root .identity-scene {
+    margin-top: 29px;
+  }
+  :root .identity-paper {
+    padding-top: 20px;
+  }
+  :root .identity-paper__bow {
+    width: 65px;
+    left: calc(50% - 32px);
+    top: -29px;
+  }
+  :root .identity-hello {
+    font-size: 27px;
+    margin-top: 10px;
+  }
+  :root .identity-name {
+    font-size: 105px;
+  }
+  :root .identity-collection {
+    margin-top: 24px;
+    margin-bottom: 23px;
+  }
+  :root .identity-portrait .portrait-frame__mat {
+    aspect-ratio: 1.25;
+  }
+  :root .identity-portrait .handwritten {
+    font-size: 23px;
+  }
+  :root .identity-collection .maomao-buddy {
+    bottom: -15px;
+    right: -17px;
+  }
+  :root .identity-collection .maomao-buddy .buddy-bubble {
+    display: none;
+  }
+  :root .identity-collection .maomao-buddy .buddy-name {
+    display: none;
+  }
+  :root .identity-collection .maomao-buddy .mascot {
+    width: 100px !important;
+  }
+  :root .identity-music {
+    width: 90%;
+    margin-left: -10px;
+    margin-top: 18px;
+  }
+  :root .identity-music .music-object {
+    padding: 16px 15px;
+    gap: 9px;
+  }
+  :root .identity-music .music-object__copy strong {
+    font-size: 29px;
+  }
+  :root .identity-music .music-object__copy small {
+    font-size: 9px;
+  }
+  :root .identity-music .music-object__listen {
+    font-size: 9px;
+  }
+  :root .identity-music .music-object__sleeve {
+    flex-basis: 65px;
+    width: 65px;
+    height: 73px;
+  }
+  :root .identity-music .music-object__sleeve > img {
+    height: 73px;
+    width: 58px;
+  }
+  :root .identity-music .music-object__disc {
+    height: 62px;
+    width: 62px;
+    right: -11px;
+  }
+  :root .identity-music .micro-label {
+    font-size: 6px;
+  }
+  :root .public-footer {
+    font-size: 9px;
+  }
+  :root .birthday-gift h2 {
+    font-size: 44px !important;
+  }
+  :root .studio .studio__title {
+    font-size: 44px;
+  }
+  :root .notebook-toolbar {
+    font-size: 9px;
+  }
+  :root .sketchbook-spread::before {
+    display: none;
+  }
+}
+@media (max-width: 360px) {
+  :root .world-mast {
+    padding-inline: 14px;
+  }
+  :root .world-mast__actions .motion-toggle {
+    min-width: 32px;
+  }
+  :root .home-welcome h1 {
+    font-size: 104px;
+  }
+  :root .home-collage__music .music-object__copy strong {
+    font-size: 22px;
+  }
+  :root .birthday-stamps > span {
+    font-size: 8px;
+  }
+  :root .section-heading h1,
+  :root .section-heading h2 {
+    font-size: 36px;
+  }
+  :root .public-mast__actions .quiet-button {
+    font-size: 11px;
+  }
+  :root .public-mast__actions {
+    gap: 5px;
+  }
+  :root .identity-paper {
+    padding-inline: 21px;
+  }
+  :root .identity-name {
+    font-size: 91px;
+  }
+  :root .identity-door {
+    font-size: 11px;
+    padding-inline: 10px;
+  }
+}
+
+/* Final details stay stable when route styles load lazily. */
+:root .world-bookmarks a {
+  font: 21px var(--font-hand);
+}
+:root .home-discovery .birthday-love-note p {
+  font: 25px/1.15 var(--font-hand);
+  max-width: 380px;
+  color: #87618f;
+}
+:root .birthday-love-note > .handwritten {
+  font-size: 22px;
+  color: #a27399;
+  display: block;
+  margin-top: 9px;
+}
+:root .celebration-portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+:root .personal-home > .birthday-gift {
+  margin: 24px 0 43px;
+  background: #efdeec9e;
+  border: 1px dashed #c7a6cf;
+  border-radius: 5px;
+}
+:root .doodle-tools > div > button {
+  width: 44px;
+}
+:root .buddy-name {
+  max-width: 125px;
+  font-size: 8px;
+  line-height: 1.6;
+}
+@media (max-width: 950px) {
+  :root .world-bookmarks {
+    gap: 15px;
+  }
+  :root .world-bookmarks a {
+    font-size: 19px;
+  }
+}
+@media (max-width: 720px) {
+  :root .home-discovery .birthday-love-note p {
+    font-size: 24px;
+  }
+  :root .birthday-love-note > .handwritten {
+    font-size: 21px;
+  }
+  :root .personal-home > .birthday-gift {
+    margin: 24px 0 40px;
+  }
+  :root .doodle-tools > div > button {
+    width: 39px;
+  }
+}
+
+:root .birthday-ribbon {
+  font-family: var(--font-hand);
+  font-size: 20px;
+  letter-spacing: 0.01em;
+}
+:root .identity-mobile-portrait {
+  display: none;
+}
+:root .play-desk {
+  grid-template-columns: 1fr 1.12fr;
+}
+:root .mini-sketchbook {
+  rotate: 0;
+}
+:root .mini-sketchbook::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #fffaf6;
+  border: 1px solid #ddc9d8;
+  rotate: 1.2deg;
+  pointer-events: none;
+}
+@media (max-width: 720px) {
+  :root .play-desk {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :root .section-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  :root .section-heading h1,
+  :root .section-heading h2 {
+    max-width: 100%;
+    font-size: 41px;
+  }
+  :root .section-heading > div {
+    width: 100%;
+  }
+  :root .section-heading > .text-link {
+    align-self: flex-end;
+    margin-top: -4px;
+    min-height: 36px;
+  }
+  :root .section-heading > div > p:last-child:not(.micro-label) {
+    font-size: 13px;
+    line-height: 1.8;
+    max-width: 320px;
+  }
+  :root .play-desk__heading h2 {
+    font-size: 35px;
+    text-wrap: initial;
+  }
+  :root .play-desk__heading .pixel-label {
+    font-size: 8px;
+    letter-spacing: 0.02em;
+  }
+  :root .play-desk__heading p {
+    font-size: 19px;
+    max-width: 85px;
+  }
+  :root .identity-paper {
+    padding-bottom: 26px;
+  }
+  :root .identity-mobile-portrait {
+    display: block;
+    position: relative;
+    background: #fffaf6;
+    border: 4px double #c9a8d3;
+    border-radius: 43% 43% 2px 2px / 26% 26% 2px 2px;
+    padding: 7px;
+    margin: 20px 0 22px;
+    rotate: 2deg;
+  }
+  :root .identity-mobile-portrait > img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1.13;
+    object-fit: cover;
+    object-position: center 32%;
+    border-radius: 42% 42% 0 0 / 26% 26% 0 0;
+    display: block;
+  }
+  :root .identity-mobile-portrait > .ribbon-bow {
+    position: absolute;
+    width: 58px;
+    top: -28px;
+    left: calc(50% - 29px);
+  }
+  :root .identity-mobile-portrait > figcaption {
+    font: 21px/1.1 var(--font-hand);
+    color: #97679a;
+    padding: 8px 0 4px;
+  }
+  :root .identity-paper > .identity-paper__bow {
+    display: none;
+  }
+  :root .identity-collection .identity-portrait,
+  :root .identity-collection > .identity-star,
+  :root .identity-side-note {
+    display: none;
+  }
+  :root .identity-collection {
+    margin-top: 6px;
+    margin-bottom: 12px;
+  }
+  :root .identity-paper__top {
+    margin-bottom: 7px;
+  }
+  :root .identity-paper__top .micro-label {
+    font-size: 8px;
+  }
+  :root .identity-hello {
+    margin-top: 5px;
+    font-size: 29px;
+  }
+  :root .identity-name {
+    font-size: 98px;
+  }
+  :root .identity-bio {
+    font-size: 13px;
+  }
+  :root .identity-dedication {
+    font-size: 24px;
+  }
+  :root .birthday-ribbon {
+    font-size: 18px;
+  }
+}
+@media (max-width: 650px) {
+  :root .home-dateline {
+    margin-bottom: 15px;
+  }
+  :root .home-welcome > .handwritten {
+    order: 0;
+    text-align: center;
+    font-size: 31px;
+    margin: 0 0 0;
+  }
+  :root .home-welcome h1 {
+    order: 0;
+    font-size: 109px;
+    margin: 0 auto 7px;
+  }
+  :root .home-welcome h1 > span {
+    font-size: 29px;
+    right: -30px;
+    top: 12px;
+  }
+  :root .home-collage {
+    order: 1;
+    margin-top: 9px;
+    margin-bottom: 25px;
+  }
+  :root .home-welcome__line {
+    order: 2;
+    font-size: 36px;
+    text-align: center;
+    max-width: none;
+  }
+  :root .home-welcome__description {
+    order: 3;
+    text-align: center;
+    font-size: 13px;
+    max-width: 340px;
+    margin: 13px auto 0;
+  }
+  :root .birthday-stamps {
+    order: 4;
+    justify-content: center;
+    margin-block: 16px 9px;
+  }
+  :root .home-welcome__links {
+    order: 5;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+  :root .home-discovery {
+    order: 6;
+    margin-top: 17px;
+  }
+  :root .home-section-index a {
+    font-size: 20px;
+    min-height: 44px;
+  }
+  :root .home-portrait .portrait-frame__mat {
+    aspect-ratio: 1.17;
+  }
+  :root .home-portrait {
+    margin-inline: 12px 10px;
+  }
+  :root .home-portrait .handwritten {
+    font-size: 22px;
+  }
+  :root .home-collage__music {
+    margin-top: 17px;
+  }
+  :root .home-surprise {
+    margin-top: 20px;
+  }
+  :root .home-discovery .birthday-love-note {
+    padding: 17px 20px;
+  }
+  :root .doodle-tools > div > button {
+    width: 44px;
+  }
+  :root .doodle-tools .quiet-button {
+    font-size: 11px;
+  }
+}
+@media (max-width: 360px) {
+  :root .home-welcome h1 {
+    font-size: 98px;
+  }
+  :root .home-welcome__line {
+    font-size: 32px;
+  }
+  :root .home-portrait .handwritten {
+    font-size: 20px;
+  }
+  :root .doodle-tools > div > button {
+    width: 37px;
+  }
+  :root .section-heading h1,
+  :root .section-heading h2 {
+    font-size: 36px;
+  }
+  :root .identity-name {
+    font-size: 89px;
+  }
+}
+@media (max-width: 720px) {
+  :root .doodle-tools {
+    flex-wrap: wrap;
+  }
+  :root .doodle-tools > div > button {
+    width: 44px;
+    height: 44px;
+  }
+  :root .doodle-tools > .quiet-button {
+    margin-left: auto;
+  }
+  :root .lore-pagination button {
+    width: 44px;
+    height: 44px;
+  }
+  :root .lore-carousel__bottom > small {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
+:root .home-collage__star,
+:root .identity-star {
+  animation: charm-glint 5.5s ease-in-out infinite;
+}
+:root .home-portrait figcaption > span:last-child {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+@media (max-width: 650px) {
+  :root .home-collage {
+    padding-bottom: 12px;
+  }
+  :root .home-collage .maomao-buddy {
+    bottom: -2px;
+  }
+  :root .lore-note > p {
+    font-size: 14px;
+  }
+}

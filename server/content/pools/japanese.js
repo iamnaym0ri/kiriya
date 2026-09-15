@@ -1,0 +1,37 @@
+// PRIVATE pool. A Japanese word a day, picked from her interests. English first; a light Chinese
+// (simplified) note appears only where it's genuinely useful, especially kanji "false friends".
+
+export const japaneseWords = [
+  { id: "jp-kusuri", word: "薬", kana: "くすり", romaji: "kusuri", meaning: "medicine", note: "薬屋 (kusuriya) is an apothecary, as in 薬屋のひとりごと, The Apothecary Diaries.", zh: "药" },
+  { id: "jp-doku", word: "毒", kana: "どく", romaji: "doku", meaning: "poison", note: "Maomao's favourite word, probably.", zh: "毒" },
+  { id: "jp-neko", word: "猫", kana: "ねこ", romaji: "neko", meaning: "cat", note: "The same character as the 猫 in Maomao, 猫猫.", zh: "猫" },
+  { id: "jp-nekojita", word: "猫舌", kana: "ねこじた", romaji: "nekojita", meaning: "“cat tongue”: someone who can't handle hot food or drinks", note: null, zh: null },
+  { id: "jp-uta", word: "歌", kana: "うた", romaji: "uta", meaning: "song", note: "歌う (utau) means to sing.", zh: "歌" },
+  { id: "jp-odoru", word: "踊る", kana: "おどる", romaji: "odoru", meaning: "to dance", note: "踊ってみた (odottemita), “I tried dancing it,” is the name for dance covers online.", zh: null },
+  { id: "jp-e", word: "絵", kana: "え", romaji: "e", meaning: "a picture or drawing", note: "絵を描く (e o kaku) means to draw a picture.", zh: "画" },
+  { id: "jp-isho", word: "衣装", kana: "いしょう", romaji: "ishō", meaning: "costume", note: "Cosplay itself is コスプレ (kosupure).", zh: null },
+  { id: "jp-katsura", word: "鬘", kana: "かつら", romaji: "katsura", meaning: "wig", note: "In cosplay circles people usually say ウィッグ (uiggu).", zh: null },
+  { id: "jp-tanjobi", word: "誕生日", kana: "たんじょうび", romaji: "tanjōbi", meaning: "birthday", note: "お誕生日おめでとう (o-tanjōbi omedetō) is “happy birthday.”", zh: null },
+  { id: "jp-kawaii", word: "可愛い", kana: "かわいい", romaji: "kawaii", meaning: "cute", note: "Almost the same characters as 可爱 in Chinese.", zh: "可爱" },
+  { id: "jp-mirai", word: "未来", kana: "みらい", romaji: "mirai", meaning: "future", note: "Written exactly like the Chinese word. Magical Mirai means “Magical Future.”", zh: "未来" },
+  { id: "jp-hatsune", word: "初音", kana: "はつね", romaji: "hatsune", meaning: "first sound", note: "初 (first) + 音 (sound): Hatsune Miku's family name.", zh: null },
+  { id: "jp-kagami", word: "鏡", kana: "かがみ", romaji: "kagami", meaning: "mirror", note: "Kagamine is written 鏡音: mirror + sound.", zh: "镜" },
+  { id: "jp-sakura", word: "桜", kana: "さくら", romaji: "sakura", meaning: "cherry blossom", note: "千本桜 (Senbonzakura) is “a thousand cherry trees.”", zh: "樱" },
+  { id: "jp-hoshi", word: "星", kana: "ほし", romaji: "hoshi", meaning: "star", note: null, zh: "星" },
+  { id: "jp-yume", word: "夢", kana: "ゆめ", romaji: "yume", meaning: "dream", note: null, zh: "梦" },
+  { id: "jp-nigai", word: "苦い", kana: "にがい", romaji: "nigai", meaning: "bitter", note: "Good medicine is bitter, according to the proverb 良薬は口に苦し.", zh: null },
+  { id: "jp-amai", word: "甘い", kana: "あまい", romaji: "amai", meaning: "sweet", note: null, zh: null },
+  { id: "jp-ganbatte", word: "頑張って", kana: "がんばって", romaji: "ganbatte", meaning: "you can do it! / hang in there", note: null, zh: null },
+  { id: "jp-ichigo", word: "一期一会", kana: "いちごいちえ", romaji: "ichigo ichie", meaning: "a once-in-a-lifetime meeting; treasure this moment", note: null, zh: null },
+  // Kanji false friends: same characters, different meaning in Chinese.
+  { id: "ff-tegami", word: "手紙", kana: "てがみ", romaji: "tegami", meaning: "a letter", falseFriend: true, note: "Careful: 手纸 in Chinese is toilet paper.", zh: "手纸" },
+  { id: "ff-benkyo", word: "勉強", kana: "べんきょう", romaji: "benkyō", meaning: "studying", falseFriend: true, note: "In Chinese 勉强 means doing something reluctantly. Accurate for some study sessions.", zh: "勉强" },
+  { id: "ff-daijobu", word: "大丈夫", kana: "だいじょうぶ", romaji: "daijōbu", meaning: "it's okay / I'm fine", falseFriend: true, note: "In Chinese 大丈夫 means a “real man.”", zh: "大丈夫" },
+  { id: "ff-hashiru", word: "走る", kana: "はしる", romaji: "hashiru", meaning: "to run", falseFriend: true, note: "In Chinese 走 is to walk. In Japanese it's running.", zh: "走" },
+  { id: "ff-kisha", word: "汽車", kana: "きしゃ", romaji: "kisha", meaning: "a (steam) train", falseFriend: true, note: "汽车 in Chinese is a car.", zh: "汽车" },
+  { id: "ff-musume", word: "娘", kana: "むすめ", romaji: "musume", meaning: "daughter", falseFriend: true, note: "In Chinese 娘 can mean mum. Generations flipped.", zh: "娘" },
+  { id: "ff-hiniku", word: "皮肉", kana: "ひにく", romaji: "hiniku", meaning: "sarcasm, irony", falseFriend: true, note: "In Chinese 皮肉 is skin and flesh. In Japanese it's your sass.", zh: "皮肉" },
+  { id: "ff-shinbun", word: "新聞", kana: "しんぶん", romaji: "shinbun", meaning: "newspaper", falseFriend: true, note: "新闻 in Chinese is the news itself.", zh: "新闻" },
+  { id: "ff-yu", word: "湯", kana: "ゆ", romaji: "yu", meaning: "hot water (for baths)", falseFriend: true, note: "汤 in Chinese is soup. Don't drink the onsen.", zh: "汤" },
+  { id: "ff-shitsumon", word: "質問", kana: "しつもん", romaji: "shitsumon", meaning: "a question", falseFriend: true, note: "质问 in Chinese is an interrogation.", zh: "质问" },
+];

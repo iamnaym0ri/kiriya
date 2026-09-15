@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "Phone first: full birthday portrait is visible in the opening; public profile, silent music entrance and reduced-motion controls work.",
+    "Both five-slide collections require authentication, have source links and use local pictures; invalid collection names are rejected.",
+    "Native touch drawing, undo, square PNG save and private gallery persistence work. Unfinished full pages and the home doodle survive private navigation; starting over confirms unsaved ink.",
+    "The colour game handles a miss, all three matches, its birthday reward and a working palette handoff to the sketchbook using keyboard controls.",
+    "Maomao picture/lore pagination and enlarged viewing work; Miku’s song story opens the correct single player on explicit play.",
+    "A supplied owner portrait becomes the main public and private birthday image; this was verified with an isolated fixture, without replacing real profile data.",
+    "Cursor sparkles render and expire; Maomao reacts to touch/click. Slides rotate in view, pause on hover, stop on keyboard focus, restart explicitly and stop offscreen. The global pause persists and keeps slides visible after navigation.",
+    "No uncaught application errors in the phone or motion checks."
+  ],
+  "errors": []
+}

@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "/ fits 320 × 760, with actual content mounted.",
+    "/world fits 320 × 760, with actual content mounted.",
+    "/ fits 390 × 844, with actual content mounted.",
+    "/world fits 390 × 844, with actual content mounted.",
+    "/ fits 430 × 932, with actual content mounted.",
+    "/world fits 430 × 932, with actual content mounted.",
+    "/ fits 700 × 1000, with actual content mounted.",
+    "/world fits 700 × 1000, with actual content mounted.",
+    "/ fits 820 × 1180, with actual content mounted.",
+    "/world fits 820 × 1180, with actual content mounted.",
+    "/ fits 1440 × 1000, with actual content mounted.",
+    "/world fits 1440 × 1000, with actual content mounted."
+  ],
+  "errors": []
+}

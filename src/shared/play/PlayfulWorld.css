@@ -1,0 +1,230 @@
+:root {
+  --font-hand: "Gaegu", cursive;
+  --font-pixel: "DotGothic16", monospace;
+}
+.cursor-sparkles {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 150;
+}
+.ambient-charms {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.ambient-charms > span {
+  position: absolute;
+  left: calc(3% + var(--i) * 15.5%);
+  top: -45px;
+  color: #a481b0;
+  font: 24px Georgia;
+  opacity: 0;
+  animation: charm-drift calc(22s + var(--i) * 2s) linear infinite;
+  animation-delay: calc(var(--i) * -5s);
+}
+@keyframes charm-drift {
+  0% {
+    transform: translate(0, -20px) rotate(-20deg);
+    opacity: 0;
+  }
+  12%,
+  75% {
+    opacity: 0.34;
+  }
+  100% {
+    transform: translate(45px, 105vh) rotate(70deg);
+    opacity: 0;
+  }
+}
+.motion-toggle {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 11px;
+  color: #795589;
+}
+.motion-toggle > span:first-child {
+  font: 24px Georgia;
+  animation: charm-glint 3s ease-in-out infinite;
+}
+.motion-toggle:disabled {
+  opacity: 0.6;
+}
+@keyframes charm-glint {
+  0%,
+  100% {
+    transform: scale(0.8) rotate(-12deg);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.1) rotate(12deg);
+    opacity: 1;
+  }
+}
+.birthday-ribbon {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  background: #735180;
+  color: #fff7fb;
+  border-block: 1px dashed #e2c1db;
+  outline: 3px solid #735180;
+  margin: 3px 0;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-pixel);
+  font-size: 11px;
+}
+.birthday-ribbon__track {
+  display: flex;
+  width: max-content;
+  animation: ribbon-travel 42s linear infinite;
+}
+.birthday-ribbon__track > span {
+  display: flex;
+  flex-shrink: 0;
+}
+.birthday-ribbon__track > span > span {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  white-space: nowrap;
+  padding-right: 22px;
+}
+.birthday-ribbon b {
+  color: #debada;
+  font-weight: 400;
+}
+@keyframes ribbon-travel {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.ribbon-bow {
+  width: 76px;
+  height: 58px;
+  filter: drop-shadow(0 3px 1px #49365313);
+  transform-origin: 50% 40%;
+  animation: bow-sway 5s ease-in-out infinite;
+}
+@keyframes bow-sway {
+  0%,
+  100% {
+    transform: rotate(-7deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+.maomao-buddy {
+  position: relative;
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  isolation: isolate;
+}
+.maomao-buddy .mascot {
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+.maomao-buddy .mascot:hover {
+  filter: drop-shadow(0 0 8px #fff9fd);
+}
+.maomao-buddy .mascot__svg {
+  filter: drop-shadow(3px 0 0 white) drop-shadow(-3px 0 0 white)
+    drop-shadow(0 3px 0 white) drop-shadow(0 -3px 0 white)
+    drop-shadow(0 5px 6px #49365322);
+}
+.mascot__gaze {
+  transform: translate(var(--gaze-x, 0px), var(--gaze-y, 0px));
+  transition: transform 0.14s ease-out;
+}
+.buddy-bubble {
+  position: relative;
+  background: #fffafb;
+  padding: 12px 15px;
+  border: 1px solid #c49ebb;
+  border-radius: 18px 18px 18px 3px;
+  font: 22px/1.03 var(--font-hand);
+  text-align: center;
+  width: 210px;
+  margin-bottom: 8px;
+  box-shadow: 3px 3px 0 #d2b9d45c;
+}
+.buddy-bubble::after {
+  content: "";
+  position: absolute;
+  height: 12px;
+  width: 12px;
+  background: inherit;
+  border-bottom: 1px solid #c49ebb;
+  border-right: 1px solid #c49ebb;
+  bottom: -7px;
+  left: 52%;
+  rotate: 45deg;
+}
+.buddy-name {
+  display: block;
+  font: 9px var(--font-pixel);
+  color: #785c85;
+  text-align: center;
+  margin-top: 3px;
+}
+.maomao-buddy--compact {
+  width: 140px;
+}
+.maomao-buddy--compact .buddy-bubble {
+  width: 175px;
+  font-size: 19px;
+  padding: 10px;
+}
+.lilac-scene main,
+.world-footer,
+.public-footer {
+  position: relative;
+  z-index: 1;
+}
+[data-in-view="no"] *,
+[data-in-view="no"]::before,
+[data-in-view="no"]::after {
+  animation-play-state: paused !important;
+}
+html[data-little-motion="off"] *,
+html[data-little-motion="off"] *::before,
+html[data-little-motion="off"] *::after {
+  animation: none !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+html[data-little-motion="off"] .ambient-charms {
+  display: none;
+}
+html[data-little-motion="off"] .birthday-ribbon__track {
+  transform: none;
+}
+@media (max-width: 650px) {
+  .motion-toggle {
+    font-size: 10px;
+    gap: 2px;
+  }
+  .motion-toggle > span:first-child {
+    font-size: 20px;
+  }
+  .birthday-ribbon {
+    height: 30px;
+    font-size: 10px;
+  }
+  .ambient-charms > span {
+    font-size: 18px;
+  }
+}

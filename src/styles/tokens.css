@@ -1,0 +1,160 @@
+/*
+  Kiriya's palette: purple leads, pink co-leads, black and white as accents, purple-tinted neutrals
+  to balance. Each ramp is 11 perceptual (OKLCH) steps, so any two shades of the same colour sit
+  well together. Contrast on white: 600 ≈ 6:1, 700 ≈ 8:1, so body text uses 700+ and 500 is decoration.
+*/
+:root {
+  --purple-50: #f8f5ff;
+  --purple-100: #f1e8ff;
+  --purple-200: #e3d4ff;
+  --purple-300: #cfb4ff;
+  --purple-400: #b589ff;
+  --purple-500: #995cf7;
+  --purple-600: #7e39df;
+  --purple-700: #632bb5;
+  --purple-800: #491e8c;
+  --purple-900: #301262;
+  --purple-950: #19083a;
+
+  --pink-50: #fff3f8;
+  --pink-100: #ffe5ef;
+  --pink-200: #ffcce0;
+  --pink-300: #ffa4c9;
+  --pink-400: #f96cab;
+  --pink-500: #e52f8c;
+  --pink-600: #c2006f;
+  --pink-700: #9c0057;
+  --pink-800: #770040;
+  --pink-900: #52002a;
+  --pink-950: #300015;
+
+  --mist-50: #f8f5fb;
+  --mist-100: #eeebf2;
+  --mist-200: #dedae3;
+  --mist-300: #c6c2cd;
+  --mist-400: #a8a1b0;
+  --mist-500: #8a8294;
+  --mist-600: #6f6879;
+  --mist-700: #585261;
+  --mist-800: #423d49;
+  --mist-900: #2c2831;
+  --mist-950: #17151a;
+
+  --white: #fff;
+  --black: #000;
+
+  /* ---------- roles ---------- */
+  --page: var(--purple-50);
+  --surface: var(--white);
+  --surface-tint: var(--purple-100);
+  --surface-blush: var(--pink-50);
+  --surface-night: var(--purple-950);
+  --text: var(--purple-950);
+  --text-soft: #5c4f70;
+  --text-faint: var(--mist-500);
+  --text-on-night: var(--purple-50);
+  --line: var(--purple-100);
+  --line-strong: var(--purple-200);
+
+  --lead: var(--purple-600);
+  --lead-deep: var(--purple-800);
+  --lead-soft: var(--purple-200);
+  --colead: var(--pink-500);
+  --colead-deep: var(--pink-700);
+  --colead-soft: var(--pink-200);
+
+  /* Gradients are used on purpose, not as wallpaper: the wordmark, primary buttons, progress. */
+  --grad-signature: linear-gradient(120deg, var(--purple-600) 0%, var(--purple-500) 38%, var(--pink-500) 100%);
+  --grad-dawn: linear-gradient(160deg, var(--pink-100) 0%, var(--purple-100) 55%, var(--purple-200) 100%);
+  --grad-night: linear-gradient(160deg, var(--purple-900) 0%, var(--purple-950) 60%, #12051f 100%);
+
+  /* ---------- depth: shadows are tinted purple, never grey ---------- */
+  --shadow-1: 0 1px 2px rgb(25 8 58 / 0.06), 0 3px 10px -3px rgb(99 43 181 / 0.12);
+  --shadow-2: 0 2px 4px rgb(25 8 58 / 0.05), 0 14px 32px -10px rgb(99 43 181 / 0.24);
+  --shadow-3: 0 6px 12px rgb(25 8 58 / 0.06), 0 30px 64px -18px rgb(99 43 181 / 0.36);
+  --shadow-pink: 0 12px 30px -12px rgb(229 47 140 / 0.5);
+
+  /* ---------- shape ---------- */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 34px;
+  --r-pill: 999px;
+
+  /* ---------- type ---------- */
+  --font-ui: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Arial Rounded MT Bold", system-ui, sans-serif;
+  --font-mark: "Jacquard 24", "Old English Text MT", serif;
+  --font-pixel: "DotGothic16", ui-monospace, monospace;
+
+  --t-xs: 0.75rem;
+  --t-sm: 0.875rem;
+  --t-md: 1rem;
+  --t-lg: 1.1875rem;
+  --t-xl: 1.4375rem;
+  --t-2xl: 1.8125rem;
+  --t-3xl: 2.3125rem;
+  --t-4xl: 3rem;
+
+  /* ---------- space (4px grid) ---------- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+
+  /* ---------- motion ---------- */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-1: 140ms;
+  --dur-2: 240ms;
+  --dur-3: 420ms;
+}
+
+/*
+  Daily mood only re-balances her own palette. The keys are colour names on purpose; what each one
+  means is decided on the server and never written into this file.
+*/
+:root[data-mood="rose"] {
+  --lead: var(--pink-600);
+  --lead-deep: var(--pink-800);
+  --lead-soft: var(--pink-200);
+  --colead: var(--purple-500);
+  --colead-deep: var(--purple-700);
+  --colead-soft: var(--purple-200);
+  --page: var(--pink-50);
+  --surface-tint: var(--pink-100);
+  --line: var(--pink-100);
+  --line-strong: var(--pink-200);
+  --grad-signature: linear-gradient(120deg, var(--pink-600) 0%, var(--pink-500) 45%, var(--purple-500) 100%);
+}
+
+:root[data-mood="iris"] {
+  --grad-signature: linear-gradient(120deg, var(--purple-700) 0%, var(--pink-500) 50%, var(--purple-500) 100%);
+}
+
+:root[data-mood="night"] {
+  --lead: var(--purple-700);
+  --lead-deep: var(--purple-900);
+  --colead: var(--pink-600);
+  --page: #f3f0f8;
+  --surface-tint: var(--mist-100);
+  --line: var(--mist-100);
+  --line-strong: var(--mist-200);
+  --grad-signature: linear-gradient(120deg, var(--purple-950) 0%, var(--purple-700) 60%, var(--pink-600) 100%);
+}
+
+:root[data-mood="cloud"] {
+  --lead: var(--purple-700);
+  --colead: var(--purple-400);
+  --colead-deep: var(--purple-600);
+  --colead-soft: var(--mist-200);
+  --page: var(--mist-50);
+  --surface-tint: var(--mist-100);
+  --grad-signature: linear-gradient(120deg, var(--mist-800) 0%, var(--purple-600) 70%, var(--purple-400) 100%);
+}

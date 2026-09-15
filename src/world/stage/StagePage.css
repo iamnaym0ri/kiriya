@@ -1,0 +1,70 @@
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-5);
+}
+
+.stage__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-2);
+}
+
+.stage__title {
+  font-size: var(--t-2xl);
+}
+
+.stage__lead {
+  color: var(--text-soft);
+}
+
+.stage__section-title {
+  font-size: var(--t-xl);
+  padding-inline: var(--s-1);
+}
+
+.stage__specials {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.stage__specials li {
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--grad-signature);
+  color: var(--white);
+  font-size: var(--t-sm);
+  box-shadow: var(--shadow-pink);
+}
+
+.dancebreak {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--s-4);
+  align-items: center;
+  padding: var(--s-4) var(--s-5);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+.dancebreak__bpm {
+  display: grid;
+  justify-items: center;
+  font-size: var(--t-3xl);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--lead);
+}
+
+.dancebreak__bpm small {
+  font-size: var(--t-xs);
+  color: var(--text-faint);
+}
+
+.dancebreak__text {
+  font-size: var(--t-sm);
+  font-weight: 500;
+}

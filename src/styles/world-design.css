@@ -1,0 +1,743 @@
+:root {
+  --font-wordmark: var(--font-mark);
+  --ink: #493653;
+  --paper: #fff9fd;
+  --lilac: #f2ebf7;
+  --lavender: #d7c5e6;
+  --amethyst: #806298;
+  --muted-ink: #76647f;
+  --font-literary: Georgia, "Times New Roman", serif;
+  --page: #f2ebf7;
+  --text: #493653;
+  --text-muted: #76647f;
+  --lead: #806298;
+  --lead-deep: #493653;
+  --colead: #a46c94;
+  --surface: #fff9fd;
+  --surface-tint: #eae0f0;
+  --line: #ded0e5;
+  --line-strong: #c9b6d5;
+  --grad-signature: #70517f;
+  --grad-night: #302537;
+  --grad-dawn: #f2ebf7;
+  --shadow-1: 0 4px 20px #4936530a;
+  --shadow-pink: none;
+}
+html {
+  scroll-padding-top: 96px;
+}
+body {
+  font-size: 16px;
+}
+button,
+a {
+  touch-action: manipulation;
+}
+button:disabled {
+  cursor: default;
+}
+.lilac-scene {
+  position: relative;
+  isolation: isolate;
+  background: #ede3f3;
+}
+.lilac-scene::before {
+  content: "";
+  position: fixed;
+  z-index: -2;
+  inset: 0;
+  background: url("/images/branches.webp") center / cover no-repeat;
+  opacity: 0.64;
+  pointer-events: none;
+}
+.lilac-scene::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  background: #f2ebf75c;
+  pointer-events: none;
+}
+.handwritten {
+  font-family: var(--font-literary);
+  font-style: italic;
+  font-weight: 400;
+  color: #8b6c92;
+}
+.micro-label {
+  display: block;
+  font-size: 10px;
+  line-height: 1.6;
+  letter-spacing: 0.17em;
+  font-weight: 500;
+  color: inherit;
+}
+.quiet-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 12px;
+}
+.quiet-button:hover {
+  color: #9773a2;
+}
+.button-plum {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 13px 21px;
+  background: #493653;
+  color: #fff9fd;
+  border: 1px solid #493653;
+  border-radius: 4px;
+  font-size: 12px;
+  text-decoration: none;
+  transition:
+    background 0.18s,
+    transform 0.18s;
+}
+.button-plum:hover {
+  background: #684f73;
+  transform: translateY(-1px);
+}
+.button-paper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 12px 19px;
+  border: 1px solid #c9b6d5;
+  border-radius: 3px;
+  background: #fff9fd;
+  color: #493653;
+  font-size: 12px;
+  text-decoration: none;
+}
+.button-paper:hover {
+  background: #f2ebf7;
+}
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  color: #493653;
+  text-decoration: none;
+  border-bottom: 1px solid #bca3c9;
+  font-size: 12px;
+}
+.icon-button {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: inherit;
+}
+.icon-button:hover {
+  background: #80629815;
+}
+.portrait-frame {
+  position: relative;
+  background: #fffafc;
+  padding: 12px;
+  box-shadow: 0 10px 35px #4936531c;
+  border: 1px solid #fdf8ff;
+  min-width: 0;
+}
+.portrait-frame__mat {
+  overflow: hidden;
+}
+.portrait-frame img {
+  width: 100%;
+}
+.portrait-frame figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  padding: 14px 4px 3px;
+  color: #73607d;
+}
+.paper-tape {
+  position: absolute;
+  width: 90px;
+  height: 30px;
+  background: #d7c5e6b8;
+  top: -13px;
+  left: calc(50% - 45px);
+  rotate: -7deg;
+  border-inline: 1px dashed #bca7ca60;
+  pointer-events: none;
+}
+.music-object {
+  display: flex;
+  text-align: left;
+  align-items: center;
+  gap: 18px;
+  padding: 21px 22px;
+  width: 100%;
+  background: #302637;
+  color: #fff9fd;
+  border-radius: 4px;
+  box-shadow: 0 10px 28px #4936531c;
+  min-width: 0;
+}
+.music-object:hover {
+  background: #3d3045;
+}
+.music-object:disabled {
+  opacity: 0.7;
+}
+.music-object__sleeve {
+  width: 82px;
+  height: 90px;
+  position: relative;
+  flex: 0 0 82px;
+  z-index: 0;
+}
+.music-object__sleeve > img {
+  width: 70px;
+  height: 90px;
+  object-fit: contain;
+  background: #fff;
+  border: 4px solid #f2ebf7;
+  position: relative;
+  z-index: 2;
+}
+.music-object__disc {
+  width: 76px;
+  height: 76px;
+  position: absolute;
+  border-radius: 50%;
+  background: #c8c7d2;
+  right: -17px;
+  top: 7px;
+  box-shadow:
+    inset 0 0 0 1px #fff9,
+    inset 0 0 0 12px #aab0c044,
+    inset 0 0 0 13px #f6ebf8aa,
+    inset 0 0 0 24px #ddcad577;
+  display: grid;
+  place-items: center;
+}
+.music-object__disc span {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #302637;
+  border: 4px solid #eee3f3;
+}
+.music-object__copy {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding-left: 6px;
+}
+.music-object__copy > .micro-label {
+  font-size: 8px;
+  color: #c7b4d1;
+  letter-spacing: 0.14em;
+}
+.music-object__copy strong {
+  font-family: var(--font-literary);
+  font-size: 25px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+.music-object__copy small {
+  color: #d0bed7;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.music-object__listen {
+  margin-top: 4px;
+  font-size: 10px;
+  color: #e7d5ec;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.listening-room {
+  position: fixed;
+  z-index: 100;
+  right: 24px;
+  bottom: 24px;
+  width: 370px;
+  max-width: calc(100vw - 24px);
+  background: #fff9fd;
+  padding: 14px;
+  border: 1px solid #c9b6d5;
+  box-shadow: 0 15px 80px #221c2a40;
+  border-radius: 6px;
+}
+.listening-room > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.listening-room header > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.listening-room strong {
+  font-family: var(--font-literary);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+.listening-room small {
+  font-size: 11px;
+}
+.listening-room > a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  margin-top: 10px;
+}
+.listening-room .song-embed {
+  min-height: 200px;
+  border: 0;
+  width: 100%;
+}
+.world-dialog {
+  padding: 0;
+  background: transparent;
+  color: #493653;
+  border: 0;
+  max-width: min(800px, calc(100vw - 30px));
+  max-height: calc(100dvh - 40px);
+  width: 100%;
+  overflow: auto;
+  border-radius: 5px;
+}
+.world-dialog::backdrop {
+  background: #221c2a99;
+  backdrop-filter: blur(5px);
+}
+.world-dialog__inside {
+  background: #fff9fd;
+  padding: clamp(20px, 4vw, 36px);
+  min-width: 0;
+}
+.world-dialog__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.world-dialog__head h2 {
+  font-family: var(--font-literary);
+  font-weight: 400;
+  font-size: 30px;
+}
+.credits-dialog {
+  max-width: 640px;
+}
+.credits-dialog p {
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 12px 0;
+}
+.credits-dialog h3 {
+  margin-top: 25px;
+  font-size: 15px;
+}
+.gallery-dialog img {
+  max-height: 70dvh;
+  margin: auto;
+  object-fit: contain;
+}
+.gallery-dialog p {
+  font-size: 13px;
+  margin-top: 16px;
+}
+.gallery-dialog .gallery-dialog__actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
+  gap: 14px;
+}
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 22px;
+  margin-bottom: 32px;
+}
+.section-heading h1,
+.section-heading h2 {
+  font: 400 clamp(35px, 4.5vw, 54px) / 1.07 var(--font-literary);
+  letter-spacing: -0.045em;
+  color: #493653;
+}
+.section-heading h1 em,
+.section-heading h2 em {
+  color: #93749e;
+  font-weight: 400;
+}
+.section-heading .micro-label {
+  color: #806298;
+  margin-bottom: 15px;
+}
+.section-heading p:not(.micro-label) {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #77647f;
+  max-width: 470px;
+  margin-top: 14px;
+}
+.editorial-section {
+  padding: 68px 0;
+  border-top: 1px solid #bba3c766;
+  scroll-margin-top: 100px;
+}
+.note-slip {
+  background: #fff9fd;
+  padding: 25px 28px;
+  box-shadow: 0 5px 18px #49365308;
+  border: 1px solid #e1d3e8;
+}
+.note-slip .micro-label {
+  color: #93749e;
+  margin-bottom: 11px;
+}
+.note-slip p {
+  font-family: var(--font-literary);
+  font-size: 20px;
+  line-height: 1.55;
+  color: #5e4868;
+}
+.note-slip__source {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: #897193;
+}
+.note-slip__source a {
+  color: #77647f;
+}
+.note-slip__source button {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-copy {
+  font-size: 13px;
+  color: #806298;
+  margin: 16px 0;
+}
+.btn {
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: none;
+}
+.btn--small {
+  min-height: 44px;
+}
+.field {
+  border-radius: 4px;
+  font-size: 16px;
+  border-width: 1px;
+}
+@media (max-width: 650px) {
+  .lilac-scene::before {
+    background-size: auto 100svh;
+    background-position: 45% top;
+  }
+  .section-heading {
+    margin-bottom: 26px;
+    align-items: start;
+  }
+  .section-heading h1,
+  .section-heading h2 {
+    font-size: 37px;
+  }
+  .section-heading .text-link {
+    font-size: 10px;
+    white-space: nowrap;
+    gap: 5px;
+  }
+  .editorial-section {
+    padding: 42px 0;
+  }
+  .note-slip {
+    padding: 22px;
+  }
+  .note-slip p {
+    font-size: 18px;
+  }
+  .music-object {
+    padding: 18px;
+    gap: 15px;
+  }
+  .music-object__copy strong {
+    font-size: 23px;
+  }
+  .listening-room {
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    width: calc(100vw - 24px);
+  }
+}
+/* Quiet, conventional tools sit behind the illustrated collection entrances. */
+.studio {
+  max-width: 760px;
+  margin: 0 auto 50px;
+}
+.studio .studio__title {
+  font: 400 38px var(--font-literary);
+}
+.studio .studio__prompt {
+  font-size: 15px;
+  font-weight: 400;
+  color: #76647f;
+  line-height: 1.7;
+}
+.studio .canvas-wrap {
+  max-width: 600px;
+  width: 100%;
+  margin: auto;
+  border-radius: 2px;
+}
+.studio .tool {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.studio .toolbar__group,
+.studio .swatches {
+  border-radius: 4px;
+}
+.studio .swatch {
+  width: 44px;
+  height: 44px;
+}
+.settings {
+  max-width: 760px;
+  margin: 0 auto 50px;
+}
+.settings .settings__title {
+  font: 400 46px var(--font-literary);
+  margin-bottom: 18px;
+}
+.settings .settings-card {
+  border: 1px solid #dfd1e7;
+  border-radius: 4px;
+  padding: 27px;
+  box-shadow: none;
+}
+.settings .settings-card h2 {
+  font: 400 25px var(--font-literary);
+}
+.settings .settings-card__hint {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #76647f;
+}
+.letters {
+  max-width: 1000px;
+  margin: 0 auto 50px;
+}
+.letters .letters__title {
+  font: 400 50px var(--font-literary);
+  color: #493653;
+}
+.letters .letters__intro {
+  margin: 13px 0 28px;
+  font-size: 15px;
+  color: #76647f;
+}
+.letters .letters__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+}
+.letters .envelope {
+  border-radius: 3px;
+  box-shadow: 0 6px 22px #4936530d;
+}
+.letters .envelope[data-tone="night"] {
+  background: #56415f;
+}
+.letters .envelope__title {
+  font-family: var(--font-literary);
+  font-size: 24px;
+  font-weight: 400;
+}
+.letter-modal {
+  max-width: 720px;
+}
+.letter-paper {
+  font-family: var(--font-literary);
+}
+.letter-paper .letter__body {
+  font-size: 19px;
+  line-height: 1.85;
+}
+.letter-paper .letter__body p {
+  margin: 17px 0;
+}
+.letter-paper .letter__signoff {
+  margin: 25px 0;
+  color: #806298;
+  font-size: 23px;
+  font-style: italic;
+}
+.letter-fan-label {
+  font: 9px var(--font-ui);
+  letter-spacing: 0.12em;
+  color: #806298;
+  margin-bottom: 20px;
+}
+.music-page > .shelf {
+  background: #fff9fd;
+  border: 1px solid #dfd1e7;
+  border-radius: 4px;
+  padding: 32px;
+  margin-bottom: 55px;
+}
+.music-page .stage__section-title {
+  font: 400 34px var(--font-literary);
+}
+.music-page .shelf__hint {
+  font-size: 13px;
+  color: #76647f;
+}
+.music-page .shelf__star,
+.music-page .shelf__remove {
+  min-width: 44px;
+  min-height: 44px;
+}
+.unlock-dialog {
+  max-width: 450px;
+}
+.unlock-dialog .world-dialog__head {
+  margin-bottom: 10px;
+}
+.unlock-dialog .world-dialog__head h2 {
+  font-size: 26px;
+}
+.unlock-form {
+  display: grid;
+  gap: 10px;
+}
+.unlock-form .handwritten {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+.unlock-door-icon {
+  margin: 10px auto 0;
+  color: #93749e;
+}
+.unlock-form > label {
+  font-size: 12px;
+}
+.unlock-form > .button-plum {
+  justify-content: center;
+  width: 100%;
+}
+.unlock-error {
+  color: #914467;
+  min-height: 22px;
+  font-size: 12px;
+}
+@media (max-width: 650px) {
+  .letters .letters__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .letters .letters__title {
+    font-size: 40px;
+  }
+  .music-page > .shelf {
+    padding: 22px;
+  }
+  .settings .settings-card {
+    padding: 22px;
+  }
+  .studio .studio__actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .letter-paper .letter__body {
+    font-size: 18px;
+  }
+}
+.song-audio__error {
+  font-size: 12px;
+  color: #914467;
+  flex-basis: 100%;
+}
+.music-page .shelf .field,
+.settings .field {
+  font-size: 16px;
+}
+.music-page .shelf__upload {
+  border-radius: 3px;
+  background: #f5eef8;
+  box-shadow: none;
+}
+.music-page .shelf__upload summary {
+  font-size: 14px;
+  font-weight: 400;
+  min-height: 44px;
+  padding-top: 11px;
+}
+.music-page .shelf__row {
+  gap: 9px;
+}
+.music-page .shelf__song {
+  border-radius: 3px;
+  border-bottom: 1px solid #e4d7ea;
+}
+.music-page .shelf__song[data-featured="true"] {
+  border: 1px solid #b49bcf;
+}
+.letters .envelope[data-tone="pink"] {
+  background: #ecd0df;
+  color: #493653;
+}
+.letters .envelope__seal {
+  background: #9978a1;
+  box-shadow: 0 3px 8px #4936531a;
+}
+.home-welcome__description {
+  font-size: 15px;
+}
+.section-heading p:not(.micro-label) {
+  font-size: 15px;
+}
+@media (max-width: 650px) {
+  .home-welcome__description {
+    font-size: 14px;
+  }
+  .music-page .shelf__art {
+    width: 44px;
+    height: 44px;
+  }
+  .music-page .shelf__title {
+    font-size: 14px;
+  }
+  .music-page .shelf__artist {
+    font-size: 11px;
+  }
+}

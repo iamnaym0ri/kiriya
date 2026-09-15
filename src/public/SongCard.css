@@ -1,0 +1,76 @@
+.songcard {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-4);
+  border-radius: var(--r-xl);
+  color: var(--text-on-night);
+  background:
+    radial-gradient(ellipse 80% 70% at 100% 0%, rgb(229 47 140 / 0.28), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 0% 100%, rgb(153 92 247 / 0.3), transparent 60%),
+    var(--grad-night);
+  box-shadow: var(--shadow-3);
+}
+
+.songcard__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-1) var(--s-1) 0;
+}
+
+.songcard__disc {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--purple-950) 0 5px, var(--purple-100) 6px 10px, transparent 11px),
+    repeating-radial-gradient(circle, transparent 0 2px, rgb(255 255 255 / 0.12) 2px 3px),
+    conic-gradient(from 30deg, var(--pink-300), var(--purple-300), var(--white), var(--pink-200), var(--purple-400), var(--pink-300));
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.2);
+  animation: songcard-spin 6s linear infinite;
+}
+
+.songcard__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.songcard__kicker {
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--pink-300);
+}
+
+.songcard__title {
+  font-size: var(--t-lg);
+  font-weight: 800;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.songcard__artist {
+  font-size: var(--t-sm);
+  color: var(--purple-200);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.songcard__source {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.1);
+  color: var(--white);
+}
+
+.songcard__source svg {
+  width: 18px;
+  fill: currentColor;
+}
