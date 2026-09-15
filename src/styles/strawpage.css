@@ -464,7 +464,7 @@
   color: #55365f;
   text-shadow: 3px 4px 0 #e5d6ed60;
 }
-:root .identity-name > span {
+:root .identity-name__heart {
   animation: heart-hello 4s ease-in-out infinite;
 }
 :root .identity-dedication {
@@ -1144,6 +1144,8 @@
     font-size: 13px;
   }
   :root .identity-dedication {
+    display: block;
+    margin-top: 18px;
     font-size: 24px;
   }
   :root .birthday-ribbon {

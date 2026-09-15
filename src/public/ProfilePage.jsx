@@ -63,14 +63,38 @@ export default function ProfilePage() {
             <span className="micro-label">MADE OF LITTLE LOVES</span>
             <Star />
           </div>
-          <p className="handwritten identity-hello">
-            {data?.birthday?.isBirthday
-              ? "happy birthday to"
-              : "hello, you found me."}
-          </p>
+          <p className="handwritten identity-hello">Happy birthday</p>
           <h1 id="identity-title" className="identity-name">
-            {data?.name ?? "kiriya"}
-            <span aria-hidden="true">♡</span>
+            <span className="identity-name__word">
+              {data?.name ?? "kiriya"}
+              <span
+                className="identity-name__sparkle identity-name__sparkle--1"
+                aria-hidden="true"
+              >
+                ✦
+              </span>
+              <span
+                className="identity-name__sparkle identity-name__sparkle--2"
+                aria-hidden="true"
+              >
+                ✧
+              </span>
+              <span
+                className="identity-name__sparkle identity-name__sparkle--3"
+                aria-hidden="true"
+              >
+                ✦
+              </span>
+              <span
+                className="identity-name__sparkle identity-name__sparkle--4"
+                aria-hidden="true"
+              >
+                ✧
+              </span>
+            </span>
+            <span className="identity-name__heart" aria-hidden="true">
+              ♡
+            </span>
           </h1>
           <figure className="identity-mobile-portrait" data-motion-region>
             <Bow />
@@ -87,7 +111,7 @@ export default function ProfilePage() {
             <figcaption>
               {data?.avatarUrl
                 ? "a whole little world, for you ♡"
-                : "my favourite little apothecary ♡"}
+                : "Happy birthdayy from mao moa too"}
             </figcaption>
           </figure>
           <p className="identity-bio">
@@ -111,13 +135,7 @@ export default function ProfilePage() {
             <span>✧</span>
           </div>
           <p className="identity-dedication">
-            {data?.birthday?.isBirthday
-              ? "A whole little world, made with love."
-              : "A place for the things I love."}
-            <br />
-            {data?.birthday?.isBirthday
-              ? "Today is for celebrating you. ♡"
-              : "And a few things made just for me."}
+            i made this just for u with all ur fave lil things &lt;3
           </p>
           <div className="identity-socials">
             {data?.socials?.tiktok?.handle && (
@@ -195,7 +213,7 @@ export default function ProfilePage() {
               <span className="handwritten">
                 {data?.avatarUrl
                   ? "the girl this whole little world is for ♡"
-                  : "the apothecary has my heart"}
+                  : "Happy birthdayy from mao moa too"}
               </span>
               <span>{data?.avatarUrl ? "KIRIYA" : "MAOMAO"}</span>
             </figcaption>

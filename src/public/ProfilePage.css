@@ -83,7 +83,45 @@
   position: relative;
   margin: 2px 0 13px;
 }
-.identity-name > span {
+.identity-name__word {
+  display: inline-block;
+  position: relative;
+}
+.identity-name__sparkle {
+  position: absolute;
+  font-family: Georgia, serif;
+  font-size: clamp(18px, 2vw, 26px);
+  line-height: 1;
+  letter-spacing: 0;
+  color: #b18bc4;
+  text-shadow: 0 0 9px #d6b6e780;
+  pointer-events: none;
+  animation: charm-glint 3.8s ease-in-out infinite;
+}
+.identity-name__sparkle--1 {
+  top: 18%;
+  left: -1.05em;
+}
+.identity-name__sparkle--2 {
+  bottom: 9%;
+  left: -0.8em;
+  font-size: clamp(14px, 1.4vw, 19px);
+  color: #bb86a4;
+  animation-delay: -1.9s;
+}
+.identity-name__sparkle--3 {
+  top: 48%;
+  right: -1.15em;
+  color: #bb86a4;
+  animation-delay: -1.1s;
+}
+.identity-name__sparkle--4 {
+  bottom: -3%;
+  right: 6%;
+  font-size: clamp(14px, 1.4vw, 19px);
+  animation-delay: -2.7s;
+}
+.identity-name__heart {
   font-family: Georgia, serif;
   font-size: 37px;
   color: #a87e9b;
@@ -280,7 +318,7 @@
     font-size: 112px;
     margin-bottom: 10px;
   }
-  .identity-name > span {
+  .identity-name__heart {
     font-size: 29px;
     top: 8px;
   }
