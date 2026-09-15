@@ -1,10 +1,10 @@
 // One-time: creates the QStash schedule that runs the daily job at 00:10 Singapore time.
 // Usage (with the production values in your shell or .env.production.local):
-//   QSTASH_TOKEN=... SITE_URL=https://iloveukiriya.com node scripts/setup-qstash.mjs
+//   QSTASH_TOKEN=... SITE_URL=https://kiriya.love node scripts/setup-qstash.mjs
 import { Client } from "@upstash/qstash";
 
 const token = process.env.QSTASH_TOKEN;
-const siteUrl = process.env.SITE_URL ?? "https://iloveukiriya.com";
+const siteUrl = process.env.SITE_URL ?? "https://kiriya.love";
 if (!token) {
   console.error("QSTASH_TOKEN is missing. Copy it from the Upstash console (QStash → Request builder).");
   process.exit(1);

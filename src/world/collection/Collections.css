@@ -36,6 +36,11 @@
   border: 9px solid #fff9fd;
   box-shadow: 0 5px 20px #49365312;
 }
+.lookbook-photo > .lookbook-photo__full-image {
+  aspect-ratio: auto;
+  height: auto;
+  object-fit: contain;
+}
 .lookbook-photo--0 {
   rotate: -2deg;
 }

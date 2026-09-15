@@ -981,7 +981,8 @@
   object-fit: cover;
   object-position: center;
 }
-:root .personal-home > .birthday-gift {
+:root .personal-home > .birthday-gift,
+:root .letters > .birthday-gift {
   margin: 24px 0 43px;
   background: #efdeec9e;
   border: 1px dashed #c7a6cf;
@@ -1010,7 +1011,8 @@
   :root .birthday-love-note > .handwritten {
     font-size: 21px;
   }
-  :root .personal-home > .birthday-gift {
+  :root .personal-home > .birthday-gift,
+  :root .letters > .birthday-gift {
     margin: 24px 0 40px;
   }
   :root .doodle-tools > div > button {

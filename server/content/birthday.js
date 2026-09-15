@@ -4,13 +4,12 @@
 export const maomaoBirthdayLetter = {
   title: "A prescription for your birthday",
   body: [
-    "Kiriya,",
-    "I was told to write you a birthday letter. I don't usually write letters. I write labels for jars. So think of this as a very long label.",
-    "Contents: one Kiriya, who loves things with a whole heart. Vocaloid at full volume. Drawing long after the lamps should be off. Wigs styled so carefully they could pass an inspection from the palace itself. Ballet, which, as far as I can tell, is just poison-testing for your legs, and you do it anyway, every day.",
-    "Side effects of knowing you, according to my research: laughing more than planned, feeling looked after, and animals following you home.",
-    "Directions for use: take this year slowly. Eat real meals. Drink water. Sleep more than a night owl would like. Keep being sassy; it's medicinal.",
-    "Warning: do not let anyone convince you to be less of yourself. There is no antidote for that, and you don't need one.",
-    "Happy birthday. I checked the cake. It's safe. Unfortunately.",
+    "happy birthday babyy ♡",
+    "...yes, babyy. apparently thats what im calling u. dont make a fuss, this is already harder than labelling medicine jars.",
+    "its not much... just a little world with ur favourite things tucked into it. i wanted to give u somthing u could keep, somthing u will remmeberr. making u feel special was the whole point. there, now u know.",
+    "im not good with words. if this were a medicine i wouldve measured it properly, but its feelings so... i love u. an unreasonable amount, actually. no, im not taking that back.",
+    "ur goin to have sooo much fun today. eat the cake, play ur songs too loud, let people fuss over u for once. ive checked the cake, by the way. perfectly ordinary. u can have my slice too... dont look so surprised.",
+    "ur the best, babyy. thats my conclusion and im not accepting objections. now go enjoy ur day... and keep this little thing, okay? ♡",
   ],
   signoff: "— your apothecary",
 };

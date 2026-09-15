@@ -13,9 +13,23 @@ export default function BirthdayTakeover({ birthday = {}, signature }) {
       <div className="birthday-gift__copy">
         <p className="micro-label">SEPTEMBER 15 · YOUR BIRTHDAY GIFT</p>
         <h2 id="birthday-gift-title">
-          A wish for
+          Happy freaking
           <br />
-          <em>your next chapter.</em>
+          <em>
+            birthday{" "}
+            <span className="birthday-babyyy" aria-label="babyyy!">
+              {[..."babyyy!"].map((letter, index) => (
+                <span
+                  key={index}
+                  aria-hidden="true"
+                  style={{ "--letter": index }}
+                >
+                  {letter}
+                </span>
+              ))}
+            </span>
+          </em>{" "}
+          <span className="birthday-gift__heart" aria-hidden="true">♥</span>
         </h2>
         <p>
           {birthday.isBirthday
@@ -56,11 +70,18 @@ export default function BirthdayTakeover({ birthday = {}, signature }) {
               strokeWidth="3"
             />
             {lit && (
-              <path
-                className="birthday-flame"
-                d="M105 48q18 28 0 29-16-2 0-29Z"
-                fill="#d8a56f"
-              />
+              <g className="birthday-flame">
+                <ellipse
+                  className="birthday-flame__glow"
+                  cx="105"
+                  cy="65"
+                  rx="18"
+                  ry="22"
+                  fill="#f6c779"
+                />
+                <path d="M105 46q18 30 0 31-16-2 0-31Z" fill="#eaa258" />
+                <path d="M105 60q9 16 0 17-8-1 0-17Z" fill="#fff0b8" />
+              </g>
             )}
             <path
               d="M63 166q5 7 10 0m25 4q7 6 14 0m25-4q6 7 12 0"

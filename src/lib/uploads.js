@@ -44,9 +44,10 @@ export async function uploadFile(file, { folder = "art", onProgress } = {}) {
     throw new ApiError(413, { message: "Files can be up to 15 MB." });
 
   if (config.mode === "blob") {
-    const { upload } = await import("@vercel/blob/client");
+    const { upload, uploadPresigned } = await import("@vercel/blob/client");
+    const uploadToBlob = config.uploadType === "presigned" ? uploadPresigned : upload;
     const extension = file.name.split(".").pop()?.toLowerCase() || "bin";
-    const result = await upload(`${folder}/${Date.now()}.${extension}`, file, {
+    const result = await uploadToBlob(`${folder}/${Date.now()}.${extension}`, file, {
       access: "private",
       handleUploadUrl: "/api/uploads/blob",
       contentType: file.type,

@@ -219,18 +219,20 @@ export function CosplaySpread({ full = false }) {
       alt: "Maomao’s pink robe, green wrap and teal hair",
     },
     {
-      url: "/images/cosplay-process.webp",
+      url: "/images/maomao-blossom-cosplay.webp",
       title: "The little details",
-      caption: "SajaLyn’s wrap-skirt process · external costume reference",
-      alt: "A pleated plum wrap skirt on SajaLyn’s dress form",
-      source:
-        "https://sajalyn.com/wickelrock-hanfu-naehen-mein-cosplay-fuer-die-tagebuecher-der-apothekerin/",
+      caption: "Pink robes & cherry blossoms · supplied cosplay reference",
+      alt: "A Maomao cosplayer in pink and green robes holding a fan beneath cherry blossoms",
+      fullImage: true,
+      source: "https://i.pinimg.com/736x/99/53/d4/9953d40bb8039d93160972f9e45b7c7d.jpg",
     },
     {
-      url: "/images/miku.webp",
+      url: "/images/miku-birthday.webp",
       title: "Hatsune Miku",
-      caption: "Crypton Future Media · character reference",
-      alt: "Hatsune Miku’s original teal and black outfit",
+      caption: "A birthday wish from Miku · supplied illustration",
+      alt: "Hatsune Miku smiling and holding a birthday cake beneath colourful confetti",
+      fullImage: true,
+      source: "https://i.pinimg.com/736x/fa/53/de/fa53de0920761a74877d8e54fe7db0e1.jpg",
     },
   ];
   const display = photos.length ? photos : references;
@@ -265,7 +267,12 @@ export function CosplaySpread({ full = false }) {
             key={item.url}
             onClick={() => setView(i)}
           >
-            <img src={item.url} alt={item.alt} loading="lazy" />
+            <img
+              className={item.fullImage ? "lookbook-photo__full-image" : undefined}
+              src={item.url}
+              alt={item.alt}
+              loading="lazy"
+            />
             <span className="lookbook-photo__caption">
               <span>
                 <small>{String(i + 1).padStart(2, "0")}</small>

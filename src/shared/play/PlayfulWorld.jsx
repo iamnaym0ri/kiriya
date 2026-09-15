@@ -216,11 +216,7 @@ export function BirthdayRibbon() {
     <div
       className="birthday-ribbon"
       data-motion-region
-      aria-label={
-        birthday
-          ? "September 15 · Happy birthday, Kiriya!"
-          : "Kiriya’s birthday scrapbook"
-      }
+      aria-label="September 15 · Happpppy birthday kiriyaaa!!!"
     >
       <div className="birthday-ribbon__track" aria-hidden="true">
         {[0, 1].map((copy) => (
@@ -231,7 +227,18 @@ export function BirthdayRibbon() {
                 {birthday
                   ? "happy birthday, kiriya!"
                   : "a little world for kiriya"}
-                <b>✧</b>15 SEPTEMBER<b>♡</b>made with love<b>✧</b>
+                <b>✧</b>15 SEPTEMBER
+                <span className="birthday-ribbon__wish">
+                  <b className="birthday-ribbon__charm">✦</b>
+                  <b className="birthday-ribbon__charm birthday-ribbon__charm--heart">
+                    ♡
+                  </b>
+                  <span>Happpppy birthday kiriyaaa!!!</span>
+                  <b className="birthday-ribbon__charm birthday-ribbon__charm--heart">
+                    ♥
+                  </b>
+                  <b className="birthday-ribbon__charm">✧</b>
+                </span>
               </span>
             ))}
           </span>

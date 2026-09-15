@@ -20,6 +20,7 @@ function restorePath(request) {
 const handler = (request) => app.fetch(restorePath(request));
 
 export const GET = handler;
+export const HEAD = handler;
 export const POST = handler;
 export const PUT = handler;
 export const PATCH = handler;

@@ -5,6 +5,8 @@ import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, schema } from "../db/client.js";
 import { env } from "../env.js";
+import { blobUploadMode } from "../lib/blob.js";
+import { isPassphraseHash } from "../auth/passphrase.js";
 import { localDay } from "../lib/time.js";
 import { runDailyAndPlan } from "./jobs.js";
 import { claimPush, qstashConfigured } from "../push/planner.js";
@@ -47,12 +49,13 @@ adminRoutes.get("/status", async (c) => {
       database: env.databaseUrl
         ? "Neon Postgres"
         : "local PGlite (development)",
-      passphrases: Boolean(env.kiriyaPassphraseHash && env.adminPassphraseHash),
+      passphrases: isPassphraseHash(env.kiriyaPassphraseHash) && isPassphraseHash(env.adminPassphraseHash),
+      sessions: Boolean(env.sessionSecret),
       collection: `Selected collection v${COLLECTION_VERSION}`,
       scheduler: qstashConfigured(),
       cronSecret: Boolean(env.cronSecret),
       push: pushConfigured(),
-      fileStorage: Boolean(env.blobToken),
+      fileStorage: Boolean(blobUploadMode()),
     },
     devices: subs.map((s) => ({
       role: s.role,

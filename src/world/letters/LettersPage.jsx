@@ -52,7 +52,7 @@ function LetterSheet({ letter, onClose }) {
             <p key={i}>{p}</p>
           ))}
         </div>
-        <p className="letter__signoff">{letter.signoff}</p>
+        {letter.signoff && <p className="letter__signoff">{letter.signoff}</p>}
         <button className="button-paper" onClick={onClose}>
           Fold it back up
         </button>
@@ -115,7 +115,6 @@ export default function LettersPage() {
                 author: "giver",
                 title: letter.title,
                 paragraphs: (letter.body ?? "").split(/\n{2,}/),
-                signoff: `— ${signature}`,
               })
             }
           />

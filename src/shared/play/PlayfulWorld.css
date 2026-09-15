@@ -104,6 +104,42 @@
   color: #debada;
   font-weight: 400;
 }
+.birthday-ribbon__wish {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.birthday-ribbon .birthday-ribbon__charm {
+  display: inline-block;
+  font: 16px/1 Georgia, serif;
+  color: #f4e3ac;
+  text-shadow: 0 0 6px #fce0f766;
+  transform-origin: 50% 65%;
+  animation: ribbon-charm-dance 2.8s ease-in-out infinite;
+}
+.birthday-ribbon .birthday-ribbon__charm--heart {
+  color: #ffc2df;
+}
+.birthday-ribbon__charm:nth-child(2) {
+  animation-delay: -0.7s;
+}
+.birthday-ribbon__charm:nth-child(4) {
+  animation-delay: -1.4s;
+}
+.birthday-ribbon__charm:nth-child(5) {
+  animation-delay: -2.1s;
+}
+@keyframes ribbon-charm-dance {
+  0%,
+  100% {
+    transform: translate(-1px, 2px) rotate(-14deg) scale(0.9);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate(1px, -3px) rotate(14deg) scale(1.12);
+    opacity: 1;
+  }
+}
 @keyframes ribbon-travel {
   to {
     transform: translateX(-50%);

@@ -1,10 +1,11 @@
-# iloveukiriya.com
+# kiriya.love
 
 Kiriya’s little lilac world: a floral public profile and a private, illustrated collection of cosplay, art, Maomao and Miku-led music. The birthday gift and letters are available all year.
 
 - [Redesign report](docs/redesign/IMPLEMENTATION.md)
 - [Asset and source register](docs/redesign/ASSETS.md)
 - [Production setup](docs/SETUP.md)
+- [Current production preparation and publishing steps](docs/PRODUCTION-SETUP.md)
 - [Execution brief](docs/execute.md) and [original handoff](docs/HANDOFF-REPORT.md)
 
 ## Run locally
@@ -37,14 +38,14 @@ Retired source modules remain in the repository as history; they are not part of
 ## Checks
 
 ```bash
-npm test              # isolated PGlite content/preferences/media regression checks
+npm test              # isolated content, login, admin and private-media regression checks
 npm run build         # production build and private-string leak check
 npm run verify:redesign # browser flows/screenshots against an already-running local dev server
 ```
 
 The browser script uses Playwright Chromium (`npx playwright install chromium` if needed). It uses the development passphrase, creates temporary records, restores the prior featured song, and removes its test records. `VERIFY_BASE_URL` changes the local target. Do not run it against a production gift database.
 
-Other commands: `npm run icons`, `npm run hash -- "phrase"`, `npm run db:generate`, `npm run db:migrate`, `npm run setup:qstash`.
+Other commands: `npm run icons`, `npm run hash -- --file .data/phrase.txt --output .data/passphrase.hash`, `npm run db:generate`, `npm run db:migrate`, `npm run setup:qstash`. `npm run check:production` validates required server configuration without printing values or contacting the database.
 
 ## Privacy and credits
 

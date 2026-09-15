@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/check-leaks.mjs",
-    "vercel-build": "node scripts/migrate.mjs && npm run build",
+    "vercel-build": "node scripts/check-production-config.mjs && node scripts/migrate.mjs && npm run build",
     "preview": "vite preview",
     "setup": "node scripts/setup-dev.mjs",
     "setup:qstash": "node scripts/setup-qstash.mjs",
@@ -15,7 +15,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate.mjs",
     "check:leaks": "node scripts/check-leaks.mjs",
-    "test": "node --test scripts/test-redesign.mjs",
+    "check:production": "node scripts/check-production-config.mjs",
+    "test": "node --test scripts/test-redesign.mjs scripts/test-production.mjs",
     "verify:redesign": "node scripts/verify-redesign.mjs",
     "verify:strawpage": "node scripts/verify-strawpage.mjs"
   },

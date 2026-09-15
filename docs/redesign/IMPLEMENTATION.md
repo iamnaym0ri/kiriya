@@ -37,6 +37,16 @@ Pending notification rows are reconciled when frequency/hours/enabled settings c
 
 The previous local upload route allowed unauthenticated file reads. Local and production media routes now require authentication unless a file is explicitly selected for the public profile. New production uploads request **private Blob storage**, served through the API with private/no-store headers. Uploaded recordings are private until explicitly starred. Existing public Blob objects, if any exist in a production account, require a separate migration; local tests do not establish that migration.
 
+## Birthday copy and image follow-up
+
+The public greeting, dedication and scrolling ribbon now use the requested birthday wording. Both private birthday cards say **“Happy freaking birthday babyyy!”** with a filled heart, waving letters and a visibly flickering candle. The home and Letters cards share their dashed border and translucent background. Candle blow-out and replay remain available.
+
+Maomao’s fan letter now adapts the supplied affectionate message with lowercase, deliberate typos, dry asides and medicine-jar references. The interpretation draws on the [official character profile](https://kusuriyanohitorigoto.jp/season2/character/) and [Aoi Yuki’s account of her restrained delivery](https://www.anitrendz.com/news/2026/07/23/apothecary-diaries-interview); it remains labeled fan writing.
+
+The lookbook’s **Hatsune Miku** and **The little details** pictures use the two original image URLs supplied by the user, stored locally with full compositions and source links. The saved QA heart is now a solid violet-pink drawing with an outline and small highlights. See the updated [asset register](ASSETS.md) and [heart generation record](../assets/generated/birthday-heart.md).
+
+Follow-up validation: build and private-string leak check passed; all **10 current tests** passed. Chromium checks covered both birthday cards, candle replay, the letter dialog, 320/390/820/1440px layouts, motion controls, reduced motion, exact saved-heart bytes, both new image sources and enlarged viewing. Results and screenshots are in `.data/redesign/birthday-polish/`. These are local checks.
+
 ## Verification
 
 - `npm test`: **4 passing regression tests** using isolated in-memory PGlite. Covers stable/scoped dates, legacy bundle replacement with saved work preserved, daily jobs without external fetches, notification preference/callback behavior and media URL validation.

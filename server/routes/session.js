@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { and, count, eq, gte } from "drizzle-orm";
 import { getDb, schema } from "../db/client.js";
 import { env } from "../env.js";
-import { verifyPassphrase } from "../auth/passphrase.js";
+import { isPassphraseHash, verifyPassphrase } from "../auth/passphrase.js";
 import { clearSession, issueSession, passphraseHashes, readSession } from "../auth/session.js";
 
 const WINDOW_MS = 15 * 60 * 1000;
@@ -25,6 +25,10 @@ sessionRoutes.get("/", (c) => {
 
 sessionRoutes.post("/unlock", async (c) => {
   c.header("Cache-Control", "private, no-store");
+  const hashes = await passphraseHashes();
+  if (!env.sessionSecret || (!isPassphraseHash(hashes.kiriya) && !isPassphraseHash(hashes.admin))) {
+    return c.json({ error: "not_configured", message: "The private door isn't ready yet. Please try again later." }, 503);
+  }
   const db = await getDb();
   const ipHash = clientIpHash(c);
   const since = new Date(Date.now() - WINDOW_MS);
@@ -41,7 +45,6 @@ sessionRoutes.post("/unlock", async (c) => {
 
   const body = await c.req.json().catch(() => ({}));
   const passphrase = typeof body.passphrase === "string" ? body.passphrase.slice(0, 200) : "";
-  const hashes = await passphraseHashes();
 
   let role = null;
   if (passphrase && hashes.kiriya && (await verifyPassphrase(passphrase, hashes.kiriya))) role = "kiriya";

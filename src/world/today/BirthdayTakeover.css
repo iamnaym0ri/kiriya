@@ -20,6 +20,47 @@
 .birthday-gift h2 em {
   color: #94739c;
 }
+.birthday-babyyy {
+  display: inline-block;
+  white-space: nowrap;
+  color: #ab6aa0;
+}
+.birthday-babyyy > span {
+  display: inline-block;
+  animation: birthday-letter-dance 2.4s ease-in-out infinite;
+  animation-delay: calc(var(--letter) * -0.12s);
+}
+.birthday-gift__heart {
+  display: inline-block;
+  font: 0.65em/1 Georgia, serif;
+  color: #c07aae;
+  text-shadow: 1px 2px 0 #e8c4e4;
+  vertical-align: middle;
+  animation: birthday-heart-beat 2.4s ease-in-out infinite;
+}
+@keyframes birthday-letter-dance {
+  0%,
+  55%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  20% {
+    transform: translateY(-5px) rotate(-6deg);
+  }
+  35% {
+    transform: translateY(1px) rotate(4deg);
+  }
+}
+@keyframes birthday-heart-beat {
+  0%,
+  55%,
+  100% {
+    transform: scale(1) rotate(-8deg);
+  }
+  25% {
+    transform: scale(1.14) rotate(5deg);
+  }
+}
 .birthday-gift__copy > p:not(.micro-label) {
   max-width: 350px;
   font-size: 15px;
@@ -47,12 +88,33 @@
   width: 25px;
 }
 .birthday-flame {
+  transform-box: view-box;
   transform-origin: 105px 77px;
-  animation: birthday-flicker 2s ease-in-out infinite alternate;
+  animation: birthday-flicker 0.95s ease-in-out infinite;
+}
+.birthday-flame__glow {
+  opacity: 0.2;
+  filter: blur(5px);
+  animation: birthday-flame-glow 1.3s ease-in-out infinite alternate;
 }
 @keyframes birthday-flicker {
+  0%,
+  100% {
+    transform: rotate(-3deg) scale(1, 0.96);
+  }
+  22% {
+    transform: rotate(5deg) scale(0.86, 1.1);
+  }
+  48% {
+    transform: rotate(-5deg) scale(1.06, 0.92);
+  }
+  73% {
+    transform: rotate(2deg) scale(0.92, 1.07);
+  }
+}
+@keyframes birthday-flame-glow {
   to {
-    transform: rotate(4deg) scale(0.94, 1.04);
+    opacity: 0.4;
   }
 }
 @media (max-width: 650px) {

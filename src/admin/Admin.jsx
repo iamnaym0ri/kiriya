@@ -12,10 +12,11 @@ import "./Admin.css";
 const SERVICE_LABELS = {
   database: "Database",
   passphrases: "Passphrases set",
+  sessions: "Private sessions",
   collection: "Content collection",
-  scheduler: "Surprise scheduler (QStash)",
-  cronSecret: "Daily backstop (cron secret)",
-  push: "Push notifications (VAPID)",
+  scheduler: "Optional surprise scheduler (QStash)",
+  cronSecret: "Optional daily backstop",
+  push: "Optional push notifications",
   fileStorage: "File storage (Vercel Blob)",
 };
 

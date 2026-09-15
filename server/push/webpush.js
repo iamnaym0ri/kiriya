@@ -13,7 +13,7 @@ function configure() {
   if (configured) return;
   if (!pushConfigured()) throw new Error("VAPID keys are not configured");
   // Apple rejects localhost-style subjects, so use the real site (or a real mailto: in VAPID_SUBJECT).
-  webpush.setVapidDetails(env.vapidSubject || "https://iloveukiriya.com", env.vapidPublicKey, env.vapidPrivateKey);
+  webpush.setVapidDetails(env.vapidSubject || env.siteUrl, env.vapidPublicKey, env.vapidPrivateKey);
   configured = true;
 }
 

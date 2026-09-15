@@ -2,10 +2,16 @@ import { randomBytes } from "node:crypto";
 import path from "node:path";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { Hono } from "hono";
-import { handleUpload } from "@vercel/blob/client";
+import { handleUpload, handleUploadPresigned } from "@vercel/blob/client";
+import { get, issueSignedToken } from "@vercel/blob";
 import { env } from "../env.js";
 import { readSession } from "../auth/session.js";
 import { isPublicMedia } from "../lib/media.js";
+import {
+  blobOptions,
+  blobReadConfigured,
+  blobUploadMode,
+} from "../lib/blob.js";
 
 const ALLOWED = [
   "image/png",
@@ -44,7 +50,8 @@ uploadRoutes.get("/config", (c) => {
       401,
     );
   return c.json({
-    mode: env.blobToken ? "blob" : env.isProd ? "unavailable" : "local",
+    mode: blobUploadMode() ? "blob" : env.isProd ? "unavailable" : "local",
+    uploadType: blobUploadMode(),
     maxBytes: MAX_BYTES,
     allowed: ALLOWED,
   });
@@ -53,37 +60,102 @@ uploadRoutes.get("/config", (c) => {
 // Vercel Blob client uploads. The browser asks for a short-lived token here (session required), then
 // sends the file straight to Blob storage, so large photos never pass through this function.
 uploadRoutes.post("/blob", async (c) => {
-  if (!env.blobToken)
+  const mode = blobUploadMode();
+  if (!mode)
     return c.json(
       { error: "not_configured", message: "File storage isn't connected yet." },
       503,
     );
-  const body = await c.req.json();
-  if (body?.type === "blob.generate-client-token" && !readSession(c)) {
+  const body = await c.req.json().catch(() => null);
+  if (
+    !body ||
+    ![
+      "blob.generate-client-token",
+      "blob.generate-presigned-url",
+      "blob.upload-completed",
+    ].includes(body.type)
+  ) {
+    return c.json(
+      { error: "bad_request", message: "Invalid upload request." },
+      400,
+    );
+  }
+  if (body.type !== "blob.upload-completed" && !readSession(c)) {
     return c.json(
       { error: "locked", message: "Enter the passphrase to upload." },
       401,
     );
   }
+  function authorizePath(pathname) {
+    if (!readSession(c)) throw new Error("Upload session is required");
+    if (
+      !/^(art|avatar|cosplay|songs|photos)\/[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(
+        pathname ?? "",
+      )
+    ) {
+      throw new Error("Unexpected upload path");
+    }
+  }
   try {
+    if (
+      body.type === "blob.generate-presigned-url" ||
+      (body.type === "blob.upload-completed" && mode === "presigned")
+    ) {
+      if (mode !== "presigned") return c.json({ error: "not_configured" }, 503);
+      const result = await handleUploadPresigned({
+        body,
+        request: c.req.raw,
+        webhookPublicKey: env.blobWebhookPublicKey,
+        getSignedToken: async (pathname) => {
+          authorizePath(pathname);
+          const constraints = {
+            allowedContentTypes: ALLOWED,
+            maximumSizeInBytes: MAX_BYTES,
+            validUntil: Date.now() + 10 * 60 * 1000,
+          };
+          return {
+            token: await issueSignedToken({
+              ...blobOptions(),
+              ...constraints,
+              pathname,
+              operations: ["put"],
+              abortSignal: AbortSignal.timeout(15_000),
+            }),
+            urlOptions: {
+              ...constraints,
+              addRandomSuffix: true,
+              allowOverwrite: false,
+            },
+          };
+        },
+      });
+      return c.json(result);
+    }
+    if (!env.blobToken) return c.json({ error: "not_configured" }, 503);
     const result = await handleUpload({
       token: env.blobToken,
       body,
       request: c.req.raw,
       onBeforeGenerateToken: async (pathname) => {
-        if (!/^(art|avatar|cosplay|songs|photos)\//.test(pathname))
-          throw new Error("Unexpected upload folder");
+        authorizePath(pathname);
         return {
           allowedContentTypes: ALLOWED,
           maximumSizeInBytes: MAX_BYTES,
           addRandomSuffix: true,
+          allowOverwrite: false,
+          validUntil: Date.now() + 10 * 60 * 1000,
         };
       },
-      onUploadCompleted: async () => {},
     });
     return c.json(result);
-  } catch (error) {
-    return c.json({ error: "upload_failed", message: error.message }, 400);
+  } catch {
+    return c.json(
+      {
+        error: "upload_failed",
+        message: "The upload couldn't start. Check the file and try again.",
+      },
+      400,
+    );
   }
 });
 
@@ -194,14 +266,15 @@ uploadRoutes.get("/media", async (c) => {
   const canonical = `/api/uploads/media?path=${encodeURIComponent(pathname)}`;
   if (!readSession(c) && !(await isPublicMedia(canonical)))
     return c.json({ error: "locked" }, 401);
-  if (!env.blobToken) return c.json({ error: "not_configured" }, 503);
-  const { get } = await import("@vercel/blob");
+  if (!blobReadConfigured()) return c.json({ error: "not_configured" }, 503);
+  const range = c.req.header("range");
+  if (range && !/^bytes=(?:\d+-\d*|-\d+)$/.test(range)) {
+    return new Response(null, { status: 416 });
+  }
   const result = await get(pathname, {
     access: "private",
-    token: env.blobToken,
-    ...(c.req.header("range")
-      ? { headers: { Range: c.req.header("range") } }
-      : {}),
+    ...blobOptions(),
+    ...(range ? { headers: { Range: range } } : {}),
   });
   if (!result) return c.notFound();
   const headers = new Headers({

@@ -41,7 +41,8 @@ app.route("/uploads", uploadRoutes);
 
 app.notFound((c) => c.json({ error: "not_found", message: "Nothing lives at this address." }, 404));
 app.onError((error, c) => {
-  console.error("[api]", c.req.method, c.req.path, error);
+  // Database/provider errors can contain connection strings or signed URLs.
+  console.error("[api]", c.req.method, c.req.path, error.name);
   return c.json({ error: "server_error", message: "Something broke on our side. Try again in a moment." }, 500);
 });
 

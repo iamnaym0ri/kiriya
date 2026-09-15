@@ -14,10 +14,11 @@ function optional(name, fallback = undefined) {
 
 export const env = {
   isProd,
-  siteUrl: optional("SITE_URL", isProd ? "https://iloveukiriya.com" : "http://localhost:5173"),
+  siteUrl: optional("SITE_URL", isProd ? "https://kiriya.love" : "http://localhost:5173"),
   timeZone: optional("KIRIYA_TZ", "Asia/Singapore"),
 
-  databaseUrl: optional("DATABASE_URL"),
+  // The existing kiriyaa integration uses the kData prefix. Keep explicit overrides first.
+  databaseUrl: optional("DATABASE_URL", optional("kData_DATABASE_URL")),
 
   sessionSecret: optional("SESSION_SECRET", isProd ? undefined : "dev-only-session-secret-change-me-0123456789"),
   kiriyaPassphraseHash: optional("KIRIYA_PASSPHRASE_HASH"),
@@ -34,6 +35,8 @@ export const env = {
   vapidSubject: optional("VAPID_SUBJECT"),
 
   blobToken: optional("BLOB_READ_WRITE_TOKEN"),
+  blobStoreId: optional("BLOB_STORE_ID"),
+  blobWebhookPublicKey: optional("BLOB_WEBHOOK_PUBLIC_KEY"),
 
   openaiApiKey: optional("OPENAI_API_KEY"),
   openaiModel: optional("OPENAI_MODEL", "gpt-5.4-mini-2026-03-17"),
