@@ -660,7 +660,18 @@ button:disabled {
 .unlock-error {
   color: #914467;
   min-height: 22px;
-  font-size: 12px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.unlock-error:not(:empty) {
+  padding: 12px 14px;
+  border: 1px solid #dcc0cf;
+  border-radius: 6px;
+  background: #fff3f7;
+}
+.unlock-form .field[aria-invalid="true"] {
+  border-color: #a65377;
 }
 @media (max-width: 650px) {
   .letters .letters__grid {

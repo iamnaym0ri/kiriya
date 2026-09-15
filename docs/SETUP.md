@@ -55,7 +55,7 @@ Copy the hash into the matching Vercel Production variable using the dashboard. 
 
 The existing integration uses the **kData** prefix. Both runtime queries and the migration command now use the same connection resolver: `DATABASE_URL`, falling back to `kData_DATABASE_URL`. Leave the managed values in place so the integration can maintain them.
 
-The schema migrations contain no reset or fixture loading. Do not run browser fixture scripts, reset commands or local test data against production. Initial schema installation and actual production connectivity still need checking during the owner's next build/deployment.
+The schema migrations contain no reset or fixture loading. Do not run browser fixture scripts, reset commands or local test data against production. The owner's latest Production build applied migrations successfully, and live Kiriya authentication confirmed runtime database access.
 
 ### Private Blob
 

@@ -161,6 +161,13 @@ await test("Secure production login, admin separation, expired/changed sessions 
   assert.equal((await request("health")).status, 200);
   assert.equal((await request("health", { method: "HEAD" })).status, 200);
   assert.equal((await request("admin/status")).status, 401);
+  const rejected = await request("session/unlock", {
+    method: "POST",
+    body: { passphrase: "incorrect test phrase" },
+  });
+  assert.equal(rejected.status, 401);
+  assert.equal((await rejected.json()).error, "wrong_passphrase");
+  assert.equal(rejected.headers.has("set-cookie"), false);
   const kiriya = await unlock("kiriya");
   const admin = await unlock("admin");
   assert.equal((await request("admin/status", { cookie: kiriya })).status, 401);

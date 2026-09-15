@@ -1,6 +1,21 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useUnlock } from "../lib/session.js";
 import { Modal, Icon } from "./WorldPrimitives.jsx";
+
+function unlockErrorMessage(error) {
+  if (!error) return null;
+  if (error.code === "wrong_passphrase") {
+    return "Wrong passphrase. Please check it and try again.";
+  }
+  if (error.status === 429) {
+    return "Too many tries. Please wait 15 minutes, then try again.";
+  }
+  if (!error.status) {
+    return "Couldn't connect. Check your internet connection and try again.";
+  }
+  return "We couldn't check your passphrase right now. Please try again in a moment.";
+}
+
 export default function UnlockSheet({
   open,
   onClose,
@@ -22,9 +37,18 @@ export default function UnlockSheet({
   function submit(event) {
     event.preventDefault();
     if (!passphrase.trim() || unlock.isPending) return;
-    unlock.mutate(passphrase, { onSuccess: (data) => onUnlocked?.(data) });
+    unlock.mutate(passphrase, {
+      onSuccess: (data) => onUnlocked?.(data),
+      onError: (error) => {
+        if (error.code === "wrong_passphrase") {
+          inputRef.current?.focus({ preventScroll: true });
+          inputRef.current?.select();
+        }
+      },
+    });
   }
-  const error = unlock.error?.message;
+  const error = unlockErrorMessage(unlock.error);
+  const wrongPassphrase = unlock.error?.code === "wrong_passphrase";
   if (!open) return null;
   return (
     <Modal title={title} onClose={onClose} className="unlock-dialog">
@@ -43,12 +67,15 @@ export default function UnlockSheet({
           autoCapitalize="none"
           spellCheck={false}
           value={passphrase}
-          onChange={(e) => setPassphrase(e.target.value)}
-          aria-invalid={Boolean(error)}
+          onChange={(e) => {
+            setPassphrase(e.target.value);
+            if (unlock.isError) unlock.reset();
+          }}
+          aria-invalid={wrongPassphrase}
           aria-describedby={error ? errorId : undefined}
           placeholder="Your passphrase"
         />
-        <p id={errorId} role="alert" className="unlock-error">
+        <p id={errorId} role="alert" aria-atomic="true" className="unlock-error">
           {error ?? ""}
         </p>
         <button

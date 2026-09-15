@@ -53,7 +53,7 @@ sessionRoutes.post("/unlock", async (c) => {
   await db.insert(schema.unlockAttempts).values({ ipHash, ok: Boolean(role), role });
 
   if (!role) {
-    return c.json({ error: "wrong_passphrase", message: "That's not the passphrase. Check for typos and try again." }, 401);
+    return c.json({ error: "wrong_passphrase", message: "Wrong passphrase. Please check it and try again." }, 401);
   }
   return c.json(issueSession(c, role));
 });

@@ -1,8 +1,10 @@
 # Kiriya production preparation
 
-Prepared September 14, 2026 (Los Angeles; September 15 in Singapore). **No push, deployment or redeployment was performed.**
+Prepared September 14, 2026 (Los Angeles; September 15 in Singapore). **No push, deployment or redeployment was performed by the agent.**
 
-The production wiring and local fixes are prepared. **The existing Sensitive login hashes and session secret still need confirmation**: Vercel hides their values, so their presence alone does not establish that valid credentials were entered. They have been preserved, not replaced. No new login phrases were generated.
+**The owner's latest Production deployment is Ready. Configuration validation and Neon migrations passed.** Kiriya's existing passphrase was verified successfully through the live API and a phone-sized browser; the birthday page opens and the session survives reload. No further environment changes are needed for that login.
+
+The clearer login error messages below are prepared locally for the owner's next push.
 
 ## Configured and fixed
 
@@ -14,6 +16,8 @@ The production wiring and local fixes are prepared. **The existing Sensitive log
 - Added direct browser uploads through the existing Blob OIDC connection using `BLOB_STORE_ID` and `BLOB_WEBHOOK_PUBLIC_KEY`. A manual `BLOB_READ_WRITE_TOKEN` is no longer required for this connection; existing static-token configurations remain supported. Upload grants require a session, limit the path/type/size/lifetime, and disallow overwriting.
 - Preserved authenticated private media delivery and explicit public-profile selection. Added the Vercel HEAD handler and coverage for private reads, byte ranges, public selection and revocation.
 - Made malformed passphrase hashes fail safely so a bad Kiriya hash cannot crash a valid admin login. Added a controlled response when the login configuration is absent.
+- Repaired the missing/invalid Production admin hash after the owner's build identified it as the only configuration blocker. Saved the generated phrase privately and preserved the previous Preview entry. Kiriya's existing hash and the session secret were retained.
+- Added a readable wrong-passphrase alert, input highlighting and focus for correction. Connection problems, unavailable servers and too many attempts have distinct messages. Editing the phrase clears the previous error.
 - Added production configuration validation before migrations. Missing/invalid required settings stop the build; optional QStash, push, OpenAI and TextAlive configuration does not block login or uploads.
 - Updated the hash utility to support private input/output files without echoing the phrase or hash. Database migration and API error logging omit raw provider errors that could contain credentials.
 
@@ -23,55 +27,38 @@ The production wiring and local fixes are prepared. **The existing Sensitive log
 | --- | --- |
 | Vercel project, Git branch, domain and storage attachment metadata | Confirmed through the authenticated Vercel API |
 | Blob access mode | `private`; Production and Preview permitted |
-| Existing sensitive settings | Both hash variables, `SESSION_SECRET`, database and Blob token entries retain their original metadata and targets |
-| Deployment state | Latest deployment ID unchanged after the settings updates |
+| Existing sensitive settings | Kiriya's hash, `SESSION_SECRET`, database and Blob settings retained; the invalid Production admin hash was repaired |
+| Deployment state | Owner's latest deployment is Ready; no agent-triggered deployment |
+| Production database | Owner's build applied Neon migrations successfully |
+| Live Kiriya login | Supplied phrase accepted; birthday page opens on a 390px phone browser and remains unlocked after reload |
+| Login error presentation | Wrong phrase, HTTP 500/503, rate limits and connection failure checked in a local browser; alert fits 320px and 390px screens |
 | Local regression tests | `npm test`: 10 passed, using in-memory PGlite and mocked provider requests |
 | Production-mode login and admin | Secure/HttpOnly sessions, role separation, expired/changed sessions and invalid-hash behavior passed locally |
 | Upload and image delivery | Session gate, signed-grant limits, private read denial, public allowlisting, revocation, HEAD and byte ranges passed with the real SDK against mocked provider responses |
 | Frontend production build | `npm run build` passed, including the private-string leak check |
 
-No local test used the production database. No production fixture, reset, schema migration, media upload or content write was performed.
+Local regression tests used isolated databases; browser error checks used mocked login responses. No production fixture, reset, media upload or content write was performed. Live login checks created normal authentication audit records. Production migrations ran in the owner's deployment.
 
 ## What still needs confirmation
 
-### Existing login settings
+### Login settings are ready
 
-The following Production variables exist as **Sensitive**, but Vercel returns no readable value:
-
-- `KIRIYA_PASSPHRASE_HASH`
-- `ADMIN_PASSPHRASE_HASH`
-- `SESSION_SECRET`
-
-Confirm whether real values were saved or whether they are empty/placeholders. If real, retain them. If empty, identify which ones so only the missing values can be generated and configured through the existing authorized access. Do not post phrases, hashes or secrets in chat. There are no supplied production phrases in the local environment files; local development credentials are not production credentials.
-
-Vercel explicitly makes Sensitive values unreadable after creation. This is why an empty API response was not treated as permission to replace an existing secret. [Vercel Sensitive environment variables](https://vercel.com/docs/environment-variables/sensitive-environment-variables).
+Production configuration validation passed for both hashes and the session secret. Kiriya's supplied phrase also passed actual authentication, so it was preserved. No phrase or hash belongs in this report or in Git. Sensitive variables remain unreadable through the Vercel API; successful live authentication verifies the Kiriya configuration without exposing them. [Vercel Sensitive environment variables](https://vercel.com/docs/environment-variables/sensitive-environment-variables).
 
 ### Checks at the next owner deployment
 
-- Production configuration validation must pass with the actual runtime values.
-- Neon connectivity and schema migration must succeed using `kData_DATABASE_URL`. The storage credential endpoint requires Vercel owner reauthentication (`challenge_required`); no separate local Neon credentials were available. Direct SQL access was therefore not verified.
+- Confirm the new login error presentation on the deployed page after pushing this change.
 - Real OIDC browser uploads and private Blob reads must succeed in Production. The available local project identity is for Development, which the existing storage connection rejects. The connection's environment restrictions were retained.
-- Confirm both actual phrases work on the deployed domain; Kiriya cannot access `/admin`; sessions survive reloads; private images remain locked when signed out. Check the same flows on her phone.
+- Check login on her physical phone; the successful phone check above used Chromium emulation. Admin login and private-image checks can be completed when those features are needed.
 
 The SDK's supported OIDC upload method and automatic identity-token handling were checked against [Vercel's Blob reference](https://vercel.com/docs/vercel-blob/using-blob-sdk). No production identity token was copied into settings.
 
 ## Owner publishing commands
 
-After confirming the three login settings above, the following stages this production setup pass. Review the staged diff before committing. Other ongoing design edits can be included deliberately during that review.
+The production setup is already deployed. Push the prepared login-message commit through the existing Git integration:
 
 ```bash
 cd ~/projects/birthday
-git diff --check
-git add .env.example README.md docs/SETUP.md docs/PRODUCTION-SETUP.md \
-  api/index.js package.json \
-  scripts/check-production-config.mjs scripts/hash-passphrase.mjs \
-  scripts/migrate.mjs scripts/setup-qstash.mjs scripts/test-production.mjs \
-  server/app.js server/auth/passphrase.js server/env.js server/configuration.js \
-  server/lib/blob.js server/push/webpush.js server/routes/admin.js \
-  server/routes/session.js server/routes/uploads.js \
-  src/admin/Admin.jsx src/lib/uploads.js
-git diff --cached
-git commit -m "Prepare Kiriya production login and private uploads"
 git push origin main
 ```
 
@@ -87,6 +74,6 @@ Then complete the browser checks in [SETUP.md](SETUP.md#checks-after-the-owner-d
 
 ## Private local files
 
-**New production login phrases: none.** Existing unreadable secrets were preserved.
+The previously generated admin phrase is in `.data/production-setup/login-phrases.txt` (Git-ignored, mode `600`, directory mode `700`). No new Kiriya phrase was generated; her existing supplied phrase works.
 
 The Git-ignored `.data/production-setup/` directory contains restricted local audit metadata and verification logs. It is not a deployment artifact. `.env.local` remains the local-development configuration.
