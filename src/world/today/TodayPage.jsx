@@ -8,13 +8,14 @@ import {
   MaomaoSpread,
   MusicSpread,
 } from "../collection/Collections.jsx";
-import { Icon, Picture, Star } from "../../shared/WorldPrimitives.jsx";
+import { Icon, Star } from "../../shared/WorldPrimitives.jsx";
 import { MusicObject } from "../../shared/music/MusicRoom.jsx";
 import StickerArt from "../../shared/stickers/StickerArt.jsx";
 import { Bow, MaomaoBuddy } from "../../shared/play/PlayfulWorld.jsx";
 import PlayDesk from "../play/PlayDesk.jsx";
 import { useDailyStyle } from "../../shared/DailyStyle.jsx";
-import BirthdayName from "../../shared/BirthdayName.jsx";
+import WorldWelcome from "../../shared/profile/WorldWelcome.jsx";
+import CosplayPortrait from "../../shared/profile/CosplayPortrait.jsx";
 import NoteJar from "./NoteJar.jsx";
 import { MemeOfTheDay, NewCount } from "../feeds/FeedPieces.jsx";
 import { useFeed } from "../../lib/feeds.js";
@@ -56,22 +57,7 @@ export default function TodayPage() {
         data-motion-region
       >
         <div className="home-welcome">
-          <p className="handwritten">
-            {data?.birthday?.isBirthday
-              ? "happy birthday,"
-              : "there you are, lovely."}
-          </p>
-          <h1 id="home-title">
-            <BirthdayName />
-          </h1>
-          <p className="home-welcome__line">
-            A world just for you <em>full of soo much love and all ur faves <span className="welcome-emoticon" aria-label="sending you love">(˘ ³˘)♡</span></em>
-          </p>
-          <p className="home-welcome__description">
-            Your favourite characters, a song on repeat, a page to doodle on.
-            <br className="desktop-break" /> Stay for a while. It’s all here for
-            you. ♡
-          </p>
+          <WorldWelcome birthday={data?.birthday?.isBirthday} name={profile.data?.name}/>
           <div className="home-discovery">
             <aside className="note-slip birthday-love-note" data-motion-region>
               <span className="micro-label">A LITTLE BIRTHDAY WISH ♡</span>
@@ -104,37 +90,7 @@ export default function TodayPage() {
         </div>
         <div className="home-collage">
           <Bow className="home-collage__bow" />
-          <figure className="portrait-frame home-portrait">
-            <div className="portrait-frame__mat">
-              {profile.data?.avatarUrl ? (
-                <img
-                  className="celebration-portrait"
-                  src={profile.data.avatarUrl}
-                  alt={copy?.portraitAlt ?? "Kiriya, the birthday star"}
-                  width="735"
-                  height="763"
-                  fetchPriority="high"
-                />
-              ) : (
-                <Picture
-                  name="maomao-floral"
-                  alt="Maomao among flowers, in pink and green"
-                  eager
-                  width="735"
-                  height="763"
-                />
-              )}
-            </div>
-            <figcaption>
-              <span className="handwritten">
-                {profile.data?.avatarUrl
-                  ? copy?.portraitCaption ?? "this whole little world is for you ♡"
-                  : copy?.birthdayCaption ?? "Happy birthday miss apothecary💕"}
-              </span>
-              <span>{profile.data?.avatarUrl ? "KIRIYA" : "猫猫"}</span>
-            </figcaption>
-            <span className="paper-tape" />
-          </figure>
+          <CosplayPortrait className="home-portrait" avatarUrl={profile.data?.avatarUrl}/>
           <Star className="home-collage__star" />
           <div className="home-collage__music">
             <MusicObject song={profile.data?.song} compact />

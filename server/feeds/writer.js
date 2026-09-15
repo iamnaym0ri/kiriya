@@ -21,13 +21,21 @@ const cut = (text, max) =>
   text.length <= max
     ? text
     : text.slice(0, max - 1).replace(/\s+\S*$/, "") + "…";
+// The safe fallback carries no emoji: source titles often do, and they would spend the edition's
+// emoji budget and make later templates unusable (seen emptying a section in production).
+const plain = (text) =>
+  String(text ?? "")
+    .replace(/[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u{FE0F}\u{20E3}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
 export function templateBlurb(item) {
+  const title = plain(item.title) || item.title.toLowerCase();
   return {
     id: item.id,
     skip: false,
     skipReason: "",
-    headline: cut(item.title.toLowerCase(), 60),
-    text: cut(item.title.toLowerCase(), 150) + ". worth a look.",
+    headline: cut(title.toLowerCase(), 60),
+    text: cut(title.toLowerCase(), 150) + ". worth a look.",
     cta:
       item.kind === "song"
         ? "listen"
@@ -254,6 +262,8 @@ export async function writeBlurbs(items, provider, context) {
     const reason =
       validateVoice(b, item, {
         offLimits: context.taste.offLimits,
+        tasteNames: tasteNamesOf(context.taste),
+        lexicon: context.lexicon,
         derived: derivedFacts(item, context.day, context.hints?.[item.id]),
         recentOpeners: [
           ...(context.recentOpeners ?? []),

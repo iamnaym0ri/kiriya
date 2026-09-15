@@ -1,0 +1,12 @@
+:root .world-welcome__greeting { font: 31px/1.2 var(--font-hand); color: var(--theme-hand); text-align: center; margin: 0 0 3px; }
+:root h1.world-welcome__name { font: 400 clamp(122px, 12vw, 174px)/1.12 "Parisienne", cursive; letter-spacing: 0; color: var(--theme-ink); text-align: center; position: relative; width: fit-content; margin: 0 auto 24px; text-shadow: 1px 2px 0 #fff9fd90; }
+:root .world-welcome__name > .birthday-name { display: inline-block; position: relative; inset: auto; font: inherit; color: inherit; letter-spacing: inherit; rotate: none; }
+:root .world-welcome__line { font: 700 36px/1.16 var(--font-hand); color: var(--theme-ink); text-align: center; margin: 0 auto; max-width: 540px; letter-spacing: 0; }
+:root .world-welcome__line em { display: block; color: var(--theme-hand); font-style: normal; margin-top: 6px; }
+:root .world-welcome__description { font: 14px/1.9 var(--font-ui); color: var(--theme-ink); text-align: center; margin: 20px auto 0; max-width: 490px; }
+@media (max-width: 650px) {
+  :root h1.world-welcome__name { font-size: 132px; margin-bottom: 20px; }
+  :root .world-welcome__line { font-size: 34px; }
+  :root .world-welcome__description { font-size: 13px; }
+}
+@media (max-width: 360px) { :root h1.world-welcome__name { font-size: 114px; } :root .world-welcome__line { font-size: 31px; } }

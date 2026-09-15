@@ -560,6 +560,37 @@ try {
     assert.equal(derivedFacts(episode, "2026-10-01").airingDay, undefined);
   });
 
+  await test("Fallback blurbs survive emoji-heavy source titles (a section emptied in production)", async () => {
+    const { writeBlurbs, templateBlurb } = await import("../server/feeds/writer.js");
+    assert.equal(templateBlurb({ id: "x", title: "今日はマッチの日🔥" }).text, "今日はマッチの日. worth a look.");
+    const items = ["今日はマッチの日🔥", "ミクの日だ〜🎉", "chaos boogie", "初音ミク新曲✨", "ボカロ最高🥰"].map((title, n) => ({
+      ...row({ kind: "song", sections: ["music"], source: "vocadb-songs", media: [], title, tags: { voicebanks: ["hatsune miku"] } }),
+      id: `vocadb-songs:${n}`,
+      safetyStatus: "approved",
+      visibility: "active",
+    }));
+    const offline = {
+      model: "gpt-5.6-luna",
+      fallbackModel: "gpt-5.4-mini-2026-03-17",
+      write: async () => {
+        throw Object.assign(new Error("offline"), { code: "provider_unavailable" });
+      },
+    };
+    const stats = {};
+    const blurbs = await writeBlurbs(items, offline, {
+      taste,
+      day: DAY,
+      section: "music",
+      recentOpeners: [],
+      lexicon: { formats: [], fresh: [] },
+      hints: {},
+      stats,
+      history: [],
+    });
+    assert.equal(stats.skipped, 0);
+    assert.equal(blurbs.filter((b) => !b.skip).length, items.length);
+  });
+
   await test("Media gates require recorded YouTube playback and a moving-media policy; sampled frames approve only when every view passes", async () => {
     const now = Date.parse("2026-10-02T00:00:00Z");
     const embed = { mediaPolicy: "embed_provenance" };
@@ -1174,7 +1205,11 @@ try {
     const response = await request("me/feed/catchup", { method: "POST", cookie: kiriya, body: {} });
     assert.equal(response.status, 200);
     assert.ok(Date.now() - catchup < 5000, "catch-up must not wait for the stage");
-    assert.ok(["scheduled", "before_catchup_window", "rate_limited", "completed"].includes((await response.json()).outcome));
+    assert.ok(
+      ["scheduled", "before_catchup_window", "rate_limited", "completed", "build_mode_mismatch"].includes(
+        (await response.json()).outcome,
+      ),
+    );
   });
 } finally {
   globalThis.fetch = originalFetch;

@@ -698,10 +698,16 @@ export async function claimCatchUp(
     await db.execute(sql`INSERT INTO feed_controls(key,until) VALUES ('catchup',${new Date(now.getTime() + 5 * 60000).toISOString()}::timestamptz)
     ON CONFLICT(key) DO UPDATE SET until=excluded.until WHERE feed_controls.until<=${now.toISOString()}::timestamptz RETURNING key`);
   if (!rows(claimed).length) return { outcome: "rate_limited" };
-  const build = await createBuild(db, localDay(now), {
-      mode: config.fixtureMode ? "fixture" : "live",
-    }),
-    stage = await nextStage(db, build.id);
+  let build;
+  try {
+    build = await createBuild(db, localDay(now), { mode: config.fixtureMode ? "fixture" : "live" });
+  } catch (error) {
+    // A local fixture session alongside a live build for the same day: nothing to catch up on, and
+    // her page must never see an error for it.
+    if (error.code === "build_mode_mismatch") return { outcome: "build_mode_mismatch" };
+    throw error;
+  }
+  const stage = await nextStage(db, build.id);
   return stage
     ? { outcome: "claimed", buildId: build.id, stage }
     : { outcome: "completed", buildId: build.id };
