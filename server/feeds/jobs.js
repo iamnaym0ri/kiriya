@@ -38,6 +38,7 @@ import { opener } from "./voice.js";
 import { getFeedSettings } from "./settings.js";
 import { scoreItem } from "./score.js";
 import { spentToday } from "./usage.js";
+import { RULE_VERSION } from "./rules.js";
 
 // Independent stage handlers (events, maintenance) are registered once by their modules so this
 // runner never imports them (no cycles). `registerEventsStage` remains the documented entry point.
@@ -222,6 +223,10 @@ async function collect(ctx) {
 }
 // Items whose check needs paid vision/classification (moderation alone is free).
 const paidCheck = (item) => item.media.length > 0 || item.kind === "meme";
+const staleRejection = (item) =>
+  item.safetyStatus === "rejected" &&
+  ["vision", "moderation"].includes(item.reason) &&
+  item.safety?.rulesVersion !== RULE_VERSION;
 
 /**
  * Check order for one build. Text-only items (free moderation) first, then paid items most likely to
@@ -242,16 +247,38 @@ export async function checkQueue(db, build, config = feedConfig()) {
     .orderBy(desc(s.feedItems.fetchedAt), asc(s.feedItems.id))
     .limit(2000);
   const free = pending.filter((i) => !paidCheck(i)).map((i) => i.id);
+  // Items an earlier build held back as uncertain, or rejected by vision/moderation under an older
+  // rules version, are re-evaluated first under the current rules (once: the new verdict records it).
+  const reconsider = await db
+    .select({ id: s.feedItems.id })
+    .from(s.feedItems)
+    .where(
+      and(
+        eq(s.feedItems.fixture, build.mode === "fixture"),
+        eq(s.feedItems.safetyStatus, "rejected"),
+        eq(s.feedItems.visibility, "active"),
+        sql`${s.feedItems.reason} IN ('vision','moderation') AND ${s.feedItems.safety}->>'rulesVersion' IS DISTINCT FROM ${RULE_VERSION}`,
+      ),
+    )
+    .limit(100);
+  const uncertain = [
+    ...pending.filter((i) => paidCheck(i) && i.reason === "vision_uncertain").map((i) => i.id),
+    ...reconsider.map((r) => r.id),
+  ];
+  // Fandom memes are checked through their own sections' quotas; the meme quota is for home memes.
+  const inQuota = (i, section) =>
+    i.sections.includes(section) &&
+    (section !== "meme" || (!i.sections.includes("maomao") && !i.sections.includes("music")));
   const lists = SECTIONS.map((section) =>
     pending
-      .filter((i) => paidCheck(i) && i.sections.includes(section))
+      .filter((i) => paidCheck(i) && inQuota(i, section))
       .map((i) => ({ id: i.id, score: scoreItem(i, build.taste, { day: build.day, section }).score }))
       .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
       .slice(0, config.checkQuotas?.[section] ?? 30)
       .map((r) => r.id),
   );
-  const queued = new Set(free);
-  const queue = [...free];
+  const queued = new Set([...free, ...uncertain]);
+  const queue = [...free, ...uncertain.filter((id) => !free.includes(id))];
   for (let i = 0; lists.some((list) => i < list.length); i++)
     for (const list of lists)
       if (i < list.length && !queued.has(list[i])) {
@@ -292,7 +319,7 @@ async function check(ctx) {
       // pending for a later build; free text checks (and the retry pass) still run, and today's plan
       // uses what is approved.
       if (
-        item?.safetyStatus === "pending" &&
+        (item?.safetyStatus === "pending" || (item && staleRejection(item))) &&
         paidCheck(item) &&
         ctx.config.dailyLimitMicros &&
         (budgetStopped ||
@@ -300,7 +327,7 @@ async function check(ctx) {
       ) {
         budgetStopped = true;
         stats.skippedForDailyBudget = (stats.skippedForDailyBudget ?? 0) + 1;
-      } else if (item && item.safetyStatus === "pending" && item.visibility === "active") {
+      } else if (item && item.visibility === "active" && (item.safetyStatus === "pending" || staleRejection(item))) {
         await assertLease(ctx.db, ctx.run);
         const result = await checkItem(item, ctx.provider, {
           blocklist: blocked,

@@ -288,6 +288,7 @@ feedAdminRoutes.get("/status", async (c) => {
     items: items.map(({ id, title, reason, source, credit, safetyStatus, visibility, blurb, fixture, kind, url, safety }) => ({
       id, title, reason, source, credit, safetyStatus, visibility, blurb, fixture, kind, url,
       scope: safety?.scope ?? null,
+      uncertain: Boolean(safety?.uncertain),
     })),
     events,
     hidden,

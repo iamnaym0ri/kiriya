@@ -627,15 +627,14 @@ try {
       "pending",
     );
     const vision = await fake.vision();
-    assert.equal(
-      (
-        await checkItem(visual, {
-          ...fake,
-          vision: async () => ({ ...vision, aiLikelihood: "uncertain" }),
-        })
-      ).status,
-      "pending",
-    );
+    // Owner decision (2026-09-16): an uncertain vision call is approved and flagged for review;
+    // only definite findings reject. (Originally asserted as pending in the foundation.)
+    const uncertainCall = await checkItem(visual, {
+      ...fake,
+      vision: async () => ({ ...vision, aiLikelihood: "uncertain" }),
+    });
+    assert.equal(uncertainCall.status, "approved");
+    assert.equal(uncertainCall.evidence.uncertain, true);
     assert.equal(
       (
         await checkItem(

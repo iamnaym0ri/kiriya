@@ -424,3 +424,15 @@ The primary/companion contract is unchanged. `plan.meta.allocation` names the ve
 - **Rules:** the booru rating family map is Danbooru `g`, Sakugabooru `s`. `minimumScores` apply by source ID, then family. `unreleased_sekai` doesn't apply to merch preorders. `BAD_TEXT` matches `\bsue[sd]?\b` (so "skill issue" passes).
 - **`FEEDS_ENABLED`:** `false` means off; `manual` means admin stage runs only (no cron, continuations or catch-up); `true` means scheduled automation. `feedConfig()` exposes `enabled` and `manualRuns`.
 - **Client:** Tumblr media never autoplays inline (still plus tap to play in the viewer). The credits dialog lists the feed data sources and "powered by Tumblr".
+
+## Owner policy updates after the first production run (2026-09-16)
+
+- **Uncertainty approves.** `checkItem` approves an uncertain vision or text classification (`suggestive: "uncertain"`, `aiLikelihood: "uncertain"` or `aiConfidence < 0.75`) and records `evidence.uncertain: true`; the admin's recent items show it. Still rejected: `suggestive` or `explicit`, gore, horror, political, confident AI art (`high` with confidence ≥ 0.75), quality < 3, moderation flags or thresholds, meme rules, and missing required characters or cosplay.
+- **Moderation:** reject when OpenAI's moderation flags the input (or any category is true), plus the strict `sexual/minors` score threshold (0.01). The other `THRESHOLDS` scores are recorded as evidence and no longer reject (owner decision, 2026-09-16).
+- **Re-evaluation:** `RULE_VERSION` is now `2026-09-16.1`. `checkQueue` re-queues vision/moderation rejections whose `safety.rulesVersion` is older, once, ahead of the section quotas.
+- **YouTube provenance:** `official_channel`, `vocadb_original` and `creator_upload` (a channel verified as the uploader's own) pass `mediaGate`; `unknown` stays pending.
+- **Check queue:** free text items first, then paid items previously held back as `vision_uncertain`, then each section's quota. The `meme` quota counts only home-eligible memes (not maomao or music); fandom memes use their own sections' quotas.
+- **Dress-up filler:** empty slots fill from cosplay, then non-merch and non-event kinds.
+- **Runner errors:** `invocation_request_limit` and `request_in_progress` pass through `checkItem` and checkpoint the stage. `check` runs one retry pass per build for queued items left `safety_unavailable`; after the daily-budget stop it skips paid items (left pending) while free checks and the retry continue.
+- **Events:** `upsertEvent` skips an undated candidate that duplicates a dated upcoming edition of the same event (`duplicatesDatedEdition`).
+

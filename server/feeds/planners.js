@@ -400,7 +400,7 @@ export function planDressup(items, ctx) {
   const news = pick(pool, (i) => i.kind === "news");
   if (news) entries.push({ type: "news", primary: news, companions: [] });
   while (entries.length < 12) {
-    const more = pick(cosplay) ?? pick(pool);
+    const more = pick(cosplay) ?? pick(pool, (i) => !["merch", "event"].includes(i.kind));
     if (!more) break;
     entries.push({ type: more.kind === "cosplay" ? "cosplay" : more.kind, primary: more, companions: [] });
   }

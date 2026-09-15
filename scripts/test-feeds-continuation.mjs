@@ -445,6 +445,12 @@ try {
     );
     assert.equal(plan.meta.rotatingFandom, first);
     assert.equal(plan.meta.personal.photoId, "photo-1");
+    // Empty dress-up slots are never filled with extra merch (first production run had 8 merch slots).
+    const merchHeavy = P.planDressup(
+      [cos(["hatsune miku"]), ...Array.from({ length: 9 }, () => row({ kind: "merch", sections: ["dressup", "merch"], source: "gsc", facts: { sgd: 50 } }))],
+      ctx(),
+    );
+    assert.ok(merchHeavy.slots.filter((x) => x.type === "merch").length <= 1);
 
     const general = Array.from({ length: 7 }, () =>
       row({ kind: "meme", sections: ["meme"], source: "lemmy" }),
@@ -585,7 +591,8 @@ try {
     assert.deepEqual(mediaGate(yt(null), embed, now), ["pending", "playback_unverified"]);
     assert.deepEqual(mediaGate(yt({ ...fresh, regionOk: false }), embed, now), ["rejected", "playback_unavailable"]);
     assert.deepEqual(mediaGate(yt({ ...fresh, ageRestricted: true }), embed, now), ["rejected", "age_restricted"]);
-    assert.deepEqual(mediaGate(yt({ ...fresh, provenance: "creator_upload" }), embed, now), ["pending", "provenance_unverified"]);
+    assert.deepEqual(mediaGate(yt({ ...fresh, provenance: "unknown" }), embed, now), ["pending", "provenance_unverified"]);
+    assert.equal(mediaGate(yt({ ...fresh, provenance: "creator_upload" }), embed, now), null);
     assert.deepEqual(mediaGate(yt({ ...fresh, checkedAt: "2026-09-20T00:00:00Z" }), embed, now), ["pending", "playback_stale"]);
     assert.deepEqual(mediaGate(yt(fresh, null), embed, now), ["pending", "poster_missing"]);
     assert.equal(mediaGate(yt(fresh), embed, now), null);
@@ -632,11 +639,20 @@ try {
     assert.equal(approved.status, "approved");
     assert.equal(approved.evidence.scope, "sampled-frames");
     assert.deepEqual(approved.evidence.eligibleSections, ["maomao"]);
+    // Owner decision (2026-09-16): scores below OpenAI's own flag don't reject, except the minors check.
+    const scored = (key, score) => ({ ...clean, category_scores: { ...clean.category_scores, [key]: score } });
+    assert.equal((await checkItem(gif, { ...provider, moderate: async () => scored("sexual", 0.4) }, { source })).status, "approved");
+    assert.equal((await checkItem(gif, { ...provider, moderate: async () => scored("sexual/minors", 0.05) }, { source })).status, "rejected");
     const flaggedSecondSheet = {
       ...provider,
       moderate: async (item, index) => (index === 1 ? { ...clean, flagged: true } : clean),
     };
     assert.equal((await checkItem(gif, flaggedSecondSheet, { source })).status, "rejected");
+    // Owner decision (2026-09-16): uncertainty approves (flagged); definite suggestive/explicit rejects.
+    const unsure = await checkItem(gif, { ...provider, vision: async (item, index) => ({ ...vision(index === 0 ? ["maomao"] : []), suggestive: "uncertain", aiConfidence: 0.5 }) }, { source });
+    assert.deepEqual([unsure.status, unsure.evidence.uncertain], ["approved", true]);
+    for (const level of ["suggestive", "explicit"])
+      assert.equal((await checkItem(gif, { ...provider, vision: async () => ({ ...vision(["maomao"]), suggestive: level }) }, { source })).status, "rejected");
     const noMaomao = { ...provider, vision: async () => vision(["frieren"]) };
     assert.deepEqual(
       [(await checkItem(gif, noMaomao, { source })).reason],
@@ -849,10 +865,26 @@ try {
     for (let i = 0; i < 6; i++)
       await add(`plain${i}`, rawItem(40 + i, { title: `a quiet picture ${i}`, tags: {} }));
     const config = { ...feedConfig(), checkQuotas: { maomao: 3, music: 3, dressup: 3, meme: 3, merch: 3 } };
+    const heldBack = await ingestItem(db, normalizeItem(rawItem(50, { title: "a quiet picture held back earlier", tags: {} })));
+    await db.update(s.feedItems).set({ reason: "vision_uncertain" }).where(eq(s.feedItems.id, heldBack));
+    const fandomMeme = await ingestItem(db, normalizeItem(rawItem(51, { kind: "meme", sections: ["meme", "maomao"], title: "a maomao meme", tags: { characters: ["maomao"] } })));
+    const homeMeme = await ingestItem(db, normalizeItem(rawItem(52, { kind: "meme", sections: ["meme"], title: "a general anime meme", tags: {} })));
     const queue = await checkQueue(db, build, config);
     assert.equal(queue[0], pendingIds.note, "free text checks come first");
+    assert.ok(queue.indexOf(heldBack) > 0 && queue.indexOf(heldBack) < queue.indexOf(pendingIds.loved), "earlier uncertain items are re-evaluated first");
+    assert.ok(queue.includes(homeMeme));
+    assert.ok(queue.includes(fandomMeme), "fandom memes still come through their own section's quota");
+    // A moderation rejection made under an older rules version is reconsidered once under the current rules.
+    const oldRejection = await ingestItem(db, normalizeItem(rawItem(53, { title: "a cosplay photo rejected by the old threshold", tags: {} })));
+    await db.execute(sql`UPDATE feed_items SET safety_status='rejected',reason='moderation',safety=safety||'{"rulesVersion":"2026-09-15.1"}'::jsonb WHERE id=${oldRejection}`);
+    const currentRejection = await ingestItem(db, normalizeItem(rawItem(54, { title: "a photo rejected under the current rules", tags: {} })));
+    const { RULE_VERSION } = await import("../server/feeds/rules.js");
+    await db.execute(sql`UPDATE feed_items SET safety_status='rejected',reason='moderation',safety=safety||jsonb_build_object('rulesVersion',${RULE_VERSION}::text) WHERE id=${currentRejection}`);
+    const requeued = await checkQueue(db, build, config);
+    assert.ok(requeued.includes(oldRejection));
+    assert.ok(!requeued.includes(currentRejection));
     const paid = queue.filter((id) => id !== pendingIds.note && Object.values(pendingIds).includes(id));
-    assert.ok(paid.length <= 3, "paid checks respect the section quota");
+    assert.ok(paid.length <= 4, "paid checks respect the section quota");
     assert.equal(paid[0], pendingIds.loved, "the item her taste favours is inspected first");
 
     const month = localDay().slice(0, 7);

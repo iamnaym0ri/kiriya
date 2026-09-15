@@ -898,6 +898,7 @@ export default function FeedPanel() {
                       {item.visibility}
                       {item.reason ? ` · ${words(item.reason)}` : ""}
                       {item.scope ? ` · checked: ${words(item.scope)}` : ""}
+                      {item.uncertain ? " · approved while uncertain" : ""}
                     </p>
                   </div>
                   {item.visibility === "active" && (

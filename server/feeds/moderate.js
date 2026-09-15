@@ -79,7 +79,9 @@ export function mediaGate(item, source, now = Date.now()) {
       if (!p) return ["pending", "playback_unverified"];
       if (!p.embeddable || !p.regionOk) return ["rejected", "playback_unavailable"];
       if (p.ageRestricted) return ["rejected", "age_restricted"];
-      if (!["official_channel", "vocadb_original"].includes(p.provenance))
+      // A channel verified as the creator's own (e.g. a cosplay tutorial maker) counts like an official
+      // channel; only unverified uploads (possible reposts) stay pending.
+      if (!["official_channel", "vocadb_original", "creator_upload"].includes(p.provenance))
         return ["pending", "provenance_unverified"];
       if (now - new Date(p.checkedAt).getTime() > PLAYBACK_MAX_AGE_MS)
         return ["pending", "playback_stale"];
@@ -131,12 +133,12 @@ export async function checkItem(
       )
     )
       return "incomplete";
+    // Owner decision (2026-09-16): reject what OpenAI's moderation flags. Of the stricter score
+    // thresholds only the minors check stays; other scores are recorded as evidence, not used to reject.
     if (
       moderation.flagged ||
       Object.values(moderation.categories).some((value) => value === true) ||
-      Object.entries(thresholds).some(
-        ([k, v]) => moderation.category_scores[k] > v,
-      )
+      moderation.category_scores["sexual/minors"] > thresholds["sexual/minors"]
     )
       return "flagged";
     return "ok";
@@ -164,11 +166,14 @@ export async function checkItem(
       if (outcome === "flagged") return verdict("rejected", "moderation");
     }
 
+    // Owner decision (2026-09-16): uncertainty alone never withholds. Only a definite finding rejects
+    // (suggestive/explicit, gore, horror, political, confident AI art, low quality); an uncertain call
+    // is approved and flagged in the evidence for admin review.
+    const isUncertain = (v) =>
+      v.suggestive === "uncertain" || v.aiLikelihood === "uncertain" || v.aiConfidence < 0.75;
     const judge = (v) => {
-      if (v.suggestive === "uncertain" || v.aiLikelihood === "uncertain" || v.aiConfidence < 0.75)
-        return ["pending", "vision_uncertain"];
       if (
-        v.suggestive !== "none" ||
+        ["suggestive", "explicit"].includes(v.suggestive) ||
         v.gore ||
         v.horror ||
         v.political ||
@@ -205,10 +210,11 @@ export async function checkItem(
       const v = parsed.data;
       evidence.vision = [v];
       evidence.scope = "text-classification";
-      if (v.suggestive === "uncertain") return verdict("pending", "vision_uncertain");
-      if (v.suggestive !== "none" || v.gore || v.horror || v.political) return verdict("rejected", "vision");
+      if (["suggestive", "explicit"].includes(v.suggestive) || v.gore || v.horror || v.political)
+        return verdict("rejected", "vision");
       results.push(v);
     }
+    if (results.some(isUncertain)) evidence.uncertain = true;
 
     if (item.kind === "meme" && results.some(memeRules)) return verdict("rejected", "meme_rules");
     if (["cosplay", "dare"].includes(item.kind) && views.length && !results.some((v) => v.isCosplayPhoto))

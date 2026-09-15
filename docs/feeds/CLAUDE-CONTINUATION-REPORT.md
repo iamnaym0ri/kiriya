@@ -90,7 +90,27 @@ Continuation of Codex's feed foundation, following [`../execute.md`](../execute.
   - Tests cover all three.
 - **events: bug found.** Undated scout mentions of already-dated editions ("AFA Singapore 2026") created duplicate TBC rows. The two duplicates were hidden through admin → Events. A wrongly hidden Comiket 110 row was restored. Fixed locally: `upsertEvent` skips an undated candidate that names no edition beyond the dated row's own year or number.
 - **Spend so far:** US$0.038 (diagnostics US$0.0002, events US$0.029, check about US$0.009).
-- **Not yet published.** The fix needs the owner's push; the same build then resumes the check (including the retry pass), plan-write and publish.
+- **Resumed after the owner's push** (`4e76b1a`, `dpl_D6aF7NMMtgy5oPFnMMTcZw9znB9q`):
+  - **check:** the retry pass re-queued the 101 items and each invocation stopped cleanly at its request cap. Result: 294 checked, 131 approved, 25 held back as uncertain, 5 unverified YouTube provenance; rejected 14 by vision, 13 by moderation, 5 by meme rules, 11 by other rules; 0 left `safety_unavailable`.
+  - **plan-write:** 126 s, 20 requests.
+  - **publish:** 189 s; finished 22:27:58 UTC.
+- **Published edition 2026-09-16:**
+  - maomao 7 slots and 13 reserve; music 12 and 17; dressup 10 and 2; merch shelf 24.
+  - The home meme was empty: the meme check quota had gone to fandom memes, which that section excludes.
+  - Month-to-date spend: US$0.13.
+- **Reviewed before publish:** credits, facts and voice held up.
+  - Template fallbacks were common for merch titles and some VocaDB songs.
+  - "villain era" repeats across sections.
+  - Dress-up had no cosplay photos: the few Bluesky cosplay posts collected were rejected by moderation thresholds, and empty slots filled with merch.
+  - Three flagged images (a frog joke, a celebrity reaction meme, a bunny-outfit sketch) were viewed and none was explicit, so all were kept per the owner's rule.
+- **Owner decision (2026-09-16):** "if it's not outright explicit, approve". Uncertain vision calls are now approved and flagged `evidence.uncertain` for admin review. Definite suggestive or explicit findings, gore, horror, political content, confident AI art and moderation flags still reject.
+- **Fixes for the next push:**
+  - Items previously held back as uncertain are re-evaluated first in the next build.
+  - The meme check quota is reserved for home-eligible memes.
+  - Dress-up never fills empty slots with extra merch or events.
+  - YouTube `creator_upload` provenance (the channel verified as the creator's own) passes the gate, which unblocks cosplay tutorials.
+  - Codex's foundation assertion "uncertain → pending" was updated to the owner's decision.
+- **Owner decision (2026-09-16), moderation:** reject only what OpenAI's moderation flags, with the minors score check kept strict. `RULE_VERSION` was bumped so earlier vision/moderation rejections (27) are reconsidered once under the new rules. The owner then asked to rebuild today once the change deploys.
 
 ## 3. Phase log
 
