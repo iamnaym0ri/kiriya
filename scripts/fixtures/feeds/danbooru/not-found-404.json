@@ -1,0 +1,1 @@
+{"success":false,"error":"ActiveRecord::RecordNotFound","message":"That record was not found.","backtrace":["app/controllers/posts_controller.rb:32:in 'PostsController#show'","app/logical/rack_server_timing.rb:19:in 'RackServerTiming#call'"]}

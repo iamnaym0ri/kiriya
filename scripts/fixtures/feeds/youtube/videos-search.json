@@ -1,0 +1,110 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "mock-etag-videos",
+  "pageInfo": {
+    "totalResults": 2,
+    "resultsPerPage": 2
+  },
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-SearchMake1",
+      "id": "SearchMake1",
+      "snippet": {
+        "publishedAt": "2026-09-05T09:00:00Z",
+        "channelId": "UCmockSearchChannel00001",
+        "title": "Fern cosplay makeup transformation (mock)",
+        "description": "Frieren: Beyond Journey's End makeup look.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/SearchMake1/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Search Result Creator",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT9M00S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/SearchMake1\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-SearchVlog1",
+      "id": "SearchVlog1",
+      "snippet": {
+        "publishedAt": "2026-09-04T09:00:00Z",
+        "channelId": "UCmockSearchChannel00002",
+        "title": "my day at the con (mock)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/SearchVlog1/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Another Creator",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT7M00S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/SearchVlog1\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    }
+  ]
+}

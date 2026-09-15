@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import PaletteParty from "./PaletteParty.jsx";
+import MaomaoGames from "./MaomaoGames.jsx";
 const MiniSketchbook = lazy(() => import("./MiniSketchbook.jsx"));
 export default function PlayDesk() {
   const ref = useRef(null);
@@ -34,7 +34,7 @@ export default function PlayDesk() {
         <Suspense
           fallback={
             <div className="mini-sketchbook">
-              <h2>Opening your little page…</h2>
+              <h2>Opening lets doodle&lt;3…</h2>
             </div>
           }
         >
@@ -45,7 +45,7 @@ export default function PlayDesk() {
           <h2>A page for your doodles. 🎨</h2>
         </div>
       )}
-      <PaletteParty />
+      <MaomaoGames />
     </div>
   );
 }

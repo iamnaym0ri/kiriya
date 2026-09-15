@@ -1,0 +1,1408 @@
+{
+ "posts": [
+  {
+   "uri": "at://did:plc:6jlgvn7dg6xcuowww36rlqdc/app.bsky.feed.post/3mvixylcvus2s",
+   "cid": "bafyreigz3nyga6gortk3isnzwhaxfklozm2l5ehlvo2fo7xr74f5cb4aye",
+   "author": {
+    "did": "did:plc:6jlgvn7dg6xcuowww36rlqdc",
+    "handle": "frillana.bsky.social",
+    "displayName": "✨Alana✨",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-14T20:43:37.986Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 3178,
+        "width": 2541
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreigy4g5hye75y27thhq532m2k6ddclvbyithbrflpbiiknbzzfmlmm"
+        },
+        "mimeType": "image/jpeg",
+        "size": 1754521
+       }
+      }
+     ]
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "plussizelolita"
+       }
+      ],
+      "index": {
+       "byteEnd": 58,
+       "byteStart": 43
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "plussizeegl"
+       }
+      ],
+      "index": {
+       "byteEnd": 71,
+       "byteStart": 59
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "eglfashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 83,
+       "byteStart": 72
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "lolitafashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 98,
+       "byteStart": 84
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "jfashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 108,
+       "byteStart": 99
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "egl"
+       }
+      ],
+      "index": {
+       "byteEnd": 113,
+       "byteStart": 109
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "eglcommunity"
+       }
+      ],
+      "index": {
+       "byteEnd": 127,
+       "byteStart": 114
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "text": "Coord for a friend's birthday party 🎉 \n\n#plussizelolita #plussizeegl #eglfashion #lolitafashion #jfashion #egl #eglcommunity"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:6jlgvn7dg6xcuowww36rlqdc/bafkreigy4g5hye75y27thhq532m2k6ddclvbyithbrflpbiiknbzzfmlmm",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:6jlgvn7dg6xcuowww36rlqdc/bafkreigy4g5hye75y27thhq532m2k6ddclvbyithbrflpbiiknbzzfmlmm",
+      "alt": "",
+      "aspectRatio": {
+       "height": 3178,
+       "width": 2541
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "replyCount": 0,
+   "repostCount": 3,
+   "likeCount": 11,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-14T20:43:45.258Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:s6tdoygzcgsurl5vvevklu2c/app.bsky.feed.post/3mvi3s2fjdc2l",
+   "cid": "bafyreifplwdexrqrhab3uh7akmslet4ln5tmqzfmeus5wv4pc44qqp3hya",
+   "author": {
+    "did": "did:plc:s6tdoygzcgsurl5vvevklu2c",
+    "handle": "mollymetaphora.bsky.social",
+    "displayName": "Molly Metaphora",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-14T12:18:54.149Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 2000,
+        "width": 1331
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreihqh2nsa3xnjlpjo32sh7xci3bk6vmzqdyzcuiscfqvlmonrzwkky"
+        },
+        "mimeType": "image/jpeg",
+        "size": 1416130
+       }
+      },
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 2000,
+        "width": 1331
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreihxoq6metnijvqe5o3vjx7o3hct72ppoi5t6agdxhbkgvinfs4lbm"
+        },
+        "mimeType": "image/jpeg",
+        "size": 1424988
+       }
+      }
+     ]
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "eglcommunity"
+       }
+      ],
+      "index": {
+       "byteEnd": 101,
+       "byteStart": 88
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "kawaiifashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 116,
+       "byteStart": 102
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "lolitafashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 131,
+       "byteStart": 117
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "egl"
+       }
+      ],
+      "index": {
+       "byteEnd": 136,
+       "byteStart": 132
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "eglfashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 148,
+       "byteStart": 137
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "classiclolita"
+       }
+      ],
+      "index": {
+       "byteEnd": 163,
+       "byteStart": 149
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "florals"
+       }
+      ],
+      "index": {
+       "byteEnd": 172,
+       "byteStart": 164
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "secretgarden"
+       }
+      ],
+      "index": {
+       "byteEnd": 186,
+       "byteStart": 173
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "mollymetaphora"
+       }
+      ],
+      "index": {
+       "byteEnd": 202,
+       "byteStart": 187
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "text": "A couple of gorgeous pictures from  Lolita Fashion Day market taken by JustMoolti 😍\n\n#eglcommunity #kawaiifashion #lolitafashion #egl #eglfashion #classiclolita #florals #secretgarden #mollymetaphora"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:s6tdoygzcgsurl5vvevklu2c/bafkreihqh2nsa3xnjlpjo32sh7xci3bk6vmzqdyzcuiscfqvlmonrzwkky",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:s6tdoygzcgsurl5vvevklu2c/bafkreihqh2nsa3xnjlpjo32sh7xci3bk6vmzqdyzcuiscfqvlmonrzwkky",
+      "alt": "",
+      "aspectRatio": {
+       "height": 2000,
+       "width": 1331
+      }
+     },
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:s6tdoygzcgsurl5vvevklu2c/bafkreihxoq6metnijvqe5o3vjx7o3hct72ppoi5t6agdxhbkgvinfs4lbm",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:s6tdoygzcgsurl5vvevklu2c/bafkreihxoq6metnijvqe5o3vjx7o3hct72ppoi5t6agdxhbkgvinfs4lbm",
+      "alt": "",
+      "aspectRatio": {
+       "height": 2000,
+       "width": 1331
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "replyCount": 0,
+   "repostCount": 1,
+   "likeCount": 4,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-14T12:20:57.862Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:sbr6key6ss36jq254dbtlllr/app.bsky.feed.post/3mvgbnk6mek2f",
+   "cid": "bafyreihrlortdnkdsxipac3d3klogmu2fy4xrihip7gyybv3k4wb2tgqdi",
+   "author": {
+    "did": "did:plc:sbr6key6ss36jq254dbtlllr",
+    "handle": "repede.bsky.social",
+    "displayName": "SplashTOMATO",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-13T18:58:25.904Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 4000
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreiea7umvjs5lrvchz5r2o6ansbx35jzvfam4r4aqagjwntc37itzzm"
+        },
+        "mimeType": "image/jpeg",
+        "size": 1978838
+       }
+      }
+     ]
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "jfashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 183,
+       "byteStart": 174
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "eglcomm"
+       }
+      ],
+      "index": {
+       "byteEnd": 192,
+       "byteStart": 184
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "ロリィタ"
+       }
+      ],
+      "index": {
+       "byteEnd": 207,
+       "byteStart": 194
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "ロリータファッション"
+       }
+      ],
+      "index": {
+       "byteEnd": 239,
+       "byteStart": 208
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "ロリータ"
+       }
+      ],
+      "index": {
+       "byteEnd": 253,
+       "byteStart": 240
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "lolitafashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 268,
+       "byteStart": 254
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "text": "Skirt: Angelic Pretty\nBlouse: Rose and Neverland (rip)\nHeaddress + tie: kuro to iro\nSocks: Candy Stripper\nSocks: Yosuke\nThe front zippers are peak and there are 2x POCKETS \n\n#jfashion #eglcomm  #ロリィタ #ロリータファッション #ロリータ #lolitafashion"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:sbr6key6ss36jq254dbtlllr/bafkreiea7umvjs5lrvchz5r2o6ansbx35jzvfam4r4aqagjwntc37itzzm",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:sbr6key6ss36jq254dbtlllr/bafkreiea7umvjs5lrvchz5r2o6ansbx35jzvfam4r4aqagjwntc37itzzm",
+      "alt": "",
+      "aspectRatio": {
+       "height": 4000,
+       "width": 4000
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "replyCount": 0,
+   "repostCount": 1,
+   "likeCount": 19,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-13T18:58:29.867Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:yxuchzg2fyhyvfrfklgilerf/app.bsky.feed.post/3mv6actlkr22y",
+   "cid": "bafyreih4lcoomc2odivembou6zbpxdshnromyyhfflkehb3sapykv7p5wm",
+   "author": {
+    "did": "did:plc:yxuchzg2fyhyvfrfklgilerf",
+    "handle": "celestiayulamoon.bsky.social",
+    "displayName": "Celestiayula",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-10T14:13:15.005Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 2716,
+        "width": 2716
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreihgniumpncaabgs6rkqee4t475fcbecdb7rdaw7kvaahmbr5gwb4y"
+        },
+        "mimeType": "image/jpeg",
+        "size": 1565797
+       }
+      },
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 2716,
+        "width": 2716
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreicrj6xadbjfqan426lwjsbpbtbvpcbeky37cu7ueepy2aohbcowga"
+        },
+        "mimeType": "image/jpeg",
+        "size": 1781569
+       }
+      },
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 1440,
+        "width": 1080
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreihteciwzzmhaprclv7bukwhhc633fsepmsgfjpd4xgeyeojvyds3a"
+        },
+        "mimeType": "image/jpeg",
+        "size": 1064056
+       }
+      },
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 2772,
+        "width": 2772
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreidvvqqnbtkyhgbu7w47zxmqpoy3lbsds33mf4mc5pkvd3kiyodpfe"
+        },
+        "mimeType": "image/jpeg",
+        "size": 1789179
+       }
+      }
+     ]
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "lolitafashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 166,
+       "byteStart": 152
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "egl"
+       }
+      ],
+      "index": {
+       "byteEnd": 171,
+       "byteStart": 167
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "kawaiifashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 186,
+       "byteStart": 172
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "gothiclolita"
+       }
+      ],
+      "index": {
+       "byteEnd": 200,
+       "byteStart": 187
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "sweetlolita"
+       }
+      ],
+      "index": {
+       "byteEnd": 213,
+       "byteStart": 201
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "classiclolita"
+       }
+      ],
+      "index": {
+       "byteEnd": 228,
+       "byteStart": 214
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "jfashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 238,
+       "byteStart": 229
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "text": "My coords (mostly) augustus  and July \nJust wanted to make a whole post of it \n3 were for a convention \nOne for a museum trip with my local community \n\n#lolitafashion #egl #kawaiifashion #gothiclolita #sweetlolita #classiclolita #jfashion"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yxuchzg2fyhyvfrfklgilerf/bafkreihgniumpncaabgs6rkqee4t475fcbecdb7rdaw7kvaahmbr5gwb4y",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yxuchzg2fyhyvfrfklgilerf/bafkreihgniumpncaabgs6rkqee4t475fcbecdb7rdaw7kvaahmbr5gwb4y",
+      "alt": "",
+      "aspectRatio": {
+       "height": 2716,
+       "width": 2716
+      }
+     },
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yxuchzg2fyhyvfrfklgilerf/bafkreicrj6xadbjfqan426lwjsbpbtbvpcbeky37cu7ueepy2aohbcowga",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yxuchzg2fyhyvfrfklgilerf/bafkreicrj6xadbjfqan426lwjsbpbtbvpcbeky37cu7ueepy2aohbcowga",
+      "alt": "",
+      "aspectRatio": {
+       "height": 2716,
+       "width": 2716
+      }
+     },
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yxuchzg2fyhyvfrfklgilerf/bafkreihteciwzzmhaprclv7bukwhhc633fsepmsgfjpd4xgeyeojvyds3a",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yxuchzg2fyhyvfrfklgilerf/bafkreihteciwzzmhaprclv7bukwhhc633fsepmsgfjpd4xgeyeojvyds3a",
+      "alt": "",
+      "aspectRatio": {
+       "height": 1440,
+       "width": 1080
+      }
+     },
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yxuchzg2fyhyvfrfklgilerf/bafkreidvvqqnbtkyhgbu7w47zxmqpoy3lbsds33mf4mc5pkvd3kiyodpfe",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yxuchzg2fyhyvfrfklgilerf/bafkreidvvqqnbtkyhgbu7w47zxmqpoy3lbsds33mf4mc5pkvd3kiyodpfe",
+      "alt": "",
+      "aspectRatio": {
+       "height": 2772,
+       "width": 2772
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "replyCount": 0,
+   "repostCount": 3,
+   "likeCount": 15,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-10T14:13:21.362Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:vgibpdqbewqnd26qzwefyuqc/app.bsky.feed.post/3mv3wxnr5t22m",
+   "cid": "bafyreib3lrfz3iwmwiys3jbh4ihv5ywemd3hn3fjbn5lsuybpqiambazuu",
+   "author": {
+    "did": "did:plc:vgibpdqbewqnd26qzwefyuqc",
+    "handle": "scuttlebuttink.bsky.social",
+    "displayName": "Scuttlebutt Ink ~ Find our magical boys on Tapas!",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-09T16:20:36.652Z",
+    "embed": {
+     "$type": "app.bsky.embed.video",
+     "aspectRatio": {
+      "height": 1920,
+      "width": 1080
+     },
+     "presentation": "default",
+     "video": {
+      "$type": "blob",
+      "ref": {
+       "$link": "bafkreibzcmuyobd7bofu7usfsy72ic2xw4cxqfegsgzcylovs4ctkhgaqm"
+      },
+      "mimeType": "video/mp4",
+      "size": 11115212
+     }
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#link",
+        "uri": "https://www.kickstarter.com/projects/scuttlebuttink/antique-fishbowl-ita-bag"
+       }
+      ],
+      "index": {
+       "byteEnd": 91,
+       "byteStart": 56
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "fish"
+       }
+      ],
+      "index": {
+       "byteEnd": 98,
+       "byteStart": 93
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "enamelpins"
+       }
+      ],
+      "index": {
+       "byteEnd": 110,
+       "byteStart": 99
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "itabag"
+       }
+      ],
+      "index": {
+       "byteEnd": 118,
+       "byteStart": 111
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "egl"
+       }
+      ],
+      "index": {
+       "byteEnd": 123,
+       "byteStart": 119
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "eglfashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 135,
+       "byteStart": 124
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "fashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 144,
+       "byteStart": 136
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "handbag"
+       }
+      ],
+      "index": {
+       "byteEnd": 153,
+       "byteStart": 145
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "purse"
+       }
+      ],
+      "index": {
+       "byteEnd": 160,
+       "byteStart": 154
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "lolitafashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 175,
+       "byteStart": 161
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "fishbowl"
+       }
+      ],
+      "index": {
+       "byteEnd": 185,
+       "byteStart": 176
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "aquarium"
+       }
+      ],
+      "index": {
+       "byteEnd": 195,
+       "byteStart": 186
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "fishkeeping"
+       }
+      ],
+      "index": {
+       "byteEnd": 208,
+       "byteStart": 196
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "text": "There's only a few days left!! Will we make our goal??\n\nwww.kickstarter.com/projects/scu...\n\n#fish #enamelpins #itabag #egl #eglfashion #fashion #handbag #purse #lolitafashion #fishbowl #aquarium #fishkeeping"
+   },
+   "embed": {
+    "cid": "bafkreibzcmuyobd7bofu7usfsy72ic2xw4cxqfegsgzcylovs4ctkhgaqm",
+    "playlist": "https://video.bsky.app/watch/did%3Aplc%3Avgibpdqbewqnd26qzwefyuqc/bafkreibzcmuyobd7bofu7usfsy72ic2xw4cxqfegsgzcylovs4ctkhgaqm/playlist.m3u8",
+    "thumbnail": "https://video.bsky.app/watch/did%3Aplc%3Avgibpdqbewqnd26qzwefyuqc/bafkreibzcmuyobd7bofu7usfsy72ic2xw4cxqfegsgzcylovs4ctkhgaqm/thumbnail.jpg",
+    "aspectRatio": {
+     "height": 1920,
+     "width": 1080
+    },
+    "presentation": "default",
+    "$type": "app.bsky.embed.video#view"
+   },
+   "replyCount": 0,
+   "repostCount": 4,
+   "likeCount": 3,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-09T16:20:38.161Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:kvhoxj2igycroduehatek7xg/app.bsky.feed.post/3muvcjchma22b",
+   "cid": "bafyreiavx6altlais4vay5oaytcqjwmhdszpvlvi6dtpzdlt4hkzjr3cm4",
+   "author": {
+    "did": "did:plc:kvhoxj2igycroduehatek7xg",
+    "handle": "chantillycat.bsky.social",
+    "displayName": "chantillyCat (she/they)",
+    "labels": [
+     {
+      "src": "did:plc:kvhoxj2igycroduehatek7xg",
+      "uri": "at://did:plc:kvhoxj2igycroduehatek7xg/app.bsky.actor.profile/self",
+      "cid": "bafyreidur55pm5qr67nvdrf6ohc6jipw6c3rdvetnrswe7igk4v5w4pfzi",
+      "val": "!no-unauthenticated",
+      "cts": "2024-11-19T23:48:16.776Z"
+     }
+    ]
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-07T00:58:41.747Z",
+    "embed": {
+     "$type": "app.bsky.embed.recordWithMedia",
+     "media": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "Two images of OP wearing a black x white lace coord consisting of black x black short sleeve cutsew, utk socks, and headdress. Their skirt is solid black, and their Mary jane sneakers are off white. These images are edited onto a closeup of floral gobelin fabric",
+        "aspectRatio": {
+         "height": 3000,
+         "width": 4000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreigkhioboyq3zzxkfzwr34shoddjhl33kgsgiilaeymiaws3qngspi"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1971182
+        }
+       }
+      ]
+     },
+     "record": {
+      "$type": "app.bsky.embed.record",
+      "record": {
+       "cid": "bafyreidpama5zojqu3wwsfsry5phrwg2zq6bpdvdkaemimlxzvjaivyitu",
+       "uri": "at://did:plc:kvhoxj2igycroduehatek7xg/app.bsky.feed.post/3mtk6lezcqc24"
+      }
+     }
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "lolitafashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 145,
+       "byteStart": 131
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "plussizelolita"
+       }
+      ],
+      "index": {
+       "byteEnd": 161,
+       "byteStart": 146
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "egl"
+       }
+      ],
+      "index": {
+       "byteEnd": 166,
+       "byteStart": 162
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "eglfashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 178,
+       "byteStart": 167
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "plussizeegl"
+       }
+      ],
+      "index": {
+       "byteEnd": 191,
+       "byteStart": 179
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "jfashion"
+       }
+      ],
+      "index": {
+       "byteEnd": 201,
+       "byteStart": 192
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "ロリィタ"
+       }
+      ],
+      "index": {
+       "byteEnd": 215,
+       "byteStart": 202
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "ロリィタファッション"
+       }
+      ],
+      "index": {
+       "byteEnd": 247,
+       "byteStart": 216
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "text": "I NEED MAXICIMAM to make more of these cutsews, I'd buy them in every color if I could (even the freakiest of color combos)\n\n˚ʚ[ #lolitafashion #plussizelolita #egl #eglfashion #plussizeegl #jfashion #ロリィタ #ロリィタファッション ]ɞ˚"
+   },
+   "embed": {
+    "media": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kvhoxj2igycroduehatek7xg/bafkreigkhioboyq3zzxkfzwr34shoddjhl33kgsgiilaeymiaws3qngspi",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:kvhoxj2igycroduehatek7xg/bafkreigkhioboyq3zzxkfzwr34shoddjhl33kgsgiilaeymiaws3qngspi",
+       "alt": "Two images of OP wearing a black x white lace coord consisting of black x black short sleeve cutsew, utk socks, and headdress. Their skirt is solid black, and their Mary jane sneakers are off white. These images are edited onto a closeup of floral gobelin fabric",
+       "aspectRatio": {
+        "height": 3000,
+        "width": 4000
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "record": {
+     "record": {
+      "uri": "at://did:plc:kvhoxj2igycroduehatek7xg/app.bsky.feed.post/3mtk6lezcqc24",
+      "cid": "bafyreidpama5zojqu3wwsfsry5phrwg2zq6bpdvdkaemimlxzvjaivyitu",
+      "author": {
+       "did": "did:plc:kvhoxj2igycroduehatek7xg",
+       "handle": "chantillycat.bsky.social",
+       "displayName": "chantillyCat (she/they)",
+       "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kvhoxj2igycroduehatek7xg/bafkreiecmgz327olnui5ty6udhujn6sgrfapja6atn7jog2cgzpgp43c24",
+       "associated": {
+        "chat": {
+         "allowIncoming": "none",
+         "allowGroupInvites": "none"
+        },
+        "activitySubscription": {
+         "allowSubscriptions": "mutuals"
+        }
+       },
+       "labels": [
+        {
+         "src": "did:plc:kvhoxj2igycroduehatek7xg",
+         "uri": "at://did:plc:kvhoxj2igycroduehatek7xg/app.bsky.actor.profile/self",
+         "cid": "bafyreidur55pm5qr67nvdrf6ohc6jipw6c3rdvetnrswe7igk4v5w4pfzi",
+         "val": "!no-unauthenticated",
+         "cts": "2024-11-19T23:48:16.776Z"
+        }
+       ],
+       "createdAt": "2024-11-19T23:48:16.469Z"
+      },
+      "value": {
+       "$type": "app.bsky.feed.post",
+       "createdAt": "2026-08-20T21:23:47.833Z",
+       "embed": {
+        "$type": "app.bsky.embed.recordWithMedia",
+        "media": {
+         "$type": "app.bsky.embed.images",
+         "images": [
+          {
+           "alt": "Two images of OP in a kuro lolita fashion coord edited onto a closeup of a tree. On the left, it is a lace Cami and skirt coord. On the right they are wearing a black heart apron and holding a black heart tote.",
+           "aspectRatio": {
+            "height": 1732,
+            "width": 1732
+           },
+           "image": {
+            "$type": "blob",
+            "ref": {
+             "$link": "bafkreigvukrfyq7l4czn27og4orsia7xmb2qgmw2pyt26mnyddrc3riwli"
+            },
+            "mimeType": "image/jpeg",
+            "size": 1831034
+           }
+          }
+         ]
+        },
+        "record": {
+         "$type": "app.bsky.embed.record",
+         "record": {
+          "cid": "bafyreiavscqbw65vcvfhmd2w2j7pvbvpckdx7vm2zw7arfy7oseex4ma5e",
+          "uri": "at://did:plc:kvhoxj2igycroduehatek7xg/app.bsky.feed.post/3lzzksoqhjc22"
+         }
+        }
+       },
+       "facets": [
+        {
+         "features": [
+          {
+           "$type": "app.bsky.richtext.facet#tag",
+           "tag": "lolitafashion"
+          }
+         ],
+         "index": {
+          "byteEnd": 195,
+          "byteStart": 181
+         }
+        },
+        {
+         "features": [
+          {
+           "$type": "app.bsky.richtext.facet#tag",
+           "tag": "plussizelolita"
+          }
+         ],
+         "index": {
+          "byteEnd": 211,
+          "byteStart": 196
+         }
+        },
+        {
+         "features": [
+          {
+           "$type": "app.bsky.richtext.facet#tag",
+           "tag": "egl"
+          }
+         ],
+         "index": {
+          "byteEnd": 216,
+          "byteStart": 212
+         }
+        },
+        {
+         "features": [
+          {
+           "$type": "app.bsky.richtext.facet#tag",
+           "tag": "eglfashion"
+          }
+         ],
+         "index": {
+          "byteEnd": 228,
+          "byteStart": 217
+         }
+        },
+        {
+         "features": [
+          {
+           "$type": "app.bsky.richtext.facet#tag",
+           "tag": "plussizeegl"
+          }
+         ],
+         "index": {
+          "byteEnd": 241,
+          "byteStart": 229
+         }
+        },
+        {
+         "features": [
+          {
+           "$type": "app.bsky.richtext.facet#tag",
+           "tag": "jfashion"
+          }
+         ],
+         "index": {
+          "byteEnd": 251,
+          "byteStart": 242
+         }
+        },
+        {
+         "features": [
+          {
+           "$type": "app.bsky.richtext.facet#tag",
+           "tag": "ロリィタ"
+          }
+         ],
+         "index": {
+          "byteEnd": 265,
+          "byteStart": 252
+         }
+        },
+        {
+         "features": [
+          {
+           "$type": "app.bsky.richtext.facet#tag",
+           "tag": "ロリィタファッション"
+          }
+         ],
+         "index": {
+          "byteEnd": 297,
+          "byteStart": 266
+         }
+        }
+       ],
+       "langs": [
+        "en"
+       ],
+       "text": "This isn't the last time I wore this skirt, but it is the last time this was worn as an *actual* skirt instead of functioning as an underskirt (it's just so handy that way!)\n\n˚ʚ[ #lolitafashion #plussizelolita #egl #eglfashion #plussizeegl #jfashion #ロリィタ #ロリィタファッション ]ɞ˚"
+      },
+      "labels": [],
+      "likeCount": 14,
+      "replyCount": 1,
+      "repostCount": 6,
+      "quoteCount": 1,
+      "indexedAt": "2026-08-20T21:23:53.067Z",
+      "embeds": [
+       {
+        "media": {
+         "images": [
+          {
+           "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:kvhoxj2igycroduehatek7xg/bafkreigvukrfyq7l4czn27og4orsia7xmb2qgmw2pyt26mnyddrc3riwli",
+           "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:kvhoxj2igycroduehatek7xg/bafkreigvukrfyq7l4czn27og4orsia7xmb2qgmw2pyt26mnyddrc3riwli",
+           "alt": "Two images of OP in a kuro lolita fashion coord edited onto a closeup of a tree. On the left, it is a lace Cami and skirt coord. On the right they are wearing a black heart apron and holding a black heart tote.",
+           "aspectRatio": {
+            "height": 1732,
+            "width": 1732
+           }
+          }
+         ],
+         "$type": "app.bsky.embed.images#view"
+        },
+        "record": {
+         "record": {
+          "uri": "at://did:plc:kvhoxj2igycroduehatek7xg/app.bsky.feed.post/3lzzksoqhjc22",
+          "cid": "bafyreiavscqbw65vcvfhmd2w2j7pvbvpckdx7vm2zw7arfy7oseex4ma5e",
+          "author": {
+           "did": "did:plc:kvhoxj2igycroduehatek7xg",
+           "handle": "chantillycat.bsky.social",
+           "displayName": "chantillyCat (she/they)",
+           "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kvhoxj2igycroduehatek7xg/bafkreiecmgz327olnui5ty6udhujn6sgrfapja6atn7jog2cgzpgp43c24",
+           "associated": {
+            "chat": {
+             "allowIncoming": "none",
+             "allowGroupInvites": "none"
+            },
+            "activitySubscription": {
+             "allowSubscriptions": "mutuals"
+            }
+           },
+           "labels": [
+            {
+             "src": "did:plc:kvhoxj2igycroduehatek7xg",
+             "uri": "at://did:plc:kvhoxj2igycroduehatek7xg/app.bsky.actor.profile/self",
+             "cid": "bafyreidur55pm5qr67nvdrf6ohc6jipw6c3rdvetnrswe7igk4v5w4pfzi",
+             "val": "!no-unauthenticated",
+             "cts": "2024-11-19T23:48:16.776Z"
+            }
+           ],
+           "createdAt": "2024-11-19T23:48:16.469Z"
+          },
+          "value": {
+           "$type": "app.bsky.feed.post",
+           "createdAt": "2025-09-30T03:17:31.552Z",
+           "embed": {
+            "$type": "app.bsky.embed.images",
+            "images": [
+             {
+              "alt": "Two images of Poster in a black x red check x white lace lolita fashion coord, edited onto a close-up of a flat-lay of their red check x white lace x black ribbon camisole. For their coord, they have a heart canotier that matches their camisole top, a black blouse underneath their camisole, black skirt with four layers of frill, black x white cluny lace socks, black Mary Jane sneakers, and a black x white lace purse with a gold crown on it. They have a teddy bear shaped cookie necklace with a red check fabric bow on top",
+              "aspectRatio": {
+               "height": 1099,
+               "width": 1099
+              },
+              "image": {
+               "$type": "blob",
+               "ref": {
+                "$link": "bafkreidpyacywz7lxbqkm72cg4w72sa5zhfruy4v5whf7b72ptqgivinau"
+               },
+               "mimeType": "image/jpeg",
+               "size": 910001
+              }
+             }
+            ]
+           },
+           "facets": [
+            {
+             "features": [
+              {
+               "$type": "app.bsky.richtext.facet#tag",
+               "tag": "lolitafashion"
+              }
+             ],
+             "index": {
+              "byteEnd": 151,
+              "byteStart": 137
+             }
+            },
+            {
+             "features": [
+              {
+               "$type": "app.bsky.richtext.facet#tag",
+               "tag": "plussizelolita"
+              }
+             ],
+             "index": {
+              "byteEnd": 167,
+              "byteStart": 152
+             }
+            },
+            {
+             "features": [
+              {
+               "$type": "app.bsky.richtext.facet#tag",
+               "tag": "egl"
+              }
+             ],
+             "index": {
+              "byteEnd": 172,
+              "byteStart": 168
+             }
+            },
+            {
+             "features": [
+              {
+               "$type": "app.bsky.richtext.facet#tag",
+               "tag": "eglfashion"
+              }
+             ],
+             "index": {
+              "byteEnd": 184,
+              "byteStart": 173
+             }
+            },
+            {
+             "features": [
+              {
+               "$type": "app.bsky.richtext.facet#tag",
+               "tag": "plussizeegl"
+              }
+             ],
+             "index": {
+              "byteEnd": 197,
+              "byteStart": 185
+             }
+            },
+            {
+             "features": [
+              {
+               "$type": "app.bsky.richtext.facet#tag",
+               "tag": "jfashion"
+              }
+             ],
+             "index": {
+              "byteEnd": 207,
+              "byteStart": 198
+             }
+            }
+           ],
+           "langs": [
+            "en"
+           ],
+           "text": "Seeing his camisole while FINALLY clearing out the Clean Laundry Pile made me want to wear it again (⁠*⁠´⁠ω⁠｀⁠*⁠)\n\n˚ʚ[ #lolitafashion #plussizelolita #egl #eglfashion #plussizeegl #jfashion ]ɞ˚"
+          },
+          "labels": [],
+          "likeCount": 28,
+          "replyCount": 2,
+          "repostCount": 5,
+          "quoteCount": 1,
+          "indexedAt": "2025-09-30T03:17:32.954Z",
+          "$type": "app.bsky.embed.record#viewRecord"
+         }
+        },
+        "$type": "app.bsky.embed.recordWithMedia#view"
+       }
+      ],
+      "$type": "app.bsky.embed.record#viewRecord"
+     }
+    },
+    "$type": "app.bsky.embed.recordWithMedia#view"
+   },
+   "replyCount": 1,
+   "repostCount": 3,
+   "likeCount": 21,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-07T00:58:49.062Z",
+   "labels": []
+  }
+ ],
+ "hitsTotal": 4110
+}

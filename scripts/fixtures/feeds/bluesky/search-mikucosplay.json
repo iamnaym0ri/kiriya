@@ -1,0 +1,1245 @@
+{
+ "posts": [
+  {
+   "uri": "at://did:plc:yoixhwfv474kkatripmnskhb/app.bsky.feed.post/3mvfjc2f7zs26",
+   "cid": "bafyreiezl7xpfm4hoapdec5g6ia2hjfhkycoizzmsa6si2kwdjawd6nhhu",
+   "author": {
+    "did": "did:plc:yoixhwfv474kkatripmnskhb",
+    "handle": "maioliz.bsky.social",
+    "displayName": "Maioliz",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-13T11:42:30.444Z",
+    "embed": {
+     "$type": "app.bsky.embed.video",
+     "aspectRatio": {
+      "height": 1920,
+      "width": 1080
+     },
+     "presentation": "default",
+     "video": {
+      "$type": "blob",
+      "ref": {
+       "$link": "bafkreigmvntxxwedvqousei3e2nivr5x5lbt7gpohaz54ngqou6d73aq6e"
+      },
+      "mimeType": "video/mp4",
+      "size": 8794120
+     }
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "cosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 145,
+       "byteStart": 137
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "hatsunemiku"
+       }
+      ],
+      "index": {
+       "byteEnd": 158,
+       "byteStart": 146
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "mikucosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 171,
+       "byteStart": 159
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "hatsunemikucosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 191,
+       "byteStart": 172
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "vocaloidcosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 208,
+       "byteStart": 192
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "vocaloid"
+       }
+      ],
+      "index": {
+       "byteEnd": 218,
+       "byteStart": 209
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "初音ミク"
+       }
+      ],
+      "index": {
+       "byteEnd": 232,
+       "byteStart": 219
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "odottemita"
+       }
+      ],
+      "index": {
+       "byteEnd": 244,
+       "byteStart": 233
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "maioliz"
+       }
+      ],
+      "index": {
+       "byteEnd": 253,
+       "byteStart": 245
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "dance"
+       }
+      ],
+      "index": {
+       "byteEnd": 260,
+       "byteStart": 254
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "dancevideo"
+       }
+      ],
+      "index": {
+       "byteEnd": 272,
+       "byteStart": 261
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "dancecover"
+       }
+      ],
+      "index": {
+       "byteEnd": 284,
+       "byteStart": 273
+      }
+     }
+    ],
+    "langs": [
+     "es"
+    ],
+    "text": "I can forget many things, but I will never forget Love & Joy ＼⁠(⁠^⁠o⁠^⁠)⁠／🩵\n\n♡ Cosplay Hatsune Miku - Vocaloid ♡\n\n#cosplay #hatsunemiku #mikucosplay #hatsunemikucosplay #vocaloidcosplay #vocaloid #初音ミク #odottemita #maioliz #dance #dancevideo #dancecover"
+   },
+   "embed": {
+    "cid": "bafkreigmvntxxwedvqousei3e2nivr5x5lbt7gpohaz54ngqou6d73aq6e",
+    "playlist": "https://video.bsky.app/watch/did%3Aplc%3Ayoixhwfv474kkatripmnskhb/bafkreigmvntxxwedvqousei3e2nivr5x5lbt7gpohaz54ngqou6d73aq6e/playlist.m3u8",
+    "thumbnail": "https://video.bsky.app/watch/did%3Aplc%3Ayoixhwfv474kkatripmnskhb/bafkreigmvntxxwedvqousei3e2nivr5x5lbt7gpohaz54ngqou6d73aq6e/thumbnail.jpg",
+    "aspectRatio": {
+     "height": 1920,
+     "width": 1080
+    },
+    "presentation": "default",
+    "$type": "app.bsky.embed.video#view"
+   },
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 7,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-13T11:42:31.862Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:styzamzzf5pdfb3wedefj5xu/app.bsky.feed.post/3mvfowoelas2g",
+   "cid": "bafyreid43d52ehbaqzvboqiiulbb43av4z626xlaapapts23oyzgx5k2su",
+   "author": {
+    "did": "did:plc:styzamzzf5pdfb3wedefj5xu",
+    "handle": "aya-kig.bsky.social",
+    "displayName": "aya_kig",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-13T13:23:31.189Z",
+    "embed": {
+     "$type": "app.bsky.embed.video",
+     "aspectRatio": {
+      "height": 1920,
+      "width": 1080
+     },
+     "presentation": "default",
+     "video": {
+      "$type": "blob",
+      "ref": {
+       "$link": "bafkreicj3yr4pt5f6c2vu6rliadxna4prnh5a3vqz3l3r42rj3td2odix4"
+      },
+      "mimeType": "video/mp4",
+      "size": 1738363
+     }
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#link",
+        "uri": "https://ko-fi.com/ayakig"
+       }
+      ],
+      "index": {
+       "byteEnd": 74,
+       "byteStart": 58
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "kigurumi"
+       }
+      ],
+      "index": {
+       "byteEnd": 85,
+       "byteStart": 76
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "animegao"
+       }
+      ],
+      "index": {
+       "byteEnd": 95,
+       "byteStart": 86
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "mikucosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 108,
+       "byteStart": 96
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "cosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 117,
+       "byteStart": 109
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "text": "The evolution of kigurumi \n\nKigurumi Miku Hatsune \nKo-fi: ko-fi.com/ayakig\n\n#kigurumi #animegao #mikucosplay #cosplay"
+   },
+   "embed": {
+    "cid": "bafkreicj3yr4pt5f6c2vu6rliadxna4prnh5a3vqz3l3r42rj3td2odix4",
+    "playlist": "https://video.bsky.app/watch/did%3Aplc%3Astyzamzzf5pdfb3wedefj5xu/bafkreicj3yr4pt5f6c2vu6rliadxna4prnh5a3vqz3l3r42rj3td2odix4/playlist.m3u8",
+    "thumbnail": "https://video.bsky.app/watch/did%3Aplc%3Astyzamzzf5pdfb3wedefj5xu/bafkreicj3yr4pt5f6c2vu6rliadxna4prnh5a3vqz3l3r42rj3td2odix4/thumbnail.jpg",
+    "aspectRatio": {
+     "height": 1920,
+     "width": 1080
+    },
+    "presentation": "default",
+    "$type": "app.bsky.embed.video#view"
+   },
+   "replyCount": 1,
+   "repostCount": 4,
+   "likeCount": 10,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-13T13:23:32.162Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:wtclkock54rflodg2guvbbb6/app.bsky.feed.post/3muyuhyvfv22t",
+   "cid": "bafyreia4ahyxgrgzv4iw6h3nl2tglpndvn6o4hnrwustiet7fjegvimie4",
+   "author": {
+    "did": "did:plc:wtclkock54rflodg2guvbbb6",
+    "handle": "kitsunemizuiro.bsky.social",
+    "displayName": "Kitsune",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-08T10:58:04.761Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 2662
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreidf3yw5wyvp4vumc3i6xaql4pcwrmtzfwkbnbof6jerwvcmugqpwi"
+        },
+        "mimeType": "image/jpeg",
+        "size": 1959279
+       }
+      }
+     ]
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "cosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 191,
+       "byteStart": 183
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "anime"
+       }
+      ],
+      "index": {
+       "byteEnd": 198,
+       "byteStart": 192
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "animecosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 212,
+       "byteStart": 199
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "miku"
+       }
+      ],
+      "index": {
+       "byteEnd": 218,
+       "byteStart": 213
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "hatsunemiku"
+       }
+      ],
+      "index": {
+       "byteEnd": 231,
+       "byteStart": 219
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "mikucosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 244,
+       "byteStart": 232
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "senbonzakura"
+       }
+      ],
+      "index": {
+       "byteEnd": 258,
+       "byteStart": 245
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "text": "sharing this pic of my Senbonzakura Miku cosplay from MikuFes PH last weekend 🌸\n\n~0~\n\nI wish I could travel back in time and experience MikuFes PH all over again! 😊\n\n~0~\n\nTags:\n#cosplay #anime #animecosplay #miku #hatsunemiku #mikucosplay #senbonzakura"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:wtclkock54rflodg2guvbbb6/bafkreidf3yw5wyvp4vumc3i6xaql4pcwrmtzfwkbnbof6jerwvcmugqpwi",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:wtclkock54rflodg2guvbbb6/bafkreidf3yw5wyvp4vumc3i6xaql4pcwrmtzfwkbnbof6jerwvcmugqpwi",
+      "alt": "",
+      "aspectRatio": {
+       "height": 4000,
+       "width": 2662
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 0,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-08T10:58:21.756Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:4mewpkhivxfs6ohtqn3xort3/app.bsky.feed.post/3mupnnizbew25",
+   "cid": "bafyreic2zqmtki3kid3idpq5qf5tuu6o6nv52weivaw5edjoq4vmmkeuj4",
+   "author": {
+    "did": "did:plc:4mewpkhivxfs6ohtqn3xort3",
+    "handle": "foodandcosplay.org",
+    "displayName": "Food And Cosplay",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-04T19:01:55.560Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 1800,
+        "width": 1200
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreiaelljprico3jfgoosf7byzxod7khn3ihe7moutoasdt3v4i6h62e"
+        },
+        "mimeType": "image/png",
+        "size": 919102
+       }
+      },
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 1800,
+        "width": 1200
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreicqvevt27jq6j2at3qiqh4airn4ubcxb5jtdlp5qdd54wgfd4uqqi"
+        },
+        "mimeType": "image/png",
+        "size": 982348
+       }
+      }
+     ]
+    },
+    "facets": [
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#mention",
+        "did": "did:plc:4mewpkhivxfs6ohtqn3xort3"
+       }
+      ],
+      "index": {
+       "byteEnd": 76,
+       "byteStart": 57
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "mikucosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 112,
+       "byteStart": 100
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "hatsunemikucosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 132,
+       "byteStart": 113
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "mesmerizermiku"
+       }
+      ],
+      "index": {
+       "byteEnd": 148,
+       "byteStart": 133
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "mesmerizercosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 167,
+       "byteStart": 149
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "cosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 176,
+       "byteStart": 168
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "hatsunemiku"
+       }
+      ],
+      "index": {
+       "byteEnd": 189,
+       "byteStart": 177
+      }
+     }
+    ],
+    "text": "Hatsune Miku Mesmerizer \n\nCosplay by Karurinka\nPhotos by @FoodAndCosplay.org \nTaken at Viencon 25 \n\n#mikucosplay #hatsunemikucosplay #mesmerizermiku #mesmerizercosplay #cosplay #hatsunemiku"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:4mewpkhivxfs6ohtqn3xort3/bafkreiaelljprico3jfgoosf7byzxod7khn3ihe7moutoasdt3v4i6h62e",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:4mewpkhivxfs6ohtqn3xort3/bafkreiaelljprico3jfgoosf7byzxod7khn3ihe7moutoasdt3v4i6h62e",
+      "alt": "",
+      "aspectRatio": {
+       "height": 1800,
+       "width": 1200
+      }
+     },
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:4mewpkhivxfs6ohtqn3xort3/bafkreicqvevt27jq6j2at3qiqh4airn4ubcxb5jtdlp5qdd54wgfd4uqqi",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:4mewpkhivxfs6ohtqn3xort3/bafkreicqvevt27jq6j2at3qiqh4airn4ubcxb5jtdlp5qdd54wgfd4uqqi",
+      "alt": "",
+      "aspectRatio": {
+       "height": 1800,
+       "width": 1200
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 2,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-04T19:01:56.374Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:jlr4lvr7tnjjpdz4ylho4qdf/app.bsky.feed.post/3msyzhhgirs2v",
+   "cid": "bafyreic6t6axo5zmilquvtapjfgboumh5oh3h2vf4fi6uvtetwkape4c24",
+   "author": {
+    "did": "did:plc:jlr4lvr7tnjjpdz4ylho4qdf",
+    "handle": "theeroxyshow.bsky.social",
+    "displayName": "Roxy",
+    "labels": [
+     {
+      "src": "did:plc:jlr4lvr7tnjjpdz4ylho4qdf",
+      "uri": "at://did:plc:jlr4lvr7tnjjpdz4ylho4qdf/app.bsky.actor.profile/self",
+      "cid": "bafyreihlksvsurfhnue3r23snmzfxffw5bksetd737xgrm3bcdytmy5aqi",
+      "val": "!no-unauthenticated",
+      "cts": "2025-02-21T07:04:30.700Z"
+     }
+    ]
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-08-14T01:36:51.816233+00:00",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "$type": "app.bsky.embed.images#image",
+       "alt": "",
+       "aspectRatio": {
+        "$type": "app.bsky.embed.defs#aspectRatio",
+        "height": 4032,
+        "width": 3024
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreibc3draez34a65qyj6yqrugbbygmsdro4b5mkr2dk6axnxoobsmxe"
+        },
+        "mimeType": "image/jpeg",
+        "size": 563482
+       }
+      }
+     ]
+    },
+    "facets": [
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "TheeRoxyShow"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 33,
+       "byteStart": 20
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "cosplay"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 42,
+       "byteStart": 34
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "cosplaygirl"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 55,
+       "byteStart": 43
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "cosplaylife"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 68,
+       "byteStart": 56
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "cosplayer"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 79,
+       "byteStart": 69
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "anime"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 86,
+       "byteStart": 80
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "gaming"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 94,
+       "byteStart": 87
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "model"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 101,
+       "byteStart": 95
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "photoshoot"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 113,
+       "byteStart": 102
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "fanart"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 121,
+       "byteStart": 114
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "hiddenexclusive"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 138,
+       "byteStart": 122
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "onlyfanscreator"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 155,
+       "byteStart": 139
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "fansleyexclusive"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 173,
+       "byteStart": 156
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "fanslyfree"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 185,
+       "byteStart": 174
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "lewds"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 192,
+       "byteStart": 186
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "spicysky"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 202,
+       "byteStart": 193
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "nsfwsky"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 211,
+       "byteStart": 203
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "miku"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 217,
+       "byteStart": 212
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "hatsunemiku"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 230,
+       "byteStart": 218
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "mikucosplay"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 243,
+       "byteStart": 231
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "boots"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 250,
+       "byteStart": 244
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "thighs"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 258,
+       "byteStart": 251
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "tags": [],
+    "text": "thigh crusher miku\n\n#TheeRoxyShow #cosplay #cosplaygirl #cosplaylife #cosplayer #anime #gaming #model #photoshoot #fanart #hiddenexclusive #onlyfanscreator #fansleyexclusive #fanslyfree #lewds #spicysky #nsfwsky #miku #hatsunemiku #mikucosplay #boots #thighs"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:jlr4lvr7tnjjpdz4ylho4qdf/bafkreibc3draez34a65qyj6yqrugbbygmsdro4b5mkr2dk6axnxoobsmxe",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:jlr4lvr7tnjjpdz4ylho4qdf/bafkreibc3draez34a65qyj6yqrugbbygmsdro4b5mkr2dk6axnxoobsmxe",
+      "alt": "",
+      "aspectRatio": {
+       "$type": "app.bsky.embed.defs#aspectRatio",
+       "height": 4032,
+       "width": 3024
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 13,
+   "quoteCount": 0,
+   "indexedAt": "2026-08-14T01:36:53.069Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:nknsck72jaic5yhujsz6munk/app.bsky.feed.post/3ms4kysdf2cp2",
+   "cid": "bafyreiclkyvte3sz3pn246x25nzq54b3usot6aeyg7fvuh5hoc33sfwb2m",
+   "author": {
+    "did": "did:plc:nknsck72jaic5yhujsz6munk",
+    "handle": "succubotnsfw.social.succukitty.com.ap.brid.gy",
+    "displayName": "𝚂𝚞𝚌𝚌𝚞𝙱𝚘𝚝 🤖🔞 OWNED BY: SUCCUCAT",
+    "labels": [
+     {
+      "cid": "bafyreif56npazt32ic3xp7i6wudpkljs37z3z24fmzyhttc4nekbsyyr44",
+      "cts": "2026-03-11T23:22:55.723Z",
+      "src": "did:plc:ar7c4by46qjdydhdevvrndac",
+      "uri": "at://did:plc:nknsck72jaic5yhujsz6munk/app.bsky.actor.profile/self",
+      "val": "porn",
+      "ver": 1
+     },
+     {
+      "src": "did:plc:nknsck72jaic5yhujsz6munk",
+      "uri": "at://did:plc:nknsck72jaic5yhujsz6munk/app.bsky.actor.profile/self",
+      "cid": "bafyreia46ezx66hu4na7nm6dnjzir34wxstgx3wl67trxpkc6cfvbltaeq",
+      "val": "bridged-from-bridgy-fed-activitypub",
+      "cts": "1970-01-01T00:00:00.000Z"
+     }
+    ]
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "bridgyOriginalText": "<p>NSFW X REPOST -&gt; Athena Phorah : <a href=\"https://x.com/Athena_phorah/status/2083679286657970462\">https://x.com/Athena_phorah/status/2083679286657970462</a><span><br><br>I need to do this outfit again<br></span><a href=\"https://social.succukitty.com/tags/cosplay\" rel=\"tag\">#cosplay</a> <a href=\"https://social.succukitty.com/tags/rollerskating\" rel=\"tag\">#rollerskating</a> <a href=\"https://social.succukitty.com/tags/miku\" rel=\"tag\">#miku</a> <a href=\"https://social.succukitty.com/tags/mikucosplay\" rel=\"tag\">#mikucosplay</a> <a href=\"https://social.succukitty.com/tags/brazilianmiku\" rel=\"tag\">#brazilianmiku</a> <a href=\"https://social.succukitty.com/tags/hatsunemiku\" rel=\"tag\">#hatsunemiku</a><span><br><br></span>🔞 Curated by <a href=\"https://social.succukitty.com/@succucat@social.succukitty.com\" class=\"u-url mention\">@succucat@social.succukitty.com</a><span><br></span>💖<span> Come follow me!<br><br></span><a href=\"https://social.succukitty.com/tags/NSFW\" rel=\"tag\">#NSFW</a> <a href=\"https://social.succukitty.com/tags/🔞\" rel=\"tag\">#🔞</a> <a href=\"https://social.succukitty.com/tags/XRepost\" rel=\"tag\">#XRepost</a> <a href=\"https://social.succukitty.com/tags/TwitterRepost\" rel=\"tag\">#TwitterRepost</a></p>",
+    "bridgyOriginalUrl": "https://social.succukitty.com/notes/apfoauj4prct1m0g",
+    "createdAt": "2026-08-02T18:03:28.912Z",
+    "embed": {
+     "$type": "app.bsky.embed.video",
+     "alt": "",
+     "aspectRatio": {
+      "height": 1280,
+      "width": 720
+     },
+     "video": {
+      "$type": "blob",
+      "ref": {
+       "$link": "bafkreihqkicow6g75urevk7w6xrjppkue7cfznzc245wzcq6t33dsx5vxy"
+      },
+      "mimeType": "video/mp4",
+      "size": 1872913
+     }
+    },
+    "facets": [
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "cosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 128,
+       "byteStart": 120
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "rollerskating"
+       }
+      ],
+      "index": {
+       "byteEnd": 143,
+       "byteStart": 129
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "miku"
+       }
+      ],
+      "index": {
+       "byteEnd": 149,
+       "byteStart": 144
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "mikucosplay"
+       }
+      ],
+      "index": {
+       "byteEnd": 162,
+       "byteStart": 150
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "brazilianmiku"
+       }
+      ],
+      "index": {
+       "byteEnd": 177,
+       "byteStart": 163
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "hatsunemiku"
+       }
+      ],
+      "index": {
+       "byteEnd": 190,
+       "byteStart": 178
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "nsfw"
+       }
+      ],
+      "index": {
+       "byteEnd": 267,
+       "byteStart": 262
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "🔞"
+       }
+      ],
+      "index": {
+       "byteEnd": 273,
+       "byteStart": 268
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "xrepost"
+       }
+      ],
+      "index": {
+       "byteEnd": 282,
+       "byteStart": 274
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "twitterrepost"
+       }
+      ],
+      "index": {
+       "byteEnd": 297,
+       "byteStart": 283
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#mention",
+        "did": "did:plc:knltgeivjhtvng4ta7of7evx"
+       }
+      ],
+      "index": {
+       "byteEnd": 239,
+       "byteStart": 208
+      }
+     },
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#link",
+        "uri": "https://x.com/Athena_phorah/status/2083679286657970462"
+       }
+      ],
+      "index": {
+       "byteEnd": 87,
+       "byteStart": 33
+      }
+     }
+    ],
+    "labels": {
+     "$type": "com.atproto.label.defs#selfLabels",
+     "values": [
+      {
+       "val": "graphic-media"
+      }
+     ]
+    },
+    "text": "NSFW X REPOST -> Athena Phorah : https://x.com/Athena_phorah/status/2083679286657970462\n\nI need to do this outfit again\n#cosplay #rollerskating #miku #mikucosplay #brazilianmiku #hatsunemiku\n\n🔞 Curated by @succucat@social.succukitty.com\n💖 Come follow me!\n\n#NSFW #🔞 #XRepost #TwitterRepost"
+   },
+   "embed": {
+    "cid": "bafkreihqkicow6g75urevk7w6xrjppkue7cfznzc245wzcq6t33dsx5vxy",
+    "playlist": "https://video.bsky.app/watch/did%3Aplc%3Anknsck72jaic5yhujsz6munk/bafkreihqkicow6g75urevk7w6xrjppkue7cfznzc245wzcq6t33dsx5vxy/playlist.m3u8",
+    "thumbnail": "https://video.bsky.app/watch/did%3Aplc%3Anknsck72jaic5yhujsz6munk/bafkreihqkicow6g75urevk7w6xrjppkue7cfznzc245wzcq6t33dsx5vxy/thumbnail.jpg",
+    "alt": "",
+    "aspectRatio": {
+     "height": 1280,
+     "width": 720
+    },
+    "$type": "app.bsky.embed.video#view"
+   },
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 0,
+   "quoteCount": 0,
+   "indexedAt": "2026-08-02T18:03:38.373Z",
+   "labels": [
+    {
+     "src": "did:plc:nknsck72jaic5yhujsz6munk",
+     "uri": "at://did:plc:nknsck72jaic5yhujsz6munk/app.bsky.feed.post/3ms4kysdf2cp2",
+     "cid": "bafyreiclkyvte3sz3pn246x25nzq54b3usot6aeyg7fvuh5hoc33sfwb2m",
+     "val": "graphic-media",
+     "cts": "2026-08-02T18:03:28.912Z"
+    }
+   ]
+  }
+ ],
+ "hitsTotal": 301
+}

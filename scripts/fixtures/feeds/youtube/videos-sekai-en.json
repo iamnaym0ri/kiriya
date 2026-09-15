@@ -1,0 +1,274 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "mock-etag-videos",
+  "pageInfo": {
+    "totalResults": 5,
+    "resultsPerPage": 5
+  },
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-EnTrailer01",
+      "id": "EnTrailer01",
+      "snippet": {
+        "publishedAt": "2026-09-13T17:00:00Z",
+        "channelId": "UCeWCjteIDYK34E7bCZBTcLA",
+        "title": "Wishes in Bloom! WORLD LINK trailer (mock) | Hatsune Miku",
+        "description": "The WORLD LINK finale is coming to HATSUNE MIKU: COLORFUL STAGE!\n\nFollow us for more.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/EnTrailer01/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "HATSUNE MIKU: COLORFUL STAGE!",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT1M05S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "48000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/EnTrailer01\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-EnBlockedSG",
+      "id": "EnBlockedSG",
+      "snippet": {
+        "publishedAt": "2026-09-12T17:00:00Z",
+        "channelId": "UCeWCjteIDYK34E7bCZBTcLA",
+        "title": "Wonderlands×Showtime event story (mock)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/EnBlockedSG/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "HATSUNE MIKU: COLORFUL STAGE!",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT3M30S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular",
+        "regionRestriction": {
+          "blocked": [
+            "SG",
+            "MY"
+          ]
+        }
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/EnBlockedSG\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-EnAllowUSCA",
+      "id": "EnAllowUSCA",
+      "snippet": {
+        "publishedAt": "2026-09-11T17:00:00Z",
+        "channelId": "UCeWCjteIDYK34E7bCZBTcLA",
+        "title": "Vivid BAD SQUAD live (mock)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/EnAllowUSCA/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "HATSUNE MIKU: COLORFUL STAGE!",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT3M30S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular",
+        "regionRestriction": {
+          "allowed": [
+            "US",
+            "CA"
+          ]
+        }
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/EnAllowUSCA\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-EnUpcoming1",
+      "id": "EnUpcoming1",
+      "snippet": {
+        "publishedAt": "2026-09-10T17:00:00Z",
+        "channelId": "UCeWCjteIDYK34E7bCZBTcLA",
+        "title": "Anniversary stream (mock)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/EnUpcoming1/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "HATSUNE MIKU: COLORFUL STAGE!",
+        "categoryId": "10",
+        "liveBroadcastContent": "upcoming",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "P0D",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/EnUpcoming1\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-EnAgeLimit1",
+      "id": "EnAgeLimit1",
+      "snippet": {
+        "publishedAt": "2026-09-09T17:00:00Z",
+        "channelId": "UCeWCjteIDYK34E7bCZBTcLA",
+        "title": "Mature collab trailer (mock)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/EnAgeLimit1/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "HATSUNE MIKU: COLORFUL STAGE!",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT3M30S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {
+          "ytRating": "ytAgeRestricted"
+        },
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": false,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/EnAgeLimit1\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    }
+  ]
+}

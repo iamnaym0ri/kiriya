@@ -3,7 +3,6 @@ import { Link } from "react-router";
 import { usePublicProfile } from "../../lib/profile.js";
 import { useToday, useOpenDrawer } from "../../lib/world.js";
 import {
-  ArtSpread,
   CosplaySpread,
   Discovery,
   MaomaoSpread,
@@ -14,10 +13,15 @@ import { MusicObject } from "../../shared/music/MusicRoom.jsx";
 import StickerArt from "../../shared/stickers/StickerArt.jsx";
 import { Bow, MaomaoBuddy } from "../../shared/play/PlayfulWorld.jsx";
 import PlayDesk from "../play/PlayDesk.jsx";
-import BirthdayTakeover from "./BirthdayTakeover.jsx";
+import { useDailyStyle } from "../../shared/DailyStyle.jsx";
+import BirthdayName from "../../shared/BirthdayName.jsx";
+import NoteJar from "./NoteJar.jsx";
+import { MemeOfTheDay, NewCount } from "../feeds/FeedPieces.jsx";
+import { useFeed } from "../../lib/feeds.js";
 import "./TodayPage.css";
 
 export default function TodayPage() {
+  const { copy } = useDailyStyle();
   const today = useToday();
   const profile = usePublicProfile();
   const drawer = useOpenDrawer();
@@ -30,6 +34,7 @@ export default function TodayPage() {
   }, [data?.birthday?.isBirthday]);
   const personalNote = data?.cards.find((card) => card.kind === "special");
   const reward = data?.drawer?.reward ?? drawer.data?.reward;
+  const feedsLive = Boolean(useFeed("maomao").data?.revision);
   return (
     <div className="personal-home">
       <div className="home-dateline">
@@ -57,20 +62,34 @@ export default function TodayPage() {
               : "there you are, lovely."}
           </p>
           <h1 id="home-title">
-            kiriya<span aria-hidden="true">♡</span>
+            <BirthdayName />
           </h1>
           <p className="home-welcome__line">
-            A little world,
-            <br />
-            <em>with so much love.</em>
+            A world just for you <em>full of soo much love and all ur faves <span className="welcome-emoticon" aria-label="sending you love">(˘ ³˘)♡</span></em>
           </p>
           <p className="home-welcome__description">
             Your favourite characters, a song on repeat, a page to doodle on.
             <br className="desktop-break" /> Stay for a while. It’s all here for
             you. ♡
           </p>
+          <div className="home-discovery">
+            <aside className="note-slip birthday-love-note" data-motion-region>
+              <span className="micro-label">A LITTLE BIRTHDAY WISH ♡</span>
+              <p>
+                That u will keep being unique and speciall just like u always
+                have been <span className="birthday-forever">forever!!</span>
+              </p>
+            </aside>
+            {personalNote && (
+              <Discovery
+                kind="maomao"
+                card={personalNote}
+                label={personalNote?.title ?? "TODAY’S LITTLE FIND"}
+              />
+            )}
+          </div>
           <div className="birthday-stamps" aria-label="Little birthday stamps">
-            <span>🎂 SEPTEMBER GIRL</span>
+            <span>{copy?.birthdayStamp ?? "🎂 SEPTEMBER GIRL"}</span>
             <span>♡ VERY LOVED</span>
             <span>✿ DOODLES WELCOME</span>
           </div>
@@ -82,37 +101,16 @@ export default function TodayPage() {
               <Icon name="mail" size={16} />A love letter for you
             </Link>
           </div>
-          <div className="home-discovery">
-            {data?.birthday?.isBirthday && !personalNote ? (
-              <aside className="note-slip birthday-love-note">
-                <span className="micro-label">A LITTLE BIRTHDAY WISH ♡</span>
-                <p>
-                  More favourite songs. More things worth drawing. More little
-                  moments that feel like you.
-                </p>
-                <span className="handwritten">
-                  Here’s to a year full of them. 🎀
-                </span>
-              </aside>
-            ) : (
-              <Discovery
-                kind="maomao"
-                card={personalNote}
-                label={personalNote?.title ?? "TODAY’S LITTLE FIND"}
-              />
-            )}
-          </div>
         </div>
         <div className="home-collage">
           <Bow className="home-collage__bow" />
-          <MaomaoBuddy compact birthday={data?.birthday?.isBirthday} />
           <figure className="portrait-frame home-portrait">
             <div className="portrait-frame__mat">
               {profile.data?.avatarUrl ? (
                 <img
                   className="celebration-portrait"
                   src={profile.data.avatarUrl}
-                  alt="Kiriya, the birthday girl"
+                  alt={copy?.portraitAlt ?? "Kiriya, the birthday star"}
                   width="735"
                   height="763"
                   fetchPriority="high"
@@ -130,8 +128,8 @@ export default function TodayPage() {
             <figcaption>
               <span className="handwritten">
                 {profile.data?.avatarUrl
-                  ? "the girl this whole little world is for ♡"
-                  : "my little apothecary ♡"}
+                  ? copy?.portraitCaption ?? "this whole little world is for you ♡"
+                  : copy?.birthdayCaption ?? "Happy birthday miss apothecary💕"}
               </span>
               <span>{profile.data?.avatarUrl ? "KIRIYA" : "猫猫"}</span>
             </figcaption>
@@ -141,6 +139,7 @@ export default function TodayPage() {
           <div className="home-collage__music">
             <MusicObject song={profile.data?.song} compact />
           </div>
+          <MaomaoBuddy compact birthday={data?.birthday?.isBirthday} />
           <button
             className="home-surprise"
             onClick={() => {
@@ -179,20 +178,37 @@ export default function TodayPage() {
       </section>
       <div className="home-section-index">
         <span>A FEW OF YOUR FAVOURITE THINGS</span>
+        <a href="#note-jar">♡ a little note</a>
         <a href="#play-desk">🎨 doodle & play</a>
-        <a href="#maomao">🌿 maomao</a>
-        <a href="#music">🎧 miku</a>
-        <a href="#cosplay">🎀 dress-up</a>
+        <a href="#maomao">
+          🌿 maomao
+          <NewCount section="maomao" />
+        </a>
+        <a href="#music">
+          🎧 miku
+          <NewCount section="music" />
+        </a>
+        <a href="#cosplay">
+          🎀 dress-up
+          <NewCount section="dressup" />
+        </a>
+        {feedsLive && (
+          <>
+            <Link to="/world/saves">♡ saves</Link>
+            <Link to="/world/merch">🛍 merch</Link>
+          </>
+        )}
       </div>
-      <BirthdayTakeover
+      <NoteJar
         birthday={data?.birthday}
         signature={data?.signature ?? "Josh"}
+        day={data?.day}
       />
       <PlayDesk />
+      <MemeOfTheDay />
       <MaomaoSpread />
       <MusicSpread />
       <CosplaySpread />
-      <ArtSpread />
       <section className="gift-margin">
         <Icon name="mail" size={33} />
         <div>

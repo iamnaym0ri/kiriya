@@ -1,0 +1,160 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "mock-etag-videos",
+  "pageInfo": {
+    "totalResults": 3,
+    "resultsPerPage": 3
+  },
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-ul97PWn9gtk",
+      "id": "ul97PWn9gtk",
+      "snippet": {
+        "publishedAt": "2026-09-12T10:00:00Z",
+        "channelId": "UCdMGYXL38w6htx6Yf9YJa-w",
+        "title": "Leo/need × 鏡音リン 3DMV (mock title)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/ul97PWn9gtk/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "プロジェクトセカイ カラフルステージ! feat. 初音ミク",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "ja"
+      },
+      "contentDetails": {
+        "duration": "PT2M10S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "250000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/ul97PWn9gtk\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-JpTrailer01",
+      "id": "JpTrailer01",
+      "snippet": {
+        "publishedAt": "2026-09-11T10:00:00Z",
+        "channelId": "UCdMGYXL38w6htx6Yf9YJa-w",
+        "title": "イベント予告 (mock trailer)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/JpTrailer01/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "プロジェクトセカイ カラフルステージ! feat. 初音ミク",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "ja"
+      },
+      "contentDetails": {
+        "duration": "PT1M30S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/JpTrailer01\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-JpShort0001",
+      "id": "JpShort0001",
+      "snippet": {
+        "publishedAt": "2026-09-10T10:00:00Z",
+        "channelId": "UCdMGYXL38w6htx6Yf9YJa-w",
+        "title": "3DMV feat. 初音ミク (mock short)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/JpShort0001/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "プロジェクトセカイ カラフルステージ! feat. 初音ミク",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "ja"
+      },
+      "contentDetails": {
+        "duration": "PT45S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"270\" height=\"480\" src=\"//www.youtube.com/embed/JpShort0001\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "270",
+        "embedHeight": "480"
+      }
+    }
+  ]
+}

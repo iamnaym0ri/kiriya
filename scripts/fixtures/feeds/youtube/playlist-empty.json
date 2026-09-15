@@ -1,0 +1,9 @@
+{
+  "kind": "youtube#playlistItemListResponse",
+  "etag": "mock-etag-UUempty",
+  "pageInfo": {
+    "totalResults": 0,
+    "resultsPerPage": 15
+  },
+  "items": []
+}

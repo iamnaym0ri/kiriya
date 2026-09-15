@@ -1,0 +1,187 @@
+[
+  {
+    "id": 176,
+    "eventType": "world_bloom",
+    "name": "All Ways Jump! With You",
+    "assetbundleName": "event_wl_2nd_idol_2025",
+    "bgmAssetbundleName": "event/event_wl_2nd_idol_2025/bgm/event_wl_2nd_idol_2025_top",
+    "eventPointAssetbundleName": "icon_point",
+    "eventOnlyComponentDisplayStartAt": 1786215600000,
+    "startAt": 1786244400000,
+    "aggregateAt": 1787281199000,
+    "rankingAnnounceAt": 1787281799000,
+    "distributionStartAt": 1787331599000,
+    "eventOnlyComponentDisplayEndAt": 1787425199000,
+    "closedAt": 1787435999000,
+    "distributionEndAt": 1788591599000,
+    "virtualLiveId": 393,
+    "unit": "idol",
+    "isCountLeaderCharacterPlay": false,
+    "eventRankingRewardRanges": [
+      {
+        "id": 5309,
+        "eventId": 176,
+        "fromRank": 1,
+        "toRank": 1,
+        "isToRankBorder": false,
+        "eventRankingRewards": [
+          {
+            "id": 5309,
+            "eventRankingRewardRangeId": 5309,
+            "seq": 1,
+            "resourceBoxId": 5309,
+            "rewardConditionType": "none"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 177,
+    "eventType": "marathon",
+    "name": "Tying Tomorrow's Ribbon",
+    "assetbundleName": "event_tomorrow_2025",
+    "bgmAssetbundleName": "event/event_tomorrow_2025/bgm/event_tomorrow_2025_top",
+    "eventPointAssetbundleName": "icon_point",
+    "eventOnlyComponentDisplayStartAt": 1787425200000,
+    "startAt": 1787436000000,
+    "aggregateAt": 1787975999000,
+    "rankingAnnounceAt": 1787976599000,
+    "distributionStartAt": 1788026399000,
+    "eventOnlyComponentDisplayEndAt": 1788116399000,
+    "closedAt": 1788127199000,
+    "distributionEndAt": 1789282799000,
+    "virtualLiveId": 395,
+    "unit": "school_refusal",
+    "isCountLeaderCharacterPlay": false,
+    "eventRankingRewardRanges": [
+      {
+        "id": 5343,
+        "eventId": 177,
+        "fromRank": 1,
+        "toRank": 1,
+        "isToRankBorder": false,
+        "eventRankingRewards": [
+          {
+            "id": 5343,
+            "eventRankingRewardRangeId": 5343,
+            "seq": 1,
+            "resourceBoxId": 5343,
+            "rewardConditionType": "none"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 178,
+    "eventType": "marathon",
+    "name": "Deep Dark for Light",
+    "assetbundleName": "event_forlight_2025",
+    "bgmAssetbundleName": "event/event_forlight_2025/bgm/event_forlight_2025_top",
+    "eventPointAssetbundleName": "icon_point",
+    "eventOnlyComponentDisplayStartAt": 1788116400000,
+    "startAt": 1788127200000,
+    "aggregateAt": 1788580799000,
+    "rankingAnnounceAt": 1788581399000,
+    "distributionStartAt": 1788631199000,
+    "eventOnlyComponentDisplayEndAt": 1788721199000,
+    "closedAt": 1788749999000,
+    "distributionEndAt": 1789887599000,
+    "virtualLiveId": 397,
+    "unit": "theme_park",
+    "isCountLeaderCharacterPlay": false,
+    "eventRankingRewardRanges": [
+      {
+        "id": 5377,
+        "eventId": 178,
+        "fromRank": 1,
+        "toRank": 1,
+        "isToRankBorder": false,
+        "eventRankingRewards": [
+          {
+            "id": 5377,
+            "eventRankingRewardRangeId": 5377,
+            "seq": 1,
+            "resourceBoxId": 5377,
+            "rewardConditionType": "none"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 179,
+    "eventType": "world_bloom",
+    "name": "Link the Beats!",
+    "assetbundleName": "event_wl_2nd_piapro_2025",
+    "bgmAssetbundleName": "event/event_wl_2nd_piapro_2025/bgm/event_wl_2nd_piapro_2025_top",
+    "eventPointAssetbundleName": "icon_point",
+    "eventOnlyComponentDisplayStartAt": 1788721200000,
+    "startAt": 1788750000000,
+    "aggregateAt": 1789786799000,
+    "rankingAnnounceAt": 1789787399000,
+    "distributionStartAt": 1789840799000,
+    "eventOnlyComponentDisplayEndAt": 1789941599000,
+    "closedAt": 1789941599000,
+    "distributionEndAt": 1791097199000,
+    "virtualLiveId": 399,
+    "unit": "none",
+    "isCountLeaderCharacterPlay": false,
+    "eventRankingRewardRanges": [
+      {
+        "id": 5411,
+        "eventId": 179,
+        "fromRank": 1,
+        "toRank": 1,
+        "isToRankBorder": false,
+        "eventRankingRewards": [
+          {
+            "id": 5411,
+            "eventRankingRewardRangeId": 5411,
+            "seq": 1,
+            "resourceBoxId": 5411,
+            "rewardConditionType": "none"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 180,
+    "eventType": "world_bloom",
+    "name": "Wishes in Bloom!",
+    "assetbundleName": "event_wl_2nd_finale_2025",
+    "bgmAssetbundleName": "event/event_wl_2nd_finale_2025/bgm/event_wl_2nd_finale_2025_top",
+    "eventPointAssetbundleName": "icon_point",
+    "eventOnlyComponentDisplayStartAt": 1789941600000,
+    "standbyScreenDisplayStartAt": 1789941600000,
+    "startAt": 1790391600000,
+    "aggregateAt": 1790650799000,
+    "rankingAnnounceAt": 1790651399000,
+    "distributionStartAt": 1790704799000,
+    "eventOnlyComponentDisplayEndAt": 1790794799000,
+    "closedAt": 1790805599000,
+    "distributionEndAt": 1791961199000,
+    "unit": "none",
+    "isCountLeaderCharacterPlay": true,
+    "eventRankingRewardRanges": [
+      {
+        "id": 5445,
+        "eventId": 180,
+        "fromRank": 1,
+        "toRank": 1,
+        "isToRankBorder": false,
+        "eventRankingRewards": [
+          {
+            "id": 5445,
+            "eventRankingRewardRangeId": 5445,
+            "seq": 1,
+            "resourceBoxId": 5500,
+            "rewardConditionType": "none"
+          }
+        ]
+      }
+    ]
+  }
+]

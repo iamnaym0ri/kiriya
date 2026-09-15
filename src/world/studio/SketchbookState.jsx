@@ -1,7 +1,7 @@
 import { createContext, useContext, useRef } from "react";
 
-// Unfinished ink survives moving between private pages. Only the explicit
-// Keep/Save action persists it; leaving the private world releases these drafts.
+// One shared doodle draft survives private navigation. Explicit Keep persists
+// artwork; leaving the private world releases the unsaved drawing.
 const SketchbookContext = createContext(null);
 export function SketchbookProvider({ children }) {
   const pages = useRef({});

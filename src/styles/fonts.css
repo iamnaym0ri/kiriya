@@ -3,6 +3,23 @@
 @import "@fontsource/gaegu/latin-700.css";
 @import "@fontsource/dotgothic16/latin-400.css";
 
+@font-face {
+  font-family: "Parisienne";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/parisienne-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Feeling Emoji";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/feeling-emoji.woff2") format("woff2");
+  unicode-range: U+1F60A, U+1F60C, U+1F929, U+1F97A, U+1F624, U+1F630, U+1F635, U+1F4AB, U+1F60F, U+200D;
+}
+
 /*
   Latin faces load up front. They're declared here (not via @fontsource's latin-*.css) because those
   files omit unicode-range, which would make the Latin file claim every character and hide the
@@ -122,7 +139,7 @@
   src: url("/fonts/birthday-emoji.woff2") format("woff2");
   unicode-range:
     U+2728, U+2744, U+1F337, U+1F33F, U+1F370, U+1F380, U+1F382, U+1F3A7-1F3A8,
-    U+1FAE7;
+    U+1F495, U+1FAE7;
 }
 @font-face {
   font-family: "Birthday Japanese";

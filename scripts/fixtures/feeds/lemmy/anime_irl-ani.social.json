@@ -1,0 +1,80 @@
+{
+ "posts": [
+  {
+   "post": {
+    "id": 36902307,
+    "name": "anime_irl",
+    "url": "https://ani.social/api/v3/image_proxy?url=https%3A%2F%2Flemmy.world%2Fpictrs%2Fimage%2F54520fa3-9e69-431f-8ca0-e99941fd48c9.png",
+    "creator_id": 24920614,
+    "community_id": 7,
+    "removed": false,
+    "locked": false,
+    "published": "2026-09-15T06:18:13.151627Z",
+    "deleted": false,
+    "nsfw": false,
+    "thumbnail_url": "https://ani.social/api/v3/image_proxy?url=https%3A%2F%2Flemmy.world%2Fpictrs%2Fimage%2F54520fa3-9e69-431f-8ca0-e99941fd48c9.png",
+    "ap_id": "https://lemmy.world/post/51934067",
+    "local": false,
+    "language_id": 37,
+    "featured_community": false,
+    "featured_local": false,
+    "url_content_type": "image/png"
+   },
+   "creator": {
+    "id": 24920614,
+    "name": "gigaqps",
+    "banned": false,
+    "published": "2026-09-09T21:05:27.735010Z",
+    "actor_id": "https://lemmy.world/u/gigaqps",
+    "local": false,
+    "deleted": false,
+    "bot_account": false,
+    "instance_id": 4
+   },
+   "community": {
+    "id": 7,
+    "name": "anime_irl",
+    "title": "Anime_IRL",
+    "description": "A community for sharing relatable real-life situations depicted in anime. \n\n---\n\n**RULES**\n\n1. Always follow the [rules](https://ani.social/legal) of the ani.social instance.\n2. All posts must contain \"IRL\" somewhere in the title.\n3. All posts must be an image, gif, or video from Anime, Manga, or ot",
+    "removed": false,
+    "published": "2023-06-22T11:41:35.359589Z",
+    "updated": "2026-08-02T22:32:03.430933Z",
+    "deleted": false,
+    "nsfw": false,
+    "actor_id": "https://ani.social/c/anime_irl",
+    "local": true,
+    "icon": "https://lemmy.world/pictrs/image/13bacbe4-1c03-4cde-855b-479ed14f8794.jpeg",
+    "hidden": false,
+    "posting_restricted_to_mods": false,
+    "instance_id": 1,
+    "visibility": "Public"
+   },
+   "image_details": {
+    "link": "https://ani.social/api/v3/image_proxy?url=https%3A%2F%2Flemmy.world%2Fpictrs%2Fimage%2F54520fa3-9e69-431f-8ca0-e99941fd48c9.png",
+    "width": 964,
+    "height": 1268,
+    "content_type": "image/webp"
+   },
+   "creator_banned_from_community": false,
+   "banned_from_community": false,
+   "creator_is_moderator": false,
+   "creator_is_admin": false,
+   "counts": {
+    "post_id": 36902307,
+    "comments": 1,
+    "score": 59,
+    "upvotes": 60,
+    "downvotes": 1,
+    "published": "2026-09-15T06:18:13.151627Z",
+    "newest_comment_time": "2026-09-15T07:00:08.692747Z"
+   },
+   "subscribed": "NotSubscribed",
+   "saved": false,
+   "read": false,
+   "hidden": false,
+   "creator_blocked": false,
+   "unread_comments": 1
+  }
+ ],
+ "next_page": "P23315a3"
+}

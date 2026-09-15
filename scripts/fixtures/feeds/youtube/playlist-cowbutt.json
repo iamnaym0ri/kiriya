@@ -1,0 +1,37 @@
+{
+  "kind": "youtube#playlistItemListResponse",
+  "etag": "mock-etag-UUbSST-QoAQKqtgZbmf3gI3g",
+  "pageInfo": {
+    "totalResults": 3,
+    "resultsPerPage": 15
+  },
+  "items": [
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-CowWig00001",
+      "id": "mock-item-0",
+      "contentDetails": {
+        "videoId": "CowWig00001",
+        "videoPublishedAt": "2026-09-01T15:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-CowVlog0001",
+      "id": "mock-item-1",
+      "contentDetails": {
+        "videoId": "CowVlog0001",
+        "videoPublishedAt": "2026-08-25T15:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-CowShort001",
+      "id": "mock-item-2",
+      "contentDetails": {
+        "videoId": "CowShort001",
+        "videoPublishedAt": "2026-08-20T15:00:00Z"
+      }
+    }
+  ]
+}

@@ -82,8 +82,8 @@ export async function songDetails(id) {
 }
 
 /** New and rising Miku / Rin / Len songs this week, as "fresh finds". */
-export async function fetchRisingSongs() {
-  const data = await getJson(
+export async function fetchRisingSongs({ requestJson = getJson } = {}) {
+  const data = await requestJson(
     `${API}/songs/top-rated?durationHours=168&filterBy=PublishDate&vocalist=Vocaloid&maxResults=40&fields=PVs&languagePreference=English`,
   );
   return (Array.isArray(data) ? data : data.items ?? [])

@@ -13,7 +13,9 @@ export const kiriya = {
     vocaloids: ["Hatsune Miku", "Kagamine Rin", "Kagamine Len"],
     songStyles: ["classics", "newer hits and Project SEKAI", "Rin & Len story songs"],
     colors: ["purple", "pink", "black", "white"],
-    fashion: ["Harajuku / kawaii", "jirai kei / sweet goth", "streetwear / skater", "Y2K / alt"],
+    fashion: ["Y2K", "skater streetwear", "sweet", "girly"],
+    games: ["Project SEKAI (Global)", "Genshin Impact", "Honkai: Star Rail", "Minecraft (jokes only)"],
+    otherAnime: ["Frieren", "Bungo Stray Dogs", "Witch Hat Atelier", "Oshi no Ko", "Bocchi the Rock!", "Girls Band Cry"],
     art: ["digital (iPad / Procreate)", "traditional drawing"],
   },
   cosplays: {
@@ -21,7 +23,8 @@ export const kiriya = {
     skills: ["wig styling"],
     level: "experienced",
   },
-  spoilerLevel: "manga", // anime + manga are fine; light-novel-only reveals stay behind a tap
+  spoilerLevel: "none", // No spoiler restriction: she has read the light novels.
+  shipsAllowed: true,
   languages: { reads: "simplified Chinese", learning: "Japanese", siteLanguage: "English" },
   // What makes her special, in the words of the person who made this.
   traits: [

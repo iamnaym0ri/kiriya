@@ -1,0 +1,113 @@
+{
+ "meta": {
+  "status": 200,
+  "msg": "OK"
+ },
+ "response": [
+  {
+   "blog_name": "example-legacy-photos",
+   "blog": {
+    "name": "example-legacy-photos",
+    "title": "synthetic fixture blog",
+    "url": "https://example-legacy-photos.tumblr.com/",
+    "uuid": "t:fixture-example-legacy-photos"
+   },
+   "id": 790000000000000101,
+   "id_string": "790000000000000101",
+   "post_url": "https://example-legacy-photos.tumblr.com/post/790000000000000101",
+   "type": "photo",
+   "date": "2026-09-14 08:00:00 GMT",
+   "timestamp": 1789372800,
+   "format": "html",
+   "reblog_key": "fixtureKey",
+   "tags": [
+    "kusuriya no hitorigoto",
+    "maomao"
+   ],
+   "note_count": 18,
+   "summary": "maomao and her herbs",
+   "caption": "<p>maomao and her herbs</p>",
+   "state": "published",
+   "photos": [
+    {
+     "caption": "",
+     "original_size": {
+      "width": 1280,
+      "height": 960,
+      "url": "https://64.media.tumblr.com/0123456789abcdef0123456789abcd01/tumblr_fixture101o1_1280.jpg"
+     },
+     "alt_sizes": [
+      {
+       "width": 1280,
+       "height": 960,
+       "url": "https://64.media.tumblr.com/0123456789abcdef0123456789abcd01/tumblr_fixture101o1_1280.jpg"
+      },
+      {
+       "width": 500,
+       "height": 375,
+       "url": "https://64.media.tumblr.com/0123456789abcdef0123456789abcd01/tumblr_fixture101o1_500.jpg"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "blog_name": "example-legacy-text",
+   "blog": {
+    "name": "example-legacy-text",
+    "title": "synthetic fixture blog",
+    "url": "https://example-legacy-text.tumblr.com/",
+    "uuid": "t:fixture-example-legacy-text"
+   },
+   "id": 790000000000000102,
+   "id_string": "790000000000000102",
+   "post_url": "https://example-legacy-text.tumblr.com/post/790000000000000102",
+   "type": "text",
+   "date": "2026-09-14 07:00:00 GMT",
+   "timestamp": 1789369200,
+   "format": "html",
+   "reblog_key": "fixtureKey",
+   "tags": [
+    "kusuriya no hitorigoto"
+   ],
+   "note_count": 4,
+   "state": "published",
+   "title": "",
+   "body": "<p>verdigris house sketch</p><figure class=\"tmblr-full\" data-orig-height=\"1440\" data-orig-width=\"2520\"><img src=\"https://64.media.tumblr.com/0123456789abcdef0123456789abcd02/b1b2c3d4e5f60102-02/s640x960/01234567640.webp\" data-orig-height=\"1440\" data-orig-width=\"2520\" srcset=\"https://64.media.tumblr.com/0123456789abcdef0123456789abcd02/b1b2c3d4e5f60102-02/s640x960/01234567640.webp 640w, https://64.media.tumblr.com/0123456789abcdef0123456789abcd02/b1b2c3d4e5f60102-02/s1280x1920/012345671280.webp 1280w, https://64.media.tumblr.com/0123456789abcdef0123456789abcd02/b1b2c3d4e5f60102-02/s2048x3072/012345672048.webp 2048w\"/></figure>"
+  },
+  {
+   "blog_name": "example-legacy-reblog",
+   "blog": {
+    "name": "example-legacy-reblog",
+    "title": "synthetic fixture blog",
+    "url": "https://example-legacy-reblog.tumblr.com/",
+    "uuid": "t:fixture-example-legacy-reblog"
+   },
+   "id": 790000000000000103,
+   "id_string": "790000000000000103",
+   "post_url": "https://example-legacy-reblog.tumblr.com/post/790000000000000103",
+   "type": "photo",
+   "timestamp": 1789365600,
+   "format": "html",
+   "tags": [
+    "kusuriya no hitorigoto"
+   ],
+   "note_count": 2,
+   "state": "published",
+   "parent_post_url": "https://example-legacy-photos.tumblr.com/post/790000000000000101",
+   "reblogged_from_id": "790000000000000101",
+   "photos": [
+    {
+     "caption": "",
+     "alt_sizes": [
+      {
+       "width": 500,
+       "height": 375,
+       "url": "https://64.media.tumblr.com/0123456789abcdef0123456789abcd01/tumblr_fixture101o1_500.jpg"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

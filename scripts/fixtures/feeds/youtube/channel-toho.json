@@ -1,0 +1,33 @@
+{
+  "kind": "youtube#channelListResponse",
+  "etag": "mock-etag-channels",
+  "pageInfo": {
+    "totalResults": 1,
+    "resultsPerPage": 1
+  },
+  "items": [
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UCmockTOHOanimation00000",
+      "id": "UCmockTOHOanimation00000",
+      "snippet": {
+        "title": "TOHO animation チャンネル",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UUmockTOHOanimation00000"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "mock-etag-videos",
+  "pageInfo": {
+    "totalResults": 3,
+    "resultsPerPage": 3
+  },
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-CowWig00001",
+      "id": "CowWig00001",
+      "snippet": {
+        "publishedAt": "2026-09-01T15:00:00Z",
+        "channelId": "UCbSST-QoAQKqtgZbmf3gI3g",
+        "title": "Styling a Hatsune Miku wig: twin tails tutorial (mock)",
+        "description": "How to style long twin tails that stay up all day.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/CowWig00001/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Cowbutt Crunchies",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT18M20S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "52000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/CowWig00001\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-CowVlog0001",
+      "id": "CowVlog0001",
+      "snippet": {
+        "publishedAt": "2026-08-25T15:00:00Z",
+        "channelId": "UCbSST-QoAQKqtgZbmf3gI3g",
+        "title": "Convention weekend vlog (mock)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/CowVlog0001/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Cowbutt Crunchies",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT12M00S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/CowVlog0001\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-CowShort001",
+      "id": "CowShort001",
+      "snippet": {
+        "publishedAt": "2026-08-20T15:00:00Z",
+        "channelId": "UCbSST-QoAQKqtgZbmf3gI3g",
+        "title": "wig flip #shorts (mock)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/CowShort001/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Cowbutt Crunchies",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT20S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"270\" height=\"480\" src=\"//www.youtube.com/embed/CowShort001\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "270",
+        "embedHeight": "480"
+      }
+    }
+  ]
+}

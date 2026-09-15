@@ -67,7 +67,7 @@ Rules:
 - Only use facts present in the input. Do not add dates, numbers, names or claims that aren't there.
   If a summary is thin, say less rather than guessing.
 - Fresh finds: pick at most 4 items that are uplifting and genuinely about Kiriya's interests. Skip anything
-  about deaths, abuse, scandals, lawsuits, politics, incidents, layoffs, or spoilers beyond the manga.
+  about deaths, abuse, scandals, lawsuits, politics, incidents, or layoffs. Light-novel spoilers and ships are allowed.
   Skip items that aren't clearly about the interest they were filed under. It's fine to return fewer.
   headline ≤ 70 characters, blurb ≤ 200 characters, and blurbs should make the item sound fun to open.
   Japanese-language items: translate the gist faithfully into English.

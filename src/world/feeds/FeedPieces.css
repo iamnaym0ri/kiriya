@@ -1,0 +1,291 @@
+/* Feed pieces: layout for new blocks built from existing cards. Existing classes are not restyled;
+   selectors below only target the new feed-* classes (inside existing cards where needed). */
+
+.feed-media {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.feed-media__still {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.feed-media__still > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.feed-media__badge {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: #fff9fde6;
+  color: #684078;
+  font: 15px var(--font-hand);
+}
+.feed-media__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  background: #ebe1f0;
+  color: #7d568e;
+  font: 18px var(--font-hand);
+}
+
+/* Inside the carousel picture frame */
+.lore-picture--feed .lore-picture__enlarge > .feed-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lore-picture--feed[data-fit="contain"] .lore-picture__enlarge > .feed-media,
+.lore-picture--feed[data-fit="contain"] .feed-media__still > img {
+  object-fit: contain;
+  background: #fffbf8;
+}
+.lore-feed-actions {
+  margin-top: 10px;
+}
+
+/* Inside a lookbook photo */
+.feed-photo {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  align-content: start;
+}
+.feed-photo > .lookbook-photo {
+  width: 100%;
+}
+.lookbook-photo > .feed-media,
+.lookbook-photo > .feed-media__still,
+.lookbook-photo > .feed-media__placeholder {
+  aspect-ratio: 0.83;
+  width: 100%;
+  object-fit: cover;
+  border: 9px solid #fff9fd;
+  box-shadow: 0 5px 20px #49365312;
+}
+.feed-lookbook {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: 26px;
+  margin-bottom: 34px;
+}
+
+/* Note-slip cards */
+.feed-card {
+  min-width: 0;
+}
+.feed-card__media {
+  display: block;
+  width: 100%;
+  margin: 2px 0 14px;
+  background: #f4ecf6;
+}
+.feed-card__media .feed-media,
+.feed-card__media .feed-media__still > img {
+  max-height: 420px;
+  object-fit: contain;
+}
+.feed-card__headline {
+  display: block;
+  font: 700 27px/1.05 var(--font-hand);
+  letter-spacing: -0.02em;
+  color: #54385f;
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+}
+:root .note-slip p.feed-facts,
+.feed-facts {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 1.7;
+  color: #806298;
+  margin-top: 6px;
+}
+:root .note-slip .feed-note,
+.feed-note {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 1.7;
+  color: #897193;
+}
+.feed-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 16px;
+  margin-top: 8px;
+}
+.feed-links > .text-link {
+  font-size: 11px;
+}
+.feed-links > .feed-note {
+  width: 100%;
+}
+.feed-byline {
+  flex-wrap: wrap;
+}
+.feed-byline > a {
+  overflow-wrap: anywhere;
+}
+.feed-byline > .handwritten {
+  font-size: 16px;
+  color: #a47da7;
+}
+.feed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 18px;
+  margin-top: 4px;
+}
+.feed-actions > .quiet-button[aria-pressed="true"] {
+  color: #a06f9e;
+}
+.feed-notes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 22px;
+}
+.feed-shelf {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.feed-card[data-removed] {
+  opacity: 0.82;
+}
+
+/* Section blocks */
+.feed-progress {
+  margin-top: 24px;
+}
+.feed-closing {
+  margin-bottom: 26px;
+}
+.feed-new-count {
+  color: #a06f9e;
+  white-space: pre;
+}
+.feed-episode {
+  margin-bottom: 24px;
+}
+.feed-merch-line {
+  margin-top: 4px;
+}
+.feed-merch-line > p > strong {
+  font-weight: 700;
+}
+.feed-music,
+.feed-dressup {
+  margin-top: 30px;
+}
+.feed-dressup {
+  display: grid;
+  gap: 24px;
+}
+.feed-places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 22px;
+  margin-top: 14px;
+}
+.feed-sleeve {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+.feed-sleeve > .feed-note {
+  margin-top: 4px;
+}
+.feed-meme__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 34px;
+}
+.feed-events > ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.feed-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  margin-bottom: 22px;
+}
+.feed-filters > label {
+  display: grid;
+  gap: 6px;
+  min-width: min(220px, 100%);
+}
+.feed-group {
+  margin-bottom: 34px;
+}
+.feed-viewer video.feed-media {
+  max-height: 70dvh;
+  background: #221c2a;
+}
+.feed-viewer .feed-media__still {
+  max-height: 70dvh;
+}
+.feed-viewer .feed-companion {
+  margin-top: 16px;
+}
+.feed-viewer .gallery-dialog__actions {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .feed-lookbook {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 16px;
+  }
+  .feed-shelf {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 650px) {
+  .feed-notes,
+  .feed-shelf {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .lookbook-photo > .feed-media,
+  .lookbook-photo > .feed-media__still,
+  .lookbook-photo > .feed-media__placeholder {
+    aspect-ratio: 0.72;
+    border-width: 6px;
+  }
+  .feed-card__headline {
+    font-size: 24px;
+  }
+  .feed-meme__inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .feed-filters > label {
+    width: 100%;
+  }
+}

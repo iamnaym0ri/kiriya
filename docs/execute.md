@@ -1,1015 +1,316 @@
-Kiriya's Lilac World — Codex Execution Brief
+Kiriya’s feeds — Claude continuation and production verification
 
-Ready for execution · September 14, 2026 · replaces the design-review draft.
+Assignment: finish the pipeline and page integration after Codex’s completed foundation.
+Site: https://kiriya.love
+Repository: expected /home/iamnaym0ri/projects/birthday, GitHub iamnaym0ri/kiriya.
+Latest owner update: the setup has been deployed to Production, the API credentials have been supplied, and Claude has Vercel access. Production testing is authorized. Verify the actual deployed revision and runtime configuration rather than assuming what the deployment contains.
 
-Start here, Codex
+1. Mandatory first action: ingest Codex’s handoff
 
-The owner is handing you the original build report and this execution brief so you can begin the redesign in the existing repository. Read both documents in full, inspect what has actually been built, then implement and verify the redesign. Do not stop at a plan or ask for another general confirmation to start.
+Read the reports Codex left for the first half in full before editing code or running production tests. Do not begin from this brief alone. Locate the actual repository paths; the expected folder is docs/feeds/.
 
-Read the original Pasted markdown(20260914-222445).md build report supplied alongside this file. It may instead be named Original-Build-Report.md. This establishes project history, existing features, personal context, and reported issues.
+Read in this order, after any applicable AGENTS.md:
 
-Read this entire brief. This brief supersedes the report's older design direction and feature scope. The actual checkout establishes current implementation facts; applicable repository instructions and the owner's newer messages still apply.
+FOUNDATION-HANDOFF.md — completed work, implementation map, migrations, verification, limitations, and Claude’s starting point.
 
-Read repository instructions, inspect the worktree, run the existing app, and view both public and unlocked states before editing. Use the reported paths in section 12 as leads; discover their current equivalents if they moved.
+CONTRACTS.md — implemented exports, runtime schemas, adapter interface, item identity, safety state, editions, private APIs, runner behavior, usage accounting, and save-copy lifecycle.
 
-Open the supplied images and the linked design examples. Collect the assets in section 9, then begin with the public and unlocked openings. Continue through the four interest sections, retained behavior, and visual verification.
+SETUP.md — resource configuration, environment variables, precedence, test commands, schedule, and remaining runtime checks.
 
-The target: a beautiful personal world that feels specifically made for Kiriya. The public profile leans guns.lol: atmospheric imagery, strong identity, music, links, and calm controls. The fully unlocked version mixes both, with Strawpage leading its visual personality: character artwork, her art and cosplay, varied frames, lilac scrapbook materials, and cute details. guns.lol's cleanliness and clarity remain throughout. These are design references, not frameworks to install.
+PIPELINE.md — the full product design and Q&A decisions. This remains the authority for the final functionality and appearance.
 
-Three jobs: look beautiful even while passively open; offer small, curated discoveries from her interests; make her name, work, choices, songs, and gift the center of the experience.
+The phase execution brief referenced by those reports, expected docs/execute.md, and the original site handoff where needed to understand preserved features.
 
-Four core interests: Maomao / The Apothecary Diaries; Miku-led Vocaloid; her drawing, digital/traditional art and OCs; her cosplay. Fashion supports cosplay and style. Birthday letters, songs, personal links, and useful existing lore delivery remain. Remove the unrelated utility features listed in section 8.
+All six research documents: research/maomao-sources.md, cosplay-and-events.md, ai-costs-and-limits.md, meme-sources.md, vocaloid-sources.md, and merch-and-fashion.md. Locate them if their folder differs.
 
-Files and asset access
+The supplied report attachments correspond to:
 
-The original report and this brief are the two reading documents. Also provide Kiriya-Reference-Assets.zip for the exact uploaded images and saved visual references. Extract it beside this Markdown file; its links then resolve under assets/. If it was extracted elsewhere, locate the same filenames in the provided workspace.
+Attachment
 
-Section 9 distinguishes direct HTTPS image files, source pages to inspect, and attached reference files. The direct image URLs can be downloaded by the agent. The original uploads do not have verified public URLs; the archive preserves those exact copies. Relative links refer to files supplied with the task, not internet download endpoints. Do not treat temporary paths from the original chat as paths in your checkout.
+Repository document
 
-Missing personal photographs, original artwork, final song choices, or production credentials do not block the available design work. Inspect what already exists, use clearly identified reference material where appropriate, and report remaining needs together. Never substitute somebody else's work or photograph as Kiriya's. Keep these handoff documents outside publicly served application files.
+Pasted markdown(20260915-082527).md
 
-This assignment is to implement and verify the redesign in the supplied project. Deployment and production-account setup require a separate instruction. No site implementation or repository inspection was performed while preparing this handoff.
+Foundation handoff
 
-1. Expected public and unlocked appearance
+Pasted markdown (2)(20260915-082556).md
 
-Strawpage and guns.lol are visual and interaction references, not two software frameworks to install. Keep the existing application and borrow their strongest qualities. guns.lol's documented background imagery, profile presentation, audio covers, and controls support the public composition. The inspected Strawpages contribute character scale, personal collage, varied frames, and handmade details.
+Foundation contracts
 
-State
+Pasted markdown (3)(3).md
 
-What it should look like
+Foundation setup and release
 
-What is available
+Pasted markdown(20260915-073107).md
 
-Public / locked
+Complete pipeline design
 
-One strong identity composition within a full-window lavender floral scene. Kiriya's name and approved avatar lead; a carefully placed character image, a small Miku music sleeve, and a few accents establish her taste. Text and controls are calm and readable.
+Then inspect the current Git status/diff and the actual modules the reports name. A report describes an implementation at a point in time; the working tree and deployed commit may have moved since then. Preserve unrelated work, including the birthday, drawing, game, check-in, typography, and mascot changes noted by Codex.
 
-Public bio/dedication, configured social links, chosen public music, a few approved previews, and a clear private-door action.
+Before implementation, record a short “Codex foundation understood” section in your continuation report: files read, actual revision, verified existing modules, remaining features, and material differences between the report and code. This is an implementation checkpoint, not a request for another approval. Continue directly with the work.
 
-Fully unlocked
+How the latest instructions change older documents
 
-The same scene opens into a wider personal space with art, character images, cosplay photographs, illustrated discoveries, songs, and letters. Richer detail surrounds an orderly reading path.
+Production inspection and bounded production tests are now authorized. An older instruction requiring a preview first must not block these tests.
 
-Her private collections, drawing workspace, starred songs, sourced lore, selected prompts/tips, birthday gift, and existing editing controls where permitted.
+The reports’ “credentials absent” and “not deployed” statements are historical. Check whether the owner’s deployment resolved them.
 
-The public opening
+The foundation-only stopping point applied to Codex. Claude is now assigned the remaining implementation through release readiness.
 
-Use the lilac-branch image as the initial background candidate, softened by a plum veil or quiet paper layer where necessary. Keep the identity area substantially calmer than the surrounding imagery. A pearl or translucent lilac profile surface can work; a heavy black rectangle is not required. The existing name treatment can become a deliberate focal point, with a short approved line beneath it.
+Existing owner-handled Git pushes and deployments remain in force. Vercel access and production-testing permission do not transfer that step. Do not push, merge, deploy, redeploy, or call deployment hooks. Complete implementation and all available verification, then consolidate any owner deployment actions at the end.
 
-Place one substantial character image beside or partly behind the profile composition, outside the text area. The softer Maomao portrait is a good first candidate. Let a Miku song sleeve or small illustration make Vocaloid visible too. Do not place every supplied image, every flower texture, and every decorative motif in the first viewport. One small cat/star detail is enough to suggest the more personal world inside.
+2. What is already built
 
-The public page should be satisfying to leave open: atmospheric artwork, a restrained ambient effect, and music after the visitor chooses to play it. It must remain attractive with sound and motion disabled. Show real public content only; an unavailable personal photo is not an invitation to invent Kiriya's appearance.
+Codex reports a working local fixture pipeline, 45 passing tests, and a small existing-style admin feed panel. Its proof collected 25 synthetic candidates, rejected five disallowed candidates, and exercised collection through private edition reads. Those results are local proof, not measured live provider/source performance.
 
-Opening her world
+Extend these existing systems:
 
-After successful unlock, keep the background, typography, name treatment, and player coherent. Expand the composition into an illustrated personal home. The transition can briefly open paper layers or reveal the surrounding collection, but it should not delay access or replay on every navigation.
+Foundation
 
-A proposed first private view combines her name and welcome, one current discovery, a Miku music object, a Maomao image, and a meaningful glimpse of her own art or cosplay. The first substantial section below should give cosplay real photographic space, followed by her sketchbook/art, Maomao collection, and music shelf. This order can change once the actual personal media is inspected; keep all four interests visually significant.
+What to retain and use
 
-Use readable bookmarks such as Home, Maomao, Music, Art, Cosplay, with Letters/birthday always reachable privately. A single browsable home with sections is preferred; existing deeper routes can host galleries and tools. Tools open when requested. On a phone, use a compact section menu rather than squeezing every label into a tiny navigation strip.
+Stack and access
 
-The fully personalized state is a hybrid, with Strawpage in the visual lead and guns.lol providing the clean structure. The difference between the two states is the amount of personal material and decorative detail revealed. Clean spacing, clear controls, coherent colors, and a recognizable identity persist in both.
+React/Vite, Hono through api/index.js, existing signed sessions, roles, CSRF, private media streaming
 
-2. What already exists
+Data
 
-The supplied report describes iloveukiriya.com, a standalone project at ~/projects/birthday, built as a gift from Josh for Kiriya. It reports a React/Vite frontend, React Router, TanStack Query, Motion, a Hono API, Drizzle with local PGlite, and planned Neon/Vercel Blob production services. Public /, private /world/*, and admin /admin surfaces already exist. These are report facts, not findings from a current repository inspection.
+Thirteen additive tables; migrations 0001_dry_kree and 0002_awesome_wolfsbane; original migration unchanged
 
-The report describes approximately 10,500 frontend lines, 3,800 server lines, 18 tables, and 63 endpoints. An earlier scrapbook version was replaced by a cleaner application treatment; its legacy source directory was removed. The current screenshot shows a narrow central feed, broad flat lavender margins, repeated rounded text panels, and a five-item navigation pill. It describes her interests more than it shows them.
+Taste
 
-The existing implementation is valuable, but its layout is not the design to preserve. Do not treat this as a recolor, add a wallpaper behind the same feed, or surround unchanged panels with stickers. Recompose the public profile, private opening, image scale, navigation, and interest sections.
+Complete explicit defaults, validated overrides, revision checks, build snapshots, filtered writer context
 
-Existing content worth salvaging
+Identity
 
-Reported material or behavior
+Native/URL/media aliases, permanent seen/hidden exclusions, source-payload fingerprints
 
-Revised use
+Sources
 
-32 Maomao facts: 27 anime, 3 manga, 2 novel
+Registry, hardened HTTP helper, bounded cursors, health tracking; VocaDB is the only adapted live source
 
-Use verified anime items and appropriately marked manga items in illustrated notes. Keep light-novel-only content excluded.
+Safety/writer
 
-21 Vocaloid lore entries
+Moderation, structured still-image vision, Responses API, voice/fact validators, template fallback, provider-result reuse
 
-Keep Miku as the main focus, Rin/Len as supporting favorites, and selected wider Vocaloid material. Pair text with relevant artwork or song sleeves.
+Jobs
 
-22 cosplay tips and 12 character ideas
+Durable stage leases and checkpoints, generation fencing, atomic edition publication, authenticated catch-up
 
-Keep useful wig, costume, posing, prop, and process material. Handpick character ideas that suit her interests; do not restore a general cosplay-planning dashboard.
+Accounting
 
-20 drawing subjects x 12 twists, plus 14 drawing tips
+Atomic paid-request reservations and US$5 monthly feed ceiling; saved-copy reservations and completion accounting
 
-Reuse selected prompts and Procreate/traditional-art tips. Add explicitly authored OC prompts where appropriate, without a new prompt-generation product.
+APIs
 
-Greetings, Josh's notes, personal reminders, birthday notes and stickers
+Private feed/seen/hide/recheck/faves, admin status/preview/run/hide/block, protected job routes
 
-Preserve real authored material. Use a short welcome, small notes, a simple surprise object, and the birthday experience.
+Storage
 
-Date-based selection and previously shown-item history
+Private Blob helpers and authenticated streaming for future saves/ objects
 
-Reuse stable daily selection and repeat avoidance. No behavioral recommendation system is needed.
+The real gaps are collectors, complete section planners, moving-content policy, Keep/copy/deletion workflows, events, merch, my faves UI, richer admin controls, page integration, and measured production operation. Repair a foundation defect when evidence requires it; do so inside the existing design rather than adding parallel implementations.
 
-Drawing canvas/gallery, songs/starred choices, uploads, letters
+3. Start with bounded production verification
 
-Preserve the working behavior and data, with the tools behind the new visual presentation.
+Use the existing Vercel access. Do not request credentials again when they are already available through the authorized environment. Never print secret values or copy production credentials into tracked files.
 
-Existing job, caching, notification preferences and delivery paths
+Establish the deployed state
 
-Retain only what supports the approved content and optional surprises. Reuse existing infrastructure; do not introduce another scheduler or service.
+Record the active production deployment ID, deployed Git revision, actual runtime/function settings, recent build/migration outcome, and current feed switch state. Confirm whether the owner deployed the foundation code as well as the environment variables.
 
-The report's composer already selects deterministically from a day-based seed and tracks recently shown content. That is enough for a finite rotating collection. The new design should use this foundation without restoring eight equally weighted cards, unrelated modules, or a stream of unreviewed internet items.
+Verify the effective connection targets, not just resource attachments:
 
-3. Personal context and identity
+Vercel project kiriya; Neon resource kiriyaa; private Blob kiriya-blob.
 
-Kiriya is the subject of the site. Maomao and Miku represent her interests; neither replaces her identity. Put her name, her work, her costume photographs, her saved songs, and the actual gift ahead of general fandom information.
+The code uses DATABASE_URL before kData_DATABASE_URL. Confirm which actually wins without logging its password or complete connection string.
 
-Confirmed context
+Confirm the installed Blob authentication path, expected store ID, and streaming behavior; preserve working OIDC/token configuration.
 
-Design consequence
+Check that both feed migrations are recorded in the deployed database. Do not rerun a reset or initialize a fresh schema over production.
 
-Kiriya; birthday September 15; Singapore timezone
+Check the presence of OPENAI_API_KEY, YOUTUBE_API_KEY, TUMBLR_API_KEY, BLUESKY_HANDLE, and BLUESKY_APP_PASSWORD, then verify the credentials with real requests.
 
-Keep the configured spelling consistent. Use Asia/Singapore for birthday and daily selections. Do not invent an age or birth year.
+Verify each available integration
 
-Gift from Josh; signature "Josh <3"
+Check
 
-Preserve the actual signature and messages. Do not generate a substitute personal history or final birthday letter.
+Evidence to collect
 
-Maomao is the principal anime interest; no Maomao/Jinshi shipping emphasis
+Site and access
 
-Prefer solo portraits, expressions, case moments, flowers, and character details. Do not center couple compositions.
+Public page works; private APIs reject anonymous requests; existing authorized roles retain intended access
 
-Has read the manga, but the exact stopping point is unspecified
+Neon
 
-Use non-spoiler opening artwork and retain spoiler reveal controls. Exclude light-novel-only spoilers.
+Small read through the deployed app confirms effective target/schema; durable job/database behavior checked with bounded real work when available
 
-Miku most important; Rin and Len also liked
+Blob
 
-Give Miku the strongest recurring Vocaloid presence. Other characters support the collection rather than competing equally.
+Tiny uniquely named test object can be written privately, read through authorized streaming, rejected anonymously, and deleted by its recorded test ID
 
-iPad/Procreate and traditional drawing
+OpenAI
 
-Feature finished art, rough work, process and OCs; make the existing canvas easy to open.
+One small structured writer request, one appropriate image/vision check, and moderation; confirm configured primary/fallback access without a batch run
 
-Experienced cosplayer: Maomao, Miku, Lynette; wig styling
+YouTube
 
-Cosplay needs substantial photographs and process detail. Avoid treating her as a beginner or burying this interest in a generic tip tile.
+A small public channel/video request succeeds; confirm embeddability and Singapore-region checks can be evaluated
 
-Soft/kawaii, sweet goth/jirai kei, street/skater and Y2K/alt fashion
+Tumblr
 
-Include selected fabric/accessory/style references inside cosplay. Allow plum/black accents alongside soft lilac.
+Consumer-key request succeeds for the planned public endpoint; record quota/access or approval failures distinctly
 
-iPhone is a primary device
+Bluesky
 
-Design the phone composition deliberately; use touch-friendly controls and reliable music/drawing fallbacks.
+App-password session plus a small intended read/search succeeds; no social posting, following, or messaging
 
-The existing report contains private identity and address preferences. Preserve their access boundaries. Public content, exported public screenshots, metadata and shipped assets must not expose them. Use direct second-person copy in her private world, and keep any retained preferences in quiet authenticated settings.
+Use the existing usage ledger and ceiling for paid probes; record any necessary standalone probe cost separately and count it toward the same testing allowance. Start with at most a few items per source and a US$0.50 maximum initial paid-probe allowance within the existing US$5 feed budget. Do not increase the monthly budget to make a test pass. Stop repeated failed probes and fix the cause.
 
-The feeling of being completely centered comes from attention and ownership: your sketchbook, your costumes, your music, a discovery chosen for your interests, a letter actually written for you. It does not require literal worship language, a throne motif, repetitive praise, a chatbot, or invented claims about how she feels.
+Test deployed routes from the production deployment when available. A request from the local machine verifies credentials/provider access, but does not establish Vercel network access or function packaging. Record the execution location honestly. If a diagnostic needs code that is not deployed, implement it locally and include its owner deployment dependency in the final report; do not invent a production pass.
 
-4. Applying the supplied images
+Use admin previews and uniquely identified disposable test artifacts. Do not mark Kiriya’s existing items seen, alter her faves, delete her saves/uploads, or overwrite her content for testing. Cleanup is limited to the exact artifacts created by that test. Keep synthetic fixtures and fake-provider bypasses disabled in production; ordinary private-storage probes are not permission to enable the fixture pipeline.
 
-All five new attachments were visually inspected. Their proposed placements are art-direction decisions. File dimensions describe the supplied copies, not higher-resolution originals.
+Do not enable the whole unfinished feed pipeline merely to unlock a test. Use available bounded diagnostic paths. New diagnostics must require admin authorization, enforce request limits, redact results, and avoid touching the published edition. If new code or environment changes need deployment, prepare that work and keep proceeding with other implementation.
 
-Reference
+4. Complete the remaining implementation
 
-Observed qualities
+Work through these phases in order. Complete each phase’s code and meaningful local tests, update the same continuation report, and keep going. Do not stop after Maomao or the first successful source.
 
-Proposed role
+Phase A — Maomao, source lifecycle, and saves
 
-R1 - Maomao dramatic portrait, 1200 x 675
+Implement the approved Maomao collectors from PIPELINE.md §5.1: Danbooru, Bluesky, Tumblr, Sakugabooru, AniList, the named news feeds, Fandom/Wikipedia, and relevant official YouTube material. Verify source IDs and present-day access from primary sources and actual calls. Reuse the foundation registry and HTTP helper.
 
-Deep teal hair, pink/green costume, violet-blue eyes, warm dark surroundings, visible Yen123412 marks
+For every planned adapter, document enabled, verified, restricted, unavailable, or intentionally optional status. Keep source-specific attribution, cache TTL, deletion recheck, media-host policy, and copy permission explicit. A missing/blocked source must not be counted as a successful empty response. Do not bypass challenges, access controls, or excluded-source decisions. Implement permitted fallback sources so an unavailable optional collector does not stall the section.
 
-A cinematic Maomao feature or wide detail image. Keep it separate from reading text. Preserve visible credits; the marks are a creator/source lead, not verified authorship.
+Replace the three-slot demonstration with the full Maomao plan: roughly 12 slots and 20 reserves when supply allows, imagery paired with relevant notes, lore/news, memes, cosplay crossovers, merch/event hooks, and verified episode-day behavior. The original eight-visual/twelve-slide wording needs a clear slot allocation using the existing primary/companion contract; record that allocation once. Use fresh verified airing data instead of hardcoded dates from the research document.
 
-R2 - Maomao floral portrait, 735 x 763
+Complete moving-content handling for GIFs, MP4, HLS, and source embeds. The foundation currently leaves all moving media pending. Establish what was actually inspected: source provenance/ratings, text/captions, and bounded frame inspection or recorded owner review where appropriate. Poster approval must not silently allow unreviewed animation/video. Uncertain material stays withheld or is represented only by its separately approved still/link. Preserve the design’s clips/GIFs where their source and review policy support them; do not claim that sampling guarantees every frame is safe.
 
-Bright diffuse light, flowers, teal hair, violet eyes and pink costume
+Implement the Keep workflow using ensureSave, reserveCopy, and finishCopy: server resolves the approved item ID, records immutable credit/snapshot, and copies only permitted media. Respect the contract’s 8 MiB/item, 400 MiB warning, 500 MiB saved-copy ceiling, total capacity/headroom, and fresh-meter requirement. Include all personal uploads in shared capacity accounting and handle out-of-band changes through reconciliation. Never release an uncertain reservation until the object state is reconciled.
 
-Primary framed portrait candidate. Its softness complements lilac paper; preserve the illustration's original color balance.
+Add the bounded remote-copy worker, retry/reconciliation, orphan cleanup, source deletion/cache refresh jobs, private media delivery, and real /world/saves UI. YouTube remains embed/link-only. A failed or disallowed copy becomes an honest link-only save with credit; never show “saved a copy” prematurely. Creator removal updates the saved media and accounting while retaining permitted attribution/removal metadata. Match deletion-check frequency to the stricter applicable source rule, not an unconditional weekly interval.
 
-R3 - Purple winged cat, 735 x 730
+Wire Maomao feed data into the existing MaomaoSpread/LoreCarousel. Keep the authored slides and old discovery slips intact.
 
-Rounded white silhouette, violet linework, stars, butterfly motifs and cloudy texture
+Phase B — Music and meme of the day
 
-Reference for one small recurring companion/sticker and its sparkle language. Do not make it another full-page background or automatically identify it as a canon character.
+Finish VocaDB, YouTube, released Global SEKAI data/news, piapro/approved news feeds, artist posts, and optional music links. Implement the actual voicebank IDs, producer rotation, metadata refresh, embeddability, and Singapore-region checks.
 
-R4 - Lilac flowering branches, 735 x 719
+Implement the approximately 13-item music mix plus 20 reserves: two new originals, a classic, a Rin/Len story song, a modern/SEKAI song, Global news, lore, visuals, meme, and merch. Miku leads; non-Miku representation and the hard seven-day producer rule remain. Preserve the existing visible shared player and her personal song shelf. Scope image referrer rules so they do not break YouTube playback.
 
-Low-contrast lavender blossoms, diagonal branches and a paper-like haze
+Global SEKAI uses released content only. Keep official card/gacha news text-and-link-only under the approved design, paired with permitted fan art where relevant.
 
-Strongest initial public-background candidate; compose quiet areas behind profile text and controls.
+Implement the approved Lemmy/Bluesky/Tumblr/booru meme sources, OCR/vision classification, and section meme selection. Keep the political, suggestive, brainrot, self-harm, family/body-joke, and other approved exclusions. Home gets one featured meme and five reserves behind “one more”; thin fandom supply may reallocate a slot rather than fabricate a meme.
 
-R5 - Purple flower field, 720 x 1080
+Phase C — Dress-up, fashion, and events
 
-Dense upright flowers, photographic depth, violet and pale lilac variation
+Implement the daily Miku/Maomao/rotating-fandom cosplay selection, her least-recently-shown own photo when available, process/tutorials, wig/makeup material, a grounded cosplay dare, and the approved extras. Use the exact fandom rotation and style preferences from the design. Preserve personal uploads and the existing lookbook.
 
-Supporting panel, phone background alternative or lower-page floral edge. Its dense detail needs quieter surfaces beside text.
+Implement the approved cosplay/fashion sources and grounded Singapore shoot-spot pool. Instagram/TikTok creators she explicitly adds are link cards, not new scraping integrations. Do not infer personal habits or claim she created someone else’s cosplay.
 
-R4 and R5 provide the environmental palette. R1 and R2 supply expressive focal images. R3 supplies a restrained accessory vocabulary. Use these roles consistently rather than applying one global purple filter to every asset.
+Implement events CRUD/read presentation and registerEventsStage: source verification, conditional refresh, structured extraction, confidence/TBC, cancellation/expiry, selected events, and countdowns. Dates and years must be present in cited evidence; resolve timezone and date precision explicitly. Research candidates are not verified seed facts.
 
-The earlier celestial lilac paper screenshot remains a useful material reference. The new images make the direction more concrete: a botanical lavender environment, rich character color, and small soft-edged decorations. These are visual references; they do not establish that any flower is her favorite.
+Implement the approved weekly event scout with current supported search-tool parameters, allowed domains, Singapore context, at most five tool calls per weekly pass, and accounted cost. Add the bounded lexicon-refresh path described in the design, keeping prohibited wording blocked. Do not add a daily open-ended search agent.
 
-The supplied flower copies are roughly phone-sized. Inspect them at the intended rendered size before using them across a large desktop viewport. A softly treated backdrop can tolerate less detail than a foreground hero. Obtain a larger original where needed; do not conceal poor image quality with excessive blur or claim a sharpened copy restores missing detail.
+Phase D — Merch shelf
 
-5. Clean structure with rich artwork
+Implement allowed Solaris/Good Smile/Crypton sources and the specified optional sources where verified. Merge identical products by reliable identity such as JAN/GTIN; do not merge unrelated items merely because names resemble each other.
 
-The governing rule is rich imagery, calm structure. Art, photographs and materials provide the detail. Consistent alignment, quiet text areas, predictable controls and a small number of focal points provide the cleanliness.
+Provide source images, maker/type, dated original price and approximate SGD conversion, preorder deadline/release precision, official/retailer/search links, and availability freshness. S$30–100 receives the intended preference without hiding other prices. Build /world/merch, fandom/type filters, and section merch lines. Singapore/Taobao search-only sources remain links with the approved wording; do not turn them into crawlers or add purchasing functionality.
 
-Starting palette
+Phase E — My faves, complete private integration, and admin
 
-These values are proposed working colors interpreted from the supplied references; they are not exact pixel samples.
+Build my faves using GET/PUT /api/me/faves, the existing strict schema, and optimistic revision checks. Preserve defaults and fixed safety constraints. Cover the editable characters/fandoms, voicebanks, SEKAI units, eras/producers, wishlist, events, merch, fashion, meme preferences, and additional joke exclusions. Changes affect the next build; show that clearly.
 
-Role
+Finish seen timing, companion visibility, reserve progression, same-day “seen earlier,” new counts, and closing states. Avoid firing seen events on fetch, admin preview, hidden tabs, or offscreen content. Revalidate on visit/focus and the existing revision-aware refresh contract, including the morning publish after midnight.
 
-Value
+The existing catch-up helper is synchronous and bounded, not a background queue. Wire it so the page renders usable content immediately and never blocks on a long pipeline request. If using a supported background continuation, retain the durable checkpoints, request lifetime limit, and five-minute throttle. Do not assume waitUntil supplies unlimited execution or permanent scheduling.
 
-Use
+Complete the existing admin panel: credited review and rejection samples, source health, stage progress/retries/rebuilds, hide/block, targeted rewrite, non-mutating preview, events confirmation/editing, lexicon preview, storage/copy state, and actual/estimated usage. Rewrites use the same grounded writer and budget rules. Clarify whether a rewrite affects future content or an explicitly published revision; do not silently mutate saved snapshots.
 
-Pearl
+Review a representative batch of real blurbs across all sections. Preserve the exact voice rules and signature ✦ kiriya.love. Measure retries, template fallbacks, and rejection reasons. Fix excessive false rejection without weakening safety or allowing invented facts. Her interests and supplied history are the personalization; no invented memories or implicit behavior profile.
 
-#FFF9FD
+5. Complete orchestration and source verification
 
-Highlights and high-contrast reading surfaces
+Connect the implemented stages, weekly events/lexicon work, deletion refresh, storage reconciliation, and retention to the existing durable runner. Prepare the final schedule in vercel.json while preserving existing backstop/notification entries. Use the design’s UTC schedules and Singapore day semantics. Source-required deletion deadlines may require separate bounded maintenance work; document how they are met within current plan limits.
 
-Lilac paper
+Measure actual requests, latency, checked/approved/written/published counts, and costs. The foundation’s limits of 24 provider requests per stage/build and 60 items per invocation were intentionally small. Tune bounded batching/checkpoints and these limits to support the intended feeds within the existing monthly ceiling; do not disable accounting, reset the ledger, or raise spending to hide a capacity problem.
 
-#F2EBF7
+Preserve lease fencing and idempotency through every new side effect. Jobs must resume partial collection, moderation, copy/reconciliation, and writing without republishing duplicate editions or charging completed provider work again. Test current generation checks and checkpoint ordering when adapters change.
 
-Main light surfaces
+Create a source verification matrix covering every planned source family. Record official/reference URL, credentials required, probe timestamp, execution location, result, item/media kinds supported, copy/deletion policy, and fallback. Claims about current permissions, access, quota, price, event dates, or model capabilities need primary-source verification. Avoid repeated probing of known-blocked optional sources.
 
-Dusty lavender
+Do not declare the pipeline finished just because all sources are disabled without errors. Deliver working sources and real approved samples for Maomao, music, cosplay, memes, events, and merch; separately identify any genuinely unavailable optional sources or thin-supply gaps. Never invent source items to reach the daily target.
 
-#D7C5E6
+6. Appearance and behavior that must survive
 
-Secondary paper and floral framing
+The current site is the design baseline. This is an additive content/pipeline implementation:
 
-Wisteria
+Keep the lilac palette, handwriting/pixel labels, scrapbook accessories, imagery hierarchy, responsive layout, and existing animation language.
 
-#B49BCF
+Reuse note-slip, lookbook-photo, record-sleeve, lore-carousel, settings-card, Modal, and SectionHeading where present.
 
-Decorative borders and middle-depth layers
+Keep the public profile compact, existing four top bookmarks, letters, birthday features, drawing/game tools, personal music/photos, and original discovery content.
 
-Amethyst
+Respect global motion pause, reduced motion, focus/touch, offscreen and hidden-tab behavior. Reserve media dimensions and provide usable posters/fallbacks.
 
-#806298
+Keep credits/source links visible and private interests, editions, saves, and settings behind existing access checks.
 
-Emphasis, subtle depth, selected controls
+Keep old daily greeting/drawer/notes and optional existing notifications working. The new feeds send no notifications.
 
-Deep plum
+7. Verification and honest completion
 
-#493653
+Run the existing npm run verify:feeds and add focused coverage for the new behavior. Local fixtures and failure injection use isolated test storage, never the live database. Do not redirect the fixture command to production, run destructive DB utilities there, or bulk-seed synthetic editions.
 
-Main dark text and framing
+Verify at least:
 
-Near-black violet
+Adapter pagination/rate/error handling and real credential/source probes, with local versus Vercel execution identified.
 
-#221C2A
+Exact section mix and fallback rules, seven-day producer exclusion, permanent dedupe/seen/hide behavior, and taste revision timing.
 
-Small alt accents and dark music details
+Moving/still inspection scope, failure withholding, creator deletion, source changes, and refreshed fingerprints.
 
-Petal pink
+Keep idempotency, concurrent byte reservations, copy failure/orphan recovery, private reads, deletion accounting, and surviving snapshots.
 
-#E6C5D8
+Events/date evidence, released-only Global SEKAI, stale merch/FX behavior, and allowed outgoing links.
 
-Occasional ribbon and affectionate accents
+Complete local private flows on phone and desktop: login, all interest sections, visible music playback, keep/hide, saves, merch, faves, and admin controls. Include existing page regressions and public-bundle leak checks.
 
-Keep Maomao's green/teal, Miku's recognizable teal or the deliberately selected variant's colors, and Rin/Len's yellow. Match images through their lighting, framing and placement instead of recoloring every character.
+Lease/deadline continuation, incomplete-stage recovery, generation supersession, nonblocking catch-up, and preservation of a last-good edition on failure.
 
-Use a limited material family: floral atmosphere, quiet paper or vellum, narrow lace/ribbon, a few taped corners, and reflective music objects. Public view: one profile composition with perhaps two or three small accents. Unlocked view: more varied frames, a few overlaps, and distinct art/cosplay/music spreads. These counts are starting constraints, not a scoring system.
+A small real edition built through the real provider path, reviewed through admin, with per-stage counts, elapsed time, and usage recorded. If it cannot run in the deployed code yet, mark its production verification pending the owner’s next push.
 
-Retain the existing Jacquard wordmark if it remains legible at the chosen size. M PLUS Rounded can serve readable interface text. A single handwriting treatment is enough for short annotations. Avoid stacking decorative fonts or rendering navigation inside a giant collage image.
+Production testing is authorized for currently deployed capabilities. Code written in this phase is not production-tested until the owner deploys that revision. Finish the entire local implementation before handing back that final deployment dependency. Do not claim “fully live” based on local checks or a settings save.
 
-Composition and responsive behavior
+Keep FEEDS_ENABLED at its actual current value during diagnosis; do not assume the old reported value still applies. If it is false, leave routine automation off until the completed implementation is ready. Prepare exact activation instructions tied to a verified deployment revision. If it is already true, ensure existing runs do not overlap probes and preserve the last-good published content.
 
-View
+8. Deliverables and stopping condition
 
-Proposed arrangement
+Maintain a concise phase log as you work, then leave:
 
-Public desktop
+Deliverable
 
-Full-window scene; a compact central profile and controlled adjacent image detail. The surrounding background must carry intentional visual content rather than empty flat margins.
+Required contents
 
-Unlocked desktop
+docs/feeds/CLAUDE-CONTINUATION-REPORT.md
 
-Approximately 1080-1200 pixels of composed content on a 1440-pixel viewport. Use a clear two-column opening and varied gallery spreads below.
+Codex reports ingested, starting code/deployment, completed features by phase, actual files/migrations, decisions, tests and remaining limitations
 
-Tablet
+docs/feeds/SOURCE-VERIFICATION.md
 
-Two columns only where artwork and controls remain comfortable. Collapse complete groups instead of shrinking everything.
+Full source matrix, real probe results and execution locations, permissions/access evidence, disabled optional sources and fallbacks
 
-Phone
+Updated docs/feeds/CONTRACTS.md
 
-A recomposed vertical scene with readable gutters, one large focal image at a time, occasional two-up photo groups, and accessible music/section controls.
+Actual new APIs, exports, copy/reconciliation jobs, planners, frontend read models and supported media policies
 
-Narrow phone
+Updated docs/feeds/SETUP.md
 
-Reduce overlaps and secondary ornaments. Keep the name, focal images, navigation and controls clear with no horizontal page overflow.
+Current verified credential/resource status, final job schedule, deployment/activation steps, budget/storage settings and recovery procedure
 
-Use normal document flow, Grid and Flexbox for meaningful content. Absolute positioning belongs to bounded decorative layers. Body text sits on quiet surfaces; all interactive objects have an obvious tap target and readable label where needed. Decorative layers never intercept buttons or the drawing canvas.
+Do not replace Codex’s historical proof with claims that it tested Claude’s additions. Keep local artifacts and screenshots private and credentials out of reports. List production artifacts created/cleaned by test ID, without exposing private content.
 
-Miku and Maomao should be recognizable early, but her name remains the strongest identity signal. Once real personal images are available, at least one piece of her work or cosplay should appear early in the unlocked experience. Give cosplay and art comparable visual importance to the character sections.
+Finish every implementation phase, resolve implementation defects, and perform every authorized check available in the current deployment. Bundle genuine owner-only actions once at the end: any missing account challenge, the owner’s push/deployment, and activation steps that require that new deployment. Do not repeatedly ask the owner to confirm already-approved work.
 
-6. Simple functionality per interest
-
-Interest
-
-Main actions
-
-Small curated discovery
-
-Maomao
-
-Browse/enlarge artwork and scenes; reveal spoiler-marked notes; switch the featured picture
-
-A short sourced character fact, case detail, expression/scene note or costume observation
-
-Miku / Vocaloid
-
-Browse songs; play/pause/change track; open the source; star favorites in her private collection
-
-A song pick with correct producer credit, a short Vocaloid fact, or a selected outfit/illustration note
-
-Art / OCs
-
-Browse her work and process; enlarge a piece; open the existing canvas; draw, undo/redo, save and revisit
-
-A selected drawing prompt, color/composition study, or sourced Procreate/traditional-art tip
-
-Cosplay
-
-Browse her costume photographs, wig/details and process; open a reference beside the finished work
-
-One relevant wig, costume, prop, posing or styling idea with its source
-
-Maomao's collection
-
-Anchor this area with a substantial solo portrait and a few expressions or scene crops. Lore can appear on a small illustrated notebook slip beside the image, with a short source link and spoiler marker. The interaction is browse, reveal and discover; no quiz or medical-teaching module is required.
-
-The official peony and bellflower seasonal illustrations remain source candidates, and the two new portraits define the desired image scale and visual richness. Do not label an illustration as a particular episode, official image, or favorite scene without verifying that identification.
-
-A Maomao-inspired mascot can deliver a brief playful line in an explicitly fan-inspired voice. It should not pretend to be an official character service, a live conversational companion, or a source of personal memories.
-
-Miku's music shelf
-
-Miku should recur throughout the scene, not live only in a tiny music icon. Plan a small collection: one substantial illustration, two or three song/album sleeves, an outfit-reference image, and one or two small accessories. Rin/Len can occupy a supporting mini-spread. A plush-like or chibi accent is optional, not a claim that she owns a particular collectible.
-
-Clicking a sleeve opens its song. Show the actual title, producer/performer credit and playback state. A lore note can connect the picture, costume or song to the day's discovery. Existing songs, starred choices and uploaded recordings take priority over research suggestions. The report's seeded Senbonzakura is an existing starter entry, not proof of her favorite song.
-
-Two concrete research suggestions are Crystal Snow - Aqu3ra feat. Hatsune Miku, connected to SNOW MIKU 2025, and Fondant Step - Heavenz feat. Hatsune Miku, connected to SNOW MIKU 2021. These are candidate additions with verified official credits, not newly asserted personal favorites.
-
-Her sketchbook and OCs
-
-Her own finished work leads. Surround it with rough sketches, expression studies, palettes or process images when supplied. OCs can have a simple name, one main drawing, a few expressions/outfits and a short authored note. Use existing gallery data and captions where possible; do not build an OC database, character builder, social platform or new asset-management system.
-
-A prompt can sit on a paper corner: for example, "Draw your OC with one Maomao-inspired accessory" or "Try a Miku outfit in your OC's silhouette." These are proposed editorial prompts, not facts or claims about an existing character. She can ignore the prompt, choose another, or open the canvas.
-
-Keep Her work and Inspiration visibly distinct. External digital art and character-sheet references should never appear as her creations. The drawing workspace can have a clean conventional toolbar once opened; its gallery entrance still belongs to the lilac world.
-
-Her cosplay lookbook
-
-Cosplay is a major section. Use a large photograph or a deliberate two/three-image sequence before any tips. Suggested groups are Maomao, Miku and Lynette, based on the report, with wig details, costume close-ups, makeup/posing photographs or work-in-progress images where available.
-
-A small reference-and-result view can show a character image beside her actual costume. Place a relevant tip on a sewing label or margin note and offer a link to the full creator tutorial. Supporting fashion imagery can add fabric, accessories and alternate styling without introducing a wardrobe generator or shopping feed.
-
-The report establishes that she has done these cosplays, not that the required photographs have been supplied. Until they are available, use a clearly labeled reference spread and a consolidated missing-photo list. Never insert another cosplayer's photograph as Kiriya.
-
-7. Curated discoveries and existing delivery
-
-Keep the useful lore/content system. Any earlier instruction to disable it wholesale is superseded. Preserve the sourced pools, template-based wording, date selection, shown-item history, caching, authored notes, and existing content-editing paths. Adapt the outputs to the new compositions.
-
-What appears on the page
-
-The private home shows one featured discovery. Each interest section may show one short relevant item alongside its imagery. Existing additional approved items can sit behind "Another little find" or a small collection drawer. Avoid recreating the full Today feed elsewhere.
-
-Use one or two brief sentences by default, a meaningful image where available, a quiet source link, and one action. A Maomao fact belongs beside a Maomao image; a music fact belongs on a song sleeve; a drawing prompt belongs near her sketchbook; a wig idea belongs near cosplay photographs. A picture must actually relate to the note rather than act as arbitrary wallpaper.
-
-Example
-
-Content basis
-
-Presentation
-
-A Maomao case detail
-
-Reuse one existing sourced, spoiler-tagged pool item after verifying its source
-
-Small illustrated notebook slip, with reveal if required
-
-Crystal Snow and its SNOW MIKU 2025 connection
-
-Official festival page credits Aqu3ra feat. Hatsune Miku
-
-Song sleeve, short note and play/source action
-
-An OC accessory study
-
-Clearly authored prompt, not an external factual claim
-
-Paper corner beside her gallery and an "Open sketchbook" action
-
-A Maomao costume construction detail
-
-SajaLyn's documented wrap-skirt process, including her revision after the overlap proved too narrow
-
-Detail image and a concise note linking to the maker's process
-
-A personal note from Josh
-
-Existing or newly supplied authored text
-
-Small envelope or margin note; preserve exact authorship
-
-Selection stays understandable
-
-Choose only from a finite, approved collection in the four interest areas. Rotate by date or a straightforward sequence and reuse the existing repeat-avoidance mechanism. The image at the top does not need to change on every refresh. Selecting another image or note is a local browsing action, not a signal for a learning system.
-
-Here, approved means source-checked and deliberately included in the collection, including the reusable existing pools. Daily picks and optional delivery still happen automatically. Kiriya does not have to curate each visit, and no new approval dashboard is required.
-
-The baseline's broad source gathering, popularity/rating-based song picks and keyword-selected news must not automatically become the redesigned page's content. Existing adapters may support metadata lookup or help the owner find candidate material, but discovery is not approval to display. Prefer specific selected posts, illustrations, songs and tutorials; avoid passing an entire feed through a few keywords and calling the result curated.
-
-Do not add behavioral tracking, inferred taste profiles, embeddings, recommender services, engagement scoring, infinite scrolling, a new scraping pipeline or a new recommendation API. Pinterest is a research and collection source, not a runtime dependency for the page.
-
-Use the existing template writer as the baseline. An already-installed optional AI rephrasing path is not necessary to make the experience work and must never invent facts, memories, preferences or new source material. Do not spend this redesign building or expanding it. Retained content should render with no AI key.
-
-Background behavior
-
-Reuse the existing daily job and cached bundles if they support the approved collection. An image-rich page should appear immediately from available assets and the last usable content, while any refresh happens quietly. Failed external requests must leave the last approved material or a local pool item available.
-
-Do not replace the note she is reading, advance an active gallery unexpectedly, interrupt music, reset navigation, or discard a drawing when a refresh finishes. Apply new daily material at a natural navigation/revisit boundary or through an unobtrusive explicit action. No persistent loading dashboard is needed.
-
-A simple sticker drawer or small daily surprise may remain if already implemented. It should be optional, with no streaks, obligations, points or guilt for missing a day. The page must remain beautiful and useful even when she never opens the surprise.
-
-Optional notifications
-
-Salvage existing opt-in surprises where they already support the intended gift. Keep actual preferences, allowed hours and delivery controls; do not silently subscribe her, turn a disabled setting back on, or impose a new notification count. The core experience is complete without notifications.
-
-Only approved, in-scope material or real authored notes may be delivered. Keep spoiler/private content out of lock-screen text. A notification should lead to the corresponding discovery or letter after the correct access check. Reconcile preference changes with today's pending deliveries and prevent disabled/off-scope items from being sent.
-
-This is a reuse-and-repair requirement, not a new scheduling project. The report did not verify real iPhone delivery or production scheduling. Carry those limits forward and test the existing path when the necessary environment is available.
-
-8. Keep, change and remove
-
-Existing area
-
-Required outcome
-
-Public profile, social links, unlock
-
-Retain behavior; redesign into the clean atmospheric opening.
-
-Today/private home
-
-Replace the feed layout with the personal world; retain its useful curated content behind the new presentation.
-
-Maomao facts, Vocaloid lore, selected song picks
-
-Keep, source-check and place beside relevant imagery.
-
-Drawing prompts and art tips
-
-Keep selected material as optional sketchbook discoveries.
-
-Cosplay tips and ideas
-
-Keep useful curated items; lead with actual photos and process.
-
-Drawing canvas, color mixing, save/gallery
-
-Preserve working behavior and stored work; reveal controls when opened.
-
-Song library, stars, providers, recordings
-
-Preserve and connect to the illustrated music shelf.
-
-Cosplay budgets, deadlines, progress and checklists
-
-Remove from the active experience; preserve stored data.
-
-Fashion/saved looks
-
-Integrate relevant references into cosplay/style; remove the separate outfit generator and weather dependence.
-
-Ballet, pitch training, dance coaching, practice timers, language lessons
-
-Remove active routes, navigation, generated content and delivery eligibility.
-
-Mood/energy dashboards and check-ins
-
-Remove from the main experience; preserve any necessary private settings without turning them into a daily task.
-
-Real-world herb/poison teaching and quiz
-
-Remove as a utility. Botanical motifs and short series-related lore may remain.
-
-General news, trending/ranked feeds, broad museum-art automation
-
-Remove automatic presentation. Retain only individually selected relevant content.
-
-Episode countdown dashboards
-
-Remove. A verified, relevant announcement can be a curated item rather than a permanent countdown feature.
-
-Birthday cake, letters, real personal notes
-
-Keep, visually integrate and make reachable throughout the year.
-
-PWA, existing content job, optional push, settings/admin
-
-Reuse only what supports this experience; no new platform/service required.
-
-Guestbook, public submissions, social scoring, visitor tracking, Discord presence
-
-Do not add as part of this redesign. Public profile links remain sufficient.
-
-Scope pruning includes navigation, routes/imports where separable, content pools, prompt inputs, old cached visible payloads, source selection and queued deliveries. Hiding a card alone is insufficient. Preserve stored drawings, photos, letters and collections; do not drop tables or wipe the database to simplify the design.
-
-9. Pinterest and source research
-
-The selected references establish composition, subjects and collection directions. They are not all production-ready assets. Pinterest metadata and repost captions are leads; record the original creator/source wherever possible. Page-specific visual observations below are distinguished from entries known only through indexed text or board listings.
-
-Direct image downloads
-
-The following five URLs returned image files on September 14, 2026; their dimensions were checked. They are concrete download links, not search-result URLs. Keep the source page and status with each file. Download into the project at build time only where appropriate; do not make Pinterest or these external hosts runtime requirements. A working URL alone does not establish reuse permission.
-
-Asset and proposed local filename
-
-Direct image file
-
-Source / status
-
-Intended role
-
-Miku original · miku-original.jpg · 600 × 600
-
-Download Miku JPG
-
-Crypton original-illustration terms; specified CC BY-NC 3.0 illustration, with required attribution
-
-A recognizable Miku illustration for an appropriately sized frame, music object, or detail; not a large high-resolution wallpaper
-
-Rin original · rin-original.jpg · 600 × 600
-
-Download Rin JPG
-
-Same illustration-specific Crypton terms
-
-Supporting Vocaloid collection
-
-Len original · len-original.jpg · 600 × 600
-
-Download Len JPG
-
-Same illustration-specific Crypton terms
-
-Supporting Vocaloid collection
-
-Pastel Miku · miku-pastel-reference.jpg · 736 × 966
-
-Download pastel Miku reference JPG
-
-Pinterest pin; points toward 9999mme, original-post attribution/use status unconfirmed
-
-Lavender/pearl character-art direction. Reference use until its reuse status is established
-
-Cosplay garment process · sajalyn-garment-reference.jpg · 1333 × 2000
-
-Download garment reference JPG
-
-SajaLyn's original article; externally authored photo, production use unconfirmed
-
-Construction/process inspiration and a source-linked discovery. This is not Kiriya's costume; the article also includes Ah Duo material
-
-For the three Crypton originals, follow the linked page's exact character-specific credit and license instructions; note adaptations where applicable. Those terms do not extend to other fan art, event visuals, songs or videos. Use original image colors and retain credits. Do not turn one small Miku JPEG into repeated copies filling every visual slot: collect a coherent mix of illustrations, sleeves and outfit details from the sources below.
-
-Exact supplied references and saved copies
-
-Extract Kiriya-Reference-Assets.zip beside this brief. These are relative file links into that archive. No public URL for an exact uploaded image is claimed. Its assets/ASSET-MAP.csv also maps the descriptive names back to the original attachment filenames and source pages.
-
-Reference
-
-Exact file
-
-Placement / status
-
-R1: dramatic Maomao
-
-R1-maomao-dramatic.png
-
-Wide Maomao feature; retain visible Yen123412 marks; exact original source unverified
-
-R2: floral Maomao
-
-R2-maomao-floral.png
-
-Main framed portrait candidate
-
-R3: purple winged cat
-
-R3-purple-winged-cat.png
-
-Small companion/accessory reference
-
-R4: lilac branches
-
-R4-lilac-branches.png
-
-Primary floral environment candidate
-
-R5: purple flowers
-
-R5-purple-flowers.png
-
-Supporting floral edge or phone background candidate
-
-Existing site
-
-baseline-site.png
-
-Historical screenshot to understand the visual problem; also inspect the live local baseline
-
-Original lilac mood
-
-initial-lilac-reference.png
-
-Etsy listing screenshot; material/color reference, not a production texture
-
-The five R-images are the owner's selected visual references. Preserve them while developing the composition; check origin/use status before choosing third-party imagery for a public release. Do not strip watermarks or silently substitute an unrelated image because it shares the color purple.
-
-Saved research views, for inspection if a website is unavailable:
-
-Strawpage composition: Skyburial, Atissamun.
-
-guns.lol identity/atmosphere: official-profile screenshot.
-
-Miku mood: pastel Miku, SNOW MIKU 2025 page screenshot. The event screenshot is a design reference; the site restricts image/video reuse.
-
-Cosplay process: SajaLyn garment detail.
-
-Original-character backups: Miku, Rin, Len.
-
-Asset filename/source map.
-
-Source-page links for collecting more images
-
-These are pages to inspect, not raw image downloads. Follow the original image or creator link on the page; do not save HTML as a JPEG, guess a hidden asset path, or call a repost official. If a source is blocked, use an available reference copy or another linked source and continue the redesign.
-
-Collection
-
-Start here
-
-What to collect
-
-Maomao official illustrations
-
-Seasonal gallery, peony illustration page, bellflower illustration page
-
-Solo-Maomao-friendly imagery, expressions and botanical compositions; inspect actual wallpaper links, credits, spoilers and permitted use
-
-Miku art and costume direction
-
-SNOW MIKU 2025 special page, SNOW MIKU 2021 special page, Purple Ageha pin
-
-Coordinated character, costume and song references. Keep the 2025 event art as reference unless separately permitted
-
-Digital art
-
-Loish: lucid dream, pink leaves, dynamic poses
-
-Artist-attributed inspiration for silhouettes, framing and studies; not substitute entries in her own art gallery
-
-OC presentation
-
-Heartmush / Velvet reference pin
-
-How to present a main drawing, expressions and outfits; use Kiriya's own character images for her OC spread
-
-Cosplay photography
-
-Miku cosplay board, pink/white costume candidate, SajaLyn Maomao pin
-
-Credited external reference photographs and posing/costume direction; her photographs lead the finished lookbook
-
-Cosplay process
-
-Miku DIY collection, SajaLyn's article, Apothecary costume archive
-
-Specific wig, sewing, prop or styling references for the finite discovery pool
-
-Concrete song links
-
-Preserve the actual library and her starred choices first. These two researched examples can support Miku discoveries; they are not asserted personal favorites. The embed URLs below were linked from the official event pages. Playback in the redesigned app still needs to be verified.
-
-Track
-
-Playback link
-
-Source and use
-
-Crystal Snow — Aqu3ra feat. Hatsune Miku
-
-Official-page YouTube embed
-
-SNOW MIKU 2025 theme-song page; use a supported visible player or link out
-
-Fondant Step — Heavenz feat. Hatsune Miku
-
-Official-page YouTube embed
-
-SNOW MIKU 2021 theme-song page; use a supported visible player or link out
-
-Do not download or extract these tracks as background MP3s. The music object can open the supported player. Apply section 11's explicit-play and single-active-player behavior.
-
-Pinterest shortlist
-
-Reference
-
-What it contributes
-
-Evidence / use
-
-Pastel Miku illustration
-
-Lavender-blue linework, pearly highlights and a close character portrait
-
-Visually inspected; the pin links toward a post by 9999mme. Strong music/art mood reference. Original-post authorship and reuse conditions still need confirmation.
-
-Miku Purple Ageha
-
-Purple/black costume contrast and an alt outfit silhouette
-
-Visually inspected. Useful as an optional outfit/cosplay reference; less suited to the soft main hero.
-
-Maomao floral illustration
-
-A floral Maomao art discovery lead
-
-Indexed title/description only. Inspect the exact image and creator before assigning a crop or calling it official.
-
-Maomao live-wallpaper lead
-
-A possible trail from the visible Yen123412 mark on supplied R1
-
-Indexed metadata includes the same handle. An exact artwork/animation match is not established.
-
-Heartmush character reference
-
-A character sheet with outfit, views, expressions and annotations
-
-Visually inspected; the pin links to a Heartmush post. Borrow the presentation idea for Kiriya's own OCs, not the character identity.
-
-SajaLyn Maomao cosplay
-
-A maker's finished-costume/process post
-
-Pin text, video surface and creator link inspected. Its creator website provides a stronger process source; do not describe the unreviewed video as a fully inspected photo shoot.
-
-Hatsune Miku cosplay board
-
-Costume silhouettes, pastel variants and photography directions
-
-Public board listing inspected; individual attribution varies. Research lead for the lookbook, not an approved image feed.
-
-Miku cosplay DIY collection
-
-Wig, sleeve, headphone and outfit-reference leads
-
-Indexed page inspected. Select and trace individual creator tutorials; ignore marketplace ads and automatically related items.
-
-The Miku cosplay board exposed specific candidate pins, including a pink/white outfit photograph at https://www.pinterest.com/pin/565061084496367634/ and a cosplay roundup at https://www.pinterest.com/pin/565061084496367737/. Their board labels were observed; the individual detail pages were not verified. They are further collection leads, not approved photographs.
-
-Original and official sources
-
-Source
-
-Useful material
-
-Decision
-
-SNOW MIKU 2025
-
-tokki's crystalline main visual, clear decorative hierarchy, coordinated character/costume/song material
-
-Visually inspected. Strong Miku mood/composition reference; use the official credits. The site explicitly restricts image/video reuse, so this is reference material unless separately permitted.
-
-SNOW MIKU 2021
-
-Illumination-themed Miku direction; necömi credited for the main visual; Fondant Step by Heavenz
-
-Official text and credits verified. Additional art/song collection direction, not a claim about Kiriya's favorites.
-
-Crypton: For Creators
-
-Specified original Miku/Rin/Len illustrations with stated reuse conditions
-
-A concrete starting source for usable character imagery. Its listed license does not cover every fan illustration, song or event visual.
-
-Loish: lucid dream and pink leaves
-
-Digital painting with strong silhouette, flowing forms, botanical framing and controlled focal areas
-
-Visually inspected as inspiration examples. These are Lois van Baarle's works, not Kiriya's art or known favorites.
-
-Loish: dynamic poses
-
-A named study reference for the sketchbook/process area
-
-Official portfolio entry verified; useful as a source link for selected art-study content.
-
-SajaLyn: Maomao wrap-skirt process
-
-Maker-authored construction discussion and photographs
-
-Concrete source for a relevant costume/process discovery, with a link to the full explanation.
-
-Cosplay To Print: Apothecary archive
-
-Maomao costume variants and pattern/process topics
-
-Archive verified; the Moon Fairy article itself was not retrieved. Use as a discovery lead without inventing its instructions.
-
-The earlier official Maomao seasonal galleries remain relevant. The Met's public-domain Irises and Roses remain optional botanical studies, but the art area now prioritizes her digital/traditional work and OCs over a generic museum-art rotation. Harajuku fashion research is supporting context, not a separate shopping feature.
-
-Asset collection and handoff
-
-Start with a deliberate collection rather than a large random download: one usable floral environment plus a quiet surface; two or three Maomao images; roughly five to eight Miku-related illustrations/sleeves/details spread across the page; one supporting Rin/Len set; three to six of her artworks/OC/process images; and six to ten cosplay photographs/details when available. These are planning ranges, not a reason to delay a first visual composition.
-
-For every selected asset, keep a short record of filename, source/creator, use permission or status, intended role, dimensions, desktop/phone crop, alt text, spoiler status, and public/private designation. Use existing metadata or a simple file; no new asset-management product is needed. Do not strip watermarks or present reposted art as original material.
-
-The companion asset archive includes supplied images under descriptive filenames and research images marked as references. Read the original report supplied separately. Download verified web assets from the direct links below, and use the archive for exact uploads and offline reference copies. Source pages and screenshots are not production image URLs. Copy approved assets into the actual project, keep private originals outside public paths, and produce responsive derivatives locally.
-
-A research screenshot or borrowed character illustration does not replace missing personal photos. Provide one consolidated list of missing personal images, approved sources, actual song choices and the final letter. Finish the available composition work without inventing those materials.
-
-10. Birthday and personal touches
-
-The birthday gift stays part of her world rather than appearing only during a short date window. Keep the envelope, actual letters and a small cake/candle interaction reachable privately throughout the year. September 15 can add a restrained annual flourish using Singapore time; later delivery must still work.
-
-A tap-to-blow candle interaction is enough. Keep existing microphone behavior only as a separate optional action if it works, with a complete tap fallback. Preserve authored letters and distinguish a fan-inspired Maomao message from Josh's own words. Do not create a new reveal-administration workflow or scheduler.
-
-Let personal gestures appear in specific places: a saved drawing returns to her sketchbook; a starred track stays on her shelf; a note keeps its author; a costume image has her own caption. Avoid generic repeated compliments, fake memories, fabricated likes, or copy that makes the site sound as if it is monitoring her.
-
-11. Motion, audio and passive use
-
-Use a small number of coherent effects: slow floral light or gentle background drift, an occasional star glint, a little cat/sticker reaction, a CD turning while music plays, and an envelope opening when selected. Keep meaningful controls still and predictable. The page should feel alive while she listens or looks around, without demanding interaction.
-
-Entrance/reveal transitions can be brief, about 250-700 ms, with small feedback around 120-240 ms. Those are design starting points. Limit simultaneous ambient motion, pause offscreen work, and avoid full-page parallax, constant confetti, flashing glitter or numerous bouncing characters. Do not add a new 3D/Live2D/video system for this effect.
-
-Honor reduced motion in CSS, the existing Motion code, scrolling and decorative media. Preserve the static flowers, artwork, framing and texture when motion is disabled. If a background video is actually available and appropriate, provide a still fallback and use only one ambient scene at a time. The supplied images are stills, not delivered animation files.
-
-Music requires an explicit playback choice. Offer an unobstructed silent entrance, handle blocked playback, keep one active audio source and show honest play/pause/error states. Existing player behavior should remain stable as she navigates.
-
-Use supported provider embeds or recordings the owner may host. YouTube content must stay in a visible player with adequate controls and its required minimum dimensions; do not hide a video offscreen behind a fake CD. A sleeve can open the player, and closing that playback surface should pause it.
-
-Readable text, visible keyboard focus, descriptive image alternatives and comfortable touch targets matter throughout. Use about 16-pixel body text and roughly 44-pixel primary touch targets as starting points. Dialogs need a clear close action and focus handling. Check safe areas, landscape, the software keyboard and the drawing surface on phones.
-
-Load the opening artwork first, reserve image dimensions, lazy-load lower galleries, and defer the canvas and optional embeds until needed. Public rendering should not wait for private APIs, AI, news fetching or a video. Private content should use a cached approved bundle or local fallback while refreshing quietly.
-
-12. Codex inspection and execution sequence
-
-Begin after reading both documents and inspecting the existing site; no further general start approval is needed. Work in the existing gift project; do not connect it to Rora, migrate frameworks, add a page builder or create production services as part of the redesign.
-
-Read the applicable AGENTS.md, README.md, docs/PLAN.md, docs/SETUP.md, the supplied report, and this revised brief. Check the actual worktree/branch and preserve uncommitted work. Reported paths, service versions and previous verification are starting information, not proof of the current checkout.
-
-Reported area to inspect
-
-What must be established
-
-src/main.jsx, src/public/*, src/world/World.jsx, WorldShell.jsx
-
-Actual routes, public/private shells, width limits and shared presentation
-
-src/styles/tokens.css, base.css, fonts.css
-
-Reusable tokens/type and broad card rules that need replacement
-
-src/world/today/*, studio/*, stage/*, atelier/*, apothecary/*, letters/*
-
-Working behavior, personal data and separable off-scope features
-
-Shared music/player, stickers, mascot and effects
-
-What can be reused without importing a whole retired dashboard
-
-server/content/pools/*, server/engine/pick.js, compose.js, day.js, daily.js, personal.js, writer.js, sources/*
-
-Actual approved pools, shown-item history, cached bundles, provenance, source selection and fallback
-
-server/push/planner.js, web-push code, birthday/time helpers
-
-Opt-in state, pending deliveries, preference changes, spoiler handling and Singapore dates
-
-Auth/upload routes, src/sw.js, scripts/check-leaks.mjs
-
-Public/private boundaries, uploaded media access, caches and public-bundle leaks
-
-Package/lockfiles, asset folders and deployment configuration
-
-Installed dependencies, available images, local startup and actual deployment status
-
-Run the baseline and inspect public, unlocked home, Art, Music, Cosplay, Maomao, Letters and Settings at phone and desktop widths. Capture the present UI. Summarize confirmed facts, reusable behavior, available assets and the keep/change/remove map in a short recon note. Do not assume deleted legacy scrapbook source can be restored.
-
-Establish the actual baseline. Inspect routes, assets, curation and access boundaries; identify existing failures without rebuilding the application.
-
-Compose both visual states. Use real available imagery to build a public opening and unlocked opening at phone and desktop sizes. Inspect screenshots of both for hierarchy and continuity, correct problems, and continue into the remaining sections. This is a visual checkpoint, not a new permission gate.
-
-Build the four interest spreads. Give cosplay and art real scale, place Miku throughout the music/visual system, and connect existing gallery, canvas, playback and letter actions.
-
-Salvage curation selectively. Reuse approved pools and daily selection; replace the old feed presentation; remove unrelated categories and prevent unreviewed live items from becoming visible automatically.
-
-Integrate the gift and optional delivery. Fix year-round access, replay, content eligibility and pending-notification preference handling using existing mechanisms.
-
-Polish and verify. Review crops, spacing, motion, controls, cached fallbacks, retained functionality and access boundaries. Correct concrete failures before expanding testing.
-
-Deliver a reviewable local result. Supply representative screenshots, a concise implementation report, source/asset records, checks performed and one owner-action list. Deployment and production account setup are separate from this design assignment.
-
-A short recon note, one asset register/contact sheet, and one implementation report are sufficient documentation. Avoid creating a large framework of new planning documents or runtime subsystems.
-
-13. Known issues and acceptance checks
-
-The report describes local Chromium and API checks, including drawing/save and mocked AI behavior. It does not establish real iPhone/PWA behavior, real push delivery, production scheduling, Neon migrations, Vercel Blob uploads, microphone flows or TextAlive support. Preserve those distinctions.
-
-Reported issue
-
-Focused response
-
-Letters difficult to reach outside September 15-21; birthday takeover ends September 21
-
-Make gift/letters persistently reachable and the reveal replayable, including after a late delivery.
-
-News filter misses word forms
-
-Do not automatically display or send broad fetched news. Use the approved collection; any retained external-item path needs explicit eligibility and a meaningful check.
-
-Notification setting changes wait until the next day
-
-Reconcile pending deliveries when preferences change and recheck eligibility at send time. Do not replace the scheduler.
-
-Blob URLs are public bearer URLs rather than an authentication boundary
-
-Audit actual private-media exposure. Reuse or repair the existing protected delivery path as needed; do not call private galleries secure solely because their links are hidden.
-
-Stale daily/cache data contains removed topics
-
-Filter or reshape visible legacy payloads and pending deliveries without deleting personal data.
-
-Verify package/API details only where the retained implementation uses them. For example, if the existing Met adapter remains for individually selected artwork, check its paginated-search compatibility against the current official documentation. This does not justify retaining an unrelated art feed.
-
-Acceptance area
-
-Required evidence
-
-Public appearance
-
-A polished identity scene with atmospheric imagery, concise controls, music and links; visibly informed by guns.lol.
-
-Unlocked appearance
-
-A richer personal collage with the same clean hierarchy; visibly informed by Strawpage without recreating the old dashboard.
-
-Actual content
-
-Recognizable Maomao/Miku artwork and a credible art/cosplay collection. Major imagery is not replaced with emoji, empty rectangles or generic badges.
-
-Kiriya at the center
-
-Her name, real work/photos, actual saved choices and authored gift lead. External art and cosplay remain attributed references.
-
-Passive quality
-
-The page is beautiful when left still, with motion disabled, and during quiet listening. No attention-demanding popups or background layout jumps.
-
-Curated engagement
-
-Short sourced lore, selected prompts/tips, stable rotation and optional existing delivery work without ranking, AI or a broad live feed.
-
-Retained actions
-
-Drawing/save/view, gallery browsing, song playback/stars, private access and letters work where retained.
-
-Scope reduction
-
-Removed topics cannot reappear through navigation, cached content, source jobs or queued notifications.
-
-Responsive behavior
-
-Phone and desktop compositions are intentional; text, media controls, overlays and canvas remain usable.
-
-Failures and access
-
-Missing audio, blocked autoplay, source failures and reduced motion leave a coherent page. Public users cannot fetch private material.
-
-Birthday durability
-
-Check September 15, September 22 and a later delivery date in Singapore time; access and replay remain available.
-
-Honest completion
-
-Report missing personal media and unperformed real-device/production checks; do not claim completion from a successful build alone.
-
-Before implementation is accepted, review the public and unlocked first view together, then the cosplay and art spreads. With words temporarily ignored, the images should communicate her interests; with animation disabled, the composition should still feel finished. The design should make the existing useful functionality feel like part of her personal world.
-
-Sources and evidence notes
-
-Research and reference checks were conducted on September 14, 2026. The supplied report is historical build evidence; no current repository inspection or application test was performed for this handoff. Visual observations are limited to the pages or images actually inspected. Pinterest pins, creator pages and source links can change.
-
-Pinterest was researched through indexed results and public pin/board inspection. Some individual detail pages were unavailable to text retrieval; those entries are explicitly marked as leads. Artist destinations observed on pins are attribution trails, not completed provenance or permission verification. The official Maomao gallery's indexed material was available during the earlier research, while live visual inspection met a verification screen; those image candidates still need final inspection. Supplied images and the asset archive do not constitute blanket production-reuse clear
+Your final response must distinguish implemented, verified locally, verified in production, and pending owner deployment/activation. Explain any source or policy limitation precisely. The end result should be Kiriya’s existing beautiful site with working personal daily curation, useful saves, music, cosplay, events, merch, and explicit favorites—built on Codex’s foundation, with no unnecessary new system or redesign.

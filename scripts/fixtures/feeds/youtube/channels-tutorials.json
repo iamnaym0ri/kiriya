@@ -1,0 +1,79 @@
+{
+  "kind": "youtube#channelListResponse",
+  "etag": "mock-etag-channels",
+  "pageInfo": {
+    "totalResults": 3,
+    "resultsPerPage": 3
+  },
+  "items": [
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UCbSST-QoAQKqtgZbmf3gI3g",
+      "id": "UCbSST-QoAQKqtgZbmf3gI3g",
+      "snippet": {
+        "title": "Cowbutt Crunchies",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UUbSST-QoAQKqtgZbmf3gI3g"
+        }
+      }
+    },
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UCiDvE4FTPu2oPIXyn6EJNcw",
+      "id": "UCiDvE4FTPu2oPIXyn6EJNcw",
+      "snippet": {
+        "title": "Franciscosplays",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UUiDvE4FTPu2oPIXyn6EJNcw"
+        }
+      }
+    },
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UC79qFuymkVas5dCScbLF9fw",
+      "id": "UC79qFuymkVas5dCScbLF9fw",
+      "snippet": {
+        "title": "Kamui Cosplay",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UU79qFuymkVas5dCScbLF9fw"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "kind": "youtube#playlistItemListResponse",
+  "etag": "mock-etag-UUmockTOHOanimation00000",
+  "pageInfo": {
+    "totalResults": 3,
+    "resultsPerPage": 15
+  },
+  "items": [
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-KusuPV00001",
+      "id": "mock-item-0",
+      "snippet": {
+        "publishedAt": "2026-09-14T03:00:00Z",
+        "channelId": "UCmockTOHOanimation00000",
+        "title": "TVアニメ『薬屋のひとりごと』第3期 キャラクターPV (mock)",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "",
+        "playlistId": "UUmockTOHOanimation00000",
+        "position": 0,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "KusuPV00001"
+        },
+        "videoOwnerChannelId": "UCmockTOHOanimation00000"
+      },
+      "contentDetails": {
+        "videoId": "KusuPV00001",
+        "videoPublishedAt": "2026-09-14T03:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-OtherAnime1",
+      "id": "mock-item-1",
+      "snippet": {
+        "publishedAt": "2026-09-13T03:00:00Z",
+        "channelId": "UCmockTOHOanimation00000",
+        "title": "別作品 PV (mock)",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "",
+        "playlistId": "UUmockTOHOanimation00000",
+        "position": 1,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "OtherAnime1"
+        },
+        "videoOwnerChannelId": "UCmockTOHOanimation00000"
+      },
+      "contentDetails": {
+        "videoId": "OtherAnime1",
+        "videoPublishedAt": "2026-09-13T03:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-KusuShort01",
+      "id": "mock-item-2",
+      "snippet": {
+        "publishedAt": "2026-09-12T03:00:00Z",
+        "channelId": "UCmockTOHOanimation00000",
+        "title": "薬屋のひとりごと #shorts (mock)",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "",
+        "playlistId": "UUmockTOHOanimation00000",
+        "position": 2,
+        "resourceId": {
+          "kind": "youtube#video",
+          "videoId": "KusuShort01"
+        },
+        "videoOwnerChannelId": "UCmockTOHOanimation00000"
+      },
+      "contentDetails": {
+        "videoId": "KusuShort01",
+        "videoPublishedAt": "2026-09-12T03:00:00Z"
+      }
+    }
+  ]
+}

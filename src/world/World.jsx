@@ -14,6 +14,8 @@ const StagePage = lazy(() => import("./stage/StagePage.jsx"));
 const AtelierPage = lazy(() => import("./atelier/AtelierPage.jsx"));
 const ApothecaryPage = lazy(() => import("./apothecary/ApothecaryPage.jsx"));
 const SettingsPage = lazy(() => import("./settings/SettingsPage.jsx"));
+const SavesPage = lazy(() => import("./saves/SavesPage.jsx"));
+const MerchPage = lazy(() => import("./merch/MerchPage.jsx"));
 
 const lazyPage = (Page) => (
   <Suspense fallback={<PageLoader />}>
@@ -45,6 +47,8 @@ export default function World() {
         <Route path="atelier" element={lazyPage(AtelierPage)} />
         <Route path="apothecary" element={lazyPage(ApothecaryPage)} />
         <Route path="settings" element={lazyPage(SettingsPage)} />
+        <Route path="saves" element={lazyPage(SavesPage)} />
+        <Route path="merch" element={lazyPage(MerchPage)} />
         <Route path="*" element={<TodayPage />} />
       </Route>
     </Routes>

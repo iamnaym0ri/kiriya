@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>イベント &#8211; 初音ミク公式ブログ</title>
+	<atom:link href="https://blog.piapro.net/category/event/feed" rel="self" type="application/rss+xml" />
+	<link>https://blog.piapro.net</link>
+	<description>クリプトン公式！「初音ミク」らバーチャルシンガーの最新情報を発信します！</description>
+	<lastBuildDate>Mon, 14 Sep 2026 07:03:13 +0000</lastBuildDate>
+	<language>ja</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.1</generator>
+	<item>
+		<title>『初音ミク「マジカルミライ 2026」プログラミング・コンテスト』アフターレポートをお届けします♪</title>
+		<link>https://blog.piapro.net/2026/09/ms20609101.html</link>
+		
+		<dc:creator><![CDATA[Crypton Future Media, INC.]]></dc:creator>
+		<pubDate>Thu, 10 Sep 2026 08:00:43 +0000</pubDate>
+				<category><![CDATA[イベント]]></category>
+		<category><![CDATA[コンテスト]]></category>
+		<category><![CDATA[マジカルミライ]]></category>
+		<guid isPermaLink="false">https://blog.piapro.net/?p=104846</guid>
+
+					<description><![CDATA[みなさま、こんにちは！ 本日はこちらの記事でご紹介しておりました『初音ミク「マジカルミライ 2026」プログラミング・コンテスト』（以下、プロコン）のアフターレポートをお届けいたします！٩(๑&#62;∀&#60;๑)۶ 「&#8230; <a href="https://blog.piapro.net/2026/09/ms20609101.html" class="more-link">続きを読む <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[<p>みなさま、こんにちは！</p>
+<p>本日は<strong><a href="https://blog.piapro.net/2026/03/ms2603271.html" target="_blank" rel="noopener">こちら</a></strong>の記事でご紹介しておりました<strong><span style="font-size: 120%; color: #ff00ff;">『初音ミク「マジカルミライ 2026」プログラミング・コンテスト』</span></strong>（以下、プロコン）のアフターレポートをお届けいたします！<span class="s7">٩</span><span class="s2">(</span><span class="s8">๑</span><span class="s2">&gt;</span><span class="s5">∀</span><span class="s2">&lt;</span><span class="s8">๑</span><span class="s2">)</span><span class="s7">۶</span></p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/09/MM26procon_blog1.jpg" target="_blank" rel="noopener"><img fetchpriority="high" decoding="async" class="alignnone wp-image-104847 size-full" src="https://blog.piapro.net/wp-content/uploads/2026/09/MM26procon_blog1.jpg" alt="" width="640" height="220" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/MM26procon_blog1.jpg 640w, https://blog.piapro.net/wp-content/uploads/2026/09/MM26procon_blog1-300x103.jpg 300w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
+<p>「マジカルミライ」におけるプロコンの開催は、今回で7度目！2026年もたくさんの素敵な作品が集まりました♪</p>
+<hr />
+<h4>募集したのは楽曲の歌詞が表示される「リリックアプリ」！</h4>
+<p>今回のプロコンでは、2026年3月27日（金） ～6月29日（月）正午まで、下記内容で作品を募集いたしました。( *˙︶˙*)و</p>
+<div style="background-color: #e0ffff; padding: 20px 30px 10px 30px;">
+<p><strong>【募集内容】</strong></p>
+<p>産業技術総合研究所（産総研）が提供するJavaScript用ライブラリ「TextAlive App API」を使用して開発した、歌詞などの映像演出が魅力的に動くWebアプリケーション（リリックアプリ）</p>
+</div>
+<p>&nbsp;</p>
+<p>対象楽曲は<strong><a href="https://piapro.jp/pages/official_collabo/magical2026_musiccontest/result" target="_blank" rel="noopener">『初音ミク「マジカルミライ 2026」楽曲コンテスト』</a></strong>で受賞となった6楽曲でした。（どれか1曲に絞っても、6曲全てに対応する演出にしてもOK★）</p>
+<p>対象楽曲のミュージックビデオは、プロコンの特設ページ上でもご視聴いただけますので、後半でご紹介するプロコンの応募作品とあわせて、ぜひご覧くださいね♪</p>
+<p>&nbsp;</p>
+<h4>HAMAMATSU企画展ステージで入選10作品をご紹介！</h4>
+<p>今年は国内外から<strong>168作品</strong>が集まりました！✧<span class="s1">(*´</span><span class="s2">艸</span><span class="s1">`*)</span>✧</p>
+<p>まずは下記審査基準に則り、審査員が全ての応募作品を体験した上で、<a href="https://magicalmirai.com/2026/procon/entry.html" target="_blank" rel="noopener"><strong>入選10作品</strong></a>を選出いたしました！</p>
+<div style="background-color: #e0ffff; padding: 20px 30px 10px 30px;">
+<p><strong>【審査基準】</strong></p>
+<p><strong>クリエイティビティ</strong>：Webアプリケーションの演出が楽曲と同期して魅力的に見えるか</p>
+<p><strong>イノベーション</strong>：Webアプリケーションを支えるアイデアがユニークで、未来の創作文化を予感させるものであるか</p>
+<p><strong>完成度</strong>：Webアプリケーションが一般的なWebブラウザ（パソコン、タブレット端末、スマートフォンなど応募者の意図した環境）で正常に動作するか、実装が技術的に優れているか</p>
+</div>
+<p>&nbsp;</p>
+<p><a href="https://magicalmirai.com/2026/procon/entry.html" target="_blank" rel="noopener"><strong>入選10作品</strong></a>は、7月24日（金）9:00にコンテスト特設ページにて発表！</p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/09/523d591f4af60ffcc87711c2056832c4.png" target="_blank" rel="noopener"><img decoding="async" class="alignnone wp-image-104851 size-large" src="https://blog.piapro.net/wp-content/uploads/2026/09/523d591f4af60ffcc87711c2056832c4-1024x497.png" alt="" width="640" height="311" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/523d591f4af60ffcc87711c2056832c4-1024x497.png 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/523d591f4af60ffcc87711c2056832c4-300x146.png 300w, https://blog.piapro.net/wp-content/uploads/2026/09/523d591f4af60ffcc87711c2056832c4-768x373.png 768w, https://blog.piapro.net/wp-content/uploads/2026/09/523d591f4af60ffcc87711c2056832c4.png 1042w" sizes="(max-width: 640px) 100vw, 640px" /></a></p>
+<p>初音ミク「マジカルミライ 2026」HAMAMATSU会場の企画展エリアでも、展示用のモニターで入選作品のデモ映像を紹介しておりました♪</p>
+<p>&nbsp;</p>
+<p>そして、発表翌日の7月25日（土）14:30～は、HAMAMATSU会場の企画展ステージにて<span style="color: #ff6600;"><strong>「TextAlive講座 / プログラミング・コンテスト入選作品発表会」</strong></span>を実施★٩(`･ω･´)و</p>
+<p><span style="font-weight: 400;">ステージの様子は</span><a href="https://www.youtube.com/watch?v=hdyJR0YxGKE&amp;t=914s" target="_blank" rel="noopener">クリプトン公式YouTube「ピアプロTV」</a><span style="font-weight: 400;">でも生配信・アーカイブを行いました！</span></p>
+<p><iframe title="YouTube video player" src="https://www.youtube.com/embed/hdyJR0YxGKE?si=dapNsLZBJH0LVx41&amp;start=914" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
+<p>&nbsp;</p>
+<h4>最終審査に向けて「ミクナビ」で一般投票を実施！</h4>
+<p>入選作品の発表後は、今年も<a href="https://mikunavi.com/" target="_blank" rel="noopener">初音ミク公式情報アプリ「ミクナビ」</a>にて一般投票を実施いたしました！<span class="s1">‬\(*´</span><span class="s5">꒳</span><span class="s1">`* )/</span></p>
+<p>投票期間は、2026年7月24日（金）9:00 ～8月18日（火）正午まで。全ての作品にそれぞれ独特の良さがあり、投票してくださったみなさまも随分と悩まれたかと思います……！</p>
+<p>投票にご参加くださったみなさま、ありがとうございました！！</p>
+<p>&nbsp;</p>
+<p>入選作品の紹介ページでは、現在も引き続き各作品を実際にお試しいただけます！</p>
+<p>デモ映像を見るだけではわからない各作品ならではの魅力がありますので、未体験の方はぜひ、今からでもお試しくださいね☆٩(｡•̀ω•́｡)و</p>
+<h4><a href="https://magicalmirai.com/2026/procon/entry.html" target="_blank" rel="noopener">＞＞入選10作品のリリックアプリ体験はこちら</a></h4>
+<p>&nbsp;</p>
+<h4>TOKYO企画展ステージで受賞作品を発表！</h4>
+<p>一般投票を経た最終審査で決定した受賞作品は、初音ミク「マジカルミライ 2026」TOKYO会場の企画展ステージにて発表いたしました！</p>
+<p>入選作品の発表時とは異なり、こちらは<span style="color: #ff6600;"><strong>「プログラミング・コンテスト受賞作品発表会 / TextAlive講座 」</strong></span>で初めて受賞作品の発表を行ってから、コンテスト特設ページやイベント会場でも結果を公開いたしました。</p>
+<p>ステージの流れをリアルタイムで見守ってくださっていた方には、結果発表ならではのドキドキをお楽しみいただけたかと思います……！*:･o(*´ω`*)o･:*:</p>
+<p>もちろん、こちらのステージの様子も<a href="https://www.youtube.com/live/eu0k5AixHhI?si=j7ge7sO9Ne-2oXcZ&amp;t=911" target="_blank" rel="noopener">「ピアプロTV」</a>で生配信・アーカイブを行いました！</p>
+<p><iframe loading="lazy" title="YouTube video player" src="https://www.youtube.com/embed/eu0k5AixHhI?si=j7ge7sO9Ne-2oXcZ&amp;start=911" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
+<p>すでにご存知の方も多いかとは思いますが、このアフターレポートであらためて受賞作品をご紹介いたしますね♪</p>
+<p>&nbsp;</p>
+<p style="text-align: center;"><span style="font-weight: 400;"><span style="color: #33cccc;">✦</span>  <span style="color: #ff9900;">✦</span>  <span style="color: #ffcc00;">✦</span>  <span style="color: #ff00ff;">✦</span> <span style="color: #ff0000;"> ✦</span>  <span style="color: #0000ff;">✦</span></span></p>
+<p>&nbsp;</p>
+<h1 style="color: #ffd700;">最優秀賞</h1>
+<h5>エントリーNo.1『Penlight as Takt』<br />
+投稿者： Team AHEAD（Sarashina、Argynnini、まいち～）さん</h5>
+<p><iframe loading="lazy" title="YouTube video player" src="https://www.youtube.com/embed/6FD_6XCCivk?si=8ZUufgld-nH11C5Q" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
+<div style="background-color: #ffffcc; padding: 20px 20px 20px 20px;">
+<h5>【受賞コメント】</h5>
+<div class="entry_comment">
+<p>このたびは皆様の応援のおかげもあり、最優秀賞をいただくことができ、大変光栄です。<br />
+『Penlight as Takt』は、AIで手軽にアプリが作れる時代だからこそ「自分の手を動かすことで形になるものを作りたい」という思いから生まれた作品です。<br />
+そこで、技術面では学習データの収集を自らの手で行う必要のある、物体検出モデルの制作を作品のコアに据えました。検出対象には、マジカルミライと関わりの深い「ペンライト」を選びました。そして、これを指揮棒に見立てて振る動作をアプリの入力とすることで、プレイヤーがライブを導く体験を目指しました。<br />
+演出面では、各楽曲に沿ったステージ表現を作り込みました。ビートやサビに合わせてミラーボールや銀テープ、ミクとリンの動きが変化することで、プレイヤーにライブの臨場感を味わってもらうことを意識しました。<br />
+技術と演出の両面から、ライブの高揚感とリリックアプリの未来の可能性をお届けできれば幸いです。<br />
+最後に、クリプトンの伊藤さん、産総研の加藤さんと後藤さんをはじめ、本企画の関係者の皆様、相談に乗ってくれた友人、そして作品を体験してくださった皆様に心より感謝申し上げます。</p>
+</div>
+</div>
+<p>&nbsp;</p>
+<p style="text-align: center;"><span style="font-weight: 400;"><span style="color: #33cccc;">✦</span>  <span style="color: #ff9900;">✦</span>  <span style="color: #ffcc00;">✦</span>  <span style="color: #ff00ff;">✦</span> <span style="color: #ff0000;"> ✦</span>  <span style="color: #0000ff;">✦</span></span></p>
+<p>&nbsp;</p>
+<h1 style="color: #e4007f;">優秀賞</h1>
+<h5>エントリーNo.7『湖の歌姫』<br />
+投稿者：16えんだま（けろろん、きりたん）さん</h5>
+<p><iframe loading="lazy" title="YouTube video player" src="https://www.youtube.com/embed/bYUjSSaMYdM?si=-T9fe0VVOTLzENm3" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
+<div style="background-color: #ffffcc; padding: 20px 20px 20px 20px;">
+<h5>【受賞コメント】</h5>
+<p>この度は優秀賞を頂き大変光栄に思っております。<br />
+私自身、コンテストへの出場は人生で初めてであり、そんな中、自分たちの作品が色々な方に届いた・評価されたという事が何よりも嬉しいです。</p>
+<p class="br_s">この作品は、マジカルミライのライブステージを初めて見に行った時に感じた『初音ミクが「気づいてくれたような気がする」というあの感動をもっと近くで』体験したい思いから始まりました。<br />
+胸を張って「良いものを作れた」と思える作品になりました。</p>
+<p class="br_s">投票・応援してくださった皆様方、制作に協力してくださった沢山の方々、本企画の関係者の皆様方に心より感謝申し上げます。<br />
+そして、隣で開発してくれた相方へ。<br />
+約1か月という短い制作期間の中、最後まで一緒に走り切ってくれてありがとう！とても楽しい1か月でした。<br />
+ありがとうございました！</p>
+</div>
+<p>&nbsp;</p>
+<h5>エントリーNo.9『へのへのもじ絵』<br />
+投稿者：inmareさん</h5>
+<p><iframe loading="lazy" title="YouTube video player" src="https://www.youtube.com/embed/xzsHMT6fLaA?si=2pLBCgvqElxGQSvh" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
+<div style="background-color: #ffffcc; padding: 20px 20px 20px 20px;">
+<h5>【受賞コメント】</h5>
+<p>こんにちは、inmare（インマレ）と申します。<br />
+数年前にYouTubeで見かけて「自分でも実装してみたい」と思っていたアルゴリズムを、今回のマジミラプログラミングコンテストをきっかけに形にしてみました。<br />
+予想以上の反響をいただき、受賞にまでつながって本当に嬉しいです！</p>
+<p class="br_s">素敵な楽曲やイラストのような華やかさはありませんが、それでも「自分の作品」と言えるものがマジミラの会場に展示され、それをこの目で直接見たときの感覚は本当に格別でした。</p>
+<p class="br_s">私の作品に投票してくださった皆さん、そして素敵な楽曲やイラストを生み出してくださったボカロPやイラストレーターの皆さん、本当にありがとうございました！</p>
+<p class="br_s">そして、差し出がましいかもしれませんが、これを見てくださっている皆さんも、ご自身のアイデアを形にして素敵な結果に結びつくことを願っています。ありがとうございました！</p>
+</div>
+<p>&nbsp;</p>
+<h5>エントリーNo.10『Lyricaqua(歌う湖)』<br />
+投稿者： スフレさん</h5>
+<p><iframe loading="lazy" title="YouTube video player" src="https://www.youtube.com/embed/sdLjgWjP4r4?si=2EOetEhi5gAWaBPH" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
+<div style="background-color: #ffffcc; padding: 20px 20px 20px 20px;">
+<h5>【受賞コメント】</h5>
+<p>この度はマジカルミライ プログラミングコンテストにて表彰いただき、大変光栄です。<br />
+運営の皆様、また本作品を遊んでいただいた皆様に心より感謝申し上げます。</p>
+<p class="br_s">この作品では、叩くだけという簡単な行為をどこまで楽しいものに引き上げることができるかという遊びの目線を重視し、制作しました。<br />
+元々、楽器や音楽ゲームはそういった要素があると思うのですが、どうしても技量やリズム感といった点で躓く方は多いと思います。<br />
+今回の作品ではそこをできるだけ取っ払い、誰でも簡単に音楽にノることのできるアプリケーションを目指しました。<br />
+入選作品紹介で、「キーボードを押さないことにはこの魅力は伝わらない」とお話されていたのを聞き、自分の思い描いていたものが形にできていたんだなと嬉しく思いました。<br />
+今回のプログラミングコンテストで得た様々な刺激を、更に新たな創作活動へと活かしていきたいと思います。</p>
+<p class="br_s">改めて、素晴らしい作品が揃う中、本作品を選んでいただいた方々、触れていただいた方々に心から感謝申し上げます。<br />
+また、制作中の雑談に付き合ってくれた友人にも感謝の気持ちでいっぱいです。<br />
+本当にありがとうございました！</p>
+</div>
+<p>&nbsp;</p>
+<h4></h4>
+<h4><a href="https://magicalmirai.com/2026/procon/result.html" target="_blank" rel="noopener">＞＞受賞作品のリリックアプリ体験はこちら</a></h4>
+<p>&nbsp;</p>
+<p style="text-align: center;"><span style="font-weight: 400;"><span style="color: #33cccc;">✦</span>  <span style="color: #ff9900;">✦</span>  <span style="color: #ffcc00;">✦</span>  <span style="color: #ff00ff;">✦</span> <span style="color: #ff0000;"> ✦</span>  <span style="color: #0000ff;">✦</span></span></p>
+<p>&nbsp;</p>
+<p><span style="font-weight: 400;">受賞されたみなさま、おめでとうございます！<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/2728.png" alt="✨" class="wp-smiley" style="height: 1em; max-height: 1em;" /></span></p>
+<p>&nbsp;</p>
+<p>今年はAIのサポートによって応募しやすくなったことも影響しているのか、なんと応募数が前年の約1.7倍でした！</p>
+<p>しかも、国内・国外からの応募がほぼ半々。ワールドワイドな連鎖を体感できるコンテストでした！(*´꒳`*ﾉﾉﾞ✩:+✧︎⋆</p>
+<p>ご応募いただいた作品は一般公開していただいてOKですので、コンテストに参加された方はご自身の作品の公開についてぜひご検討くださいね♪</p>
+<p>&nbsp;</p>
+<hr />
+<p>以上、プロコンの振り返りでした！いかがでしたでしょうか？</p>
+<p>&nbsp;</p>
+<p><span style="font-weight: 400;">このプロコンでは、産総研が研究開発した、歌詞と同期したリリックアプリをプログラミングできる技術</span><strong><a href="https://developer.textalive.jp/" target="_blank" rel="noopener"> 「TextAlive App API」</a></strong><span style="font-weight: 400;">が活用されています。</span><span style="font-weight: 400;"><a href="https://textalive.jp/" target="_blank" rel="noopener"><b>「TextAlive」</b></a>のサービスサイトでは、ビートやサビなどに合わせて演出が様々に変化するリリックビデオをWebブラウザだけで制作できますので、こちらもぜひお試しください♪</span></p>
+<p>また、同サービスサイト上では、<strong><a href="https://textalive.jp/apps" target="_blank" rel="noopener">プログラミング・コンテストをきっかけに生まれたリリックアプリ作品</a></strong>がお楽しみいただけます<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/2728.png" alt="✨" class="wp-smiley" style="height: 1em; max-height: 1em;" /></p>
+<p><span style="font-weight: 400;">プロコンは来年も実施予定ですので、ぜひ色々な作品を実際に体験して、参考にしてみてくださいね！<span class="s1">(</span><span class="s2">๑</span><span class="s1">•</span><span class="s3">᎑</span><span class="s1">&lt;</span><span class="s2">๑</span><span class="s1">)</span><span class="s4">ｰ</span><span class="s1">☆</span></span></p>
+<p>それでは、また次の更新でお会いしましょう♪</p>
+<p>&nbsp;</p>
+<div style="background-color: #e0ffff; padding: 20px 20px 20px 20px;">
+<p><span style="color: #66cdaa;"><strong>＜関連サイトまとめ＞</strong></span></p>
+<p><span style="font-weight: 400;">▼初音ミク「マジカルミライ 2026」プログラミング・コンテスト</span><br />
+<a href="https://magicalmirai.com/2026/procon/" target="_blank" rel="noopener">https://magicalmirai.com/2026/procon/</a></p>
+<p><span style="font-weight: 400;">▼TextAlive for Developers（コンテスト応募者向けサポートページ）</span><br />
+<a href="https://developer.textalive.jp/events/magicalmirai2026/" target="_blank" rel="noopener">https://developer.textalive.jp/events/magicalmirai2026/</a></p>
+<p>▼ 「TextAlive」<br />
+<a href="https://textalive.jp/" target="_blank" rel="noopener">https://textalive.jp/</a></p>
+</div>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>初音ミク「マジカルミライ 2026」のアフターレポートをお届け！</title>
+		<link>https://blog.piapro.net/2026/09/b2609041.html</link>
+		
+		<dc:creator><![CDATA[Crypton Future Media, INC.]]></dc:creator>
+		<pubDate>Fri, 04 Sep 2026 08:00:17 +0000</pubDate>
+				<category><![CDATA[イベント]]></category>
+		<category><![CDATA[マジカルミライ]]></category>
+		<category><![CDATA[ライブ]]></category>
+		<guid isPermaLink="false">https://blog.piapro.net/?p=104483</guid>
+
+					<description><![CDATA[みなさま、こんばんは！ 先日、大盛況の中初音ミク「マジカルミライ 2026」が終了しました！ &#160; ご来場くださったみなさま、SNS等で応援してくださったみなさま、本当にありがとうございました！ヾ(*´∀`*)ﾉ&#8230; <a href="https://blog.piapro.net/2026/09/b2609041.html" class="more-link">続きを読む <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[<p>みなさま、こんばんは！</p>
+<p>先日、大盛況の中<a href="https://magicalmirai.com/2026/" target="_blank" rel="noopener">初音ミク「マジカルミライ 2026」</a>が終了しました！</p>
+<p>&nbsp;</p>
+<p>ご来場くださったみなさま、SNS等で応援してくださったみなさま、本当にありがとうございました！ヾ(*´∀`*)ﾉ</p>
+<p>&nbsp;</p>
+<p>本日は、<span style="color: #ff6600;">7/24(金)～7/26(日)にHAMAMATSU＜アクトシティ浜松＞</span>、<span style="color: #ff99cc;">8/14(金)～8/16(月)にOSAKA＜インテックス大阪＞</span>、<span style="color: #00ccbb;">8/28(金)～8/30(日)にTOKYO＜幕張メッセ＞</span>で開催された、初音ミク「マジカルミライ 2026」のアフターレポートをお届けします！</p>
+<p>&nbsp;</p>
+<p style="text-align: center;"><strong><span style="color: #33cccc;">✿≈ <span style="color: #ff6600;">✿≈</span> <span style="color: #ffcc00;">✿≈</span> <span style="color: #ff00ff;">✿≈</span> <span style="color: #ff0000;">✿≈</span> <span style="color: #0000ff;">✿≈ </span></span></strong></p>
+<p>&nbsp;</p>
+<p>今回のイベントテーマは<span style="color: #00ccbb;">『湖のソナーレ』</span>！</p>
+<p>雄大な湖に面した浜松での開催を思い起こさせる、涼やかなテーマでお送りしました<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f30a.png" alt="🌊" class="wp-smiley" style="height: 1em; max-height: 1em;" /></p>
+<p>&nbsp;</p>
+<p>各地の企画展会場では、イラストレーターの<strong><span style="color: #ff6600;">緜</span></strong>さんが手がけたメインビジュアルをもとにした初音ミクの等身大立像がお出迎え！</p>
+<p style="text-align: left;"><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b2609041.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104663 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b2609041.jpg" alt="" width="1200" height="800" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b2609041.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609041-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609041-1024x683.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609041-768x512.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p style="text-align: left;">等身大立像の周りには、背景や衣装で印象的なひまわりをパネルにしてぐるりと設置！<br />
+OSAKA・TOKYOではなんと実際に水を張ったプールに等身大立像を設置し、メインビジュアルの世界観を再現した展示をお届けしました<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f33b.png" alt="🌻" class="wp-smiley" style="height: 1em; max-height: 1em;" /></p>
+<p>&nbsp;</p>
+<p style="text-align: left;">今回のイベントのために<span style="color: #3366ff;"><strong>八三</strong></span>さんに描き下ろしていただいたピアプロキャラクターズ6人のパネルも展示されました！パネルの周囲には「みんなで祝い花」による装飾も設置。裏面には参加してくれた方のお名前も掲示しておりました<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f33b.png" alt="🌻" class="wp-smiley" style="height: 1em; max-height: 1em;" /></p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b2609042.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104664 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b2609042.jpg" alt="" width="1200" height="799" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b2609042.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609042-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609042-1024x682.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609042-768x511.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p>&nbsp;</p>
+<p>来場者による参加型企画として、マスキングテープを使ってピアプロキャラクターズに色をつける「<strong>マステ de アート！</strong>」や、花に関するおすすめ楽曲を付箋に書いて貼ってもらう「<strong>あなたの好きな花の音色</strong>」も登場。<br />
+恒例の「<strong>piaproの壁</strong>」にもたくさんの書き込みをいただきました♪</p>
+<p style="text-align: center;"><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b2609043.jpg"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-104665" src="https://blog.piapro.net/wp-content/uploads/2026/09/b2609043.jpg" alt="" width="1200" height="399" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b2609043.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609043-300x100.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609043-1024x340.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609043-768x255.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p>&nbsp;</p>
+<p>そして今回は<span style="color: #0000ff;">KAITO</span>の20周年アニバーサリー企画として、初代パッケージ衣装を再現した衣装の展示やステージも実施！</p>
+<p style="text-align: center;"><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b2609044.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104666 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b2609044.jpg" alt="" width="1200" height="399" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b2609044.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609044-300x100.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609044-1024x340.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609044-768x255.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p>&nbsp;</p>
+<p>企画展内にはストリートピアノ「<span style="color: #ff00ff;"><strong>LovePiano feat. HATSUNE MIKU</strong></span>」を展示。OSAKA・TOKYOでは実際に触って演奏できるようになっており、来場した方が様々な曲を披露してくださいました。また、演奏した楽曲を音符型の付箋に書いて貼れる壁面も設置し、たくさんの楽曲で彩られました。</p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b2609045.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104667 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b2609045.jpg" alt="" width="1200" height="399" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b2609045.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609045-300x100.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609045-1024x340.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609045-768x255.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p>&nbsp;</p>
+<p>他にも、様々な展示やステージ、ワークショップなど、たくさんの企画を実施しました<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f31f.png" alt="🌟" class="wp-smiley" style="height: 1em; max-height: 1em;" /></p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b2609046.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104668 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b2609046.jpg" alt="" width="1000" height="1000" /></a></p>
+<p>&nbsp;</p>
+<p>HAMAMATSUでは、ご当地のキャラクターたちとのコラボステージも<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/2728.png" alt="✨" class="wp-smiley" style="height: 1em; max-height: 1em;" /></p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b2609047.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104669 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b2609047.jpg" alt="" width="1200" height="799" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b2609047.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609047-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609047-1024x682.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609047-768x511.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a> <a href="https://blog.piapro.net/wp-content/uploads/2026/09/b2609048.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104670 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b2609048.jpg" alt="" width="1200" height="799" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b2609048.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609048-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609048-1024x682.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609048-768x511.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a> <a href="https://blog.piapro.net/wp-content/uploads/2026/09/b2609049.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104671 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b2609049.jpg" alt="" width="1200" height="800" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b2609049.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609049-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609049-1024x683.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b2609049-768x512.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p>&nbsp;</p>
+<p>一部企画展ステージの様子はYouTubeの「ピアプロTV」からもご覧いただけます<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f4fa.png" alt="📺" class="wp-smiley" style="height: 1em; max-height: 1em;" /></p>
+<p><a href="https://www.youtube.com/@piaproTV/streams" target="_blank" rel="noopener">ピアプロTVはこちら＞＞</a></p>
+<p>&nbsp;</p>
+<p>最後に、会場のみなさまがシールを貼って参加できる「<strong>どこから来たのMAP</strong>」をご紹介<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f98b.png" alt="🦋" class="wp-smiley" style="height: 1em; max-height: 1em;" /><br />
+それぞれの会場にフォーカスしたパネルは3会場同じものを使用！HAMAMATSU→<span style="color: #ff9900;">オレンジ</span>、OSAKA→<span style="color: #b50000;">赤</span>、TOKYO→<span style="color: #0000ff;">青</span>のシールをお渡しし、それぞれの会場でたくさんのシールを貼っていただきました！</p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b26090410.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104672 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b26090410.jpg" alt="" width="1200" height="799" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b26090410.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090410-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090410-1024x682.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090410-768x511.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p>&nbsp;</p>
+<p>3会場、計9日間という期間で実施した企画展は、全会場大盛況の中で幕を閉じることができました。<br />
+みなさま本当にありがとうございました！</p>
+<p>&nbsp;</p>
+<p style="text-align: center;"><strong><span style="color: #33cccc;">✿≈ <span style="color: #ff6600;">✿≈</span> <span style="color: #ffcc00;">✿≈</span> <span style="color: #ff00ff;">✿≈</span> <span style="color: #ff0000;">✿≈</span> <span style="color: #0000ff;">✿≈ </span></span></strong></p>
+<p>&nbsp;</p>
+<p>ライブ写真・楽曲についてもちょこっとご紹介<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f3a4.png" alt="🎤" class="wp-smiley" style="height: 1em; max-height: 1em;" /></p>
+<p style="text-align: center;"><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b26090411.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104673 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b26090411.jpg" alt="" width="1200" height="799" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b26090411.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090411-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090411-1024x682.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090411-768x511.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a><span style="font-size: 9pt;">▲『ジェヘナ』（wotaku feat. 初音ミク）</span></p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b26090412.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104674 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b26090412.jpg" alt="" width="1200" height="399" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b26090412.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090412-300x100.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090412-1024x340.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090412-768x255.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p style="text-align: center;"><span style="font-size: 9pt;">▲『青炎』（せきこみごはん feat. KAITO）、『Amazing Dolce』（ひとしずく×やま△ feat. MEIKO・鏡音リン・鏡音レン）</span></p>
+<p>&nbsp;</p>
+<p>今回は昼公演・夜公演で異なるセットリストとなっていたほか、それぞれの会場ごとで異なる楽曲も披露。</p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b26090413.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104675 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b26090413.jpg" alt="" width="1200" height="399" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b26090413.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090413-300x100.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090413-1024x340.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090413-768x255.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p style="text-align: center;"><span style="font-size: 9pt;">▲夜公演より『ヴァンパイア』（DECO*27 feat. 初音ミク）、昼公演より『vivid』（ゆよゆっぺ×鬱P feat. 初音ミク・巡音ルカ）</span></p>
+<p>&nbsp;</p>
+<p>HAMAMATSUでは『ウミユリ海底譚』（n-buna feat. 初音ミク）、OSAKAでは「カゲロウデイズ（じん feat. 初音ミク）」、TOKYOでは『快晴』（<span data-sheets-root="1">Orangestar </span>feat. 初音ミク）が披露されました。</p>
+<p>&nbsp;</p>
+<p>開催から10年となる『初音ミク「マジカルミライ 2016」』のテーマソングとして根強い人気を誇る『39みゅーじっく！』（みきとP  feat. 初音ミク）は、なんとメインビジュアル衣装での初披露！</p>
+<p style="text-align: center;"><img loading="lazy" decoding="async" class="size-full wp-image-104677 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b26090415.jpg" alt="" width="1200" height="799" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b26090415.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090415-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090415-1024x682.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090415-768x511.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></p>
+<p style="text-align: center;"><span style="font-size: 9pt;">▲『39みゅーじっく！』（みきとP  feat. 初音ミク）</span></p>
+<p>&nbsp;</p>
+<p>ライブ本編のラストソングとして披露されたのは、今回のテーマソングである『空に免じて』（傘村トータ feat. 初音ミク）。<br />
+悩み、傷つき、それでも空を見上げる多くの人々に寄り添うバラードを、メインビジュアルの衣装をまとったミクが優しく歌い上げました。</p>
+<p style="text-align: center;"><img loading="lazy" decoding="async" class="size-full wp-image-104678 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b26090416.jpg" alt="" width="1200" height="799" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b26090416.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090416-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090416-1024x682.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090416-768x511.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></p>
+<p style="text-align: center;"><span style="font-size: 9pt;">▲『空に免じて』（傘村トータ feat. 初音ミク）</span></p>
+<p>&nbsp;</p>
+<p>本編終了後、観客の熱いコールに応えてのアンコールでは『Over Flow(er)』（Noz. feat. 初音ミク）と、『Hand in Hand』（livetune feat. 初音ミク・鏡音リン・鏡音レン・巡音ルカ・KAITO・MEIKO）を2曲続けて演奏。</p>
+<p style="text-align: center;"><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b26090417.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104679 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b26090417.jpg" alt="" width="1200" height="799" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b26090417.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090417-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090417-1024x682.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090417-768x511.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a><span style="font-size: 9pt;">▲『Over Flow(er)』（Noz. feat. 初音ミク）</span></p>
+<p>&nbsp;</p>
+<p>様々なパフォーマンスの最後を締めくくったのは、<a href="https://allcfm.slack.com/archives/C0ABSNK4U7K/p1788324141711019?thread_ts=1788307201.848589&amp;cid=C0ABSNK4U7K" target="_blank" rel="noopener">『初音ミク「マジカルミライ 2026」楽曲コンテスト』</a>のグランプリ曲である『こたえて』（imie feat. 初音ミク・鏡音リン・鏡音レン・巡音ルカ・KAITO・MEIKO）！</p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b26090418.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104680 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b26090418.jpg" alt="" width="1200" height="799" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b26090418.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090418-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090418-1024x682.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090418-768x511.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p style="text-align: center;"><span style="font-size: 9pt;">▲『こたえて』（imie feat. 初音ミク・鏡音リン・鏡音レン・巡音ルカ・KAITO・MEIKO）</span></p>
+<p>&nbsp;</p>
+<p>さらに…</p>
+<p><span style="color: #00ccbb;">TOKYO</span>公演のラストでは、今年のメインビジュアル衣装を着たミクが再び登場し、「<span style="font-size: 14pt;"><strong>マジカルミライ 2027</strong></span>」の開催決定告知をしてくれました！！<br />
+2027年は7月-8月に、<strong><span style="color: #ff99cc;">OSAKA</span></strong>・<strong><span style="color: #00ccbb;">TOKYO</span></strong>そしてマジカルミライ初開催となる<span style="color: #ffcc00;"><strong>HIROSHIMA</strong></span>で開催予定！！</p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b26090421-1.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104734 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/09/b26090421-1.jpg" alt="" width="1200" height="800" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b26090421-1.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090421-1-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090421-1-1024x683.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090421-1-768x512.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>開催の詳細は後日発表予定ですので、お楽しみに♪</p>
+<p>&nbsp;</p>
+<p>ブログに載せきれなかった写真やライブのセットリストは、公式WEBサイトからご覧ください！</p>
+<p><a href="https://magicalmirai.com/2026/special_afterreport.html" target="_blank" rel="noopener">アフターレポートページはこちら＞</a></p>
+<p>&nbsp;</p>
+<p><strong><span style="font-size: 14pt; color: #ff6600;">8月30日(日)夜公演のライブは、絶賛アーカイブ配信中<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f3b6.png" alt="🎶" class="wp-smiley" style="height: 1em; max-height: 1em;" /></span></strong></p>
+<p>配信は明日<strong>【2026年9月5日(土)18:00まで】</strong>となりますので、見たい方は忘れずにチェック！！</p>
+<div class="txtbox side br_t">
+<p class="txts_m txt_em"><strong>★チケット情報<br />
+</strong>【販売期間】2026年8月9日(日) 12:00 ～9月5日(土) 16:00<br />
+【料金】2,500円(税込)</p>
+</div>
+<p><strong>★配信メディア</strong><br />
+<a href="https://w.pia.jp/t/magicalmirai26/" target="_blank" rel="noopener">PIA LIVE STREAM</a>・<a href="https://l-tike.zaiko.io/e/magicalmirai26miku" target="_blank" rel="noopener">ローチケ LIVE STREAMING</a>・<a href="https://t.unext.jp/r/hatsunemiku" target="_blank" rel="noopener">U-NEXT</a>・<a href="https://abema.tv/live-event/8973cc69-4b1d-401c-8f8e-2f446c9b5caf" target="_blank" rel="noopener">ABEMA</a>・<a href="https://live.tv.rakuten.co.jp/content/543403/" target="_blank" rel="noopener">Rakuten TV</a>・<a href="https://dwango-ticket.jp/project/CLe0VToJiM" target="_blank" rel="noopener">ニコニコ生放送</a></p>
+<p>&nbsp;</p>
+<p><a href="https://magicalmirai.com/2026/tokyo_ticket.html#ticket_live-stream" target="_blank" rel="noopener"><span style="font-size: 14pt;">アーカイブ配信について詳しくはこちら！＞</span></a></p>
+<p>&nbsp;</p>
+<p style="text-align: center;"><strong><span style="color: #33cccc;">✿≈ <span style="color: #ff6600;">✿≈</span> <span style="color: #ffcc00;">✿≈</span> <span style="color: #ff00ff;">✿≈</span> <span style="color: #ff0000;">✿≈</span> <span style="color: #0000ff;">✿≈ </span></span></strong></p>
+<p>&nbsp;</p>
+<p>アフターレポートブログは以上です！</p>
+<p>暑さも厳しい中、たくさんの方のご来場とご声援、本当にありがとうございました！</p>
+<p>2027年は初のHIROSHIMA開催！<br />
+詳細は決定次第お知らせいたしますので、続報をお楽しみに！</p>
+<hr />
+<p style="text-align: center;"><strong><span style="color: #9932cc;">TOKYO最終公演を完全収録したBlu-ray＆DVDが<br />
+11/29(日)まで早期予約受付中！</span></strong></p>
+<p style="text-align: left;"><a href="https://blog.piapro.net/wp-content/uploads/2026/09/b26090421.jpg"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-104683" src="https://blog.piapro.net/wp-content/uploads/2026/09/b26090421.jpg" alt="" width="1200" height="675" srcset="https://blog.piapro.net/wp-content/uploads/2026/09/b26090421.jpg 1200w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090421-300x169.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090421-1024x576.jpg 1024w, https://blog.piapro.net/wp-content/uploads/2026/09/b26090421-768x432.jpg 768w" sizes="auto, (max-width: 1200px) 100vw, 1200px" /></a></p>
+<p>収録内容や早期予約特典など、詳しくは下記のWEBサイトからご確認ください！</p>
+<p><a href="https://www.jvcmusic.co.jp/magicalmirai/" target="_blank" rel="noopener">初音ミク「マジカルミライ 2026」Blu-ray＆DVD特設ページはこちら！＞</a></p>
+<p><a href="https://s.mxtv.jp/magicalmirai2026-pkgreserve/" target="_blank" rel="noopener">TOKYO MX特設サイトはこちら！＞</a></p>
+<hr />
+<p><strong>✦初音ミク「マジカルミライ 2026」✦</strong><br />
+Official Web Site ＞＞ <a href="https://magicalmirai.com/2026/" target="_blank" rel="noopener">https://magicalmirai.com/2026/</a><br />
+Official X ＞＞ <a href="https://x.com/magicalmirai" target="_blank" rel="noopener">https://x.com/magicalmirai</a></p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>初音ミク「マジカルミライ 2026」in TOKYO開催直前！イベント情報をおさらい！</title>
+		<link>https://blog.piapro.net/2026/08/b2608251.html</link>
+		
+		<dc:creator><![CDATA[Crypton Future Media, INC.]]></dc:creator>
+		<pubDate>Tue, 25 Aug 2026 08:00:50 +0000</pubDate>
+				<category><![CDATA[イベント]]></category>
+		<category><![CDATA[マジカルミライ]]></category>
+		<category><![CDATA[ライブ]]></category>
+		<guid isPermaLink="false">https://blog.piapro.net/?p=104260</guid>
+
+					<description><![CDATA[みなさま、こんばんは！(*´˘`) HAMAMATSU、OSAKAと2会場を駆け抜けた『初音ミク「マジカルミライ 2026」』ですが、いよいよ今週8月28日（金） よりラストとなるTOKYO会場にて開催となります！ 本日&#8230; <a href="https://blog.piapro.net/2026/08/b2608251.html" class="more-link">続きを読む <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[<p>みなさま、こんばんは！(*´˘`)</p>
+<p><strong><span style="color: #ff9900;">HAMAMATSU</span></strong>、<strong><span style="color: #ff99cc;">OSAKA</span></strong>と2会場を駆け抜けた『初音ミク「マジカルミライ 2026」』ですが、いよいよ今週<strong>8月28日（金）</strong> よりラストとなる<span style="color: #00ccff;"><strong>TOKYO会場</strong><span style="color: #000000;">にて</span></span>開催となります！</p>
+<p>本日は<span style="color: #00ccff;"><strong>TOKYO会場</strong></span>のおさらいとして、イベント情報や来場時のご注意を改めてまとめてお届けします。<br />
+ぜひ最後までご覧くださいね！</p>
+<p>&nbsp;</p>
+<p style="text-align: center;"><strong><span style="color: #33cccc;">✿≈ <span style="color: #ff6600;">✿≈</span> <span style="color: #ffcc00;">✿≈</span> <span style="color: #ff00ff;">✿≈</span> <span style="color: #ff0000;">✿≈</span> <span style="color: #0000ff;">✿≈ </span></span></strong></p>
+<p>&nbsp;</p>
+<h5><strong>☆開催会場とMAPをチェック！</strong></h5>
+<p>まずは開催日程と場所をおさらい！</p>
+<p><span style="color: #ff9900;"><strong><span style="color: #00ccff;">【TOKYO】2026年8月28日(金) ～ 8月30日(日)</span><br />
+</strong></span>ライブ：幕張メッセ 国際展示場 9ホール<br />
+企画展：幕張メッセ 国際展示場 1・2・3ホール<strong><br />
+</strong>※画像クリックでTOKYOのマップページへジャンプします。</p>
+<p><a href="https://magicalmirai.com/2026/tokyo_map.html" target="_blank" rel="noopener"><img loading="lazy" decoding="async" class="aligncenter wp-image-104301 size-full" src="https://blog.piapro.net/wp-content/uploads/2026/08/b2608241.jpg" alt="" width="796" height="955" srcset="https://blog.piapro.net/wp-content/uploads/2026/08/b2608241.jpg 796w, https://blog.piapro.net/wp-content/uploads/2026/08/b2608241-250x300.jpg 250w, https://blog.piapro.net/wp-content/uploads/2026/08/b2608241-768x921.jpg 768w" sizes="auto, (max-width: 796px) 100vw, 796px" /></a></p>
+<p>企画展、ライブどちらも入場にはチケットが必要となります！<br />
+ライブをご覧になる方は<strong>ライブチケット</strong>、企画展に入場される方は<strong>企画展チケット</strong>を必ずお持ちになってくださいね！</p>
+<p>また、今年は会場が少し離れているので、早めに移動するのがおすすめです。</p>
+<p>&nbsp;</p>
+<h5><strong>☆企画展の内容や注意点をチェック！</strong></h5>
+<p>企画展は、主催展示・ワークショップ・出展ブース・クリエイターズマーケット・企画展ステージ・公式物販など盛りだくさん！<br />
+今年は企画展で<strong>ストリートピアノ<span style="color: #ff00ff;">「LovePiano feat. HATSUNE MIKU」</span></strong>も展示！ぜひお好きな楽曲を演奏してみてくださいね<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f3b9.png" alt="🎹" class="wp-smiley" style="height: 1em; max-height: 1em;" /></p>
+<p>&nbsp;</p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/07/ex_org_piano.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-103304 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/07/ex_org_piano.jpg" alt="" width="800" height="534" srcset="https://blog.piapro.net/wp-content/uploads/2026/07/ex_org_piano.jpg 800w, https://blog.piapro.net/wp-content/uploads/2026/07/ex_org_piano-300x200.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/07/ex_org_piano-768x513.jpg 768w" sizes="auto, (max-width: 800px) 100vw, 800px" /></a><br />
+<small></small></p>
+<p>入場特典は<strong>『招待状風封筒＋楽譜カードセット（全1種/各会場共通）』</strong>！<br />
+<span style="color: #ff0000;"><small>※なくなり次第終了</small></span></p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/07/ex_org_present.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-103299 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/07/ex_org_present.jpg" alt="" width="800" height="389" srcset="https://blog.piapro.net/wp-content/uploads/2026/07/ex_org_present.jpg 800w, https://blog.piapro.net/wp-content/uploads/2026/07/ex_org_present-300x146.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/07/ex_org_present-768x373.jpg 768w" sizes="auto, (max-width: 800px) 100vw, 800px" /></a></p>
+<p>&nbsp;</p>
+<p>今回はオフィシャルグッズを事前に予約購入し、会場で受け取ることができるモバイルオーダーサービス<strong><span style="color: #3000a8;">「エンタGO」</span></strong>が導入されています！<br />
+受付期間はなんと<strong>本日8/25（火）23:30</strong>まで！お申込み予定の方は忘れずにチェックしてくださいね<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f6cd.png" alt="🛍" class="wp-smiley" style="height: 1em; max-height: 1em;" /></p>
+<p>&nbsp;</p>
+<p><a href="https://enta-go.com/shop/event/MM2026" target="_blank" rel="noopener"><img loading="lazy" decoding="async" class="wp-image-103293 size-full aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/07/b2607214.jpg" alt="" width="800" height="280" srcset="https://blog.piapro.net/wp-content/uploads/2026/07/b2607214.jpg 800w, https://blog.piapro.net/wp-content/uploads/2026/07/b2607214-300x105.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/07/b2607214-768x269.jpg 768w" sizes="auto, (max-width: 800px) 100vw, 800px" /></a></p>
+<p>&nbsp;</p>
+<p><strong><a href="https://enta-go.com/shop/event/MM2026" target="_blank" rel="noopener">「エンタGO」についてはこちら＞</a></strong></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h5><strong>☆ライブのスケジュールや注意事項をチェック！</strong></h5>
+<p><span style="font-weight: 400;">ライブは昼夜2公演、合計6公演が行われます！<br />
+ご自身のチケットがどの公演のものかもう一度確認し、スタッフの指示に従ってご入場くださいね。</span></p>
+<p>&nbsp;</p>
+<p><b>開演前、終演後を含め、<span style="color: #ff0000;">ライブ会場内での撮影・録音は</span></b><span style="color: #ff0000;"><b>一律禁止</b></span><b>です。</b><b><br />
+</b><b>また、ライブ中に振れるペンライトは</b><b><span style="color: #ff0000;">お1人様片手に1本ずつ、合計2本</span>まで</b><b>となりますので、必ず守ってご参加ください！</b></p>
+<p>&nbsp;</p>
+<p><span style="font-weight: 400;">そして、</span><b>全会場でライブご入場の際にランダムでの</b><span style="color: #ff0000;"><b>「本人確認」</b></span><b>を実施いたします。<br />
+</b><span style="font-weight: 400;">必ず参加する会場のチケットページに記載の内容をお読みいただき、定められた「身分証明書」をお持ちの上、ご来場ください。</span></p>
+<p>&nbsp;</p>
+<p><strong><span style="color: #ff0000;"><span style="color: #000000;">ライブチケットと企画展チケットは<big>事前の発券</big></span></span>をお忘れなく！！─=≡Σ((( つ•̀ω•́)つ<br />
+同行者ありでチケットを購入された方は、<span style="color: #ff0000;"><big>事前の分配</big></span>も忘れずに！</strong></p>
+<p>&nbsp;</p>
+<p>その他、チケットに関する詳細はチケットページからしっかりと確認しておきましょう！<br />
+※ライブチケットの「本人確認」、発券・分配・入場についてはページ下部に記載があります</p>
+<p><a href="https://magicalmirai.com/2026/tokyo_ticket.html" target="_blank" rel="noopener">TOKYOのチケットページはこちら＞</a></p>
+<p>&nbsp;</p>
+<p><span style="color: #ff00ff;">《まだチケットをお持ちでない方へ》</span><br />
+TOKYOのチケットは一般販売中！まだチケットをお持ちでない方はぜひチェックしてみてくださいね<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f3ab.png" alt="🎫" class="wp-smiley" style="height: 1em; max-height: 1em;" /><br />
+※好評につき予定枚数終了となっている場合がございます。ご了承ください。</p>
+<p>また、企画展チケットは<strong>当日販売</strong>も予定しています！<br />
+一般販売で入手しそびれてしまった場合に備えて、ぜひこちらも覚えておいてくださいね！</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h5><strong>☆注意事項・応援のきまりをチェック！</strong></h5>
+<p style="text-align: center;"><strong>▼それぞれの画像をクリックすると<br />
+<span style="color: #ff0000;">注意事項</span>・<span style="color: #0000ff;">応援のきまり</span>をご覧いただけます。</strong></p>
+<p><a href="https://magicalmirai.com/2026/info_important.html" target="_blank" rel="noopener"><img loading="lazy" decoding="async" class="aligncenter wp-image-103295 size-full" src="https://blog.piapro.net/wp-content/uploads/2026/07/b2607216.jpg" alt="" width="800" height="321" srcset="https://blog.piapro.net/wp-content/uploads/2026/07/b2607216.jpg 800w, https://blog.piapro.net/wp-content/uploads/2026/07/b2607216-300x120.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/07/b2607216-768x308.jpg 768w" sizes="auto, (max-width: 800px) 100vw, 800px" /></a></p>
+<p><a href="https://magicalmirai.com/2026/info_guidelines.html" target="_blank" rel="noopener"><img loading="lazy" decoding="async" class="aligncenter wp-image-103294 size-full" src="https://blog.piapro.net/wp-content/uploads/2026/07/b2607215.jpg" alt="" width="800" height="173" srcset="https://blog.piapro.net/wp-content/uploads/2026/07/b2607215.jpg 800w, https://blog.piapro.net/wp-content/uploads/2026/07/b2607215-300x65.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/07/b2607215-768x166.jpg 768w" sizes="auto, (max-width: 800px) 100vw, 800px" /></a></p>
+<p>&nbsp;</p>
+<p><a href="https://magicalmirai.com/2026/info_important.html" target="_blank" rel="noopener">「注意事項」のページ</a><span style="font-weight: 400;">には、基本事項、企画展とライブそれぞれの注意事項、そして公式物販や撮影についての注意事項を記載しています。</span></p>
+<p><a href="https://magicalmirai.com/2026/info_guidelines.html" target="_blank" rel="noopener">「応援のきまり」ページ</a><span style="font-weight: 400;">には、「マジカルミライ 2026」を応援いただく際のルールを記載しています。</span></p>
+<p><span style="font-weight: 400;"> </span></p>
+<p>皆さまに安心してイベントをお楽しみいただけるよう、<strong>ご来場の前に必ず公式WEBサイトで最新情報と、「注意事項」「応援のきまり」を確認・お守りの上</strong>ご参加ください！</p>
+<p><strong><a href="https://magicalmirai.com/2026/info_important.html" target="_blank" rel="noopener">注意事項ページはこちら＞</a></strong></p>
+<p><strong><a href="https://magicalmirai.com/2026/info_guidelines.html" target="_blank" rel="noopener">応援のきまりページはこちら＞</a></strong></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h5><strong>☆「参加がはじめてで不安かも…」という方必見！「はじめてのマジカルミライ」ページをチェック！</strong></h5>
+<p>マジカルミライにはじめて参加する方に向けたご紹介ページ<strong>「はじめてのマジカルミライ」</strong>！<br />
+マジカルミライの内容や、準備・参加する時のポイント、Q&amp;Aなどがまとめられていますので、「参加がはじめてで不安かも…」「行ったことはあるけど改めてポイントを確認したい！」という方はぜひご覧ください！</p>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/07/b2607217.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-103300 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/07/b2607217.jpg" alt="" width="699" height="655" srcset="https://blog.piapro.net/wp-content/uploads/2026/07/b2607217.jpg 699w, https://blog.piapro.net/wp-content/uploads/2026/07/b2607217-300x281.jpg 300w" sizes="auto, (max-width: 699px) 100vw, 699px" /></a></p>
+<p>&nbsp;</p>
+<p><strong><a href="https://magicalmirai.com/2026/info_beginners-guide.html" target="_blank" rel="noopener">「はじめてのマジカルミライ」はこちら＞</a></strong></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h5><strong>☆連動企画をチェック！</strong></h5>
+<p>まだまだ実施中の連動企画もございますので、こちらも忘れずにチェックしてくださいね！</p>
+<p><a href="https://magicalmirai.com/2026/special_collabo_link.html" target="_blank" rel="noopener">連動企画について詳しくはこちら＞＞</a></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h5><strong>☆初音ミク「マジカルミライ 2026」in TOKYO 8月30日(日)夜公演のライブ配信が決定！</strong></h5>
+<p><a href="https://blog.piapro.net/wp-content/uploads/2026/08/banner_live-stream.jpg"><img loading="lazy" decoding="async" class="size-full wp-image-104305 aligncenter" src="https://blog.piapro.net/wp-content/uploads/2026/08/banner_live-stream.jpg" alt="" width="1000" height="350" srcset="https://blog.piapro.net/wp-content/uploads/2026/08/banner_live-stream.jpg 1000w, https://blog.piapro.net/wp-content/uploads/2026/08/banner_live-stream-300x105.jpg 300w, https://blog.piapro.net/wp-content/uploads/2026/08/banner_live-stream-768x269.jpg 768w" sizes="auto, (max-width: 1000px) 100vw, 1000px" /></a></p>
+<p>最終公演である<strong>8月30日(日)夜公演</strong>の<strong>ライブ配信</strong>が決定！</p>
+<p>今年は配信メディアを拡大！ぜひお好きなプラットフォームでご覧ください<img decoding="async" class="emoji" role="img" draggable="false" src="https://s.w.org/images/core/emoji/17.0.2/svg/2728.svg" alt="&#x2728;" /></p>
+<p>&nbsp;</p>
+<p><strong>★配信日時</strong><br />
+2026年8月30日(日)<br />
+【OPEN】16:00<br />
+【START】16:30</p>
+<p class="txt_back br_t">アーカイブ配信日時｜2026年9月5日(<span class="week_sat">土</span>) 18:00まで</p>
+<div class="txtbox side br_t">
+<p class="txts_m txt_em"><strong style="font-size: 16px;">★チケット情報<br />
+</strong>【販売期間】2026年8月9日(日) 12:00 ～9月5日(土) 16:00<br />
+【料金】2,500円(税込)</p>
+</div>
+<p><strong>★配信メディア</strong><br />
+<a href="https://w.pia.jp/t/magicalmirai26/" target="_blank" rel="noopener">PIA LIVE STREAM</a>・<a href="https://l-tike.zaiko.io/e/magicalmirai26miku" target="_blank" rel="noopener">ローチケ LIVE STREAMING</a>・<a href="https://t.unext.jp/r/hatsunemiku" target="_blank" rel="noopener">U-NEXT</a>・<a href="https://abema.tv/live-event/8973cc69-4b1d-401c-8f8e-2f446c9b5caf" target="_blank" rel="noopener">ABEMA</a>・<a href="https://live.tv.rakuten.co.jp/content/543403/" target="_blank" rel="noopener">Rakuten TV</a>・<a href="https://dwango-ticket.jp/project/CLe0VToJiM" target="_blank" rel="noopener">ニコニコ生放送</a></p>
+<p>&nbsp;</p>
+<p><a href="https://magicalmirai.com/2026/tokyo_ticket.html#ticket_live-stream" target="_blank" rel="noopener">ライブ配信について詳しくはこちら＞</a></p>
+<p>&nbsp;</p>
+<p style="text-align: center;"><strong><span style="color: #33cccc;">✿≈ <span style="color: #ff6600;">✿≈</span> <span style="color: #ffcc00;">✿≈</span> <span style="color: #ff00ff;">✿≈</span> <span style="color: #ff0000;">✿≈</span> <span style="color: #0000ff;">✿≈ </span></span></strong></p>
+<p>&nbsp;</p>
+<p>本日のブログは以上です！ ✧*｡ ٩( ˊ ω ˋ*) ▽ ✧*｡<br />
+初音ミク「マジカルミライ 2026」ラストを飾るTOKYO会場、どうぞ最後までお楽しみに<img src="https://s.w.org/images/core/emoji/17.0.2/72x72/1f30a.png" alt="🌊" class="wp-smiley" style="height: 1em; max-height: 1em;" /><img src="https://s.w.org/images/core/emoji/17.0.2/72x72/2728.png" alt="✨" class="wp-smiley" style="height: 1em; max-height: 1em;" /></p>
+<p>イベントに関するポストや思い出の投稿には、ぜひ「<strong>#マジカルミライ2026</strong>」のハッシュタグをつけて発信してくださいね！</p>
+<p>&nbsp;</p>
+<hr />
+<p><span style="color: #00ccff;"><strong>✦初音ミク「マジカルミライ 2026」✦</strong></span><br />
+Official Web Site ＞＞ <a href="https://magicalmirai.com/2026/" target="_blank" rel="noopener">https://magicalmirai.com/2026/</a><br />
+Official X ＞＞ <a href="https://x.com/magicalmirai" target="_blank" rel="noopener">https://x.com/magicalmirai</a></p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+	</channel>
+</rss>

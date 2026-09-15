@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1094,
+    "musicId": 571,
+    "musicTag": "all",
+    "seq": 0
+  },
+  {
+    "id": 1095,
+    "musicId": 572,
+    "musicTag": "all",
+    "seq": 0
+  },
+  {
+    "id": 1152,
+    "musicId": 629,
+    "musicTag": "all",
+    "seq": 0
+  },
+  {
+    "id": 1168,
+    "musicId": 645,
+    "musicTag": "all",
+    "seq": 0
+  },
+  {
+    "id": 1170,
+    "musicId": 647,
+    "musicTag": "all",
+    "seq": 0
+  },
+  {
+    "id": 1172,
+    "musicId": 649,
+    "musicTag": "all",
+    "seq": 0
+  },
+  {
+    "id": 1173,
+    "musicId": 650,
+    "musicTag": "all",
+    "seq": 0
+  },
+  {
+    "id": 1178,
+    "musicId": 655,
+    "musicTag": "all",
+    "seq": 0
+  },
+  {
+    "id": 1179,
+    "musicId": 656,
+    "musicTag": "all",
+    "seq": 0
+  },
+  {
+    "id": 1597,
+    "musicId": 655,
+    "musicTag": "vocaloid",
+    "seq": 1
+  },
+  {
+    "id": 1598,
+    "musicId": 647,
+    "musicTag": "vocaloid",
+    "seq": 1
+  },
+  {
+    "id": 1599,
+    "musicId": 572,
+    "musicTag": "school_refusal",
+    "seq": 5
+  },
+  {
+    "id": 1601,
+    "musicId": 649,
+    "musicTag": "theme_park",
+    "seq": 2
+  },
+  {
+    "id": 1602,
+    "musicId": 629,
+    "musicTag": "idol",
+    "seq": 4
+  },
+  {
+    "id": 1603,
+    "musicId": 650,
+    "musicTag": "school_refusal",
+    "seq": 5
+  },
+  {
+    "id": 1604,
+    "musicId": 645,
+    "musicTag": "light_music_club",
+    "seq": 6
+  },
+  {
+    "id": 1606,
+    "musicId": 656,
+    "musicTag": "vocaloid",
+    "seq": 1
+  },
+  {
+    "id": 1607,
+    "musicId": 571,
+    "musicTag": "street",
+    "seq": 3
+  },
+  {
+    "id": 1759,
+    "musicId": 803,
+    "musicTag": "all",
+    "seq": 0
+  },
+  {
+    "id": 1989,
+    "musicId": 803,
+    "musicTag": "vocaloid",
+    "seq": 1
+  }
+]

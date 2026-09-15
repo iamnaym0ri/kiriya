@@ -15,16 +15,10 @@ export function useToday() {
 export function useSetMood() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ mood, energy }) =>
-      api("/me/mood", { method: "PUT", body: { mood, energy } }),
-    onMutate: async ({ mood }) => {
-      // Recolour immediately; the server answer fills in the rest.
-      document.documentElement.dataset.mood = mood;
-    },
-    onSuccess: (mood) => {
-      queryClient.setQueryData(todayKey, (old) =>
-        old ? { ...old, mood } : old,
-      );
+    mutationFn: body => api("/me/mood", { method: "PUT", body }),
+    onSuccess: data => {
+      queryClient.setQueryData(["me", "mood"], data);
+      queryClient.invalidateQueries({ queryKey: ["me", "address"] });
     },
   });
 }

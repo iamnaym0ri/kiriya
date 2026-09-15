@@ -1,0 +1,46 @@
+{
+  "kind": "youtube#playlistItemListResponse",
+  "etag": "mock-etag-UUdMGYXL38w6htx6Yf9YJa-w",
+  "pageInfo": {
+    "totalResults": 4,
+    "resultsPerPage": 15
+  },
+  "items": [
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-ul97PWn9gtk",
+      "id": "mock-item-0",
+      "contentDetails": {
+        "videoId": "ul97PWn9gtk",
+        "videoPublishedAt": "2026-09-12T10:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-JpTrailer01",
+      "id": "mock-item-1",
+      "contentDetails": {
+        "videoId": "JpTrailer01",
+        "videoPublishedAt": "2026-09-11T10:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-JpShort0001",
+      "id": "mock-item-2",
+      "contentDetails": {
+        "videoId": "JpShort0001",
+        "videoPublishedAt": "2026-09-10T10:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-JpOldVideo1",
+      "id": "mock-item-3",
+      "contentDetails": {
+        "videoId": "JpOldVideo1",
+        "videoPublishedAt": "2026-08-01T10:00:00Z"
+      }
+    }
+  ]
+}

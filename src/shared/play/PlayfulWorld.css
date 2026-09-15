@@ -19,7 +19,7 @@
 }
 .ambient-charms > span {
   position: absolute;
-  left: calc(3% + var(--i) * 15.5%);
+  left: calc(3% + var(--i) * 11.5%);
   top: -45px;
   color: #a481b0;
   font: 24px Georgia;
@@ -181,9 +181,9 @@
     drop-shadow(0 3px 0 white) drop-shadow(0 -3px 0 white)
     drop-shadow(0 5px 6px #49365322);
 }
-.mascot__gaze {
+.mascot__iris-gaze {
   transform: translate(var(--gaze-x, 0px), var(--gaze-y, 0px));
-  transition: transform 0.14s ease-out;
+  transition: transform 0.28s cubic-bezier(.22, .72, .2, 1);
 }
 .buddy-bubble {
   position: relative;

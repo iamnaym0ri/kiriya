@@ -9,7 +9,10 @@ import "./styles/base.css";
 import "./styles/world-design.css";
 import { MusicProvider } from "./shared/music/MusicRoom.jsx";
 import { PlayfulProvider } from "./shared/play/PlayfulWorld.jsx";
+import { DailyStyleProvider } from "./shared/DailyStyle.jsx";
 import "./styles/strawpage.css";
+import "./styles/daily-style.css";
+import "./styles/feeling-corner.css";
 import ProfilePage from "./public/ProfilePage.jsx";
 import PageLoader from "./shared/PageLoader.jsx";
 
@@ -32,6 +35,7 @@ createRoot(document.getElementById("root")).render(
       <MotionConfig reducedMotion="user">
         <BrowserRouter>
           <PlayfulProvider>
+            <DailyStyleProvider>
             <MusicProvider>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
@@ -42,6 +46,7 @@ createRoot(document.getElementById("root")).render(
                 </Routes>
               </Suspense>
             </MusicProvider>
+            </DailyStyleProvider>
           </PlayfulProvider>
         </BrowserRouter>
       </MotionConfig>

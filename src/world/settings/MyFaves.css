@@ -1,0 +1,71 @@
+/* The my faves card: chip lists inside the existing settings-card. */
+.faves-field {
+  display: grid;
+  gap: var(--s-2);
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.faves-field > legend {
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--text-soft);
+  margin-bottom: var(--s-2);
+}
+.faves-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.faves-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px 2px 12px;
+  border-radius: var(--r-pill);
+  background: var(--purple-100);
+  color: var(--purple-800);
+  font-size: var(--t-sm);
+  overflow-wrap: anywhere;
+}
+.faves-chip > button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  color: inherit;
+}
+.faves-chip > button:hover {
+  background: #fff9fd99;
+}
+.faves-chip--locked {
+  padding-right: 12px;
+  min-height: 36px;
+  background: transparent;
+  border: 1px dashed var(--line-strong);
+}
+.faves-empty {
+  font-size: var(--t-sm);
+  color: var(--text-soft);
+}
+.faves-add {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+}
+.faves-add > .field {
+  min-height: 44px;
+  padding: 0 var(--s-3);
+  font-size: var(--t-md);
+}
+.faves-add > .btn {
+  flex: none;
+  min-height: 44px;
+}

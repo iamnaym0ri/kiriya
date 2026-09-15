@@ -1,0 +1,210 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "mock-etag-videos",
+  "pageInfo": {
+    "totalResults": 4,
+    "resultsPerPage": 4
+  },
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-KusuPV00001",
+      "id": "KusuPV00001",
+      "snippet": {
+        "publishedAt": "2026-09-14T03:00:00Z",
+        "channelId": "UCmockTOHOanimation00000",
+        "title": "TVアニメ『薬屋のひとりごと』第3期 キャラクターPV (mock)",
+        "description": "猫猫と壬氏の新しいPV。Maomao and Jinshi return this October.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/KusuPV00001/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "TOHO animation チャンネル",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "ja"
+      },
+      "contentDetails": {
+        "duration": "PT1M30S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "300000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/KusuPV00001\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-KusuShort01",
+      "id": "KusuShort01",
+      "snippet": {
+        "publishedAt": "2026-09-12T03:00:00Z",
+        "channelId": "UCmockTOHOanimation00000",
+        "title": "薬屋のひとりごと #shorts (mock)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/KusuShort01/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "TOHO animation チャンネル",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "ja"
+      },
+      "contentDetails": {
+        "duration": "PT30S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"270\" height=\"480\" src=\"//www.youtube.com/embed/KusuShort01\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "270",
+        "embedHeight": "480"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-9rProUQlD-I",
+      "id": "9rProUQlD-I",
+      "snippet": {
+        "publishedAt": "2026-08-15T03:00:00Z",
+        "channelId": "UCmockTOHOanimation00000",
+        "title": "TVアニメ『薬屋のひとりごと』第3期 本PV (mock title)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/9rProUQlD-I/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "TOHO animation チャンネル",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "ja"
+      },
+      "contentDetails": {
+        "duration": "PT2M00S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "2000000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/9rProUQlD-I\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-HP5wg0kTh54",
+      "id": "HP5wg0kTh54",
+      "snippet": {
+        "publishedAt": "2026-07-03T03:00:00Z",
+        "channelId": "UCmockSomeoneElse0000000",
+        "title": "劇場版 薬屋のひとりごと 予告 (mock reupload)",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/HP5wg0kTh54/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Not TOHO",
+        "categoryId": "10",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "ja"
+      },
+      "contentDetails": {
+        "duration": "PT1M30S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "100",
+        "favoriteCount": "0",
+        "commentCount": "10"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/HP5wg0kTh54\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    }
+  ]
+}

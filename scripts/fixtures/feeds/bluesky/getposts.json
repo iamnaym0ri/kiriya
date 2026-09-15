@@ -1,0 +1,62 @@
+{
+ "posts": [
+  {
+   "uri": "at://did:plc:tmpdeyklvkf7n5v4x5tjltjp/app.bsky.feed.post/3mvj627tbg22x",
+   "cid": "bafyreia7pqj3zpdom5fyoc3cx4uyfuskrdpym5dr7omv3o6sdxs6zgllcy",
+   "author": {
+    "did": "did:plc:tmpdeyklvkf7n5v4x5tjltjp",
+    "handle": "murmurlilies.bsky.social",
+    "displayName": "🌸MurmurLilies🌸",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-14T22:31:55.496Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "screenshot from the anime series The Apothecary Diaries (2023) in which protagonist Maomao is speaking to someone off-screen. the subtitles at the bottom read \"Mass layoffs?\"",
+       "aspectRatio": {
+        "height": 1080,
+        "width": 1920
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreihfqwb7f3b3tprp3m5kodx32wgdqkwpgz3nn5kmkzjrtx5bzmbeei"
+        },
+        "mimeType": "image/jpeg",
+        "size": 1446029
+       }
+      }
+     ]
+    },
+    "langs": [
+     "en"
+    ],
+    "text": "Maomao learns about the video game industry"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:tmpdeyklvkf7n5v4x5tjltjp/bafkreihfqwb7f3b3tprp3m5kodx32wgdqkwpgz3nn5kmkzjrtx5bzmbeei",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:tmpdeyklvkf7n5v4x5tjltjp/bafkreihfqwb7f3b3tprp3m5kodx32wgdqkwpgz3nn5kmkzjrtx5bzmbeei",
+      "alt": "screenshot from the anime series The Apothecary Diaries (2023) in which protagonist Maomao is speaking to someone off-screen. the subtitles at the bottom read \"Mass layoffs?\"",
+      "aspectRatio": {
+       "height": 1080,
+       "width": 1920
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "replyCount": 3,
+   "repostCount": 99,
+   "likeCount": 442,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-14T22:31:59.162Z",
+   "labels": []
+  }
+ ]
+}

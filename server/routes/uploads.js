@@ -86,6 +86,21 @@ uploadRoutes.post("/blob", async (c) => {
       401,
     );
   }
+  // Personal uploads and saved copies share one private store. When a fresh meter shows too little
+  // room for another maximum-size upload, refuse the grant instead of risking the store lockout.
+  if (body.type !== "blob.upload-completed") {
+    const { uploadCapacity } = await import("../feeds/storage.js");
+    const capacity = await uploadCapacity(MAX_BYTES).catch(() => ({ ok: true }));
+    if (!capacity.ok)
+      return c.json(
+        {
+          error: "storage_full",
+          message:
+            "Your private storage is nearly full. Remove an old upload or saved copy, then try again.",
+        },
+        507,
+      );
+  }
   function authorizePath(pathname) {
     if (!readSession(c)) throw new Error("Upload session is required");
     if (
@@ -260,11 +275,11 @@ uploadRoutes.get("/file/:name", async (c) => {
 uploadRoutes.get("/media", async (c) => {
   const pathname = c.req.query("path");
   if (
-    !/^(art|avatar|cosplay|songs|photos)\/[a-zA-Z0-9._-]+$/.test(pathname ?? "")
+    !/^(art|avatar|cosplay|songs|photos|saves)\/[a-zA-Z0-9._-]+$/.test(pathname ?? "")
   )
     return c.notFound();
   const canonical = `/api/uploads/media?path=${encodeURIComponent(pathname)}`;
-  if (!readSession(c) && !(await isPublicMedia(canonical)))
+  if (!readSession(c) && (pathname.startsWith("saves/") || !(await isPublicMedia(canonical))))
     return c.json({ error: "locked" }, 401);
   if (!blobReadConfigured()) return c.json({ error: "not_configured" }, 503);
   const range = c.req.header("range");

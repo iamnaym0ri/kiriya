@@ -1,13 +1,17 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { usePublicProfile } from "../../lib/profile.js";
 import { celebrate } from "../effects.js";
 import MaomaoMascot from "../../world/mascot/MaomaoMascot.jsx";
+import { useMusic } from "../music/MusicRoom.jsx";
+import { createRemarkPicker, remarkTopic } from "./maomaoDialogue.js";
+import { useDailyStyle } from "../DailyStyle.jsx";
 import "./PlayfulWorld.css";
+import { PlayContext, usePlayful } from "./PlayfulContext.js";
+import { ribbonMoment } from "./dailyRibbon.js";
 
-const PlayContext = createContext({ moving: true });
-export const usePlayful = () => useContext(PlayContext);
+export { usePlayful } from "./PlayfulContext.js";
+export { default as BirthdayRibbon } from "./DailyRibbon.jsx";
 
 export function PlayfulProvider({ children }) {
   const queryClient = useQueryClient();
@@ -22,6 +26,7 @@ export function PlayfulProvider({ children }) {
     () => matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
   const [visible, setVisible] = useState(!document.hidden);
+  const [ribbonTime, setRibbonTime] = useState(() => ribbonMoment());
   const location = useLocation();
   const moving = !paused && !reduced && visible;
   useEffect(() => {
@@ -32,15 +37,18 @@ export function PlayfulProvider({ children }) {
       timer;
     const refresh = () => {
       clearTimeout(timer);
+      const moment = ribbonMoment();
+      setRibbonTime(previous => previous.nextAt === moment.nextAt ? previous : moment);
       const nextDay = Math.floor((Date.now() + offset) / dayMs);
       if (nextDay !== day) {
         day = nextDay;
         queryClient.invalidateQueries({ queryKey: ["public-profile"] });
         queryClient.invalidateQueries({ queryKey: ["me", "today"] });
+        queryClient.invalidateQueries({ queryKey: ["me", "mood"] });
       }
       timer = setTimeout(
         refresh,
-        (day + 1) * dayMs - offset - Date.now() + 500,
+        moment.nextAt - Date.now() + 500,
       );
     };
     const wake = () => {
@@ -97,11 +105,11 @@ export function PlayfulProvider({ children }) {
   }, [location.pathname]);
   return (
     <PlayContext.Provider
-      value={{ moving, paused, reduced, toggle: () => setPaused((p) => !p) }}
+      value={{ moving, paused, reduced, day: ribbonTime.day, ribbonSlot: ribbonTime.slot, toggle: () => setPaused((p) => !p) }}
     >
       {children}
       <div className="ambient-charms" aria-hidden="true">
-        {["✧", "♡", "✦", "❀", "✧", "♡", "✦"].map((s, i) => (
+        {["✧", "♡", "✦", "❀", "✧", "♡", "✦", "❀", "✧"].map((s, i) => (
           <span key={i} style={{ "--i": i }}>
             {s}
           </span>
@@ -209,60 +217,72 @@ export function MotionToggle() {
   );
 }
 
-export function BirthdayRibbon() {
-  const { data } = usePublicProfile();
-  const birthday = data?.birthday?.isBirthday;
-  return (
-    <div
-      className="birthday-ribbon"
-      data-motion-region
-      aria-label="September 15 · Happpppy birthday kiriyaaa!!!"
-    >
-      <div className="birthday-ribbon__track" aria-hidden="true">
-        {[0, 1].map((copy) => (
-          <span key={copy}>
-            {[0, 1, 2].map((i) => (
-              <span key={i}>
-                🎀{" "}
-                {birthday
-                  ? "happy birthday, kiriya!"
-                  : "a little world for kiriya"}
-                <b>✧</b>15 SEPTEMBER
-                <span className="birthday-ribbon__wish">
-                  <b className="birthday-ribbon__charm">✦</b>
-                  <b className="birthday-ribbon__charm birthday-ribbon__charm--heart">
-                    ♡
-                  </b>
-                  <span>Happpppy birthday kiriyaaa!!!</span>
-                  <b className="birthday-ribbon__charm birthday-ribbon__charm--heart">
-                    ♥
-                  </b>
-                  <b className="birthday-ribbon__charm">✧</b>
-                </span>
-              </span>
-            ))}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-const BUDDY_LINES = [
-  "Birthday rule: cake before chores. 🎂",
-  "A tiny doodle? I’ll supervise. ( = ⩊ = )",
-  "Your colour palette has my approval. ✧",
-  "One more song. I won’t tell. ♡",
-];
 export function MaomaoBuddy({ compact = false, birthday = false }) {
+  const { copy } = useDailyStyle();
+  const addressText = text => text.replace("miss apothecary", copy?.apothecary ?? "miss apothecary");
   const { moving } = usePlayful();
-  const [pokes, setPokes] = useState(0);
-  const [happy, setHappy] = useState(false);
+  const music = useMusic();
+  const songUrl = music?.song?.url;
+  const [remark, setRemark] = useState(null);
+  const [announcement, setAnnouncement] = useState("");
+  const [inView, setInView] = useState(false);
   const ref = useRef(null);
-  const timeout = useRef(null);
-  useEffect(() => () => clearTimeout(timeout.current), []);
+  const picker = useRef(null);
+  const pokes = useRef(0);
+  const lastPoke = useRef(-Infinity);
+  const [reaction, setReaction] = useState(0);
+  if (!picker.current) picker.current = createRemarkPicker();
+  const current = remark ?? {
+    text: birthday
+      ? "Happy birthday. I've put my work aside for a moment. Yes, that is your present."
+      : "Hm? Oh. You can stay. Just leave the labelled jars where they are.",
+    expression: "deadpan",
+  };
+  const speak = (category, announce = false) => {
+    const next = picker.current(category);
+    setRemark(next);
+    setReaction(n => n + 1);
+    if (announce) setAnnouncement(next.text);
+    return next;
+  };
   useEffect(() => {
-    if (!moving || !matchMedia("(pointer:fine)").matches) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting && entry.intersectionRatio >= 0.4),
+      { threshold: 0.4 },
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    if (songUrl) {
+      setRemark(picker.current("music"));
+      setReaction(n => n + 1);
+    }
+  }, [songUrl]);
+  useEffect(() => {
+    if (!moving || !inView) return;
+    let timer;
+    const schedule = () => {
+      timer = setTimeout(() => {
+        // Let her think quietly while someone types or draws.
+        if (document.activeElement?.matches("input, textarea, canvas, [contenteditable=true]")) {
+          schedule();
+          return;
+        }
+        const category = remarkTopic({ mode: "idle", birthday, music: !!songUrl });
+        setRemark(picker.current(category));
+        setReaction(n => n + 1);
+      }, 22000 + Math.random() * 18000);
+    };
+    schedule();
+    return () => clearTimeout(timer);
+  }, [moving, inView, remark, birthday, songUrl]);
+  useEffect(() => {
+    if (!moving || !matchMedia("(pointer:fine)").matches) {
+      ref.current?.style.removeProperty("--gaze-x");
+      ref.current?.style.removeProperty("--gaze-y");
+      return;
+    }
     let frame = 0;
     const gaze = (e) => {
       if (frame) return;
@@ -295,22 +315,21 @@ export function MaomaoBuddy({ compact = false, birthday = false }) {
       className={`maomao-buddy ${compact ? "maomao-buddy--compact" : ""}`}
       data-motion-region
     >
-      <div className="buddy-bubble" role="status">
-        {pokes
-          ? BUDDY_LINES[(pokes - 1) % BUDDY_LINES.length]
-          : birthday
-            ? "Psst… it’s your day! 🎂"
-            : "I’m keeping an eye on your doodles. ♡"}
+      <div className="buddy-bubble" aria-live="off">
+        {addressText(current.text)}
       </div>
       <MaomaoMascot
-        expression={happy ? "sparkle" : birthday ? "party" : "smug"}
-        size={compact ? 108 : 162}
+        expression={current.expression}
+        reactionKey={reaction}
+        size={compact ? 96 : 142}
         onPoke={(e) => {
-          setPokes((p) => p + 1);
-          setHappy(true);
-          clearTimeout(timeout.current);
-          timeout.current = setTimeout(() => setHappy(false), 2200);
-          if (moving) {
+          pokes.current++;
+          const now = performance.now();
+          const category = remarkTopic({ mode: "tap", count: pokes.current, birthday,
+            music: !!songUrl, rapid: now - lastPoke.current < 700 });
+          lastPoke.current = now;
+          const next = speak(category, true);
+          if (moving && next.expression === "party") {
             const r = e.currentTarget.getBoundingClientRect();
             celebrate(
               {
@@ -323,6 +342,11 @@ export function MaomaoBuddy({ compact = false, birthday = false }) {
         }}
       />
       <span className="buddy-name">猫猫 · tap for a little company</span>
+      <div className="buddy-offers" aria-label="Show Maomao something interesting">
+        <button type="button" onClick={() => speak("herb", true)}><span aria-hidden="true">🌿</span> Show an herb</button>
+        <button type="button" onClick={() => speak("vial", true)}><span aria-hidden="true">✧</span> A curious vial</button>
+      </div>
+      <span className="sr-only" role="status" aria-atomic="true">{addressText(announcement)}</span>
     </div>
   );
 }

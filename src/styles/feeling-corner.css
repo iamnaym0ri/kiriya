@@ -1,0 +1,70 @@
+/* A floating note, with the page still present behind it. */
+.daily-style-corner { position: fixed; z-index: 101; left: max(18px, env(safe-area-inset-left)); bottom: calc(18px + env(safe-area-inset-bottom)); display: flex; align-items: center; border: 1px solid var(--theme-line); border-radius: 16px 19px 15px 8px; background: var(--theme-paper); color: var(--theme-ink); box-shadow: 0 5px 22px #4936531f, 3px 3px 0 #fff9fd; }
+.daily-style-corner__toggle { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 7px 12px; text-align: left; }
+.daily-style-corner__face { font: 27px/1 "Apple Color Emoji", "Segoe UI Emoji", "Feeling Emoji", var(--font-hand); color: var(--theme-accent); }
+.daily-style-corner__toggle strong { display: block; font: 700 22px/1.1 var(--font-hand); }
+.daily-style-corner__toggle small { display: block; font-size: 9px; color: var(--theme-muted); margin-top: 3px; }
+.daily-style-corner__size { width: 44px; min-height: 48px; font: 22px var(--font-hand); border-left: 1px dashed var(--theme-line); }
+.daily-style-corner[data-small="true"] .daily-style-corner__toggle { min-width: 48px; justify-content: center; }
+.daily-style-panel { position: fixed; inset: auto auto calc(88px + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); width: min(420px, calc(100vw - 36px)); max-height: min(760px, calc(100dvh - 112px - env(safe-area-inset-bottom))); margin: 0; padding: 0; overflow: auto; overscroll-behavior: contain; border: 1px solid var(--theme-line); border-radius: 19px 20px 14px 7px; background: var(--theme-paper); color: var(--theme-ink); box-shadow: 0 18px 65px #49365335, 5px 5px 0 #e6d9ec90; scrollbar-width: thin; scrollbar-color: var(--theme-line) transparent; }
+.daily-style-panel::backdrop { background: transparent; }
+.daily-style-panel__head { position: sticky; top: 0; z-index: 3; background: var(--theme-paper); display: flex; align-items: start; justify-content: space-between; gap: 8px; padding: 19px 15px 8px 22px; }
+.daily-style-panel__head .micro-label { color: var(--theme-muted); font-size: 8px; }
+.daily-style-panel__head h2 { font: 700 30px/1.05 var(--font-hand); margin: 5px 0 3px; color: var(--theme-ink); max-width: 290px; }
+.daily-style-panel__head .icon-button { flex-shrink: 0; }
+.daily-style-panel__error { padding: 20px; }
+body:has(.daily-style-corner) .world-footer, body:has(.daily-style-corner) .public-footer { padding-bottom: calc(105px + env(safe-area-inset-bottom)); }
+:root .daily-style-dot { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Feeling Emoji", var(--font-hand); }
+
+/* The name gets a flowing signature; the small charms move around it. */
+:root .home-welcome h1, :root .identity-name { font-family: "Parisienne", cursive; font-size: clamp(122px, 12vw, 174px); line-height: 1.12; letter-spacing: 0; font-weight: 400; text-shadow: 1px 2px 0 #fff9fd90; }
+:root .tiny-wordmark { font-family: "Parisienne", cursive; font-size: 37px; line-height: 1; letter-spacing: 0; }
+:root .home-welcome h1 { margin-inline: auto; margin-bottom: 24px; }
+:root .home-welcome > .handwritten { text-align: center; }
+:root .home-welcome__description { text-align: center; margin-inline: auto; }
+:root .home-welcome h1 > .birthday-name, .birthday-name { display: inline-block; position: relative; inset: auto; color: inherit; font: inherit; letter-spacing: inherit; rotate: none; animation: none; }
+.birthday-name__ink { position: relative; }
+.birthday-name__ink::after { content: ""; position: absolute; height: 17px; left: 3%; right: -4%; bottom: 5%; border-bottom: 1px solid var(--theme-hand); border-radius: 0 0 50% 50%; transform: rotate(-5deg); opacity: .48; pointer-events: none; }
+.name-charms { position: absolute; inset: 0; pointer-events: none; }
+.name-charm { position: absolute; color: var(--theme-hand); opacity: .85; }
+.name-charm--heart { right: -33px; top: 17%; rotate: 16deg; fill: color-mix(in srgb, var(--theme-hand) 15%, transparent); }
+.name-charm--tiny { left: -18px; bottom: 18%; rotate: -20deg; fill: color-mix(in srgb, var(--theme-hand) 30%, transparent); }
+.name-charm--star { right: -20px; bottom: 8%; font: 23px Georgia, serif; }
+.name-charm--petal { left: 2%; top: 13%; font: 17px Georgia, serif; }
+:root .home-welcome__line { text-align: center; margin-inline: auto; }
+:root .home-welcome__line em { display: block; margin-top: 6px; }
+.welcome-emoticon { display: block; width: fit-content; margin: 8px auto 0; font: 25px/1.4 var(--font-hand); white-space: nowrap; letter-spacing: 0; transform-origin: bottom center; }
+@keyframes name-heart-drift { 0%,100% { transform: translate(0, 0) rotate(-9deg); opacity: .65; } 50% { transform: translate(3px, -7px) rotate(8deg); opacity: 1; } }
+@keyframes name-flower-turn { 0%,100% { transform: rotate(-15deg) scale(.9); opacity: .55; } 50% { transform: rotate(20deg) scale(1.1); opacity: .95; } }
+@keyframes welcome-kiss { 0%,65%,100% { transform: rotate(-4deg) translateY(0); } 72% { transform: rotate(7deg) translateY(-4px); } 84% { transform: rotate(-6deg) translateY(-1px); } }
+:root { --feeling-motion-time: 4.5s; }
+:root[data-energy="0"] { --feeling-motion-time: 7s; }
+:root[data-energy="1"] { --feeling-motion-time: 6s; }
+:root[data-energy="3"] { --feeling-motion-time: 4s; }
+:root[data-energy="4"] { --feeling-motion-time: 3.4s; }
+@media (prefers-reduced-motion: no-preference) {
+  html[data-little-motion="on"] [data-in-view="yes"] .name-charm--heart, html[data-little-motion="on"] [data-in-view="yes"] .name-charm--tiny { animation: name-heart-drift var(--feeling-motion-time) ease-in-out infinite; }
+  html[data-little-motion="on"] [data-in-view="yes"] .name-charm--tiny { animation-delay: -2s; }
+  html[data-little-motion="on"] [data-in-view="yes"] .name-charm--star, html[data-little-motion="on"] [data-in-view="yes"] .name-charm--petal { animation: name-flower-turn var(--feeling-motion-time) ease-in-out infinite; }
+  html[data-little-motion="on"] [data-in-view="yes"] .name-charm--petal { animation-delay: -1.5s; }
+  html[data-little-motion="on"] [data-in-view="yes"] .welcome-emoticon { animation: welcome-kiss var(--feeling-motion-time) ease-in-out infinite; }
+}
+@media (max-width: 850px) {
+  body:has(.listening-room) .daily-style-corner { top: calc(96px + env(safe-area-inset-top)); bottom: auto; }
+  body:has(.listening-room) .daily-style-panel { top: calc(166px + env(safe-area-inset-top)); bottom: auto; max-height: calc(100dvh - 184px - env(safe-area-inset-top)); }
+}
+@media (max-width: 650px) {
+  :root .home-welcome h1, :root .identity-name { font-size: 132px; }
+  :root .identity-name { margin-block: 4px 10px; }
+  :root .home-welcome h1 { margin-bottom: 20px; }
+  .name-charm--heart { width: 26px; right: -25px; }
+  .name-charm--tiny { left: -14px; }
+  .daily-style-corner { left: max(12px, env(safe-area-inset-left)); bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .daily-style-corner__toggle { min-height: 50px; }
+  .daily-style-panel { left: max(12px, env(safe-area-inset-left)); bottom: calc(75px + env(safe-area-inset-bottom)); width: calc(100vw - 24px); max-height: calc(100dvh - 94px - env(safe-area-inset-bottom)); }
+}
+@media (max-width: 360px) {
+  :root .home-welcome h1, :root .identity-name { font-size: 114px; }
+  .daily-style-panel__head { padding-left: 14px; }
+  .daily-style-panel__head h2 { font-size: 28px; }
+}

@@ -13,6 +13,7 @@ import {
   pushSupported,
 } from "../../lib/pwa.js";
 import MaomaoMascot from "../mascot/MaomaoMascot.jsx";
+import MyFaves from "./MyFaves.jsx";
 import "./SettingsPage.css";
 
 function InstallGuide() {
@@ -246,6 +247,7 @@ function Address() {
     mutationFn: (body) => api("/me/address", { method: "PUT", body }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["me", "address"] });
+      queryClient.invalidateQueries({ queryKey: ["me", "mood"] });
       queryClient.invalidateQueries({ queryKey: todayKey });
     },
   });
@@ -407,6 +409,7 @@ export default function SettingsPage() {
       <h1 className="settings__title">Settings</h1>
       <Surprises />
       <Address />
+      <MyFaves />
       <PublicProfile />
       <section className="settings-card">
         <h2>This device</h2>

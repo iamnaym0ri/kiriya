@@ -1,0 +1,369 @@
+{
+ "posts": [
+  {
+   "uri": "at://did:plc:tmpdeyklvkf7n5v4x5tjltjp/app.bsky.feed.post/3mvj627tbg22x",
+   "cid": "bafyreia7pqj3zpdom5fyoc3cx4uyfuskrdpym5dr7omv3o6sdxs6zgllcy",
+   "author": {
+    "did": "did:plc:tmpdeyklvkf7n5v4x5tjltjp",
+    "handle": "murmurlilies.bsky.social",
+    "displayName": "🌸MurmurLilies🌸",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-14T22:31:55.496Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "screenshot from the anime series The Apothecary Diaries (2023) in which protagonist Maomao is speaking to someone off-screen. the subtitles at the bottom read \"Mass layoffs?\"",
+       "aspectRatio": {
+        "height": 1080,
+        "width": 1920
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreihfqwb7f3b3tprp3m5kodx32wgdqkwpgz3nn5kmkzjrtx5bzmbeei"
+        },
+        "mimeType": "image/jpeg",
+        "size": 1446029
+       }
+      }
+     ]
+    },
+    "langs": [
+     "en"
+    ],
+    "text": "Maomao learns about the video game industry"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:tmpdeyklvkf7n5v4x5tjltjp/bafkreihfqwb7f3b3tprp3m5kodx32wgdqkwpgz3nn5kmkzjrtx5bzmbeei",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:tmpdeyklvkf7n5v4x5tjltjp/bafkreihfqwb7f3b3tprp3m5kodx32wgdqkwpgz3nn5kmkzjrtx5bzmbeei",
+      "alt": "screenshot from the anime series The Apothecary Diaries (2023) in which protagonist Maomao is speaking to someone off-screen. the subtitles at the bottom read \"Mass layoffs?\"",
+      "aspectRatio": {
+       "height": 1080,
+       "width": 1920
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "replyCount": 3,
+   "repostCount": 99,
+   "likeCount": 442,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-14T22:31:59.162Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:kxryhagvejldcmlcv7m6lrsq/app.bsky.feed.post/3mvi2khqxdk2v",
+   "cid": "bafyreidp3oue6beqmahcjx657fn6z6g5xpy2cl2gzp3v3z2cd3sjifvzbu",
+   "author": {
+    "did": "did:plc:kxryhagvejldcmlcv7m6lrsq",
+    "handle": "shelovesyuri.bsky.social",
+    "displayName": "▪️Carmu▪️",
+    "labels": [
+     {
+      "src": "did:plc:kxryhagvejldcmlcv7m6lrsq",
+      "uri": "at://did:plc:kxryhagvejldcmlcv7m6lrsq/app.bsky.actor.profile/self",
+      "cid": "bafyreiby5hd244jarqasrhmusqb4jx5sqgve2dwl6eqzczbherhjjf7rf4",
+      "val": "!no-unauthenticated",
+      "cts": "1970-01-01T00:00:00.000Z"
+     }
+    ]
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-14T11:56:45.982Z",
+    "langs": [
+     "es"
+    ],
+    "text": "Me llegó el peluchito llavero de Maomao, me encanta ✨"
+   },
+   "replyCount": 6,
+   "repostCount": 0,
+   "likeCount": 17,
+   "quoteCount": 1,
+   "indexedAt": "2026-09-14T11:56:46.662Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:mtut4w2w54fcjsx4juhqiu2q/app.bsky.feed.post/3mvj64535ac2w",
+   "cid": "bafyreihp7nbunn3v5d53h2oj3mavshma2zeutadlz3yoef3ayf7il36gvq",
+   "author": {
+    "did": "did:plc:mtut4w2w54fcjsx4juhqiu2q",
+    "handle": "okazilla.bsky.social",
+    "displayName": "👾 Oka 👾",
+    "labels": [
+     {
+      "src": "did:plc:mtut4w2w54fcjsx4juhqiu2q",
+      "uri": "at://did:plc:mtut4w2w54fcjsx4juhqiu2q/app.bsky.actor.profile/self",
+      "cid": "bafyreiaqnuhwxut6owqo7t4py2zqml2bhtbdg7nqw5xycxmwuka4jn4aoi",
+      "val": "!no-unauthenticated",
+      "cts": "1970-01-01T00:00:00.000Z"
+     }
+    ]
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-14T22:32:59.725Z",
+    "embed": {
+     "$type": "app.bsky.embed.external",
+     "external": {
+      "description": "ALT: The Apothecary Diaries: Angry Maomao Chibi",
+      "thumb": {
+       "$type": "blob",
+       "ref": {
+        "$link": "bafkreiacwn5nr5uwksskwrns3eb6g5q76iszfhm767hul4zjzu3aov3rxy"
+       },
+       "mimeType": "image/jpeg",
+       "size": 57258
+      },
+      "title": "The Apothecary Diaries: Angry Maomao Chibi",
+      "uri": "https://static.klipy.com/ii/4e7bea9f7a3371424e6c16ebc93252fe/37/20/Ty8SnnunmYfyiHn3ID.gif?hh=281&ww=498&mp4=qq3ZjvseyiOgkBk&webm=GmcK2Xhxyvz2bBKteVM"
+     }
+    },
+    "langs": [
+     "en"
+    ],
+    "reply": {
+     "parent": {
+      "cid": "bafyreia7pqj3zpdom5fyoc3cx4uyfuskrdpym5dr7omv3o6sdxs6zgllcy",
+      "uri": "at://did:plc:tmpdeyklvkf7n5v4x5tjltjp/app.bsky.feed.post/3mvj627tbg22x"
+     },
+     "root": {
+      "cid": "bafyreia7pqj3zpdom5fyoc3cx4uyfuskrdpym5dr7omv3o6sdxs6zgllcy",
+      "uri": "at://did:plc:tmpdeyklvkf7n5v4x5tjltjp/app.bsky.feed.post/3mvj627tbg22x"
+     }
+    },
+    "text": ""
+   },
+   "embed": {
+    "external": {
+     "uri": "https://static.klipy.com/ii/4e7bea9f7a3371424e6c16ebc93252fe/37/20/Ty8SnnunmYfyiHn3ID.gif?hh=281&ww=498&mp4=qq3ZjvseyiOgkBk&webm=GmcK2Xhxyvz2bBKteVM",
+     "title": "The Apothecary Diaries: Angry Maomao Chibi",
+     "description": "ALT: The Apothecary Diaries: Angry Maomao Chibi",
+     "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:mtut4w2w54fcjsx4juhqiu2q/bafkreiacwn5nr5uwksskwrns3eb6g5q76iszfhm767hul4zjzu3aov3rxy"
+    },
+    "$type": "app.bsky.embed.external#view"
+   },
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 5,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-14T22:33:05.582Z",
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:dx7zizeuionrxmbuukgumpaj/app.bsky.feed.post/3mvhgzzbmqk2o",
+   "cid": "bafyreifghzksin3t2nsropfa5hda6tqgsky4ndcxlaei7reqfvjcmewcie",
+   "author": {
+    "did": "did:plc:dx7zizeuionrxmbuukgumpaj",
+    "handle": "fusionduck.bsky.social",
+    "displayName": "Frostbunny",
+    "labels": []
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-14T06:07:32.832Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 2000,
+        "width": 1500
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreignchs2sixx4ef4vvfi7rl3y5ursvsa3624nabnvvq4kwifv6d4ke"
+        },
+        "mimeType": "image/jpeg",
+        "size": 687912
+       }
+      }
+     ]
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "fusion"
+       }
+      ],
+      "index": {
+       "byteEnd": 110,
+       "byteStart": 103
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "merge"
+       }
+      ],
+      "index": {
+       "byteEnd": 117,
+       "byteStart": 111
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "maomao"
+       }
+      ],
+      "index": {
+       "byteEnd": 125,
+       "byteStart": 118
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "badgerclops"
+       }
+      ],
+      "index": {
+       "byteEnd": 138,
+       "byteStart": 126
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "bigcock"
+       }
+      ],
+      "index": {
+       "byteEnd": 147,
+       "byteStart": 139
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "fatfur"
+       }
+      ],
+      "index": {
+       "byteEnd": 155,
+       "byteStart": 148
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "text": "The sky pirates attack just when the fusion of maomao and badgerclops was getting into the lewd mood.  #fusion #merge #maomao #badgerclops #bigcock #fatfur"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:dx7zizeuionrxmbuukgumpaj/bafkreignchs2sixx4ef4vvfi7rl3y5ursvsa3624nabnvvq4kwifv6d4ke",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:dx7zizeuionrxmbuukgumpaj/bafkreignchs2sixx4ef4vvfi7rl3y5ursvsa3624nabnvvq4kwifv6d4ke",
+      "alt": "",
+      "aspectRatio": {
+       "height": 2000,
+       "width": 1500
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "replyCount": 0,
+   "repostCount": 1,
+   "likeCount": 6,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-14T06:07:37.467Z",
+   "labels": [
+    {
+     "cid": "bafyreifghzksin3t2nsropfa5hda6tqgsky4ndcxlaei7reqfvjcmewcie",
+     "cts": "2026-09-14T06:07:39.264Z",
+     "src": "did:plc:ar7c4by46qjdydhdevvrndac",
+     "uri": "at://did:plc:dx7zizeuionrxmbuukgumpaj/app.bsky.feed.post/3mvhgzzbmqk2o",
+     "val": "porn",
+     "ver": 1
+    }
+   ]
+  },
+  {
+   "uri": "at://did:plc:lludwlqjnovljivjwc4giou6/app.bsky.feed.post/3mvgtdqhbqk2r",
+   "cid": "bafyreiamarr42npu2j3ech2jls6bxpwbei7a26jpdzawmrmjudoqqlybha",
+   "author": {
+    "did": "did:plc:lludwlqjnovljivjwc4giou6",
+    "handle": "halcyonember.bsky.social",
+    "displayName": "Halcyon Ember",
+    "labels": [
+     {
+      "src": "did:plc:lludwlqjnovljivjwc4giou6",
+      "uri": "at://did:plc:lludwlqjnovljivjwc4giou6/app.bsky.actor.profile/self",
+      "cid": "bafyreihdrot4kmwj4s7uiuuc3sucw5yrrbdxrtnopn3vgk5cxncxopm2mi",
+      "val": "!no-unauthenticated",
+      "cts": "1970-01-01T00:00:00.000Z"
+     }
+    ]
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-14T00:15:04.262Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 1045,
+        "width": 809
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreiai5pxwb55mpgojira55r66eqtoka4zfoceya2barvtmwqtwlecn4"
+        },
+        "mimeType": "image/jpeg",
+        "size": 519439
+       }
+      }
+     ]
+    },
+    "langs": [
+     "en"
+    ],
+    "text": "Find someone who loves you the way MaoMao loves poison (and, it seems, prodigious bosoms)"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:lludwlqjnovljivjwc4giou6/bafkreiai5pxwb55mpgojira55r66eqtoka4zfoceya2barvtmwqtwlecn4",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:lludwlqjnovljivjwc4giou6/bafkreiai5pxwb55mpgojira55r66eqtoka4zfoceya2barvtmwqtwlecn4",
+      "alt": "",
+      "aspectRatio": {
+       "height": 1045,
+       "width": 809
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "replyCount": 0,
+   "repostCount": 1,
+   "likeCount": 5,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-14T00:15:08.462Z",
+   "labels": []
+  }
+ ],
+ "hitsTotal": 70
+}

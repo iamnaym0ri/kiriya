@@ -8,6 +8,7 @@ import PageLoader from "../shared/PageLoader.jsx";
 import UnlockSheet from "../shared/UnlockSheet.jsx";
 import Wordmark from "../shared/Wordmark.jsx";
 import "./Admin.css";
+import FeedPanel from "./FeedPanel.jsx";
 
 const SERVICE_LABELS = {
   database: "Database",
@@ -241,7 +242,7 @@ function Letters() {
     <section className="admin-card">
       <h2>Letters</h2>
       <p className="admin-muted">
-        Kiriya reads these in her Letters page. Leave a blank line between
+        Kiriya reads these on the Letters page. Leave a blank line between
         paragraphs.
       </p>
       <form
@@ -582,7 +583,7 @@ export default function Admin() {
         <Wordmark as="span" size="sm" />
         <div className="admin-row">
           <Link to="/world" className="btn btn--soft btn--small">
-            Preview her world
+            Preview Kiriya’s world
           </Link>
           <button
             type="button"
@@ -597,6 +598,7 @@ export default function Admin() {
       </header>
       <h1 className="admin__title">Admin desk</h1>
       <Status />
+      <FeedPanel />
       <Letters />
       <Notes />
       <ProfileMedia />

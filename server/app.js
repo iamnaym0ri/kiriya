@@ -7,12 +7,14 @@ import { adminRoutes } from "./routes/admin.js";
 import { jobRoutes } from "./routes/jobs.js";
 import { pushRoutes } from "./routes/push.js";
 import { uploadRoutes } from "./routes/uploads.js";
+import { feedRoutes, feedAdminRoutes, feedJobRoutes } from "./routes/feeds.js";
 
 const app = new Hono().basePath("/api");
 
 // Every state-changing request must come from this site's own scripts: a JSON body plus a custom
 // header that a cross-site form can't send. SameSite=Lax cookies cover the rest.
 app.use("*", async (c, next) => {
+  if (/^\/api\/(?:me\/(?:feed|faves)|admin\/feeds|jobs\/feeds)(?:\/|$)/.test(c.req.path)) c.header("Cache-Control", "private, no-store");
   const method = c.req.method;
   // Exempt: signed job callbacks, and Blob's upload handshake (its client library can't add headers;
   // that route checks the session cookie itself, and SameSite=Lax keeps other sites out).
@@ -28,14 +30,17 @@ app.route("/session", sessionRoutes);
 app.route("/public", publicRoutes);
 
 app.use("/me/*", requireRole("kiriya", "admin"));
+app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
 
 app.use("/push/*", requireRole("kiriya", "admin"));
 app.route("/push", pushRoutes);
 
 app.use("/admin/*", requireRole("admin"));
+app.route("/admin/feeds", feedAdminRoutes);
 app.route("/admin", adminRoutes);
 
+app.route("/jobs/feeds", feedJobRoutes);
 app.route("/jobs", jobRoutes);
 app.route("/uploads", uploadRoutes);
 

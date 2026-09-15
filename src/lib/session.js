@@ -26,10 +26,13 @@ export function useLock() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => api("/session/lock", { method: "POST", body: {} }),
-    onSuccess: () => {
+    onSuccess: async () => {
       window.dispatchEvent(new Event("kiriya:locked"));
-      queryClient.clear();
+      await queryClient.cancelQueries();
+      // Keep the session query so mounted providers receive the locked state.
+      // Removing it first leaves their observers attached to the old record.
       queryClient.setQueryData(sessionKey, { role: null });
+      queryClient.removeQueries({ predicate: query => query.queryKey[0] !== sessionKey[0] });
     },
   });
 }

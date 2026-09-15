@@ -1,0 +1,286 @@
+{
+  "news": [
+
+
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001034.html",
+  "thumimg":"/img/news-thumbimg.jpg",
+  "title":"Known Issue: Failure to Connect to Server on Startup",
+  "newsDate":"2026年03月19日 17時09分14秒",
+  "updated":"03.19.2026",
+  "categoryBaseName":"news",
+  "category":"NEWS",
+  "description":"",
+  "pinArticle":"-pin",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/000852.html",
+  "thumimg":"/upload_images/ogp.png",
+  "title":"The Web Store Is Here!",
+  "newsDate":"2025年07月07日 00時45分58秒",
+  "updated":"07.07.2025",
+  "categoryBaseName":"news",
+  "category":"NEWS",
+  "description":"",
+  "pinArticle":"-pin",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/000832.html",
+  "thumimg":"/img/news-thumbimg.jpg",
+  "title":"Media Tutorial",
+  "newsDate":"2025年03月09日 00時00分00秒",
+  "updated":"03.09.2025",
+  "categoryBaseName":"other",
+  "category":"OTHER",
+  "description":"",
+  "pinArticle":"-pin",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001157.html",
+  "thumimg":"/upload_images/SGC-1889_2026-September-Premium-Gift-Gacha_web.png",
+  "title":"2026 Sep. Premium Gift Gacha",
+  "newsDate":"2026年09月11日 00時00分00秒",
+  "updated":"09.11.2026",
+  "categoryBaseName":"news",
+  "category":"NEWS",
+  "description":"",
+  "pinArticle":"",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001152.html",
+  "thumimg":"/upload_images/SGC-1887_4Y-Birthday-Show_web.png",
+  "title":"Emu's Birthday 2026",
+  "newsDate":"2026年09月09日 00時00分00秒",
+  "updated":"09.09.2026",
+  "categoryBaseName":"news",
+  "category":"NEWS",
+  "description":"",
+  "pinArticle":"",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001156.html",
+  "thumimg":"/upload_images/SGC-1906_Event_web.png",
+  "title":"Link the Beats! WORLD LINK",
+  "newsDate":"2026年09月06日 00時00分00秒",
+  "updated":"09.06.2026",
+  "categoryBaseName":"events",
+  "category":"EVENTS",
+  "description":"",
+  "pinArticle":"",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001151.html",
+  "thumimg":"/upload_images/SGC-1884_Premium-Mission-Pass_web.png",
+  "title":"Premium Mission Pass - September 2026",
+  "newsDate":"2026年09月01日 00時00分00秒",
+  "updated":"09.01.2026",
+  "categoryBaseName":"news",
+  "category":"NEWS",
+  "description":"",
+  "pinArticle":"",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001150.html",
+  "thumimg":"/upload_images/SGC-1876_Event_web.png",
+  "title":"Deep Dark for Light Event",
+  "newsDate":"2026年08月30日 00時00分00秒",
+  "updated":"08.30.2026",
+  "categoryBaseName":"events",
+  "category":"EVENTS",
+  "description":"",
+  "pinArticle":"",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001136.html",
+  "thumimg":"/upload_images/SGC-C_4Y-Anniversary-Show_web.png",
+  "title":"Miku's Anniversary 2026 ",
+  "newsDate":"2026年08月30日 00時00分00秒",
+  "updated":"08.30.2026",
+  "categoryBaseName":"news",
+  "category":"NEWS",
+  "description":"",
+  "pinArticle":"",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001149.html",
+  "thumimg":"/upload_images/SGC-1868_Magical-Mirai-2026-Premium-Gift-Gacha_web.png",
+  "title":"Magical Mirai 2026 Premium Gift Gacha",
+  "newsDate":"2026年08月28日 00時00分00秒",
+  "updated":"08.28.2026",
+  "categoryBaseName":"news",
+  "category":"NEWS",
+  "description":"",
+  "pinArticle":"",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001135.html",
+  "thumimg":"/upload_images/SGC-1867_4Y-Birthday-Show_web.png",
+  "title":"Mizuki's Birthday 2026 ",
+  "newsDate":"2026年08月26日 00時00分00秒",
+  "updated":"08.26.2026",
+  "categoryBaseName":"news",
+  "category":"NEWS",
+  "description":"",
+  "pinArticle":"",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001132.html",
+  "thumimg":"/upload_images/SGC-1875_Event_web.png",
+  "title":"Tying Tomorrow's Ribbon Event",
+  "newsDate":"2026年08月22日 00時00分00秒",
+  "updated":"08.22.2026",
+  "categoryBaseName":"events",
+  "category":"EVENTS",
+  "description":"",
+  "pinArticle":"",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001148.html",
+  "thumimg":"/upload_images/SGC-1866_ANYC26-Login-Campaign_web.png",
+  "title":"Anime NYC Login Campaign",
+  "newsDate":"2026年08月20日 00時00分00秒",
+  "updated":"08.20.2026",
+  "categoryBaseName":"other",
+  "category":"OTHER",
+  "description":"",
+  "pinArticle":"",
+  "newMark": true
+  },
+
+
+  
+
+
+
+
+
+  {
+  "targetUrl":"/news/detail/001134.html",
+  "thumimg":"/upload_images/SGC-1863_4Y-Birthday-Show_web.png",
+  "title":"Ichika's Birthday 2026",
+  "newsDate":"2026年08月10日 00時00分00秒",
+  "updated":"08.10.2026",
+  "categoryBaseName":"news",
+  "category":"NEWS",
+  "description":"",
+  "pinArticle":"",
+  "newMark": true
+  },
+
+
+  
+  ]
+}

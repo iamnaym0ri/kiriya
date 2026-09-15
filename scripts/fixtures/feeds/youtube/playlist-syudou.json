@@ -1,0 +1,37 @@
+{
+  "kind": "youtube#playlistItemListResponse",
+  "etag": "mock-etag-UUraC7460yGQF4GDmSjCecpQ",
+  "pageInfo": {
+    "totalResults": 3,
+    "resultsPerPage": 15
+  },
+  "items": [
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-2TIVqjfzwQA",
+      "id": "mock-item-0",
+      "contentDetails": {
+        "videoId": "2TIVqjfzwQA",
+        "videoPublishedAt": "2026-09-12T12:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-DarkMatch01",
+      "id": "mock-item-1",
+      "contentDetails": {
+        "videoId": "DarkMatch01",
+        "videoPublishedAt": "2026-09-11T12:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-NoVocaDB001",
+      "id": "mock-item-2",
+      "contentDetails": {
+        "videoId": "NoVocaDB001",
+        "videoPublishedAt": "2026-09-10T12:00:00Z"
+      }
+    }
+  ]
+}

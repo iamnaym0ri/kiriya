@@ -203,6 +203,21 @@ export function Credits({ onClose }) {
         . Music belongs to its credited creators and plays through the original
         providers. The small mascot and stickers are fan-inspired illustrations.
       </p>
+      <h3>Daily feeds</h3>
+      <p>
+        Every picture, clip, post and product in the daily feeds is credited to
+        its creator or shop and links to the original. Pictures load from the
+        original sites; nothing is re-shared.
+      </p>
+      <p>
+        Sources: Danbooru and Sakugabooru (artists as tagged), Bluesky,
+        Tumblr (powered by Tumblr), Lemmy (lemmy.world, ani.social), YouTube
+        (official embeds), VocaDB (CC BY), AniList, Wikipedia and The
+        Apothecary Diaries Wiki on Fandom (text under CC BY-SA), Anime News
+        Network, Crunchyroll News, Anime Corner, SoraNews24, Arda Wigs, Solaris
+        Japan, Good Smile Company, piapro and Project SEKAI official news.
+        Prices use Frankfurter exchange rates and are approximate.
+      </p>
     </Modal>
   );
 }

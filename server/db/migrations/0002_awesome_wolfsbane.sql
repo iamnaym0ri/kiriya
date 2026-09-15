@@ -1,0 +1,1 @@
+ALTER TABLE "feed_usage" ADD COLUMN "result" jsonb;

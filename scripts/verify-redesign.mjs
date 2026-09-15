@@ -136,7 +136,7 @@ try {
   checks.push("Compact phone section menu navigates and closes.");
   // Actual canvas interaction, undo/redo, local upload, gallery fetch and viewer.
   await page.goto(BASE + "/world/studio");
-  const canvas = page.getByRole("img", { name: "Drawing canvas" });
+  const canvas = page.getByRole("img", { name: "Birthday doodle canvas" });
   await canvas.waitFor();
   await canvas.scrollIntoViewIfNeeded();
   const box = await canvas.boundingBox();
@@ -146,23 +146,23 @@ try {
     steps: 15,
   });
   await page.mouse.up();
-  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await page.getByRole("button", { name: "Undo ↶", exact: true }).click();
   assert(
     await page
-      .getByRole("button", { name: "Save to gallery", exact: true })
+      .getByRole("button", { name: "Keep this doodle ♡", exact: true })
       .isDisabled(),
   );
-  await page.getByRole("button", { name: "Redo", exact: true }).click();
+  await page.getByRole("button", { name: "Redo ↷", exact: true }).click();
   const saveResponse = page.waitForResponse(
     (response) => response.url().endsWith("/api/me/artworks") && response.request().method() === "POST",
   );
   await page
-    .getByRole("button", { name: "Save to gallery", exact: true })
+    .getByRole("button", { name: "Keep this doodle ♡", exact: true })
     .click();
   const created = await (await saveResponse).json();
   assert(created.id);
   cleanup.push(() => request("/me/artworks/" + created.id, "DELETE"));
-  await page.getByText("Kept in your sketchbook. Maomao approves. ♡").waitFor();
+  await page.getByText("Tucked into your gallery, just for you ♡").waitFor();
   const after = await (await request("/me/artworks")).json();
   assert(after.artworks.some((art) => art.id === created.id));
   const media = await request(created.url.replace("/api", ""));
@@ -174,7 +174,7 @@ try {
     "Drawing, undo/redo, save and authenticated media work; public media fetch is denied.",
   );
   await page.goto(BASE + "/world/art");
-  await page.locator(".sketchbook-work").first().click();
+  await page.locator(".doodle-gallery__day li button").first().click();
   await page.locator("dialog[open]").waitFor();
   await page.keyboard.press("Escape");
   assert.equal(await page.locator("dialog[open]").count(), 0);

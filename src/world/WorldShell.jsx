@@ -4,6 +4,7 @@ import { registerServiceWorker, resyncSurprises } from "../lib/pwa.js";
 import { Credits, Icon } from "../shared/WorldPrimitives.jsx";
 import { BirthdayRibbon, MotionToggle } from "../shared/play/PlayfulWorld.jsx";
 import { SketchbookProvider } from "./studio/SketchbookState.jsx";
+import { DailyStyleButton } from "../shared/DailyStyle.jsx";
 import "./WorldShell.css";
 const TABS = [
   { to: "/world#play-desk", label: "doodle & play" },
@@ -50,6 +51,7 @@ export default function WorldShell() {
             ))}
           </nav>
           <div className="world-mast__actions">
+            <DailyStyleButton />
             <MotionToggle />
             <NavLink
               to="/world/letters"
@@ -60,7 +62,7 @@ export default function WorldShell() {
             </NavLink>
             <NavLink
               to="/world/settings"
-              className="icon-button"
+              className="icon-button world-settings-link"
               aria-label="Settings"
             >
               <Icon name="settings" size={18} />
@@ -98,6 +100,13 @@ export default function WorldShell() {
               Letters & your birthday gift
               <Icon name="mail" size={16} />
             </Link>
+            <Link to="/world/saves">
+              Your saves <Icon name="heart" size={16} />
+            </Link>
+            <Link to="/world/merch">
+              The merch shelf <Icon name="arrow" size={16} />
+            </Link>
+            <Link to="/world/settings">Settings <Icon name="settings" size={16} /></Link>
           </nav>
         )}
         <main className="world-content" id="world-main">

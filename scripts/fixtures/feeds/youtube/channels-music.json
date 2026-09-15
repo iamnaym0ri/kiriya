@@ -1,0 +1,194 @@
+{
+  "kind": "youtube#channelListResponse",
+  "etag": "mock-etag-channels",
+  "pageInfo": {
+    "totalResults": 8,
+    "resultsPerPage": 8
+  },
+  "items": [
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UCdMGYXL38w6htx6Yf9YJa-w",
+      "id": "UCdMGYXL38w6htx6Yf9YJa-w",
+      "snippet": {
+        "title": "プロジェクトセカイ カラフルステージ! feat. 初音ミク",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UUdMGYXL38w6htx6Yf9YJa-w"
+        }
+      }
+    },
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UCeWCjteIDYK34E7bCZBTcLA",
+      "id": "UCeWCjteIDYK34E7bCZBTcLA",
+      "snippet": {
+        "title": "HATSUNE MIKU: COLORFUL STAGE!",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UUeWCjteIDYK34E7bCZBTcLA"
+        }
+      }
+    },
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UCJwGWV914kBlV4dKRn7AEFA",
+      "id": "UCJwGWV914kBlV4dKRn7AEFA",
+      "snippet": {
+        "title": "Hatsune Miku",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UUJwGWV914kBlV4dKRn7AEFA"
+        }
+      }
+    },
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UCgfXaWxRyF0WGZtktVliryQ",
+      "id": "UCgfXaWxRyF0WGZtktVliryQ",
+      "snippet": {
+        "title": "piaproTV",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UUgfXaWxRyF0WGZtktVliryQ"
+        }
+      }
+    },
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UCMMBGMjrrWcRZmG_lW4jC-Q",
+      "id": "UCMMBGMjrrWcRZmG_lW4jC-Q",
+      "snippet": {
+        "title": "PinocchioP",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UUMMBGMjrrWcRZmG_lW4jC-Q"
+        }
+      }
+    },
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UCraC7460yGQF4GDmSjCecpQ",
+      "id": "UCraC7460yGQF4GDmSjCecpQ",
+      "snippet": {
+        "title": "syudou",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UUraC7460yGQF4GDmSjCecpQ"
+        }
+      }
+    },
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UCLz6MG2kx_0xeaW0LowYnMQ",
+      "id": "UCLz6MG2kx_0xeaW0LowYnMQ",
+      "snippet": {
+        "title": "iyowa",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UULz6MG2kx_0xeaW0LowYnMQ"
+        }
+      }
+    },
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-etag-UCG09qajPDZdPtLsTkW7mJQA",
+      "id": "UCG09qajPDZdPtLsTkW7mJQA",
+      "snippet": {
+        "title": "40mP",
+        "description": "",
+        "publishedAt": "2019-01-01T00:00:00Z",
+        "thumbnails": {
+          "default": {
+            "url": "https://yt3.ggpht.com/mock=s88",
+            "width": 88,
+            "height": 88
+          }
+        }
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UUG09qajPDZdPtLsTkW7mJQA"
+        }
+      }
+    }
+  ]
+}

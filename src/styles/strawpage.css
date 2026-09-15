@@ -190,6 +190,9 @@
 :root .home-gift-link {
   font-size: 12px;
 }
+:root .home-discovery {
+  margin-top: 20px;
+}
 :root .home-discovery .note-slip {
   padding: 16px 21px;
   background: #fffaf8e8;
@@ -969,6 +972,19 @@
   max-width: 380px;
   color: #87618f;
 }
+.birthday-forever {
+  display: inline-block;
+  color: #a15894;
+  font-weight: 700;
+  text-decoration: underline wavy #d8a4ca 1px;
+  text-underline-offset: 5px;
+  transform-origin: center bottom;
+  animation: forever-sway 2.8s ease-in-out infinite;
+}
+@keyframes forever-sway {
+  0%, 100% { transform: translateY(0) rotate(-2deg) scale(1); }
+  50% { transform: translateY(-3px) rotate(2deg) scale(1.07); }
+}
 :root .birthday-love-note > .handwritten {
   font-size: 22px;
   color: #a27399;
@@ -1193,17 +1209,17 @@
     margin: 13px auto 0;
   }
   :root .birthday-stamps {
-    order: 4;
+    order: 5;
     justify-content: center;
     margin-block: 16px 9px;
   }
   :root .home-welcome__links {
-    order: 5;
+    order: 6;
     justify-content: center;
     margin-bottom: 0;
   }
   :root .home-discovery {
-    order: 6;
+    order: 4;
     margin-top: 17px;
   }
   :root .home-section-index a {
@@ -1297,3 +1313,100 @@
     font-size: 14px;
   }
 }
+
+/* Give her an actual seat below the music, including room for her longest remark. */
+:root .home-collage > .maomao-buddy,
+:root .identity-collection > .maomao-buddy {
+  position: relative;
+  inset: auto;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 5px 14px;
+  align-items: center;
+  width: 100%;
+  max-width: 460px;
+  margin: 32px auto 0;
+}
+:root .home-collage > .maomao-buddy .buddy-bubble,
+:root .identity-collection > .maomao-buddy .buddy-bubble {
+  grid-column: 2;
+  grid-row: 1;
+  width: auto;
+  min-width: 0;
+  min-height: 92px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 13px 15px;
+  rotate: 0deg;
+  font-size: 21px;
+  line-height: 1.15;
+  text-align: left;
+}
+:root .home-collage > .maomao-buddy .buddy-bubble::after,
+:root .identity-collection > .maomao-buddy .buddy-bubble::after {
+  left: -7px;
+  top: 34px;
+  bottom: auto;
+  rotate: 135deg;
+}
+:root .home-collage > .maomao-buddy .mascot,
+:root .identity-collection > .maomao-buddy .mascot {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  transform: none;
+  margin: 0;
+}
+:root .home-collage > .maomao-buddy .buddy-name,
+:root .identity-collection > .maomao-buddy .buddy-name {
+  display: block;
+  grid-column: 2;
+  max-width: none;
+  font-size: 8px;
+  text-align: left;
+}
+:root .home-collage__music {
+  margin-left: 16px;
+  margin-right: 8px;
+}
+@media (max-width: 650px) {
+  :root .home-collage > .maomao-buddy,
+  :root .identity-collection > .maomao-buddy {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 5px 12px;
+    margin-top: 28px;
+  }
+  :root .home-collage > .maomao-buddy .mascot,
+  :root .identity-collection > .maomao-buddy .mascot {
+    max-width: 82px;
+  }
+  :root .home-collage > .maomao-buddy .buddy-bubble,
+  :root .identity-collection > .maomao-buddy .buddy-bubble {
+    font-size: 19px;
+    padding: 12px;
+  }
+  :root .home-collage__music {
+    margin-inline: 8px;
+  }
+}
+
+:root .maomao-buddy .buddy-offers {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 5px;
+}
+:root .buddy-offers button {
+  min-height: 44px;
+  padding: 7px 12px;
+  border: 1px dashed #bea3c9;
+  border-radius: 8px;
+  background: #fff9fbd9;
+  color: #76547f;
+  font: 18px/1.1 var(--font-hand);
+}
+:root .buddy-offers button:hover { background: #eee4f2; }
+:root .buddy-offers button:active { translate: 0 1px; }
+:root .buddy-offers button span { margin-right: 4px; }

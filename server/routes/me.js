@@ -7,7 +7,8 @@ import { env } from "../env.js";
 import { localDay, zonedParts } from "../lib/time.js";
 import { birthdayInfo } from "../lib/birthday.js";
 import { getOrCreateDay } from "../engine/day.js";
-import { ADDRESS_OPTIONS, MOODS, moodByKey } from "../content/moods.js";
+import { ADDRESS_OPTIONS, MOODS, moodByKey, feelingByKey } from "../content/moods.js";
+import { readCheckin, saveCheckin, saveAddressPreference } from "../lib/checkin.js";
 import { publicProfileDefaults } from "../content/publicProfile.js";
 import { kiriya } from "../content/kiriya.js";
 import { maomaoBirthdayLetter } from "../content/birthday.js";
@@ -16,8 +17,10 @@ import { curations } from "../content/curation.js";
 import { songRoutes } from "./songs.js";
 import { atelierRoutes } from "./atelier.js";
 import { apothecaryRoutes } from "./apothecary.js";
+import { noteJarRoutes } from "./noteJar.js";
 
 export const meRoutes = new Hono();
+meRoutes.route("/note-jar", noteJarRoutes);
 
 function segmentOf(hour) {
   if (hour >= 5 && hour < 11) return "morning";
@@ -46,6 +49,7 @@ meRoutes.post("/dev/reset-today", async (c) => {
   const db = await getDb();
   const day = localDay();
   await db.delete(schema.moods).where(eq(schema.moods.day, day));
+  await db.delete(schema.settings).where(eq(schema.settings.key, `daily_feeling:${day}`));
   await db.delete(schema.drawers).where(eq(schema.drawers.day, day));
   await db.delete(schema.shownItems).where(eq(schema.shownItems.day, day));
   await db.delete(schema.days).where(eq(schema.days.day, day));
@@ -93,6 +97,20 @@ meRoutes.get("/today", async (c) => {
   });
 });
 
+meRoutes.get("/mood", async (c) => c.json(await readCheckin(await getDb(), localDay())));
+
+const checkinBody = z.object({
+  mood: z.enum(Object.keys(moodByKey)),
+  energy: z.number().int().min(0).max(4).default(2),
+  address: z.enum(Object.keys(ADDRESS_OPTIONS)).optional(),
+  feeling: z.enum(Object.keys(feelingByKey)).nullable().optional(),
+});
+meRoutes.put("/mood", async (c) => {
+  const parsed = checkinBody.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_choice", message: "Choose one of today’s options and try again." }, 400);
+  return c.json(await saveCheckin(await getDb(), localDay(), parsed.data));
+});
+
 meRoutes.get("/address", async (c) => {
   const db = await getDb();
   const overrides = (await getSetting(db, "address_overrides", null)) ?? {};
@@ -110,23 +128,13 @@ meRoutes.put("/address", async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const moodKey = body.mood;
   const option = ADDRESS_OPTIONS[body.address];
-  if (!moodByKey[moodKey] || !option)
+  if (!Object.hasOwn(moodByKey, moodKey) || !Object.hasOwn(ADDRESS_OPTIONS, body.address))
     return c.json(
       { error: "bad_choice", message: "Pick one of the options on the list." },
       400,
     );
   const db = await getDb();
-  const overrides = {
-    ...((await getSetting(db, "address_overrides", null)) ?? {}),
-    [moodKey]: option,
-  };
-  await db
-    .insert(schema.settings)
-    .values({ key: "address_overrides", value: overrides })
-    .onConflictDoUpdate({
-      target: schema.settings.key,
-      set: { value: overrides, updatedAt: new Date() },
-    });
+  await saveAddressPreference(db, moodKey, option);
   return c.json({ ok: true, mood: moodKey, address: option.label });
 });
 

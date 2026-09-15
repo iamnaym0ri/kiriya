@@ -25,6 +25,12 @@ export const PALETTE_ROUNDS = [
     emoji: "🌷",
   },
 ];
+export const PALETTE_PASS_SCORE = 95;
+export function newPaletteRounds(random = Math.random) {
+  // Keep every target away from the starting midpoint and the hard-to-see extremes.
+  const targets = Array.from({ length: 51 }, (_, i) => i + 25).filter(amount => Math.abs(amount - 50) >= 9);
+  return PALETTE_ROUNDS.map(round => ({ ...round, target: targets[Math.floor(random() * targets.length)] }));
+}
 export function blendColour(a, b, amount) {
   const part = (hex, i) => parseInt(hex.slice(i, i + 2), 16);
   const t = Math.max(0, Math.min(100, Number(amount))) / 100;

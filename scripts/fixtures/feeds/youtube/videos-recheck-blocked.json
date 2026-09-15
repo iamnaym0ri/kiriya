@@ -1,0 +1,29 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "mock-etag-videos",
+  "pageInfo": {
+    "totalResults": 1,
+    "resultsPerPage": 1
+  },
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "mock",
+      "id": "l1UOPIr76CA",
+      "contentDetails": {
+        "duration": "PT2M53S",
+        "regionRestriction": {
+          "blocked": [
+            "SG"
+          ]
+        }
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "embeddable": true,
+        "madeForKids": false
+      }
+    }
+  ]
+}

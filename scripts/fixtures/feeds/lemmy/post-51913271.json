@@ -1,0 +1,113 @@
+{
+ "post_view": {
+  "post": {
+   "id": 51913271,
+   "name": "Opening my inbox these days",
+   "url": "https://lemmy.world/pictrs/image/cfcb1154-ca88-474f-a161-c4c0da1963da.jpeg",
+   "creator_id": 24414629,
+   "community_id": 1381,
+   "removed": false,
+   "locked": false,
+   "published": "2026-09-14T16:28:45.612678Z",
+   "deleted": false,
+   "nsfw": false,
+   "thumbnail_url": "https://lemmy.world/pictrs/image/14d968be-64d5-4379-8122-eae81696f3b6.jpeg",
+   "ap_id": "https://lemmy.world/post/51913271",
+   "local": true,
+   "language_id": 0,
+   "featured_community": false,
+   "featured_local": false,
+   "url_content_type": "image/jpeg"
+  },
+  "creator": {
+   "id": 24414629,
+   "name": "gigaqps",
+   "banned": false,
+   "published": "2026-09-09T21:05:27.735010Z",
+   "actor_id": "https://lemmy.world/u/gigaqps",
+   "local": true,
+   "deleted": false,
+   "bot_account": false,
+   "instance_id": 1
+  },
+  "community": {
+   "id": 1381,
+   "name": "memes",
+   "title": "memes",
+   "description": "## Community rules ##\n::: spoiler 1. Be civil\nNo trolling, bigotry or other insulting / annoying behaviour\n:::\n\n::: spoiler 2. No politics\nThis is non-politics community. For political memes please go to [!politicalmemes@lemmy.world](https://lemmy.world/c/politicalmemes) \n:::\n\n::: spoiler 3. No rece",
+   "removed": false,
+   "published": "2023-06-09T20:46:50.500025Z",
+   "updated": "2025-08-06T14:27:06.162476Z",
+   "deleted": false,
+   "nsfw": false,
+   "actor_id": "https://lemmy.world/c/memes",
+   "local": true,
+   "icon": "https://lemmy.world/pictrs/image/a8207a32-daa2-4b31-aab4-2d684fc94d18.png",
+   "banner": "https://lemmy.world/pictrs/image/f6fb7405-872a-485e-9b86-97549185313e.png",
+   "hidden": false,
+   "posting_restricted_to_mods": false,
+   "instance_id": 1,
+   "visibility": "Public"
+  },
+  "image_details": {
+   "link": "https://lemmy.world/pictrs/image/14d968be-64d5-4379-8122-eae81696f3b6.jpeg",
+   "width": 512,
+   "height": 325,
+   "content_type": "image/jpeg"
+  },
+  "creator_banned_from_community": false,
+  "banned_from_community": false,
+  "creator_is_moderator": false,
+  "creator_is_admin": false,
+  "counts": {
+   "post_id": 51913271,
+   "comments": 17,
+   "score": 563,
+   "upvotes": 567,
+   "downvotes": 4,
+   "published": "2026-09-14T16:28:45.612678Z",
+   "newest_comment_time": "2026-09-15T09:00:38.225819Z"
+  },
+  "subscribed": "NotSubscribed",
+  "saved": false,
+  "read": false,
+  "hidden": false,
+  "creator_blocked": false,
+  "unread_comments": 17
+ },
+ "community_view": {
+  "community": {
+   "id": 1381,
+   "name": "memes",
+   "title": "memes",
+   "description": "## Community rules ##\n::: spoiler 1. Be civil\nNo trolling, bigotry or other insulting / annoying behaviour\n:::\n\n::: spoiler 2. No politics\nThis is non-politics community. For political memes please go to [!politicalmemes@lemmy.world](https://lemmy.world/c/politicalmemes) \n:::\n\n::: spoiler 3. No rece",
+   "removed": false,
+   "published": "2023-06-09T20:46:50.500025Z",
+   "updated": "2025-08-06T14:27:06.162476Z",
+   "deleted": false,
+   "nsfw": false,
+   "actor_id": "https://lemmy.world/c/memes",
+   "local": true,
+   "icon": "https://lemmy.world/pictrs/image/a8207a32-daa2-4b31-aab4-2d684fc94d18.png",
+   "banner": "https://lemmy.world/pictrs/image/f6fb7405-872a-485e-9b86-97549185313e.png",
+   "hidden": false,
+   "posting_restricted_to_mods": false,
+   "instance_id": 1,
+   "visibility": "Public"
+  },
+  "counts": {
+   "community_id": 1381,
+   "subscribers": 22658,
+   "posts": 10343,
+   "comments": 305457,
+   "published": "2023-06-09T20:46:50.500025Z",
+   "users_active_day": 1974,
+   "users_active_week": 6466,
+   "users_active_month": 12275,
+   "users_active_half_year": 22648,
+   "subscribers_local": 9369
+  }
+ },
+ "moderators": [],
+ "cross_posts": []
+}

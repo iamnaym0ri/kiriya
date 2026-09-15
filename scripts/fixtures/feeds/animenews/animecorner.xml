@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+     xmlns:slash="http://purl.org/rss/1.0/modules/slash/">
+	<channel>
+		<title>Anime Corner - RSS Feed</title>
+		<atom:link href="https://animecorner.me/feed/" rel="self" type="application/rss+xml" />
+		<link>https://animecorner.me/</link>
+		<description>News &#38; Features Straight From Japan</description>
+		<lastBuildDate>Tue, 15 Sep 2026 14:10:52 GMT</lastBuildDate>
+		<language>en-US</language>
+		<sy:updatePeriod>hourly</sy:updatePeriod>
+		<sy:updateFrequency>1</sy:updateFrequency>
+        		<item>
+            <title>A Returner's Magic Should Be Special Season 2 Reveals New Trailer, Main Key Visual, October 7 Premiere</title>
+            <link>https://animecorner.me/a-returners-magic-should-be-special-season-2-reveals-new-trailer-main-key-visual-october-7-premiere/</link>
+            <dc:creator><![CDATA[Marko Jovanovic]]></dc:creator>
+            <pubDate>Tue, 15 Sep 2026 14:10:52 GMT</pubDate>
+                        <category><![CDATA[Anime News]]></category>
+                        <category><![CDATA[News]]></category>
+                        <guid>https://animecorner.me/a-returners-magic-should-be-special-season-2-reveals-new-trailer-main-key-visual-october-7-premiere/</guid>
+            <description><![CDATA[A Returner's Magic Should Be Special Season 2 revealed a new trailer and main key visual, along with an October 7 premiere date.]]></description>
+        </item>
+        		
+<item>
+            <title>Katekyo Hitman Reborn! Reveals Fifth Opening Featuing "last cross" by Masami Mitsuoka</title>
+            <link>https://animecorner.me/katekyo-hitman-reborn-reveals-fifth-opening-featuing-last-cross-by-masami-mitsuoka/</link>
+            <dc:creator><![CDATA[Marko Jovanovic]]></dc:creator>
+            <pubDate>Tue, 15 Sep 2026 11:29:40 GMT</pubDate>
+                        <category><![CDATA[Anime News]]></category>
+                        <category><![CDATA[News]]></category>
+                        <guid>https://animecorner.me/katekyo-hitman-reborn-reveals-fifth-opening-featuing-last-cross-by-masami-mitsuoka/</guid>
+            <description><![CDATA[Katekyo Hitman REBORN! anime released the creditless version of its fifth opening, featuring "last cross" by Masami Mitsuoka.]]></description>
+        </item>
+        		
+<item>
+            <title>Julius Faces Reid Again in Re:ZERO Season 4 Episode 17 Preview</title>
+            <link>https://animecorner.me/julius-faces-reid-again-in-rezero-season-4-episode-17-preview/</link>
+            <dc:creator><![CDATA[Marko Jovanovic]]></dc:creator>
+            <pubDate>Tue, 15 Sep 2026 08:59:57 GMT</pubDate>
+                        <category><![CDATA[Anime News]]></category>
+                        <category><![CDATA[News]]></category>
+                        <category><![CDATA[Seasonal Previews]]></category>
+                        <guid>https://animecorner.me/julius-faces-reid-again-in-rezero-season-4-episode-17-preview/</guid>
+            <description><![CDATA[Re:ZERO Season 4 has revealed the Episode 17 (Episode 83 overall) preview ahead of its September 16, 2026 premiere.]]></description>
+        </item>
+        		
+<item>
+            <title>The Dangers in My Heart Manga Has Officially Ended After 8 Years of Serialization</title>
+            <link>https://animecorner.me/the-dangers-in-my-heart-manga-has-officially-ended-after-8-years-of-serialization/</link>
+            <dc:creator><![CDATA[Marko Jovanovic]]></dc:creator>
+            <pubDate>Tue, 15 Sep 2026 08:21:34 GMT</pubDate>
+                        <category><![CDATA[Manga News]]></category>
+                        <category><![CDATA[News]]></category>
+                        <guid>https://animecorner.me/the-dangers-in-my-heart-manga-has-officially-ended-after-8-years-of-serialization/</guid>
+            <description><![CDATA[Norio Sakurai's The Dangers in My Heart (BokuYaba) manga officially ended today, with its final chapter released on Akita Shoten's Champion Cross website.]]></description>
+        </item>
+        		
+
+        	</channel>
+</rss>

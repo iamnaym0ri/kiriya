@@ -153,43 +153,20 @@ try {
   assert.equal(drawing.width, drawing.height);
   cleanup.push(() => api(phone, "/me/artworks/" + drawing.id, "DELETE"));
   await page
-    .getByRole("button", { name: "Kept in your sketchbook ♡", exact: true })
+    .getByRole("button", { name: "Kept in your gallery ♡", exact: true })
     .waitFor();
   assert.equal((await fetch(BASE + drawing.url)).status, 401);
   await shot(page, "strawpage-phone-doodle");
-  await page
-    .getByRole("link", { name: "Open sketchbook", exact: false })
-    .click();
-  await page
-    .getByRole("heading", { name: "Your little sketchbook." })
-    .waitFor();
-  const full = page.getByRole("img", { name: "Drawing canvas", exact: true });
-  await touchDraw(full);
+  await touchDraw(doodle);
+  await page.getByRole("link", { name: "Letters", exact: true }).click();
   await page.getByRole("link", { name: "Kiriya’s home", exact: true }).click();
   await page.locator("#play-desk").scrollIntoViewIfNeeded();
-  await page
-    .getByRole("button", { name: "Kept in your sketchbook ♡", exact: true })
-    .waitFor();
-  await page
-    .getByRole("link", { name: "Open sketchbook", exact: false })
-    .click();
-  await page.getByRole("button", { name: "Undo", exact: true }).waitFor();
-  assert(
-    await page.getByRole("button", { name: "Undo", exact: true }).isEnabled(),
-  );
-  await ready(page);
-  assert(await ink(full));
-  page.once("dialog", (d) => d.accept());
-  await page.getByRole("button", { name: "New page", exact: false }).click();
-  assert(
-    await page
-      .getByRole("button", { name: "Save to gallery", exact: true })
-      .isDisabled(),
-  );
-  checks.push(
-    "Native touch drawing, undo, square PNG save and private gallery persistence work. Unfinished full pages and the home doodle survive private navigation; starting over confirms unsaved ink.",
-  );
-  await page.getByRole("link", { name: "Kiriya’s home", exact: true }).click();
+  await doodle.waitFor();
+  assert(await ink(doodle));
+  page.once("dialog", dialog => dialog.accept());
+  await page.getByRole("button", { name: "A fresh page" }).click();
+  assert(await page.getByRole("button", { name: "Keep this doodle ♡", exact: true }).isDisabled());
+  checks.push("Native touch drawing, undo, square PNG save, private gallery and unified draft retention work; starting over confirms unsaved ink.");
   const game = page.locator("#palette-party");
   await game.scrollIntoViewIfNeeded();
   await page.evaluate(() =>
@@ -197,17 +174,19 @@ try {
   );
   await shot(page, "strawpage-phone-game");
   const slider = game.getByRole("slider");
-  await slider.press("Home");
-  await game.getByRole("button", { name: "How close am I?" }).click();
-  assert(
-    await game.getByText("A little more mixing?", { exact: false }).isVisible(),
-  );
-  for (const [i, target] of [35, 60, 70].entries()) {
+  for (let i = 0; i < 3; i++) {
+    await slider.press("Home");
+    await game.getByRole("button", { name: "How close am I?" }).click();
+    assert.match(await game.locator(".palette-verdict").innerText(), /\d+% match\./);
+    await game.getByRole("button", { name: "How close am I?" }).click();
+    await game.getByRole("button", { name: "A little hint?" }).click();
+    await game.getByRole("button", { name: "Show the exact mix" }).click();
+    const target = Number((await game.locator(".palette-clue").innerText()).match(/Try (\d+)%/)[1]);
     await slider.press(target > 50 ? "End" : "Home");
     for (let n = 0; n < (target > 50 ? 100 - target : target); n++)
       await slider.press(target > 50 ? "ArrowLeft" : "ArrowRight");
     await game.getByRole("button", { name: "How close am I?" }).click();
-    await game.getByText("100% match!", { exact: false }).waitFor();
+    await game.getByText("100% match.", { exact: false }).waitFor();
     await game
       .getByRole("button", {
         name: i === 2 ? "Keep my birthday palette" : "Next little colour",
@@ -222,20 +201,20 @@ try {
   assert.equal(palette.length, 3);
   await shot(page, "strawpage-phone-game-complete");
   await game
-    .getByRole("link", { name: "Take these to your sketchbook", exact: false })
+    .getByRole("link", { name: "Use these in lets doodle<3", exact: false })
     .click();
   await page
-    .getByRole("heading", { name: "Your little sketchbook." })
+    .getByRole("heading", { name: "lets doodle<3" })
     .waitFor();
   for (const colour of palette)
     assert.equal(
-      await page.getByRole("radio", { name: colour, exact: true }).count(),
+      await page.getByRole("button", { name: `Paint in ${colour}`, exact: true }).count(),
       1,
     );
   assert.equal(
     await page
-      .getByRole("radio", { name: palette[0], exact: true })
-      .getAttribute("aria-checked"),
+      .getByRole("button", { name: `Paint in ${palette[0]}`, exact: true })
+      .getAttribute("aria-pressed"),
     "true",
   );
   checks.push(

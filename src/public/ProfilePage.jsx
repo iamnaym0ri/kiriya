@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { countView, usePublicProfile } from "../lib/profile.js";
 import { useSession } from "../lib/session.js";
+import { DailyStyleButton, useDailyStyle } from "../shared/DailyStyle.jsx";
+import BirthdayName from "../shared/BirthdayName.jsx";
 import UnlockSheet from "../shared/UnlockSheet.jsx";
 import { Credits, Icon, Picture, Star } from "../shared/WorldPrimitives.jsx";
 import { MusicObject } from "../shared/music/MusicRoom.jsx";
@@ -14,6 +16,7 @@ import {
 import "./ProfilePage.css";
 
 export default function ProfilePage() {
+  const { copy } = useDailyStyle();
   const profile = usePublicProfile();
   const session = useSession();
   const navigate = useNavigate();
@@ -44,6 +47,7 @@ export default function ProfilePage() {
           a little corner of the internet
         </span>
         <div className="public-mast__actions">
+          <DailyStyleButton />
           <MotionToggle />
           <button className="quiet-button" onClick={enter}>
             <Icon name="lock" size={15} />
@@ -65,36 +69,7 @@ export default function ProfilePage() {
           </div>
           <p className="handwritten identity-hello">Happy birthday</p>
           <h1 id="identity-title" className="identity-name">
-            <span className="identity-name__word">
-              {data?.name ?? "kiriya"}
-              <span
-                className="identity-name__sparkle identity-name__sparkle--1"
-                aria-hidden="true"
-              >
-                ✦
-              </span>
-              <span
-                className="identity-name__sparkle identity-name__sparkle--2"
-                aria-hidden="true"
-              >
-                ✧
-              </span>
-              <span
-                className="identity-name__sparkle identity-name__sparkle--3"
-                aria-hidden="true"
-              >
-                ✦
-              </span>
-              <span
-                className="identity-name__sparkle identity-name__sparkle--4"
-                aria-hidden="true"
-              >
-                ✧
-              </span>
-            </span>
-            <span className="identity-name__heart" aria-hidden="true">
-              ♡
-            </span>
+            <BirthdayName>{data?.name ?? "kiriya"}</BirthdayName>
           </h1>
           <figure className="identity-mobile-portrait" data-motion-region>
             <Bow />
@@ -102,7 +77,7 @@ export default function ProfilePage() {
               src={data?.avatarUrl || "/images/maomao-floral.webp"}
               alt={
                 data?.avatarUrl
-                  ? "Kiriya, the birthday girl"
+                  ? copy?.portraitAlt ?? "Kiriya, the birthday star"
                   : "Maomao among pale flowers"
               }
               width="735"
@@ -187,14 +162,13 @@ export default function ProfilePage() {
           </span>
         </section>
         <div className="identity-collection" data-motion-region>
-          <MaomaoBuddy compact birthday={data?.birthday?.isBirthday} />
           <figure className="portrait-frame identity-portrait">
             <div className="portrait-frame__mat">
               {data?.avatarUrl ? (
                 <img
                   className="celebration-portrait"
                   src={data.avatarUrl}
-                  alt="Kiriya, the birthday girl"
+                  alt={copy?.portraitAlt ?? "Kiriya, the birthday star"}
                   width="735"
                   height="763"
                   fetchPriority="high"
@@ -212,7 +186,7 @@ export default function ProfilePage() {
             <figcaption>
               <span className="handwritten">
                 {data?.avatarUrl
-                  ? "the girl this whole little world is for ♡"
+                  ? copy?.portraitCaption ?? "this whole little world is for you ♡"
                   : "Happy birthdayy from mao moa too"}
               </span>
               <span>{data?.avatarUrl ? "KIRIYA" : "MAOMAO"}</span>
@@ -223,6 +197,7 @@ export default function ProfilePage() {
           <div className="identity-music">
             <MusicObject song={data?.song} compact />
           </div>
+          <MaomaoBuddy compact birthday={data?.birthday?.isBirthday} />
           <p className="identity-side-note">
             flowers, favourite characters
             <br />& a song or two.
@@ -239,7 +214,7 @@ export default function ProfilePage() {
         <span className="public-footer__date">
           {data?.showViews
             ? `${(views ?? data.views ?? 0).toLocaleString()} visits to this little world`
-            : "a world of her own"}
+            : copy?.ownWorld ?? "a world of your own"}
         </span>
       </footer>
       <UnlockSheet

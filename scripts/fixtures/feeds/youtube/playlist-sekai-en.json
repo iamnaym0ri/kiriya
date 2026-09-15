@@ -1,0 +1,55 @@
+{
+  "kind": "youtube#playlistItemListResponse",
+  "etag": "mock-etag-UUeWCjteIDYK34E7bCZBTcLA",
+  "pageInfo": {
+    "totalResults": 5,
+    "resultsPerPage": 15
+  },
+  "items": [
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-EnTrailer01",
+      "id": "mock-item-0",
+      "contentDetails": {
+        "videoId": "EnTrailer01",
+        "videoPublishedAt": "2026-09-13T17:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-EnBlockedSG",
+      "id": "mock-item-1",
+      "contentDetails": {
+        "videoId": "EnBlockedSG",
+        "videoPublishedAt": "2026-09-12T17:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-EnAllowUSCA",
+      "id": "mock-item-2",
+      "contentDetails": {
+        "videoId": "EnAllowUSCA",
+        "videoPublishedAt": "2026-09-11T17:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-EnUpcoming1",
+      "id": "mock-item-3",
+      "contentDetails": {
+        "videoId": "EnUpcoming1",
+        "videoPublishedAt": "2026-09-10T17:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-EnAgeLimit1",
+      "id": "mock-item-4",
+      "contentDetails": {
+        "videoId": "EnAgeLimit1",
+        "videoPublishedAt": "2026-09-09T17:00:00Z"
+      }
+    }
+  ]
+}

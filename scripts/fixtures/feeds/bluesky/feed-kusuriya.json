@@ -1,0 +1,1361 @@
+{
+ "feed": [
+  {
+   "post": {
+    "uri": "at://did:plc:nfaapikrkn75ftife33gv635/app.bsky.feed.post/3mvkkuaux2s2m",
+    "cid": "bafyreiabrqlmrcrs2em7lf4lvr5yaf42ei4v4jfwjtn5w6r5cphdzelqju",
+    "author": {
+     "did": "did:plc:nfaapikrkn75ftife33gv635",
+     "handle": "tuiwkoo.bsky.social",
+     "displayName": "Twig",
+     "labels": []
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-09-15T11:53:53.646Z",
+     "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 2500
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreihof6xsxntwbyucjy3zssazjdxx4lbscmkymrnwrp4h3gggg6uo4u"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1792359
+        }
+       }
+      ]
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "theapothecarydiaries"
+        }
+       ],
+       "index": {
+        "byteEnd": 51,
+        "byteStart": 30
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "maomao"
+        }
+       ],
+       "index": {
+        "byteEnd": 59,
+        "byteStart": 52
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "Maomao sending off her mother\n#theapothecarydiaries #maomao"
+    },
+    "embed": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:nfaapikrkn75ftife33gv635/bafkreihof6xsxntwbyucjy3zssazjdxx4lbscmkymrnwrp4h3gggg6uo4u",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:nfaapikrkn75ftife33gv635/bafkreihof6xsxntwbyucjy3zssazjdxx4lbscmkymrnwrp4h3gggg6uo4u",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 2500
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 0,
+    "quoteCount": 0,
+    "indexedAt": "2026-09-15T11:54:03.663Z",
+    "labels": []
+   },
+   "feedContext": "eyJmZWVkX3VyaSI6ICJhdDovL2RpZDpwbGM6a25vaDQ2YzZ4ZmY2bHJkY2ZzMnE1eTRhL2FwcC5ic2t5LmZlZWQuZ2VuZXJhdG9yL2FhYWFhYnF6cGR4ajQifQ==",
+   "reqId": "1DB0EF0F455042DCA24DCA2E29"
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:fp3kkon43kfhru7f2yaicnyq/app.bsky.feed.post/3mvkribth2k2e",
+    "cid": "bafyreic6bvqnmnysxiwpixy3gywubhc4q3rrdnoqbtahtemkjrimqwl7wy",
+    "author": {
+     "did": "did:plc:fp3kkon43kfhru7f2yaicnyq",
+     "handle": "owleyrie.bsky.social",
+     "displayName": "Owl Eyrie Arts",
+     "labels": []
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-09-15T13:52:28.195Z",
+     "embed": {
+      "$type": "app.bsky.embed.video",
+      "aspectRatio": {
+       "height": 1920,
+       "width": 1080
+      },
+      "presentation": "default",
+      "video": {
+       "$type": "blob",
+       "ref": {
+        "$link": "bafkreid75b5fkzcazsx4okpqzpseu5xfkp4xzv6wsm3qsavfb6muq3o7ne"
+       },
+       "mimeType": "video/mp4",
+       "size": 3474674
+      }
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "apothecarydiaries"
+        }
+       ],
+       "index": {
+        "byteEnd": 45,
+        "byteStart": 27
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "jinshi"
+        }
+       ],
+       "index": {
+        "byteEnd": 53,
+        "byteStart": 46
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "owleyrie"
+        }
+       ],
+       "index": {
+        "byteEnd": 63,
+        "byteStart": 54
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "fanart"
+        }
+       ],
+       "index": {
+        "byteEnd": 71,
+        "byteStart": 64
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "frog"
+        }
+       ],
+       "index": {
+        "byteEnd": 77,
+        "byteStart": 72
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "Of course I drew the frog. #apothecarydiaries #jinshi #owleyrie #fanart #frog"
+    },
+    "embed": {
+     "cid": "bafkreid75b5fkzcazsx4okpqzpseu5xfkp4xzv6wsm3qsavfb6muq3o7ne",
+     "playlist": "https://video.bsky.app/watch/did%3Aplc%3Afp3kkon43kfhru7f2yaicnyq/bafkreid75b5fkzcazsx4okpqzpseu5xfkp4xzv6wsm3qsavfb6muq3o7ne/playlist.m3u8",
+     "thumbnail": "https://video.bsky.app/watch/did%3Aplc%3Afp3kkon43kfhru7f2yaicnyq/bafkreid75b5fkzcazsx4okpqzpseu5xfkp4xzv6wsm3qsavfb6muq3o7ne/thumbnail.jpg",
+     "aspectRatio": {
+      "height": 1920,
+      "width": 1080
+     },
+     "presentation": "default",
+     "$type": "app.bsky.embed.video#view"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 0,
+    "quoteCount": 0,
+    "indexedAt": "2026-09-15T13:52:29.457Z",
+    "labels": []
+   },
+   "feedContext": "eyJmZWVkX3VyaSI6ICJhdDovL2RpZDpwbGM6a25vaDQ2YzZ4ZmY2bHJkY2ZzMnE1eTRhL2FwcC5ic2t5LmZlZWQuZ2VuZXJhdG9yL2FhYWFhYnF6cGR4ajQifQ==",
+   "reqId": "1DB0EF0F455042DCA24DCA2E29"
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:dx7zizeuionrxmbuukgumpaj/app.bsky.feed.post/3mvhgzzbmqk2o",
+    "cid": "bafyreifghzksin3t2nsropfa5hda6tqgsky4ndcxlaei7reqfvjcmewcie",
+    "author": {
+     "did": "did:plc:dx7zizeuionrxmbuukgumpaj",
+     "handle": "fusionduck.bsky.social",
+     "displayName": "Frostbunny",
+     "labels": []
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-09-14T06:07:32.832Z",
+     "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "",
+        "aspectRatio": {
+         "height": 2000,
+         "width": 1500
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreignchs2sixx4ef4vvfi7rl3y5ursvsa3624nabnvvq4kwifv6d4ke"
+         },
+         "mimeType": "image/jpeg",
+         "size": 687912
+        }
+       }
+      ]
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "fusion"
+        }
+       ],
+       "index": {
+        "byteEnd": 110,
+        "byteStart": 103
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "merge"
+        }
+       ],
+       "index": {
+        "byteEnd": 117,
+        "byteStart": 111
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "maomao"
+        }
+       ],
+       "index": {
+        "byteEnd": 125,
+        "byteStart": 118
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "badgerclops"
+        }
+       ],
+       "index": {
+        "byteEnd": 138,
+        "byteStart": 126
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "bigcock"
+        }
+       ],
+       "index": {
+        "byteEnd": 147,
+        "byteStart": 139
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "fatfur"
+        }
+       ],
+       "index": {
+        "byteEnd": 155,
+        "byteStart": 148
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "The sky pirates attack just when the fusion of maomao and badgerclops was getting into the lewd mood.  #fusion #merge #maomao #badgerclops #bigcock #fatfur"
+    },
+    "embed": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:dx7zizeuionrxmbuukgumpaj/bafkreignchs2sixx4ef4vvfi7rl3y5ursvsa3624nabnvvq4kwifv6d4ke",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:dx7zizeuionrxmbuukgumpaj/bafkreignchs2sixx4ef4vvfi7rl3y5ursvsa3624nabnvvq4kwifv6d4ke",
+       "alt": "",
+       "aspectRatio": {
+        "height": 2000,
+        "width": 1500
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "replyCount": 0,
+    "repostCount": 1,
+    "likeCount": 6,
+    "quoteCount": 0,
+    "indexedAt": "2026-09-14T06:07:37.467Z",
+    "labels": [
+     {
+      "cid": "bafyreifghzksin3t2nsropfa5hda6tqgsky4ndcxlaei7reqfvjcmewcie",
+      "cts": "2026-09-14T06:07:39.264Z",
+      "src": "did:plc:ar7c4by46qjdydhdevvrndac",
+      "uri": "at://did:plc:dx7zizeuionrxmbuukgumpaj/app.bsky.feed.post/3mvhgzzbmqk2o",
+      "val": "porn",
+      "ver": 1
+     }
+    ]
+   },
+   "feedContext": "eyJmZWVkX3VyaSI6ICJhdDovL2RpZDpwbGM6a25vaDQ2YzZ4ZmY2bHJkY2ZzMnE1eTRhL2FwcC5ic2t5LmZlZWQuZ2VuZXJhdG9yL2FhYWFhYnF6cGR4ajQifQ==",
+   "reqId": "1DB0EF0F455042DCA24DCA2E29"
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:rmsjf4bhskgoyp3tvbojdsec/app.bsky.feed.post/3mvjrvdj7jc2x",
+    "cid": "bafyreied3i6hgocejwp6bnbkc6436e2dffpp4m2biix5ppf4hxuyw5xp3y",
+    "author": {
+     "did": "did:plc:rmsjf4bhskgoyp3tvbojdsec",
+     "handle": "irisopranta.bsky.social",
+     "displayName": "Iris Opranta 🖤 🩶 🤍 💜",
+     "labels": [
+      {
+       "src": "did:plc:rmsjf4bhskgoyp3tvbojdsec",
+       "uri": "at://did:plc:rmsjf4bhskgoyp3tvbojdsec/app.bsky.actor.profile/self",
+       "cid": "bafyreieojistdtu7kbw7mt27espz2xgrxa3xlxeya42pfnha6wqkl7qlvq",
+       "val": "!no-unauthenticated",
+       "cts": "1970-01-01T00:00:00.000Z"
+      }
+     ]
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-09-15T04:27:06.433Z",
+     "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "discord chat.",
+        "aspectRatio": {
+         "height": 772,
+         "width": 657
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreieurxuqtth3mbot3ta7eokmgtxbtqfccgqrffolroghmova53uvcy"
+         },
+         "mimeType": "image/jpeg",
+         "size": 258079
+        }
+       }
+      ]
+     },
+     "langs": [
+      "en"
+     ],
+     "text": "Somehow I pass watching more of The Apothecary Diaries than my husband who has a weekly anime night with the bros"
+    },
+    "embed": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:rmsjf4bhskgoyp3tvbojdsec/bafkreieurxuqtth3mbot3ta7eokmgtxbtqfccgqrffolroghmova53uvcy",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:rmsjf4bhskgoyp3tvbojdsec/bafkreieurxuqtth3mbot3ta7eokmgtxbtqfccgqrffolroghmova53uvcy",
+       "alt": "discord chat.",
+       "aspectRatio": {
+        "height": 772,
+        "width": 657
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 2,
+    "quoteCount": 0,
+    "indexedAt": "2026-09-15T04:27:10.162Z",
+    "labels": []
+   },
+   "feedContext": "eyJmZWVkX3VyaSI6ICJhdDovL2RpZDpwbGM6a25vaDQ2YzZ4ZmY2bHJkY2ZzMnE1eTRhL2FwcC5ic2t5LmZlZWQuZ2VuZXJhdG9yL2FhYWFhYnF6cGR4ajQifQ==",
+   "reqId": "1DB0EF0F455042DCA24DCA2E29"
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:iletvz2jt3zdr6ssogyuxzqb/app.bsky.feed.post/3mviukunady2t",
+    "cid": "bafyreiey3gdlxbtucib4mjbbpnl7qpaqwb52eeywd5etrltu4rqyqgc5nq",
+    "author": {
+     "did": "did:plc:iletvz2jt3zdr6ssogyuxzqb",
+     "handle": "n1gpbot.bsky.social",
+     "displayName": "BNSF Battling Bot 9.5",
+     "labels": [
+      {
+       "src": "did:plc:iletvz2jt3zdr6ssogyuxzqb",
+       "uri": "at://did:plc:iletvz2jt3zdr6ssogyuxzqb/app.bsky.actor.profile/self",
+       "cid": "bafyreidhk4lcvk4sigkbuijojbkgucdzq63amps2knyoulgcifatk7jcuq",
+       "val": "bot",
+       "cts": "2025-02-04T09:41:49.137Z"
+      }
+     ]
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-09-14T19:42:11.35566000Z",
+     "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "",
+        "aspectRatio": {
+         "height": 502,
+         "width": 251
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreieloluhbpd3ewcp52tzwwdq4f32xtwustybeaiwvw7wxn6vc7mini"
+         },
+         "mimeType": "image/png",
+         "size": 137431
+        }
+       },
+       {
+        "alt": "",
+        "aspectRatio": {
+         "height": 160,
+         "width": 240
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreidxo77dgvt2oe2tniqekeeztqrcnxbggsvrnrvwt7kdgli62swlny"
+         },
+         "mimeType": "image/png",
+         "size": 3743
+        }
+       }
+      ]
+     },
+     "text": "Jinshi deleted The Entire Netnavi Roster in a net battle!"
+    },
+    "embed": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:iletvz2jt3zdr6ssogyuxzqb/bafkreieloluhbpd3ewcp52tzwwdq4f32xtwustybeaiwvw7wxn6vc7mini",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:iletvz2jt3zdr6ssogyuxzqb/bafkreieloluhbpd3ewcp52tzwwdq4f32xtwustybeaiwvw7wxn6vc7mini",
+       "alt": "",
+       "aspectRatio": {
+        "height": 502,
+        "width": 251
+       }
+      },
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:iletvz2jt3zdr6ssogyuxzqb/bafkreidxo77dgvt2oe2tniqekeeztqrcnxbggsvrnrvwt7kdgli62swlny",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:iletvz2jt3zdr6ssogyuxzqb/bafkreidxo77dgvt2oe2tniqekeeztqrcnxbggsvrnrvwt7kdgli62swlny",
+       "alt": "",
+       "aspectRatio": {
+        "height": 160,
+        "width": 240
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 0,
+    "quoteCount": 0,
+    "indexedAt": "2026-09-14T19:42:17.864Z",
+    "labels": []
+   },
+   "feedContext": "eyJmZWVkX3VyaSI6ICJhdDovL2RpZDpwbGM6a25vaDQ2YzZ4ZmY2bHJkY2ZzMnE1eTRhL2FwcC5ic2t5LmZlZWQuZ2VuZXJhdG9yL2FhYWFhYnF6cGR4ajQifQ==",
+   "reqId": "1DB0EF0F455042DCA24DCA2E29"
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:yejv6vf3w2gulei23xfoqkn7/app.bsky.feed.post/3mvhcg5643c2v",
+    "cid": "bafyreifdibmug3iqieonbfrqcdavr3xprna2b4i5cwwb24m3n76vdzxxb4",
+    "author": {
+     "did": "did:plc:yejv6vf3w2gulei23xfoqkn7",
+     "handle": "sanguogeo.bsky.social",
+     "displayName": "GEO(ジオ)",
+     "labels": [
+      {
+       "src": "did:plc:yejv6vf3w2gulei23xfoqkn7",
+       "uri": "at://did:plc:yejv6vf3w2gulei23xfoqkn7/app.bsky.actor.profile/self",
+       "cid": "bafyreia76gqibgpp2wg7wvkkou3yl2txaobnts2z6ddw77b33z5ije252i",
+       "val": "!no-unauthenticated",
+       "cts": "1970-01-01T00:00:00.000Z"
+      }
+     ]
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-09-14T04:44:50.819Z",
+     "embed": {
+      "$type": "app.bsky.embed.gallery",
+      "items": [
+       {
+        "$type": "app.bsky.embed.gallery#image",
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreidlaqam4kwa3jtx33mzpm5civirgnunni2hzjbc7wlhtvkxfovpp4"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1919328
+        }
+       },
+       {
+        "$type": "app.bsky.embed.gallery#image",
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreiezwvgip3ofrhue4uv5md2vunnamqpa3mjyvbchiczzymlymzkjie"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1851967
+        }
+       },
+       {
+        "$type": "app.bsky.embed.gallery#image",
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreib5zgumkfqzpbvvtrfqevls2mb2wlhnkd6t4rbaohbwy7vhkwagxy"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1821079
+        }
+       },
+       {
+        "$type": "app.bsky.embed.gallery#image",
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreiavz6zzapio57gvek7cx5udn3i6h4ylpvpw3sjocji3jwolxlwaiu"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1870783
+        }
+       },
+       {
+        "$type": "app.bsky.embed.gallery#image",
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreicl65fhgdpc4du6bfc4fnfwnqy46gzifd7qgo5y2gcz2mjbc5zslm"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1996599
+        }
+       },
+       {
+        "$type": "app.bsky.embed.gallery#image",
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreiboxy6nkil75wicwtvmruygvvww47y5rqjme2c52tpzs7mddmhglq"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1869183
+        }
+       },
+       {
+        "$type": "app.bsky.embed.gallery#image",
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreiepp7sb7olt54znka2u6ggec7cvpadmbiyiaitto3nsjnsfzrxeka"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1793995
+        }
+       },
+       {
+        "$type": "app.bsky.embed.gallery#image",
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreih64vfdpothq5sbztkmp4b2f5uigmnkjb5rgtwtnxgpgqip2b73xi"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1972938
+        }
+       },
+       {
+        "$type": "app.bsky.embed.gallery#image",
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreigeidopulvijlzbdvjrbmsn6o4ddy7bgvv6gphrm6iqar3lsjj64q"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1937036
+        }
+       },
+       {
+        "$type": "app.bsky.embed.gallery#image",
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreiacm3noq5sq7githnjhxx7yrteuaaxdxn2vxv4sy5lz5zeg5hw4bq"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1933789
+        }
+       }
+      ]
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "薬屋のひとりごと"
+        }
+       ],
+       "index": {
+        "byteEnd": 255,
+        "byteStart": 230
+       }
+      }
+     ],
+     "langs": [
+      "ja"
+     ],
+     "text": "六本木の東京シティビューで開催されている『アニメ『薬屋のひとりごと』×東京シティビュー 舞が織りなす幻想の世界　―天空に響く、舞のしらべ―』に行ってきた。\n\n#薬屋のひとりごと"
+    },
+    "embed": {
+     "items": [
+      {
+       "thumbnail": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreidlaqam4kwa3jtx33mzpm5civirgnunni2hzjbc7wlhtvkxfovpp4",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreidlaqam4kwa3jtx33mzpm5civirgnunni2hzjbc7wlhtvkxfovpp4",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3000
+       },
+       "$type": "app.bsky.embed.gallery#viewImage"
+      },
+      {
+       "thumbnail": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreiezwvgip3ofrhue4uv5md2vunnamqpa3mjyvbchiczzymlymzkjie",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreiezwvgip3ofrhue4uv5md2vunnamqpa3mjyvbchiczzymlymzkjie",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3000
+       },
+       "$type": "app.bsky.embed.gallery#viewImage"
+      },
+      {
+       "thumbnail": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreib5zgumkfqzpbvvtrfqevls2mb2wlhnkd6t4rbaohbwy7vhkwagxy",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreib5zgumkfqzpbvvtrfqevls2mb2wlhnkd6t4rbaohbwy7vhkwagxy",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3000
+       },
+       "$type": "app.bsky.embed.gallery#viewImage"
+      },
+      {
+       "thumbnail": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreiavz6zzapio57gvek7cx5udn3i6h4ylpvpw3sjocji3jwolxlwaiu",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreiavz6zzapio57gvek7cx5udn3i6h4ylpvpw3sjocji3jwolxlwaiu",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3000
+       },
+       "$type": "app.bsky.embed.gallery#viewImage"
+      },
+      {
+       "thumbnail": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreicl65fhgdpc4du6bfc4fnfwnqy46gzifd7qgo5y2gcz2mjbc5zslm",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreicl65fhgdpc4du6bfc4fnfwnqy46gzifd7qgo5y2gcz2mjbc5zslm",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3000
+       },
+       "$type": "app.bsky.embed.gallery#viewImage"
+      },
+      {
+       "thumbnail": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreiboxy6nkil75wicwtvmruygvvww47y5rqjme2c52tpzs7mddmhglq",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreiboxy6nkil75wicwtvmruygvvww47y5rqjme2c52tpzs7mddmhglq",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3000
+       },
+       "$type": "app.bsky.embed.gallery#viewImage"
+      },
+      {
+       "thumbnail": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreiepp7sb7olt54znka2u6ggec7cvpadmbiyiaitto3nsjnsfzrxeka",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreiepp7sb7olt54znka2u6ggec7cvpadmbiyiaitto3nsjnsfzrxeka",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3000
+       },
+       "$type": "app.bsky.embed.gallery#viewImage"
+      },
+      {
+       "thumbnail": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreih64vfdpothq5sbztkmp4b2f5uigmnkjb5rgtwtnxgpgqip2b73xi",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreih64vfdpothq5sbztkmp4b2f5uigmnkjb5rgtwtnxgpgqip2b73xi",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3000
+       },
+       "$type": "app.bsky.embed.gallery#viewImage"
+      },
+      {
+       "thumbnail": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreigeidopulvijlzbdvjrbmsn6o4ddy7bgvv6gphrm6iqar3lsjj64q",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreigeidopulvijlzbdvjrbmsn6o4ddy7bgvv6gphrm6iqar3lsjj64q",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3000
+       },
+       "$type": "app.bsky.embed.gallery#viewImage"
+      },
+      {
+       "thumbnail": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreiacm3noq5sq7githnjhxx7yrteuaaxdxn2vxv4sy5lz5zeg5hw4bq",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:yejv6vf3w2gulei23xfoqkn7/bafkreiacm3noq5sq7githnjhxx7yrteuaaxdxn2vxv4sy5lz5zeg5hw4bq",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3000
+       },
+       "$type": "app.bsky.embed.gallery#viewImage"
+      }
+     ],
+     "$type": "app.bsky.embed.gallery#view"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 1,
+    "quoteCount": 0,
+    "indexedAt": "2026-09-14T04:45:27.162Z",
+    "labels": []
+   },
+   "feedContext": "eyJmZWVkX3VyaSI6ICJhdDovL2RpZDpwbGM6a25vaDQ2YzZ4ZmY2bHJkY2ZzMnE1eTRhL2FwcC5ic2t5LmZlZWQuZ2VuZXJhdG9yL2FhYWFhYnF6cGR4ajQifQ==",
+   "reqId": "1DB0EF0F455042DCA24DCA2E29"
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:tmpdeyklvkf7n5v4x5tjltjp/app.bsky.feed.post/3mvj627tbg22x",
+    "cid": "bafyreia7pqj3zpdom5fyoc3cx4uyfuskrdpym5dr7omv3o6sdxs6zgllcy",
+    "author": {
+     "did": "did:plc:tmpdeyklvkf7n5v4x5tjltjp",
+     "handle": "murmurlilies.bsky.social",
+     "displayName": "🌸MurmurLilies🌸",
+     "labels": []
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-09-14T22:31:55.496Z",
+     "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "screenshot from the anime series The Apothecary Diaries (2023) in which protagonist Maomao is speaking to someone off-screen. the subtitles at the bottom read \"Mass layoffs?\"",
+        "aspectRatio": {
+         "height": 1080,
+         "width": 1920
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreihfqwb7f3b3tprp3m5kodx32wgdqkwpgz3nn5kmkzjrtx5bzmbeei"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1446029
+        }
+       }
+      ]
+     },
+     "langs": [
+      "en"
+     ],
+     "text": "Maomao learns about the video game industry"
+    },
+    "embed": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:tmpdeyklvkf7n5v4x5tjltjp/bafkreihfqwb7f3b3tprp3m5kodx32wgdqkwpgz3nn5kmkzjrtx5bzmbeei",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:tmpdeyklvkf7n5v4x5tjltjp/bafkreihfqwb7f3b3tprp3m5kodx32wgdqkwpgz3nn5kmkzjrtx5bzmbeei",
+       "alt": "screenshot from the anime series The Apothecary Diaries (2023) in which protagonist Maomao is speaking to someone off-screen. the subtitles at the bottom read \"Mass layoffs?\"",
+       "aspectRatio": {
+        "height": 1080,
+        "width": 1920
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "replyCount": 3,
+    "repostCount": 99,
+    "likeCount": 442,
+    "quoteCount": 0,
+    "indexedAt": "2026-09-14T22:31:59.162Z",
+    "labels": []
+   },
+   "feedContext": "eyJmZWVkX3VyaSI6ICJhdDovL2RpZDpwbGM6a25vaDQ2YzZ4ZmY2bHJkY2ZzMnE1eTRhL2FwcC5ic2t5LmZlZWQuZ2VuZXJhdG9yL2FhYWFhYnF6cGR4ajQifQ==",
+   "reqId": "1DB0EF0F455042DCA24DCA2E29"
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:j45oe7ejiykrtlxzg3jw2nyd/app.bsky.feed.post/3mvjbpcdn5k24",
+    "cid": "bafyreibi5obmahdkn5kwhzf7hkfr4h6verpjr62wlwemh4e7mui63nvdky",
+    "author": {
+     "did": "did:plc:j45oe7ejiykrtlxzg3jw2nyd",
+     "handle": "sarumarux.bsky.social",
+     "displayName": "Sarumaru",
+     "labels": []
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-09-14T23:37:24.005Z",
+     "embed": {
+      "$type": "app.bsky.embed.video",
+      "aspectRatio": {
+       "height": 1080,
+       "width": 1080
+      },
+      "presentation": "default",
+      "video": {
+       "$type": "blob",
+       "ref": {
+        "$link": "bafkreici5y2wjyjemwenv4vdaqo63bbkxhrcsemzrvypohtp5yuy7z27pa"
+       },
+       "mimeType": "video/mp4",
+       "size": 2198561
+      }
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#link",
+         "uri": "https://sarumaru.com"
+        }
+       ],
+       "index": {
+        "byteEnd": 215,
+        "byteStart": 203
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "apothecarydiaries"
+        }
+       ],
+       "index": {
+        "byteEnd": 265,
+        "byteStart": 247
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "薬屋のひとりごと"
+        }
+       ],
+       "index": {
+        "byteEnd": 291,
+        "byteStart": 266
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "chinesememe"
+        }
+       ],
+       "index": {
+        "byteEnd": 304,
+        "byteStart": 292
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "anime"
+        }
+       ],
+       "index": {
+        "byteEnd": 311,
+        "byteStart": 305
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "fanart"
+        }
+       ],
+       "index": {
+        "byteEnd": 319,
+        "byteStart": 312
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "I love the Apothecary Diaries and wanted to make this silly meme with Mao-Mao & Jinshi cuz I thought it was so fitting! 😝 I'll likely turn these little chibis into acrylic charms. I have my charms\non sarumaru.com if you wanna check em out 😁\n#apothecarydiaries #薬屋のひとりごと #chinesememe #anime #fanart"
+    },
+    "embed": {
+     "cid": "bafkreici5y2wjyjemwenv4vdaqo63bbkxhrcsemzrvypohtp5yuy7z27pa",
+     "playlist": "https://video.bsky.app/watch/did%3Aplc%3Aj45oe7ejiykrtlxzg3jw2nyd/bafkreici5y2wjyjemwenv4vdaqo63bbkxhrcsemzrvypohtp5yuy7z27pa/playlist.m3u8",
+     "thumbnail": "https://video.bsky.app/watch/did%3Aplc%3Aj45oe7ejiykrtlxzg3jw2nyd/bafkreici5y2wjyjemwenv4vdaqo63bbkxhrcsemzrvypohtp5yuy7z27pa/thumbnail.jpg",
+     "aspectRatio": {
+      "height": 1080,
+      "width": 1080
+     },
+     "presentation": "default",
+     "$type": "app.bsky.embed.video#view"
+    },
+    "replyCount": 1,
+    "repostCount": 1,
+    "likeCount": 7,
+    "quoteCount": 0,
+    "indexedAt": "2026-09-14T23:37:25.061Z",
+    "labels": []
+   },
+   "feedContext": "eyJmZWVkX3VyaSI6ICJhdDovL2RpZDpwbGM6a25vaDQ2YzZ4ZmY2bHJkY2ZzMnE1eTRhL2FwcC5ic2t5LmZlZWQuZ2VuZXJhdG9yL2FhYWFhYnF6cGR4ajQifQ==",
+   "reqId": "1DB0EF0F455042DCA24DCA2E29"
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:thw5mg5c6knndqzm4d6rvtzl/app.bsky.feed.post/3mvhfe3jgw22t",
+    "cid": "bafyreihirhrebf6cyz27i4pahs6y2kgxm7w575dnemhrmukrjbwllaaenm",
+    "author": {
+     "did": "did:plc:thw5mg5c6knndqzm4d6rvtzl",
+     "handle": "trade-aya-ken.bsky.social",
+     "displayName": "絢",
+     "labels": []
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-09-14T05:37:23.229Z",
+     "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 4000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreib3arvbd5ns73f3axzaj4km4v7wph2xhej543fusjnkginjz6uzym"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1958939
+        }
+       },
+       {
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 4000
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreifvcv4ibme7lsgikz6uembi6vtjnlfjtjb2brbz6iqvoiginpukri"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1859667
+        }
+       }
+      ]
+     },
+     "langs": [
+      "ja"
+     ],
+     "text": "【交換】まるくじ 薬屋のひとりごと Vol.2 薬屋\n\n《譲》画像1\n中吉…4本(選択可)\n小吉…A3本、B4本、C2本\n末吉…猫猫B,1、D,2 / 子翠C,3、D,1\n\n《求》画像2\n末吉小蘭(💕A>🌟C>BD)\n\n☑原則1:1交換\n☑譲の小吉/末吉と、求の末吉Aの交換は当方から2点お譲り可能\n☑Xでも同じ内容で募集しております"
+    },
+    "embed": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:thw5mg5c6knndqzm4d6rvtzl/bafkreib3arvbd5ns73f3axzaj4km4v7wph2xhej543fusjnkginjz6uzym",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:thw5mg5c6knndqzm4d6rvtzl/bafkreib3arvbd5ns73f3axzaj4km4v7wph2xhej543fusjnkginjz6uzym",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 4000
+       }
+      },
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:thw5mg5c6knndqzm4d6rvtzl/bafkreifvcv4ibme7lsgikz6uembi6vtjnlfjtjb2brbz6iqvoiginpukri",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:thw5mg5c6knndqzm4d6rvtzl/bafkreifvcv4ibme7lsgikz6uembi6vtjnlfjtjb2brbz6iqvoiginpukri",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 4000
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 0,
+    "quoteCount": 0,
+    "indexedAt": "2026-09-14T05:37:33.062Z",
+    "labels": []
+   },
+   "feedContext": "eyJmZWVkX3VyaSI6ICJhdDovL2RpZDpwbGM6a25vaDQ2YzZ4ZmY2bHJkY2ZzMnE1eTRhL2FwcC5ic2t5LmZlZWQuZ2VuZXJhdG9yL2FhYWFhYnF6cGR4ajQifQ==",
+   "reqId": "1DB0EF0F455042DCA24DCA2E29"
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:ze7jfwnrtrzjbe4l4tvzjbiz/app.bsky.feed.post/3mvirshtotc2n",
+    "cid": "bafyreihco5intjtukotl44fblxouga2m4p4ni5edpfrshqlrmm4hx7xjca",
+    "author": {
+     "did": "did:plc:ze7jfwnrtrzjbe4l4tvzjbiz",
+     "handle": "miavalley.bsky.social",
+     "displayName": "Mia Valley 🏳️‍⚧️",
+     "labels": []
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-09-14T18:52:50.561Z",
+     "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3011
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreig2u73naqtzvecambfcqplxxokqrdsixcexbg63nh4vipvynjxz6e"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1991290
+        }
+       },
+       {
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3011
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreigcireggboh2c23am6r3sjibrpbczhlacg6jkeabt4udoestbkdky"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1957826
+        }
+       },
+       {
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3011
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreicl6km2qu4vdhe3iy4xpk2j6oknyvsaq5hlom2qvh4537czt4nvci"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1841036
+        }
+       }
+      ]
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "maomao"
+        }
+       ],
+       "index": {
+        "byteEnd": 20,
+        "byteStart": 13
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "poison"
+        }
+       ],
+       "index": {
+        "byteEnd": 38,
+        "byteStart": 31
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "apothecarydiaries"
+        }
+       ],
+       "index": {
+        "byteEnd": 64,
+        "byteStart": 46
+       }
+      }
+     ],
+     "langs": [
+      "en"
+     ],
+     "text": "Is that some #maomao from that #poison show!? #apothecarydiaries"
+    },
+    "embed": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:ze7jfwnrtrzjbe4l4tvzjbiz/bafkreig2u73naqtzvecambfcqplxxokqrdsixcexbg63nh4vipvynjxz6e",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:ze7jfwnrtrzjbe4l4tvzjbiz/bafkreig2u73naqtzvecambfcqplxxokqrdsixcexbg63nh4vipvynjxz6e",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3011
+       }
+      },
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:ze7jfwnrtrzjbe4l4tvzjbiz/bafkreigcireggboh2c23am6r3sjibrpbczhlacg6jkeabt4udoestbkdky",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:ze7jfwnrtrzjbe4l4tvzjbiz/bafkreigcireggboh2c23am6r3sjibrpbczhlacg6jkeabt4udoestbkdky",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3011
+       }
+      },
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:ze7jfwnrtrzjbe4l4tvzjbiz/bafkreicl6km2qu4vdhe3iy4xpk2j6oknyvsaq5hlom2qvh4537czt4nvci",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:ze7jfwnrtrzjbe4l4tvzjbiz/bafkreicl6km2qu4vdhe3iy4xpk2j6oknyvsaq5hlom2qvh4537czt4nvci",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3011
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 0,
+    "quoteCount": 0,
+    "indexedAt": "2026-09-14T18:53:20.067Z",
+    "labels": []
+   },
+   "feedContext": "eyJmZWVkX3VyaSI6ICJhdDovL2RpZDpwbGM6a25vaDQ2YzZ4ZmY2bHJkY2ZzMnE1eTRhL2FwcC5ic2t5LmZlZWQuZ2VuZXJhdG9yL2FhYWFhYnF6cGR4ajQifQ==",
+   "reqId": "1DB0EF0F455042DCA24DCA2E29"
+  },
+  {
+   "post": {
+    "uri": "at://did:plc:ecy2d6ltviz5veqdikcd7kty/app.bsky.feed.post/3mvketxqasc2e",
+    "cid": "bafyreihl5nt7rk33kbms4cyngdkfdnv6cmjqjpesiunffg377dy4eetglu",
+    "author": {
+     "did": "did:plc:ecy2d6ltviz5veqdikcd7kty",
+     "handle": "sadisticss.bsky.social",
+     "displayName": "Sadisticss | comms open",
+     "labels": []
+    },
+    "record": {
+     "$type": "app.bsky.feed.post",
+     "createdAt": "2026-09-15T10:06:21.614Z",
+     "embed": {
+      "$type": "app.bsky.embed.images",
+      "images": [
+       {
+        "alt": "",
+        "aspectRatio": {
+         "height": 4000,
+         "width": 3200
+        },
+        "image": {
+         "$type": "blob",
+         "ref": {
+          "$link": "bafkreifqnevqxjtalwwp2eccsm33wgxxtlipn45n5yzilc4d4angdf6pgm"
+         },
+         "mimeType": "image/jpeg",
+         "size": 1968119
+        }
+       }
+      ]
+     },
+     "facets": [
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "KusuriyanoHitorigoto"
+        }
+       ],
+       "index": {
+        "byteEnd": 35,
+        "byteStart": 14
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "ApothecaryDiaries"
+        }
+       ],
+       "index": {
+        "byteEnd": 54,
+        "byteStart": 36
+       }
+      },
+      {
+       "features": [
+        {
+         "$type": "app.bsky.richtext.facet#tag",
+         "tag": "Ahduo"
+        }
+       ],
+       "index": {
+        "byteEnd": 61,
+        "byteStart": 55
+       }
+      }
+     ],
+     "langs": [
+      "ru"
+     ],
+     "text": "Ahduo💜🌸\n#KusuriyanoHitorigoto #ApothecaryDiaries #Ahduo"
+    },
+    "embed": {
+     "images": [
+      {
+       "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:ecy2d6ltviz5veqdikcd7kty/bafkreifqnevqxjtalwwp2eccsm33wgxxtlipn45n5yzilc4d4angdf6pgm",
+       "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:ecy2d6ltviz5veqdikcd7kty/bafkreifqnevqxjtalwwp2eccsm33wgxxtlipn45n5yzilc4d4angdf6pgm",
+       "alt": "",
+       "aspectRatio": {
+        "height": 4000,
+        "width": 3200
+       }
+      }
+     ],
+     "$type": "app.bsky.embed.images#view"
+    },
+    "replyCount": 0,
+    "repostCount": 4,
+    "likeCount": 20,
+    "quoteCount": 0,
+    "indexedAt": "2026-09-15T10:06:32.856Z",
+    "labels": []
+   },
+   "feedContext": "eyJmZWVkX3VyaSI6ICJhdDovL2RpZDpwbGM6a25vaDQ2YzZ4ZmY2bHJkY2ZzMnE1eTRhL2FwcC5ic2t5LmZlZWQuZ2VuZXJhdG9yL2FhYWFhYnF6cGR4ajQifQ==",
+   "reqId": "1DB0EF0F455042DCA24DCA2E29"
+  }
+ ],
+ "cursor": "eyJ0aW1lc3RhbXAiOiAxNzg5MzQ3MjAwLjAsICJvcmRlciI6ICJuZXcifQ=="
+}

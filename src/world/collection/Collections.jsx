@@ -9,6 +9,37 @@ import { Icon, Modal, Picture, Star } from "../../shared/WorldPrimitives.jsx";
 import { MusicObject, useMusic } from "../../shared/music/MusicRoom.jsx";
 import "./Collections.css";
 import LoreCarousel from "./LoreCarousel.jsx";
+import {
+  EpisodeBanner,
+  EventsStrip,
+  FeedCard,
+  FeedPhoto,
+  FeedPlaces,
+  FeedProgress,
+  FeedSleeve,
+  MerchLine,
+  PersonalPhoto,
+  useSectionFeed,
+} from "../feeds/FeedPieces.jsx";
+
+const NOTE_LABELS = {
+  sekai: "PROJECT SEKAI · GLOBAL",
+  note: "A NOTE BETWEEN SONGS",
+  news: "FRESH NEWS",
+  lore: "A LITTLE LORE",
+  process: "FROM THE SEWING TABLE",
+  tutorial: "FROM THE SEWING TABLE",
+  dare: "A LITTLE DARE",
+  event: "ON THE CALENDAR",
+  extra: "A LITTLE EXTRA",
+  look: "A LOOK TO STEAL",
+  spot: "A SHOOT SPOT",
+  creator: "SINGAPORE SCENE",
+  meme: "A LITTLE MEME",
+  cosplay: "MORE DRESS-UP",
+  visual: "A LITTLE PICTURE",
+};
+const titleCase = (text) => text.replace(/(^|\s)(\p{L})/gu, (_, gap, c) => gap + c.toUpperCase());
 
 export function SectionHeading({
   index,
@@ -236,6 +267,14 @@ export function CosplaySpread({ full = false }) {
     },
   ];
   const display = photos.length ? photos : references;
+  const dress = useSectionFeed("dressup");
+  const three = dress.entries.filter((e) => e.type === "three");
+  const community = dress.entries.filter(
+    (e) => !["three", "merch"].includes(e.type),
+  );
+  const personal = dress.data?.plan?.personal;
+  // The reference images are the fallback: they step aside only while today's three is showing.
+  const showReferences = photos.length > 0 || !(dress.live && three.length);
   return (
     <section className="editorial-section cosplay-spread" id="cosplay">
       <SectionHeading
@@ -251,7 +290,36 @@ export function CosplaySpread({ full = false }) {
         action="The lookbook"
         page={full}
       />
-      {!photos.length && (
+      {dress.live && three.length > 0 && (
+        <>
+          <p className="collection-label">
+            <span />
+            TODAY’S THREE{personal ? " + ONE OF URS" : ""}{" "}
+            <span className="collection-label__detail">
+              {dress.data.plan?.rotatingFandom
+                ? `today’s rotation: ${dress.data.plan.rotatingFandom}`
+                : "real cosplayers, credited"}
+            </span>
+          </p>
+          <div className="feed-lookbook">
+            {three.map((entry, i) => (
+              <FeedPhoto
+                key={entry.key}
+                entry={entry}
+                index={i}
+                title={titleCase(
+                  entry.primary.tags?.characters?.[0] ?? "today’s pick",
+                )}
+                onSeen={dress.markSeen}
+              />
+            ))}
+            {personal && (
+              <PersonalPhoto personal={personal} index={three.length} />
+            )}
+          </div>
+        </>
+      )}
+      {showReferences && !photos.length && (
         <p className="collection-label">
           <span />
           CHARACTER & MAKER REFERENCES{" "}
@@ -260,36 +328,63 @@ export function CosplaySpread({ full = false }) {
           </span>
         </p>
       )}
-      <div className="lookbook-grid">
-        {display.slice(0, full ? 12 : 3).map((item, i) => (
-          <button
-            className={`lookbook-photo lookbook-photo--${i % 3}`}
-            key={item.url}
-            onClick={() => setView(i)}
-          >
-            <img
-              className={item.fullImage ? "lookbook-photo__full-image" : undefined}
-              src={item.url}
-              alt={item.alt}
-              loading="lazy"
-            />
-            <span className="lookbook-photo__caption">
-              <span>
-                <small>{String(i + 1).padStart(2, "0")}</small>
-                <strong>{item.title}</strong>
+      {showReferences && (
+        <div className="lookbook-grid">
+          {display.slice(0, full ? 12 : 3).map((item, i) => (
+            <button
+              className={`lookbook-photo lookbook-photo--${i % 3}`}
+              key={item.url}
+              onClick={() => setView(i)}
+            >
+              <img
+                className={
+                  item.fullImage ? "lookbook-photo__full-image" : undefined
+                }
+                src={item.url}
+                alt={item.alt}
+                loading="lazy"
+              />
+              <span className="lookbook-photo__caption">
+                <span>
+                  <small>{String(i + 1).padStart(2, "0")}</small>
+                  <strong>{item.title}</strong>
+                </span>
+                <Icon name="diagonal" size={19} />
               </span>
-              <Icon name="diagonal" size={19} />
-            </span>
-            <span className="lookbook-photo__credit">{item.caption}</span>
-          </button>
-        ))}
-      </div>
+              <span className="lookbook-photo__credit">{item.caption}</span>
+            </button>
+          ))}
+        </div>
+      )}
       <div className="lookbook-foot">
         <p className="handwritten">the wig is practically its own character.</p>
         <button className="text-link" onClick={() => setAdd(true)}>
           Add a cosplay photo <Icon name="arrow" size={15} />
         </button>
       </div>
+      {dress.live && (
+        <div className="feed-dressup">
+          <FeedProgress data={dress.data} label="TODAY’S DRESS-UP DROP" />
+          {community.length > 0 && (
+            <div className="feed-notes">
+              {community.slice(0, full ? 30 : 2).map((entry) => (
+                <FeedCard
+                  key={entry.key}
+                  entry={entry}
+                  label={NOTE_LABELS[entry.type] ?? "A LITTLE EXTRA"}
+                  onSeen={dress.markSeen}
+                />
+              ))}
+            </div>
+          )}
+          {full && <EventsStrip />}
+          <MerchLine
+            entry={dress.entries.find((e) => e.type === "merch")}
+            onSeen={dress.markSeen}
+          />
+          {full && <FeedPlaces />}
+        </div>
+      )}
       {full && (
         <div className="cosplay-notes">
           <Discovery kind="cosplay" label="FROM THE SEWING TABLE" another />
@@ -380,181 +475,8 @@ export function CosplaySpread({ full = false }) {
     </section>
   );
 }
-export function ArtSpread({ full = false }) {
-  const [view, setView] = useState(null);
-  const [add, setAdd] = useState(false);
-  const [file, setFile] = useState(null);
-  const [caption, setCaption] = useState("");
-  const queryClient = useQueryClient();
-  const query = useQuery({
-    queryKey: ["me", "artworks"],
-    queryFn: () => api("/me/artworks"),
-  });
-  const works = (query.data?.artworks ?? []).map((a) => ({
-    ...a,
-    title: "Saved sketch",
-    caption: a.prompt,
-    alt: a.prompt
-      ? `Saved drawing for the prompt: ${a.prompt}`
-      : "A saved drawing",
-  }));
-  const upload = useMutation({
-    mutationFn: async () => {
-      const stored = await uploadFile(await shrinkImage(file), {
-        folder: "art",
-      });
-      return api("/me/artworks", {
-        method: "POST",
-        body: { ...stored, prompt: caption || null },
-      });
-    },
-    onSuccess: () => {
-      setAdd(false);
-      setFile(null);
-      setCaption("");
-      queryClient.invalidateQueries({ queryKey: ["me", "artworks"] });
-    },
-  });
-  const remove = useMutation({
-    mutationFn: (id) => api(`/me/artworks/${id}`, { method: "DELETE" }),
-    onSuccess: () => {
-      setView(null);
-      queryClient.invalidateQueries({ queryKey: ["me", "artworks"] });
-    },
-  });
-  return (
-    <section className="editorial-section art-spread" id="art">
-      <SectionHeading
-        index="🎨 PAGES FROM YOUR SKETCHBOOK"
-        title="From your"
-        emphasis="imagination."
-        subtitle="Finished pieces, unfinished thoughts, and characters only you could dream up."
-        to={full ? undefined : "/world/art"}
-        action="All your work"
-        page={full}
-      />
-      <div className="sketchbook-spread">
-        <div className="sketchbook-gallery">
-          {works.length ? (
-            works.slice(0, full ? 30 : 1).map((work, i) => (
-              <button
-                key={work.id}
-                className="sketchbook-work"
-                onClick={() => setView(i)}
-              >
-                <img src={work.url} alt={work.alt} loading="lazy" />
-                <span>
-                  <span className="handwritten">from the saved sketchbook</span>
-                  <Icon name="diagonal" size={18} />
-                </span>
-              </button>
-            ))
-          ) : (
-            <div className="sketchbook-blank">
-              <span className="micro-label">YOUR FIRST PAGE</span>
-              <Icon name="pen" size={46} />
-              <p className="handwritten">
-                Something only you
-                <br />
-                could make.
-              </p>
-              <Link className="text-link" to="/world/studio">
-                Make a little mark <Icon name="arrow" size={15} />
-              </Link>
-            </div>
-          )}
-        </div>
-        <div className="sketchbook-margin">
-          <span className="sketchbook-tab">ideas live here</span>
-          <div
-            className="study-palette"
-            aria-label="Lilac, plum, petal pink, paper and Miku teal colour inspiration"
-          >
-            {["#d7c5e6", "#493653", "#e6c5d8", "#fff9fd", "#39a79f"].map(
-              (c) => (
-                <span key={c} style={{ background: c }} />
-              ),
-            )}
-          </div>
-          <Discovery
-            kind="art"
-            label="A PROMPT, IF YOU FEEL LIKE IT"
-            another={full}
-          />
-          <Link className="button-plum" to="/world/studio">
-            <Icon name="pen" size={17} />
-            Open the drawing canvas
-            <Icon name="arrow" size={18} />
-          </Link>
-          <button className="quiet-button" onClick={() => setAdd(true)}>
-            Or upload a piece you’ve made <Icon name="diagonal" size={14} />
-          </button>
-          <p className="sketchbook-note">A rough sketch counts, too.</p>
-        </div>
-      </div>
-      {query.isError && (
-        <button className="text-link" onClick={() => query.refetch()}>
-          Your saved work couldn’t load · retry
-        </button>
-      )}
-      {view !== null && (
-        <GalleryViewer
-          items={works}
-          index={view}
-          onChange={setView}
-          onClose={() => setView(null)}
-          onDelete={
-            full
-              ? (item) => {
-                  if (window.confirm("Delete this saved sketch?"))
-                    remove.mutate(item.id);
-                }
-              : undefined
-          }
-        />
-      )}
-      {add && (
-        <Modal
-          title="A new piece for your sketchbook"
-          onClose={() => setAdd(false)}
-        >
-          <form
-            className="collection-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (file) upload.mutate();
-            }}
-          >
-            <label>
-              Artwork
-              <input
-                required
-                className="field"
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                onChange={(e) => setFile(e.target.files?.[0])}
-              />
-            </label>
-            <label>
-              Title or a little note
-              <input
-                className="field"
-                value={caption}
-                maxLength={300}
-                onChange={(e) => setCaption(e.target.value)}
-              />
-            </label>
-            <button className="button-plum" disabled={upload.isPending}>
-              {upload.isPending ? "Framing…" : "Save to your sketchbook"}
-            </button>
-            {upload.error && <p role="alert">{upload.error.message}</p>}
-          </form>
-        </Modal>
-      )}
-    </section>
-  );
-}
 export function MaomaoSpread({ full = false }) {
+  const club = useSectionFeed("maomao");
   return (
     <section className="editorial-section maomao-spread" id="maomao">
       <SectionHeading
@@ -566,7 +488,13 @@ export function MaomaoSpread({ full = false }) {
         action="More little finds"
         page={full}
       />
-      <LoreCarousel kind="maomao" />
+      <EpisodeBanner episode={club.data?.plan?.episode} />
+      <LoreCarousel
+        kind="maomao"
+        feed={club.entries}
+        onSeen={club.markSeen}
+      />
+      <FeedProgress data={club.data} />
       <div className="maomao-afterword">
         <p>
           A little shrine to the girl
@@ -579,6 +507,7 @@ export function MaomaoSpread({ full = false }) {
           another
         />
       </div>
+      {full && club.live && <FeedPlaces />}
     </section>
   );
 }
@@ -594,6 +523,14 @@ export function MusicSpread({ full = false }) {
     staleTime: Infinity,
   });
   const music = useMusic();
+  const drop = useSectionFeed("music");
+  const feedSongs = drop.entries.filter((e) => e.type === "song");
+  const feedNotes = drop.entries.filter((e) =>
+    ["sekai", "note", "news", "lore", "event"].includes(e.type),
+  );
+  const feedVisuals = drop.entries.filter((e) =>
+    ["visual", "meme"].includes(e.type),
+  );
   const songs = [...(library.data?.songs ?? []), ...(picks.data?.songs ?? [])]
     .filter((s, i, list) => list.findIndex((x) => x.url === s.url) === i)
     .slice(0, full ? 12 : 3);
@@ -650,6 +587,52 @@ export function MusicSpread({ full = false }) {
           another={full}
         />
       </div>
+      {drop.live && (
+        <div className="music-shelf feed-music">
+          <FeedProgress data={drop.data} label="TODAY’S SONGS & FINDS" />
+          {feedSongs.length > 0 && (
+            <div className="record-sleeves feed-sleeves">
+              {feedSongs.slice(0, full ? 25 : 3).map((entry) => (
+                <FeedSleeve
+                  key={entry.key}
+                  entry={entry}
+                  onSeen={drop.markSeen}
+                />
+              ))}
+            </div>
+          )}
+          {feedNotes.length > 0 && (
+            <div className="feed-notes">
+              {feedNotes.slice(0, full ? 25 : 1).map((entry) => (
+                <FeedCard
+                  key={entry.key}
+                  entry={entry}
+                  label={NOTE_LABELS[entry.type] ?? "A LITTLE NOTE"}
+                  onSeen={drop.markSeen}
+                />
+              ))}
+            </div>
+          )}
+          {full && feedVisuals.length > 0 && (
+            <div className="feed-lookbook">
+              {feedVisuals.map((entry, i) => (
+                <FeedPhoto
+                  key={entry.key}
+                  entry={entry}
+                  index={i}
+                  title={entry.type === "meme" ? "a little meme" : "fan art"}
+                  onSeen={drop.markSeen}
+                />
+              ))}
+            </div>
+          )}
+          <MerchLine
+            entry={drop.entries.find((e) => e.type === "merch")}
+            onSeen={drop.markSeen}
+          />
+          {full && <FeedPlaces />}
+        </div>
+      )}
       {full && (
         <div className="kagamine-strip">
           <Picture

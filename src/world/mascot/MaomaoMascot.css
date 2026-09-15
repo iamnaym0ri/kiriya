@@ -1,96 +1,79 @@
-.mascot {
-  position: relative;
-  display: block;
-  flex: none;
-  aspect-ratio: 200 / 236;
-  border-radius: 40%;
-}
+.mascot { position: relative; display: block; flex: none; aspect-ratio: 200 / 236; border-radius: 40%; }
+.mascot__svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 8px 12px rgb(25 8 58 / .15)); }
+.mascot__breath { transform-origin: 100px 226px; animation: mascot-breathe 6.8s ease-in-out infinite; }
+.mascot__float { transform-origin: 100px 226px; }
+.mascot__head { transform-origin: 100px 145px; rotate: 0deg; translate: 0 0; transition: rotate .45s cubic-bezier(.22,.72,.2,1), translate .45s cubic-bezier(.22,.72,.2,1); }
+.mascot__arms-rest { transition: opacity .24s ease; }
+.mascot__ribbon { transform-origin: 100px 27px; animation: mascot-ribbon 6.8s ease-in-out infinite; }
+.mascot__braid { animation: mascot-braid 6.8s ease-in-out infinite; }
+.mascot__braid--right { animation-delay: -1.8s; }
+.mascot__sprig { transform-origin: 0 0; animation: mascot-sprig 5.8s ease-in-out infinite; }
+.mascot__hat { transform-origin: 124px 44px; animation: mascot-hat 3.2s ease-in-out infinite; }
+.mascot__blink-mask { transform-box: fill-box; transform-origin: center; animation: mascot-blink-lid 6.7s linear infinite; }
+.mascot__blink-line { opacity: 0; animation: mascot-blink-line 6.7s linear infinite; }
+.mascot__gesture { animation: mascot-gesture-in .3s ease-out both; }
+.mascot__tail { transform-origin: 145px 205px; animation: mascot-tail-flick .9s ease-in-out 3; }
+.mascot__delight-glints { animation: mascot-twinkle 1.05s ease-in-out 3; }
+.mascot__eager-hands { animation: mascot-gesture-in .3s ease-out both, mascot-eager .74s ease-in-out 3; }
+.mascot__pestle { transform-origin: 110px 183px; animation: mascot-grind 5.6s ease-in-out infinite; }
+.mascot__writing-hand { transform-origin: 129px 174px; animation: mascot-write .7s ease-in-out 5; }
+.mascot__ink { stroke-dasharray: 45; stroke-dashoffset: 0; animation: mascot-ink 3.3s ease-out; }
+.mascot__question { animation: mascot-question 1.6s ease-in-out 2; }
+.mascot__surprise { animation: mascot-question .85s ease-out; }
+.mascot__sweat { animation: mascot-sweat 1.4s ease-in-out 2; }
+.mascot__scent { animation: mascot-scent 1.8s ease-in-out 2; }
+.mascot__zzz { font-weight: 700; animation: mascot-sleep-mark 4s ease-in-out infinite; }
 
-button.mascot:active .mascot__float {
-  animation: mascot-poke 0.4s var(--ease-out);
-}
+.mascot[data-expression="thinking"] .mascot__head { rotate: -3deg; }
+.mascot[data-expression="writing"] .mascot__head { rotate: 3deg; translate: 0 2px; }
+.mascot[data-expression="skeptical"] .mascot__head { rotate: 4deg; animation: mascot-side-eye 1.8s ease-in-out; }
+.mascot[data-expression="shy"] .mascot__head { rotate: -3deg; translate: 0 1px; animation: mascot-shy .95s ease-out; }
+.mascot[data-expression="sniff"] .mascot__head { animation: mascot-sniff 1.8s ease-in-out 2; }
+.mascot[data-expression="sniff"] .mascot__sniff-hand { transform-origin: 113px 177px; animation: mascot-gesture-in .3s ease-out both, mascot-sniff-hand 1.8s ease-in-out 2; }
+.mascot[data-expression="herb"] .mascot__float { animation: mascot-herb-gasp .74s cubic-bezier(.35,0,.2,1) 3; }
+.mascot[data-expression="herb"] .mascot__braid { animation: mascot-braid-delight .74s ease-in-out 3; }
+.mascot[data-expression="poison"] .mascot__float { transform-origin: 100px 215px; animation: mascot-treasure-sway 1.8s ease-in-out 2; }
+.mascot[data-expression="ew"] .mascot__head { animation: mascot-displeased .55s ease-in-out 2; }
+.mascot[data-expression="curious"] .mascot__head { animation: mascot-inspect 1.8s ease-in-out 2; }
+.mascot[data-expression="pleased"] .mascot__head { animation: mascot-approve 1.2s ease-in-out 2; }
+.mascot[data-expression="startled"] .mascot__float { animation: mascot-startle .85s cubic-bezier(.22,.72,.2,1); }
+.mascot[data-expression="sleepy"] .mascot__head { animation: mascot-drowsy 5.8s ease-in-out infinite; }
+.mascot:is([data-expression="thinking"], [data-expression="ew"], [data-expression="skeptical"], [data-expression="shy"], [data-expression="sniff"]) .mascot__pestle { animation: none; }
+button.mascot:active .mascot__svg { scale: .985; }
+.mascot__svg { transition: scale .25s ease-out; }
 
-.mascot__svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  filter: drop-shadow(0 10px 14px rgb(25 8 58 / 0.18));
-}
+@keyframes mascot-breathe { 0%,100% { translate: 0 0; scale: 1; } 50% { translate: 0 -.7px; scale: 1.002 1.004; } }
+@keyframes mascot-ribbon { 0%,100% { rotate: -.8deg; } 50% { rotate: 1.8deg; } }
+@keyframes mascot-braid { 0%,100% { rotate: -1deg; } 50% { rotate: 1.5deg; } }
+@keyframes mascot-braid-delight { 0%,100% { rotate: 0deg; } 35% { rotate: -5deg; } 70% { rotate: 3deg; } }
+@keyframes mascot-blink-lid { 0%,43%,46%,94%,97%,100% { scale: 1 1; } 44.2%,95.2% { scale: 1 .015; } }
+@keyframes mascot-blink-line { 0%,43.5%,45.5%,94.5%,96.5%,100% { opacity: 0; } 44.2%,95.2% { opacity: 1; } }
+@keyframes mascot-sprig { 0%,100% { rotate: -2deg; } 50% { rotate: 3deg; } }
+@keyframes mascot-hat { 0%,100% { rotate: -2deg; } 50% { rotate: 3deg; } }
+@keyframes mascot-gesture-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mascot-twinkle { 0%,100% { opacity: .35; scale: .92; } 50% { opacity: .95; scale: 1.04; } }
+@keyframes mascot-herb-gasp { 0%,100% { translate: 0 0; scale: 1; } 20% { translate: 0 1px; scale: 1.01 .99; } 46% { translate: 0 -6px; scale: .99 1.01; } 78% { translate: 0 -.5px; scale: 1.005 .995; } }
+@keyframes mascot-treasure-sway { 0%,100% { rotate: 0deg; } 30% { rotate: -3deg; } 70% { rotate: 3deg; } }
+@keyframes mascot-displeased { 0%,100% { translate: 0 0; } 30% { translate: -1.7px 0; } 70% { translate: 1.7px 0; } }
+@keyframes mascot-eager { 0%,100% { translate: 0 0; } 46% { translate: 0 -2.5px; } }
+@keyframes mascot-tail-flick { 0%,100% { rotate: 0deg; } 40% { rotate: -10deg; } 75% { rotate: 3deg; } }
+@keyframes mascot-grind { 0%,55%,100% { rotate: 0deg; } 15%,38% { rotate: -10deg; } 25%,48% { rotate: 2deg; } }
+@keyframes mascot-inspect { 0%,100% { rotate: 0deg; translate: 0 0; } 40%,62% { rotate: -6deg; translate: 1px -1px; } }
+@keyframes mascot-question { 0% { opacity: .2; translate: 0 4px; } 55%,100% { opacity: 1; translate: 0 0; } }
+@keyframes mascot-write { 0%,100% { rotate: -4deg; translate: 0 0; } 35% { rotate: 4deg; translate: -1.5px 1px; } 70% { rotate: -1deg; translate: -.5px .5px; } }
+@keyframes mascot-ink { from { stroke-dashoffset: 45; } to { stroke-dashoffset: 0; } }
+@keyframes mascot-approve { 0%,100% { translate: 0 0; rotate: 0deg; } 40% { translate: 0 2.5px; rotate: 2deg; } 75% { translate: 0 -.6px; rotate: -.5deg; } }
+@keyframes mascot-startle { 0%,100% { translate: 0 0; scale: 1; } 16% { translate: 0 1px; scale: 1.01 .99; } 35% { translate: 0 -7px; scale: .985 1.015; } 65% { translate: 0 1px; scale: 1.012 .99; } 82% { translate: 0 -.6px; scale: 1; } }
+@keyframes mascot-sweat { 0% { opacity: .25; translate: 0 -2px; } 60% { opacity: .8; } 100% { opacity: .3; translate: 0 4px; } }
+@keyframes mascot-scent { 0%,100% { opacity: .1; translate: 0 3px; } 45% { opacity: .7; translate: -1px -1px; } }
+@keyframes mascot-side-eye { 0% { rotate: 0deg; } 45% { rotate: 5deg; } 100% { rotate: 4deg; } }
+@keyframes mascot-shy { 0% { rotate: 0deg; translate: 0 0; } 60% { rotate: -4deg; translate: 0 2px; } 100% { rotate: -3deg; translate: 0 1px; } }
+@keyframes mascot-sniff { 0%,100% { translate: 0 0; rotate: 0deg; } 35%,52% { translate: 1px 2px; rotate: 2deg; } 65% { translate: 0 .5px; rotate: .5deg; } }
+@keyframes mascot-sniff-hand { 0%,100% { rotate: 0deg; } 35%,52% { rotate: -4deg; } }
+@keyframes mascot-drowsy { 0%,100% { rotate: 0deg; translate: 0 0; } 65%,78% { rotate: 3deg; translate: 0 2px; } }
+@keyframes mascot-sleep-mark { 0%,100% { opacity: .2; translate: 0 0; } 60% { opacity: .7; translate: 1px -5px; } }
 
-.mascot__float {
-  animation: mascot-float 3.6s var(--ease-in-out) infinite;
-}
-
-.mascot__eye {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: mascot-blink 5.5s infinite;
-}
-
-.mascot__sprig {
-  transform-box: view-box;
-  transform-origin: 152px 204px;
-  animation: mascot-sprig 3.6s var(--ease-in-out) infinite;
-}
-
-.mascot__hat {
-  transform-box: view-box;
-  transform-origin: 124px 44px;
-  animation: mascot-hat 1.8s var(--ease-in-out) infinite;
-}
-
-@keyframes mascot-float {
-  0%, 100% { translate: 0 0; }
-  50% { translate: 0 -4px; }
-}
-
-@keyframes mascot-blink {
-  0%, 94%, 100% { scale: 1 1; }
-  96% { scale: 1 0.15; }
-}
-
-@keyframes mascot-sprig {
-  0%, 100% { rotate: -3deg; }
-  50% { rotate: 4deg; }
-}
-
-@keyframes mascot-hat {
-  0%, 100% { rotate: -4deg; }
-  50% { rotate: 5deg; }
-}
-
-@keyframes mascot-poke {
-  0% { scale: 1; }
-  40% { scale: 0.94 1.06; }
-  100% { scale: 1; }
-}
-
-.mascot__sparkles span {
-  position: absolute;
-  color: var(--pink-400);
-  font-size: 18px;
-  animation: mascot-twinkle 1.4s var(--ease-in-out) infinite;
-}
-
-.mascot__sparkles span:nth-child(1) { left: -4%; top: 18%; }
-.mascot__sparkles span:nth-child(2) { right: -2%; top: 8%; color: var(--purple-400); animation-delay: -0.5s; }
-.mascot__sparkles span:nth-child(3) { right: 6%; top: 46%; font-size: 13px; animation-delay: -0.9s; }
-
-@keyframes mascot-twinkle {
-  0%, 100% { opacity: 0.3; scale: 0.8; }
-  50% { opacity: 1; scale: 1.1; }
-}
-
-.mascot__zzz {
-  position: absolute;
-  right: 0;
-  top: 6%;
-  font-weight: 800;
-  color: var(--purple-400);
-  animation: mascot-twinkle 2.4s var(--ease-in-out) infinite;
-}
-
-.mascot__zzz small {
-  font-size: 0.7em;
-  vertical-align: super;
-}
+/* JS face interpolation and CSS accents use the same visible/quiet gate. */
+.mascot[data-mascot-motion="off"] *, .mascot[data-mascot-motion="off"]:active .mascot__svg { animation: none !important; transition-duration: 0s !important; }
+.mascot[data-mascot-motion="off"] .mascot__svg { scale: 1; }
+@media (prefers-reduced-motion: reduce) { .mascot *, .mascot:active .mascot__svg { animation: none !important; transition-duration: 0s !important; } }
