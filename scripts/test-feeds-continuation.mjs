@@ -730,6 +730,31 @@ try {
     }
     // A non-sexualised image of a young-looking character is ordinary content and stays.
     assert.equal((await checkItem(gif, { ...provider, vision: async (item, index) => ({ ...vision(index === 0 ? ["maomao"] : []), suggestive: "none", apparentMinor: true }) }, { source })).status, "approved");
+    // Owner decision (2026-09-16, third pass): a meme is approved unless it is outright explicit,
+    // so the stream stays alive. The classifier calling it "not a meme", an unlabelled sense of
+    // humour, or a grainy picture no longer turn one away.
+    const asMeme = { ...gif, kind: "meme", sections: ["meme"] };
+    const memeVision = (over) => ({ ...vision(["maomao"]), isMeme: true, ...over });
+    for (const [label, over] of [
+      ["the classifier says it is not a meme", { isMeme: false }],
+      ["the humour is brainrot", { meme: { ...memeVision().meme, humor: "brainrot" } }],
+      ["the humour is unlabelled", { meme: { ...memeVision().meme, humor: "unknown" } }],
+      ["the picture is grainy", { quality: 1 }],
+    ]) {
+      const got = await checkItem(asMeme, { ...provider, vision: async () => memeVision(over) }, { source });
+      assert.equal(got.status, "approved", `a meme should survive when ${label} (got ${got.reason})`);
+    }
+    // The two standing exclusions still hold, and explicit still rejects.
+    for (const [label, over] of [
+      ["politics", { meme: { ...memeVision().meme, political: true } }],
+      ["a joke about self-harm", { meme: { ...memeVision().meme, text: "kys lol" } }],
+    ]) {
+      const got = await checkItem(asMeme, { ...provider, vision: async () => memeVision(over) }, { source });
+      assert.deepEqual([got.status, got.reason], ["rejected", "meme_rules"], `a meme with ${label} is still out`);
+    }
+    const explicitMeme = await checkItem(asMeme, { ...provider, vision: async () => memeVision({ suggestive: "explicit" }) }, { source });
+    assert.equal(explicitMeme.status, "rejected", "outright explicit is still the line");
+
     const noMaomao = { ...provider, vision: async () => vision(["frieren"]) };
     assert.deepEqual(
       [(await checkItem(gif, noMaomao, { source })).reason],

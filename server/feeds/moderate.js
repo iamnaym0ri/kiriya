@@ -187,15 +187,21 @@ export async function checkItem(
         v.horror ||
         v.political ||
         (v.aiLikelihood === "high" && v.aiConfidence >= 0.75) ||
-        v.quality < 2
+        // Memes are exempt: a grainy screenshot is still the joke.
+        (item.kind !== "meme" && v.quality < 2)
       )
         return ["rejected", "vision"];
       return null;
     };
+    // Owner decision (2026-09-16, third pass): a meme is approved unless it is outright explicit,
+    // so the stream stays alive. Explicitness, gore and the apparent-minor gate are judged above
+    // and still apply. What remains here are the two standing exclusions that were never about
+    // taste: politics, and jokes about self-harm or someone's body.
+    // Deliberately dropped: `!v.isMeme` (the classifier calls plenty of real memes "not a meme",
+    // which was rejecting whole posts from her own communities) and the humour-style filter
+    // (brainrot/unknown), which threw away anything the model could not label neatly.
     const memeRules = (v) =>
-      !v.isMeme ||
       v.meme.political ||
-      ["brainrot", "unknown"].includes(v.meme.humor) ||
       POLITICS.test(v.meme.text) ||
       BANNED_JOKES.test(`${v.meme.text} ${v.meme.topics.join(" ")}`);
 

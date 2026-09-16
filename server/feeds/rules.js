@@ -1,5 +1,5 @@
 // Bump when a rule change should re-evaluate earlier vision/moderation decisions (see checkQueue).
-export const RULE_VERSION = "2026-09-16.2";
+export const RULE_VERSION = "2026-09-16.3";
 export const THRESHOLDS = {
   sexual: 0.12,
   "sexual/minors": 0.01,

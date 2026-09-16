@@ -231,6 +231,9 @@ const RECHECKABLE = [
   "moderation",
   "cosplay_required",
   "required_character_missing",
+  // Relaxed on 2026-09-16: everything turned away by the old humour/is-it-a-meme rules gets
+  // another look. "meme_needs_media" is not here — those posts have nothing to show, ever.
+  "meme_rules",
 ];
 const staleRejection = (item) =>
   item.safetyStatus === "rejected" &&
