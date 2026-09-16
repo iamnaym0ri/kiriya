@@ -40,7 +40,8 @@ function Sprig({ transform, className = "" }) {
 function GrindScene() {
   return (
     <g className="scene scene--grind">
-      <path d="M14 96h74v5H14Z" fill={WOOD} />
+      <path d="M12 96h78v6H12Z" fill={WOOD} />
+      <path d="M12 102h78v3H12Z" fill="#8d7454" />
       <path
         d="M30 60h42q-2 28-21 28T30 60Z"
         fill={STONE}
@@ -56,6 +57,12 @@ function GrindScene() {
         stroke={STONE_EDGE}
         strokeWidth="1.6"
       />
+      {/* What she is actually grinding, shifting under the pestle as it turns. */}
+      <g className="scene__grist">
+        <ellipse cx="48" cy="62" rx="9" ry="3" fill="#9aad74" />
+        <circle cx="44" cy="61" r="1.6" fill="#7e9459" />
+        <circle cx="53" cy="62" r="1.3" fill="#7e9459" />
+      </g>
       <g className="scene__pestle">
         <path
           d="M54 58 66 30"
@@ -87,6 +94,10 @@ function GatherScene() {
       <path d="M26 74h50m-49 9h48m-46 9h44" stroke="#a8875f" strokeWidth="2" />
       <Sprig transform="translate(38 70) rotate(-16) scale(.8)" />
       <Sprig transform="translate(64 70) rotate(14) scale(.7)" />
+      <Sprig
+        transform="translate(51 68) rotate(-2) scale(.62)"
+        className="scene__sprig-late"
+      />
       <g className="scene__falling-leaf">
         <path
           d="M0 0C-9-3-8-12-8-12 0-11 3-6 0 0Z"
@@ -103,32 +114,63 @@ function GatherScene() {
 function BrewScene() {
   return (
     <g className="scene scene--brew">
-      <path d="M20 92h62v6H20Z" fill="#8d7454" />
+      {/* A squat clay brazier: feet, a coal bed that breathes, and the pot sitting down into it. */}
+      <path d="M24 96h54l-4 7H28Z" fill="#7d6450" />
+      <path
+        d="M22 72h58l-4 24H26Z"
+        fill="#9c7f63"
+        stroke="#6f5943"
+        strokeWidth="1.6"
+      />
+      <g className="scene__coals">
+        <ellipse cx="51" cy="79" rx="20" ry="5" fill="#8d4b2c" />
+        <ellipse cx="44" cy="78" rx="6" ry="3" fill="#e0763c" />
+        <ellipse cx="58" cy="80" rx="5" ry="2.6" fill="#f2a054" />
+      </g>
       <g className="scene__flame">
         <path
-          d="M51 92q-9-9-4-18 2 5 5 3 0-8 6-12-3 12 5 15 4 6-1 12Z"
+          d="M51 78q-9-9-4-18 2 5 5 3 0-8 6-12-3 12 5 15 4 6-1 12Z"
           fill="#e0a05c"
+          opacity=".85"
         />
         <path
-          d="M51 92q-5-6-2-12 2 4 4 1 1-5 4-7-2 8 3 11 2 4-1 7Z"
+          d="M51 78q-5-6-2-12 2 4 4 1 1-5 4-7-2 8 3 11 2 4-1 7Z"
           fill="#f4d08a"
         />
       </g>
       <path
-        d="M26 58h50l-5 22q-20 6-40 0Z"
+        d="M26 56h50l-5 20q-20 6-40 0Z"
         fill="#8a7f96"
         stroke="#5f566f"
         strokeWidth="2"
       />
       <ellipse
         cx="51"
-        cy="58"
+        cy="56"
         rx="25"
         ry="6"
         fill="#a79bb4"
         stroke="#5f566f"
         strokeWidth="1.6"
       />
+      <ellipse
+        className="scene__brewsurface"
+        cx="51"
+        cy="56"
+        rx="19"
+        ry="4"
+        fill="#6f6482"
+      />
+      {/* A ladle left standing in it, stirred every so often. */}
+      <g className="scene__ladle">
+        <path
+          d="M62 54 78 32"
+          stroke="#a98d6d"
+          strokeWidth="3.4"
+          strokeLinecap="round"
+        />
+        <ellipse cx="61" cy="55" rx="6" ry="3" fill="#cdbfa4" />
+      </g>
       <g
         className="scene__steam"
         fill="none"

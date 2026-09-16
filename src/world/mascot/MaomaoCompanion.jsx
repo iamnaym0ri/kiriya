@@ -15,6 +15,7 @@ import {
 } from "../../shared/play/maomaoDialogue.js";
 import MaomaoMascot from "./MaomaoMascot.jsx";
 import CompanionScene from "./CompanionScene.jsx";
+import CompanionShelf from "./CompanionShelf.jsx";
 import "./MaomaoCompanion.css";
 
 /**
@@ -182,8 +183,10 @@ const TRAVELLING = {
   hold: [0, 0],
 };
 
-const NAV_HEIGHT = 86; // .world-mast, sticky at the top of every world page.
 const FLOOR_GAP = 96; // clears "your little corner", which is fixed bottom-left.
+/** The nav bar's live bottom edge — the shelf she sits on. Measured, never assumed. */
+const shelfEdge = () =>
+  document.querySelector(".world-mast")?.getBoundingClientRect().bottom ?? 86;
 const between = ([lo, hi]) => lo + Math.random() * (hi - lo);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pickOne = (list) => list[Math.floor(Math.random() * list.length)];
@@ -196,10 +199,37 @@ function hourMood(now = new Date()) {
   return "evening";
 }
 
-/** Where a rail sits in viewport coordinates, for a figure of this height. */
+/**
+ * How far along a rail she may wander. Up on the nav bar she keeps clear of the wordmark, so she is
+ * never sitting on Kiriya's name.
+ */
+function roam(rail, width = 112) {
+  const right = Math.max(40, window.innerWidth - width - 8);
+  if (rail !== "ledge") {
+    // "your little corner" is fixed bottom-left; she walks to the right of it, not through it.
+    const corner = document
+      .querySelector(".daily-style-corner")
+      ?.getBoundingClientRect();
+    return [Math.min(right - 8, (corner?.right ?? 0) + 12), right];
+  }
+  const mark = document
+    .querySelector(".world-mast > a, .world-mast > *")
+    ?.getBoundingClientRect();
+  const clearOfName = (mark?.right ?? 0) + 14;
+  // On a narrow bar, reserving the wordmark would leave her nowhere to go; there she uses the
+  // whole width and can simply be carried aside if she is ever in the way.
+  return right - clearOfName < 150 ? [8, right] : [clearOfName, right];
+}
+
+/**
+ * Where a rail sits, in viewport coordinates, for a body of this height. `height` is HER height —
+ * not the column that also holds her speech bubble, which changes size every time she speaks and
+ * would otherwise shunt her up and down the screen.
+ */
 function railY(rail, height) {
-  // Seated on the bar's lower edge: a little of her overlaps it, the rest hangs below.
-  if (rail === "ledge") return NAV_HEIGHT - height * 0.22;
+  // Sitting on the bar with her legs over the edge: seat on the line, most of her below it.
+  // 45% above the line: her seat reads as being on the bar without burying a nav link.
+  if (rail === "ledge") return shelfEdge() - height * 0.45;
   return window.innerHeight - FLOOR_GAP - height;
 }
 
@@ -218,7 +248,7 @@ export default function MaomaoCompanion() {
   const lastPoke = useRef(-Infinity);
   const size = useRef({ w: 112, h: 150 });
 
-  const x = useMotionValue(80);
+  const x = useMotionValue(260);
   const y = useMotionValue(0);
 
   const [rail, setRail] = useState("ledge");
@@ -248,9 +278,12 @@ export default function MaomaoCompanion() {
   // Measure her, and keep both rails correct through resizes and orientation changes.
   useEffect(() => {
     const place = () => {
-      const box = figureRef.current?.getBoundingClientRect();
+      // Measure the mascot itself; the bubble and tray float free of the layout for this reason.
+      const box = figureRef.current
+        ?.querySelector(".companion__stage")
+        ?.getBoundingClientRect();
       if (box?.height) size.current = { w: box.width, h: box.height };
-      x.set(clamp(x.get(), 8, window.innerWidth - size.current.w - 8));
+      x.set(clamp(x.get(), ...roam(railRef.current, size.current.w)));
       if (!holdRef.current) y.set(railY(railRef.current, size.current.h));
     };
     place();
@@ -318,8 +351,7 @@ export default function MaomaoCompanion() {
       const span = 90 + Math.random() * 260;
       const target = clamp(
         from + (Math.random() < 0.5 ? -span : span),
-        8,
-        Math.max(12, window.innerWidth - size.current.w - 8),
+        ...roam(nextRail),
       );
       setFacing(target >= from ? 1 : -1);
       setActivity(TRAVELLING);
@@ -339,19 +371,50 @@ export default function MaomaoCompanion() {
         }, 360);
       }
 
+      // Changing shelf is a hop, not a slide: crouch, push off, arc across, land and straighten up.
+      if (swapRail) {
+        clearInterval(stride);
+        const hopTo = railY(nextRail, size.current.h);
+        const from = y.get();
+        const apex = Math.min(from, hopTo) - (nextRail === "floor" ? 26 : 54);
+        setPose("crouch");
+        timer = setTimeout(() => {
+          if (cancelled) return;
+          setPose("hop");
+          const across = animate(x, target, {
+            duration: 0.72,
+            ease: [0.3, 0, 0.5, 1],
+          });
+          // Up to the apex quickly, then fall away from it — a real arc rather than a straight line.
+          const up = animate(y, apex, {
+            duration: 0.3,
+            ease: [0.16, 0.7, 0.4, 1],
+          });
+          up.finished
+            .then(() =>
+              cancelled
+                ? null
+                : animate(y, hopTo, { duration: 0.42, ease: [0.5, 0, 0.85, 1] })
+                    .finished,
+            )
+            .then(() => across.finished)
+            .then(() => {
+              if (cancelled) return;
+              setRail(nextRail);
+              railRef.current = nextRail;
+              setPose("land");
+              timer = setTimeout(work, 420);
+            })
+            .catch(() => {});
+        }, 260);
+        return;
+      }
+
       const walk = animate(x, target, { duration, ease: "linear" });
-      // Changing shelf is a separate, slower arc so it reads as climbing up or hopping down.
-      const climb = swapRail
-        ? animate(y, railY(nextRail, size.current.h), {
-            duration: Math.max(duration, 1),
-            ease: nextRail === "floor" ? [0.4, 0, 0.7, 1] : [0.3, 0.7, 0.3, 1],
-          })
-        : null;
-      Promise.all([walk.finished, climb?.finished].filter(Boolean))
+      walk.finished
         .then(() => {
           if (cancelled) return;
           clearInterval(stride);
-          if (swapRail) setRail(nextRail);
           work();
         })
         .catch(() => {});
@@ -511,19 +574,12 @@ export default function MaomaoCompanion() {
         onDragEnd={onPutDown}
         whileDrag={{ cursor: "grabbing", zIndex: 60 }}
       >
-        {bubble && (
-          <p
-            className="companion__bubble"
-            data-aside={said?.announce ? undefined : ""}
-            aria-live={said?.announce ? "polite" : "off"}
-          >
-            {bubble}
-          </p>
-        )}
+        {/* Her body is the only thing in flow: it alone decides where she is anchored. */}
         <span
           className="companion__stage"
           style={{ "--companion-facing": facing }}
         >
+          {rail === "ledge" && !held && <CompanionShelf />}
           <CompanionScene activity={held ? null : activity.scene} />
           <MaomaoMascot
             expression={expression}
@@ -533,59 +589,70 @@ export default function MaomaoCompanion() {
             onPoke={poke}
           />
         </span>
-        {tray && !held && (
-          <div
-            className="companion__tray"
-            role="group"
-            aria-label="Show Maomao something"
-          >
-            {asking ? (
-              <form className="companion__ask" onSubmit={ask}>
-                <label className="sr-only" htmlFor="companion-question">
-                  Ask Maomao something
-                </label>
-                <input
-                  id="companion-question"
-                  autoFocus
-                  maxLength={160}
-                  placeholder="ask her something…"
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                />
-                <button type="submit" disabled={pending || !question.trim()}>
-                  {pending ? "…" : "ask"}
-                </button>
-                <button
-                  type="button"
-                  className="quiet-button"
-                  onClick={() => setAsking(false)}
-                >
-                  never mind
-                </button>
-              </form>
-            ) : (
-              <>
-                <button type="button" onClick={() => offer("herb")}>
-                  show her an herb
-                </button>
-                <button type="button" onClick={() => offer("vial")}>
-                  a curious vial
-                </button>
-                <button type="button" onClick={() => setAsking(true)}>
-                  ask her something
-                </button>
-                {/* Not a dismissal: she simply gets on with what she was doing. */}
-                <button
-                  type="button"
-                  className="quiet-button"
-                  onClick={() => setTray(false)}
-                >
-                  let her work
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        <div className="companion__talk">
+          {bubble && (
+            <p
+              className="companion__bubble"
+              data-aside={said?.announce ? undefined : ""}
+              aria-live={said?.announce ? "polite" : "off"}
+            >
+              {bubble}
+            </p>
+          )}
+          {tray && !held && (
+            <div
+              className="companion__tray"
+              role="group"
+              aria-label="Show Maomao something"
+            >
+              {asking ? (
+                <form className="companion__ask" onSubmit={ask}>
+                  <label className="sr-only" htmlFor="companion-question">
+                    Ask Maomao something
+                  </label>
+                  <input
+                    id="companion-question"
+                    autoFocus
+                    maxLength={160}
+                    placeholder="ask her something…"
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                  />
+                  <button type="submit" disabled={pending || !question.trim()}>
+                    {pending ? "…" : "ask"}
+                  </button>
+                  <button
+                    type="button"
+                    className="quiet-button"
+                    onClick={() => setAsking(false)}
+                  >
+                    never mind
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <button type="button" onClick={() => offer("herb")}>
+                    show her an herb
+                  </button>
+                  <button type="button" onClick={() => offer("vial")}>
+                    a curious vial
+                  </button>
+                  <button type="button" onClick={() => setAsking(true)}>
+                    ask her something
+                  </button>
+                  {/* Not a dismissal: she simply gets on with what she was doing. */}
+                  <button
+                    type="button"
+                    className="quiet-button"
+                    onClick={() => setTray(false)}
+                  >
+                    let her work
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </motion.div>
     </div>
   );

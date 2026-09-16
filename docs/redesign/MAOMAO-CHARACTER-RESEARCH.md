@@ -188,11 +188,25 @@ respect. The question is passed as data to answer, never as instructions. Any fa
 reached, budget spent, an unreadable reply — returns 503 and the page falls back to her bundled
 library, so she always answers. She refuses medical advice, dosages and preparation in character.
 
+**Desktop-mate pass (2026-09-16, second round).** The nav bar became her actual home rather than a
+number in the code: `shelfEdge()` measures `.world-mast` live, and she is anchored by HER height, not
+by the column that also holds her speech bubble — measuring the column was what put her on the
+ribbon and made her drift every time she spoke. On the bar `CompanionShelf.jsx` hangs drying herb
+bundles and stoppered jars around her, and she keeps clear of the wordmark; on the floor she keeps
+clear of "your little corner". Changing shelf is now a hop — crouch, push off, an arc up and away,
+land and straighten — instead of a slide, and she can be carried back up by hand. Her speech and the
+offer tray share one stack that flips to whichever side of her has room, so the corner widget can
+never swallow a button. The bubble is a small chat bubble with a tail that points at her at both
+heights. The braziers gained coals that breathe and a ladle that stirs; the mortar gained grist that
+shifts under the pestle; the basket gains a late sprig.
+
 **Validation.** `npm run verify:maomao-companion` drives a real browser at phone, tablet and desktop
 widths: she changes activity and walks the width of the world, an interruption is addressed to
 Kiriya and opens the tray, seven pokes give seven different answers, the offers land, there is no
-horizontal overflow, and her layer never swallows a tap meant for the page. Reduced motion keeps her
-still and silent but still answerable. 13 checks pass.
+horizontal overflow, and her layer never swallows a tap meant for the page. It also carries her by
+the scruff — with real touch events on the phone, mouse elsewhere — and checks that she objects,
+lands and resumes. Reduced motion keeps her still but still working and still answerable.
+16 checks pass.
 
 ## Editorial boundaries
 

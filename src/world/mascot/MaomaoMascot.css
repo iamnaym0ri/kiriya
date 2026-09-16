@@ -735,3 +735,51 @@ button.mascot:active .mascot__svg {
 .mascot[data-pose="sit"] .mascot__float {
   translate: 0 6px;
 }
+
+/* --- Hopping between shelves ------------------------------------------------------------------
+   Anticipation, then the push. The arc itself is Motion's job; these are the body shapes that
+   make it read as a jump rather than a slide. */
+@keyframes mascot-crouch {
+  0% {
+    translate: 0 0;
+    scale: 1 1;
+  }
+  100% {
+    translate: 0 5px;
+    scale: 1.1 0.88;
+  }
+}
+@keyframes mascot-hop {
+  0% {
+    translate: 0 4px;
+    scale: 1.08 0.9;
+  }
+  30% {
+    translate: 0 -4px;
+    scale: 0.9 1.12;
+  }
+  100% {
+    translate: 0 0;
+    scale: 0.96 1.05;
+  }
+}
+.mascot[data-pose="crouch"] .mascot__svg {
+  transform-origin: 100px 232px;
+  animation: mascot-crouch 240ms ease-out both;
+}
+.mascot[data-pose="hop"] .mascot__svg {
+  transform-origin: 100px 232px;
+  animation: mascot-hop 420ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+/* Legs tuck up under her while she is in the air. */
+.mascot[data-pose="hop"] .mascot__shoe--left,
+.mascot[data-pose="hop"] .mascot__shoe--right {
+  translate: 0 -9px;
+  rotate: -12deg;
+}
+.mascot[data-pose="crouch"] .mascot__shoe--left {
+  translate: -3px 0;
+}
+.mascot[data-pose="crouch"] .mascot__shoe--right {
+  translate: 3px 0;
+}

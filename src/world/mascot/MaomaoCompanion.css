@@ -82,18 +82,80 @@
   padding: 0;
 }
 
+/* Everything she says stacks in one column that sits on whichever side of her has room: above
+   when she is on the floor (so the corner widget can never swallow the tray), below on the bar. */
+.companion__talk {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+}
+.companion[data-rail="floor"] .companion__talk {
+  bottom: calc(100% + 10px);
+  flex-direction: column-reverse;
+}
+.companion[data-rail="ledge"] .companion__talk {
+  top: calc(100% + 10px);
+}
 .companion__bubble {
   pointer-events: auto;
-  max-width: min(76vw, 310px);
-  margin: 0 0 6px;
-  padding: 11px 15px;
+  position: relative;
+  width: max-content;
+  max-width: min(62vw, 236px);
+  margin: 0;
+  padding: 8px 12px;
   border: 1px solid var(--theme-line, #ceb2d9);
-  border-radius: 16px 16px 16px 5px;
+  border-radius: 14px 14px 14px 4px;
   background: var(--theme-paper, #fff9fd);
-  box-shadow: 3px 4px 0 #a88bb31f;
+  box-shadow: 0 3px 12px #49365318;
   color: #4b3557;
-  font: 15px/1.5 var(--font-hand, inherit);
+  font: 13.5px/1.42 var(--font-hand, inherit);
   text-wrap: pretty;
+  animation: companion-say 220ms ease both;
+}
+/* The little tail that makes it a chat bubble rather than a box; it always points at her. */
+.companion[data-rail="ledge"] .companion__bubble {
+  border-radius: 4px 14px 14px 14px;
+}
+.companion[data-rail="ledge"] .companion__bubble::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 20px;
+  width: 11px;
+  height: 9px;
+  background: inherit;
+  border-left: 1px solid var(--theme-line, #ceb2d9);
+  border-top: 1px solid var(--theme-line, #ceb2d9);
+  clip-path: polygon(0 0, 100% 100%, 18% 100%);
+}
+.companion[data-rail="floor"] .companion__bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 20px;
+  width: 11px;
+  height: 9px;
+  background: inherit;
+  border-right: 1px solid var(--theme-line, #ceb2d9);
+  border-bottom: 1px solid var(--theme-line, #ceb2d9);
+  clip-path: polygon(0 0, 100% 0, 18% 100%);
+}
+@keyframes companion-say {
+  from {
+    opacity: 0;
+    translate: 0 5px;
+    scale: 0.96;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
 }
 /* Thinking aloud to herself reads differently from answering you: lighter, unpunctuated by a
    tail, and quieter on the page. Anything she says *to* Kiriya keeps the solid bubble. */
@@ -107,6 +169,7 @@
 }
 .companion__tray {
   pointer-events: auto;
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -150,6 +213,44 @@
   background: #fffafd;
   color: #4b3557;
   font: 14px var(--font-ui, inherit);
+}
+
+/* Her shelf on the nav bar: hangs from its lower edge, centred on her, behind everything else. */
+.companion__shelf {
+  position: absolute;
+  /* Its base lands on the bar's lower edge — the same line her seat rests on. */
+  bottom: 44%;
+  left: 50%;
+  width: 240px;
+  height: 78px;
+  translate: -50% 0;
+  pointer-events: none;
+  overflow: visible;
+  animation: shelf-in 460ms ease both;
+}
+@keyframes shelf-in {
+  from {
+    opacity: 0;
+    translate: -50% -5px;
+  }
+  to {
+    opacity: 1;
+    translate: -50% 0;
+  }
+}
+@keyframes shelf-sway {
+  0%,
+  100% {
+    rotate: -2.2deg;
+  }
+  50% {
+    rotate: 2.2deg;
+  }
+}
+.shelf__bundle {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: shelf-sway 4.6s ease-in-out infinite;
 }
 
 /* ---------------------------------------------------------------------------------------------
@@ -444,4 +545,83 @@
 [data-motion="paused"] .companion__scene * {
   transition: none !important;
   animation: none !important;
+}
+
+/* Refinements to the benches: the parts that were reading as static shapes. */
+@keyframes coals-breathe {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes ladle-stir {
+  0%,
+  62%,
+  100% {
+    rotate: 0deg;
+  }
+  72% {
+    rotate: -9deg;
+  }
+  86% {
+    rotate: 7deg;
+  }
+}
+@keyframes brew-surface {
+  0%,
+  100% {
+    scale: 1 1;
+    opacity: 0.9;
+  }
+  50% {
+    scale: 0.93 0.8;
+    opacity: 1;
+  }
+}
+@keyframes grist-shift {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 3px -1px;
+  }
+}
+@keyframes sprig-late {
+  0%,
+  55% {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  70%,
+  100% {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+.scene--brew .scene__coals > ellipse {
+  animation: coals-breathe 1.6s ease-in-out infinite;
+}
+.scene--brew .scene__coals > ellipse:nth-child(2) {
+  animation-delay: 0.5s;
+}
+.scene--brew .scene__coals > ellipse:nth-child(3) {
+  animation-delay: 1s;
+}
+.scene--brew .scene__ladle {
+  transform-origin: 61px 56px;
+  animation: ladle-stir 5.2s ease-in-out infinite;
+}
+.scene--brew .scene__brewsurface {
+  transform-origin: 51px 56px;
+  animation: brew-surface 2.6s ease-in-out infinite;
+}
+.scene--grind .scene__grist {
+  animation: grist-shift 780ms ease-in-out infinite;
+}
+.scene--gather .scene__sprig-late {
+  animation: sprig-late 3.4s ease-out infinite;
 }

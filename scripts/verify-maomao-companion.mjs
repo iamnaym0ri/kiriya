@@ -105,7 +105,16 @@ try {
       `${label}: expected her to walk; positions stayed within ${Math.round(spread())}px (${seen.map(Math.round).join(",")})`,
     );
     const poses = await page.evaluate(() => [...(window.__poses ?? [])]);
-    assert.ok(poses.includes("walk"), `${label}: she should use a walk cycle, saw poses ${poses.join(", ")}`);
+    // She travels either by striding along a shelf or hopping between them; both are animated
+    // poses rather than a teleport, and which one a short window catches is chance.
+    assert.ok(
+      poses.includes("walk") || poses.includes("hop"),
+      `${label}: she should stride or hop to move, saw poses ${poses.join(", ")}`,
+    );
+    assert.ok(
+      poses.includes("sit") || poses.includes("stand"),
+      `${label}: she should settle between moves, saw poses ${poses.join(", ")}`,
+    );
     checks.push(
       `✓ ${label}: works at her bench (${tasks.length - 1} tasks), strides, and covers ${Math.round(spread())}px`,
     );
