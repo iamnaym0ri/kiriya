@@ -1,15 +1,66 @@
-/* The companion layer. Fixed to the foot of the world so she can walk the whole width, but the
-   layer itself never swallows a tap: only she, her bubble and her tray are interactive. */
+/* The companion layer. Fixed over the whole world so she can use the nav bar and the floor, but
+   the layer itself never swallows a tap: only she, her bubble and her tray are interactive.
+   Motion owns her position now (x/y motion values), so there are no CSS transitions to fight. */
 .companion {
   position: fixed;
-  left: 0;
-  right: 0;
-  /* Clear of "your little corner" (fixed, bottom-left, ~92px tall) so she is never sat on by it. */
-  bottom: var(--companion-floor, calc(96px + env(safe-area-inset-bottom)));
-  z-index: 35;
-  height: 0;
+  inset: 0;
+  /* Above .world-mast (40) so she can sit ON the nav bar and still be picked up there. She hangs
+     mostly below its edge, and if she is ever in the way you can simply carry her somewhere else. */
+  z-index: 41;
   pointer-events: none;
 }
+.companion__figure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 112px;
+  display: grid;
+  justify-items: center;
+  pointer-events: none;
+  will-change: transform;
+}
+/* The path she walks on: a soft trodden strip with footprints that fade behind her. */
+.companion__path {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--companion-floor, 96px) - 6px);
+  height: 18px;
+  pointer-events: none;
+  background: radial-gradient(
+    120px 9px at 50% 50%,
+    color-mix(in srgb, var(--theme-line, #ceb2d9) 38%, transparent),
+    transparent 72%
+  );
+  opacity: 0.55;
+}
+.companion__print {
+  position: absolute;
+  bottom: 5px;
+  width: 9px;
+  height: 5px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--theme-line, #ceb2d9) 72%, transparent);
+  animation: companion-print 1.6s ease-out forwards;
+}
+@keyframes companion-print {
+  0% {
+    opacity: 0.6;
+    scale: 0.7;
+  }
+  25% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.15;
+  }
+}
+.companion[data-held] .companion__figure {
+  cursor: grabbing;
+}
+
 /* Scene + mascot share a box whose baseline is her feet. */
 .companion__stage {
   position: relative;
@@ -17,40 +68,18 @@
   justify-items: center;
   width: 100%;
 }
-.companion__figure {
-  position: absolute;
-  bottom: 0;
-  left: var(--companion-x, 12vw);
-  width: 112px;
-  display: grid;
-  justify-items: center;
-  transition: left var(--companion-walk, 0ms) cubic-bezier(0.37, 0.12, 0.28, 1);
-  pointer-events: none;
-}
-.companion__stage > .mascot {
-  pointer-events: auto;
+.companion__stage {
   /* She faces the way she's walking. The face rig is symmetric, so a flip reads correctly. */
   transform: scaleX(var(--companion-facing, 1));
   transition: transform 260ms ease;
+}
+.companion__stage > .mascot {
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
   background: none;
   border: 0;
   padding: 0;
-  cursor: pointer;
-}
-/* A gentle step while she is between places; the mascot's own float keeps her alive when still. */
-@keyframes companion-step {
-  0%,
-  100% {
-    translate: 0 0;
-    rotate: -1.4deg;
-  }
-  50% {
-    translate: 0 -5px;
-    rotate: 1.4deg;
-  }
-}
-.companion[data-walking] .companion__stage > .mascot {
-  animation: companion-step 560ms ease-in-out infinite;
 }
 
 .companion__bubble {
@@ -121,20 +150,6 @@
   background: #fffafd;
   color: #4b3557;
   font: 14px var(--font-ui, inherit);
-}
-.companion__recall {
-  pointer-events: auto;
-  position: absolute;
-  right: 14px;
-  bottom: 0;
-  min-height: 40px;
-  padding: 6px 13px;
-  border: 1px solid var(--theme-line, #ceb2d9);
-  border-radius: 12px;
-  background: var(--theme-paper, #fff9fd);
-  color: #6b4a76;
-  font: 13px var(--font-hand, inherit);
-  cursor: pointer;
 }
 
 /* ---------------------------------------------------------------------------------------------
@@ -382,9 +397,6 @@
   }
 }
 @media (max-width: 950px) {
-  .companion {
-    --companion-floor: 84px;
-  }
   .companion__figure {
     width: 82px;
   }

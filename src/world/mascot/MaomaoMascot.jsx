@@ -78,6 +78,9 @@ export default function MaomaoMascot({
   size = 132,
   onPoke,
   reactionKey = 0,
+  // How the body is carrying itself: standing, mid-stride, sitting on a ledge, hanging from the
+  // scruff while she is carried, or picking herself up after being put down.
+  pose = "stand",
 }) {
   const Tag = onPoke ? "button" : "div";
   const ref = useRef(null);
@@ -126,6 +129,7 @@ export default function MaomaoMascot({
       ref={ref}
       className="mascot"
       data-expression={expression}
+      data-pose={pose}
       data-mascot-motion={animate ? "on" : "off"}
       style={{ width: size }}
       onClick={onPoke}
@@ -197,8 +201,22 @@ export default function MaomaoMascot({
               d="M42 104q-6 40 13 64l6-51m97-13q6 40-13 64l-6-51"
               fill={HAIR}
             />
-            <ellipse cx="85" cy="229" rx="11" ry="4" fill="#335851" />
-            <ellipse cx="116" cy="229" rx="11" ry="4" fill="#335851" />
+            <ellipse
+              className="mascot__shoe mascot__shoe--left"
+              cx="85"
+              cy="229"
+              rx="11"
+              ry="4"
+              fill="#335851"
+            />
+            <ellipse
+              className="mascot__shoe mascot__shoe--right"
+              cx="116"
+              cy="229"
+              rx="11"
+              ry="4"
+              fill="#335851"
+            />
             <path
               d="M67 183h66l13 42q-22 8-46 2-26 5-46-2Z"
               fill={SKIRT}
@@ -241,7 +259,7 @@ export default function MaomaoMascot({
               strokeWidth="2"
             />
             <g
-              className="mascot__arms-rest"
+              className="mascot__arms-rest mascot__arm-swing"
               opacity={
                 thrilled || fascinated || pondering || writing || sniffing
                   ? 0

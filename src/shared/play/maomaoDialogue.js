@@ -680,6 +680,30 @@ Object.assign(MAOMAO_REMARKS, {
     line("ew", "The mortar and I were having a moment. You've ruined it."),
     line("happy", "You're in a mood today. Go on, then. I'm listening."),
   ],
+  // Being picked up and carried. Indignant, never hurt: the objection is to the handling.
+  carried: [
+    line("alarmed", "—! Put me down. Carefully. I am not a sack of dried roots."),
+    line("ew", "This is exactly how one carries a cat. I am not a cat."),
+    line("startled", "Ah— the whole room is sideways. Marvellous."),
+    line("unimpressed", "I was in the middle of something, you know."),
+    line("ew", "By the collar. Of course. Very dignified."),
+    line("skeptical", "If you're moving me, at least move me somewhere with better light."),
+    line("alarmed", "My notes— no, I had them a moment ago. Wonderful."),
+    line("amused", "Fine. Carry me about. See if I stop talking."),
+    line("unimpressed", "I do have feet. They were working perfectly."),
+    line("ew", "Mind the mortar. Mind the MORTAR."),
+  ],
+  // Set down again. She gets up, checks nothing is broken and carries on.
+  landed: [
+    line("deadpan", "…Right. Where was I."),
+    line("unimpressed", "Thank you. I could have walked."),
+    line("thinking", "Hm. Actually the light is better here."),
+    line("pleased", "Nothing broken. We'll call that a success."),
+    line("skeptical", "If I find a leaf out of order, I'll know who to ask."),
+    line("deadpan", "Back to work, then. As though nothing happened."),
+    line("amused", "Do that again and I'm charging you for the interruption."),
+    line("shy", "…You could just have asked me to move."),
+  ],
   // Time-of-day greetings. She has opinions about your sleep schedule.
   hour: [
     line(

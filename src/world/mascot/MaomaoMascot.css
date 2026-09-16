@@ -552,3 +552,186 @@ button.mascot:active .mascot__svg {
     transition-duration: 0s !important;
   }
 }
+
+/* ===============================================================================================
+   Body poses. The face rig is unchanged; these drive how she is CARRYING herself, so the same
+   expression can be standing, mid-stride, sitting on a ledge or hanging from the scruff.
+   Everything here is transform-only, so it composes with the existing breath/float clocks and is
+   cancelled by the quiet/reduced-motion rules above.
+   =============================================================================================== */
+
+/* --- Walking ---------------------------------------------------------------------------------
+   A proper stride rather than a bob: the feet alternate, the arms counter-swing, the body rises
+   on the passing pose and leans a little into the direction of travel. */
+@keyframes mascot-step-left {
+  0%,
+  100% {
+    translate: -7px 0;
+    rotate: -7deg;
+  }
+  50% {
+    translate: 7px -6px;
+    rotate: 7deg;
+  }
+}
+@keyframes mascot-step-right {
+  0%,
+  100% {
+    translate: 7px -6px;
+    rotate: 7deg;
+  }
+  50% {
+    translate: -7px 0;
+    rotate: -7deg;
+  }
+}
+@keyframes mascot-stride-bob {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: -1.1deg;
+  }
+  25% {
+    translate: 0 -3.5px;
+  }
+  50% {
+    translate: 0 0;
+    rotate: 1.1deg;
+  }
+  75% {
+    translate: 0 -3.5px;
+  }
+}
+@keyframes mascot-arm-swing {
+  0%,
+  100% {
+    rotate: 6deg;
+  }
+  50% {
+    rotate: -6deg;
+  }
+}
+.mascot[data-pose="walk"] .mascot__shoe--left {
+  transform-origin: 85px 226px;
+  animation: mascot-step-left 620ms ease-in-out infinite;
+}
+.mascot[data-pose="walk"] .mascot__shoe--right {
+  transform-origin: 116px 226px;
+  animation: mascot-step-right 620ms ease-in-out infinite;
+}
+.mascot[data-pose="walk"] .mascot__float {
+  animation: mascot-stride-bob 620ms ease-in-out infinite;
+}
+.mascot[data-pose="walk"] .mascot__arm-swing {
+  transform-origin: 100px 160px;
+  animation: mascot-arm-swing 620ms ease-in-out infinite;
+}
+/* The braids lag behind the stride, which is most of what sells the weight. */
+.mascot[data-pose="walk"] .mascot__braid--left,
+.mascot[data-pose="walk"] .mascot__braid--right {
+  animation: mascot-arm-swing 620ms ease-in-out infinite;
+  animation-delay: 90ms;
+}
+
+/* --- Carried by the scruff -------------------------------------------------------------------
+   Picked up like a kitten: everything below the collar goes slack and hangs, and she swings from
+   the point she is held by. The swing is damped, so she settles rather than pendulums forever. */
+@keyframes mascot-scruff-sway {
+  0% {
+    rotate: -13deg;
+  }
+  25% {
+    rotate: 9deg;
+  }
+  50% {
+    rotate: -6deg;
+  }
+  75% {
+    rotate: 3deg;
+  }
+  100% {
+    rotate: -1.5deg;
+  }
+}
+@keyframes mascot-dangle {
+  0%,
+  100% {
+    translate: 0 5px;
+    rotate: -5deg;
+  }
+  50% {
+    translate: 0 7px;
+    rotate: 5deg;
+  }
+}
+.mascot[data-pose="held"] .mascot__svg {
+  transform-origin: 100px 46px;
+  animation: mascot-scruff-sway 1500ms cubic-bezier(0.33, 0.9, 0.3, 1) both;
+}
+.mascot[data-pose="held"] .mascot__shoe--left,
+.mascot[data-pose="held"] .mascot__shoe--right {
+  transform-origin: 100px 190px;
+  animation: mascot-dangle 900ms ease-in-out infinite;
+}
+.mascot[data-pose="held"] .mascot__arm-swing {
+  transform-origin: 100px 150px;
+  animation: mascot-dangle 1100ms ease-in-out infinite;
+}
+.mascot[data-pose="held"] .mascot__braid--left,
+.mascot[data-pose="held"] .mascot__braid--right {
+  animation: mascot-dangle 1300ms ease-in-out infinite;
+}
+
+/* --- Put down ---------------------------------------------------------------------------------
+   She lands, folds, then picks herself up. Squash on impact and a small overshoot standing. */
+@keyframes mascot-land {
+  0% {
+    translate: 0 -8px;
+    scale: 1.03 0.95;
+  }
+  22% {
+    translate: 0 3px;
+    scale: 1.16 0.84;
+  }
+  45% {
+    translate: 0 0;
+    scale: 0.94 1.07;
+  }
+  70% {
+    scale: 1.03 0.97;
+  }
+  100% {
+    translate: 0 0;
+    scale: 1 1;
+  }
+}
+.mascot[data-pose="land"] .mascot__svg {
+  transform-origin: 100px 232px;
+  animation: mascot-land 760ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+/* --- Sitting on the ledge ---------------------------------------------------------------------
+   Perched on the underside of the nav bar with her legs over the edge, swinging slowly. */
+@keyframes mascot-legs-swing {
+  0%,
+  100% {
+    translate: -3px 6px;
+    rotate: -8deg;
+  }
+  50% {
+    translate: 3px 6px;
+    rotate: 8deg;
+  }
+}
+.mascot[data-pose="sit"] .mascot__shoe--left {
+  transform-origin: 90px 196px;
+  animation: mascot-legs-swing 2200ms ease-in-out infinite;
+}
+.mascot[data-pose="sit"] .mascot__shoe--right {
+  transform-origin: 112px 196px;
+  animation: mascot-legs-swing 2200ms ease-in-out infinite;
+  animation-delay: 260ms;
+}
+.mascot[data-pose="sit"] .mascot__float {
+  translate: 0 6px;
+}
