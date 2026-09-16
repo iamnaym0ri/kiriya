@@ -32,8 +32,9 @@ await test("Birthday and curated content survive September 15, September 22 and 
     assert.equal(one.collectionVersion, COLLECTION_VERSION);
     assert.deepEqual(
       one.cards.map((c) => c.kind),
-      ["maomao", "vocaloid", "cosplay", "art"],
+      ["art"],
     );
+    assert.equal(one.song, null, "Daily personal bundles must not substitute fixed songs for the music feed");
     assert(!("outfits" in one));
     assert(!("apothecary" in one));
     assert(one.pushes.every(isApprovedPush));

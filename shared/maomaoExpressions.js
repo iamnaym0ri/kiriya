@@ -1,0 +1,30 @@
+// The companion's expression vocabulary, shared by the SVG face and the "ask her something" route.
+// Kept as plain JS (no JSX) so the server can import it. src/world/mascot/MaomaoFace.jsx builds its
+// face table from this list, and a test asserts the two never drift apart.
+export const MAOMAO_EXPRESSIONS = Object.freeze([
+  "deadpan",
+  "thinking",
+  "smug",
+  "sparkle",
+  "happy",
+  "sleepy",
+  "party",
+  "ew",
+  "herb",
+  "poison",
+  "curious",
+  "writing",
+  "pleased",
+  "startled",
+  "skeptical",
+  "shy",
+  "sniff",
+  "focused",
+  "fond",
+  "amused",
+  "alarmed",
+  "proud",
+  "conspiratorial",
+  "unimpressed",
+  "delighted",
+]);

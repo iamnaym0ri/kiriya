@@ -775,7 +775,7 @@ export default function FeedPanel() {
       <h2 id="feed-panel-title">kiriya’s feeds</h2>
       <p className="admin-muted">
         Daily drops for the Maomao club, music, dress-up, meme of the day and
-        the merch shelf. The authored slides stay as the fallback.
+        the merch shelf. Saved picture albums remain available while a drop is empty; discoveries and songs use published feed data.
       </p>
       {status.isPending && <p>Checking feed setup…</p>}
       {status.error && (

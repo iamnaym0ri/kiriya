@@ -63,11 +63,11 @@ export default function LoreCarousel({ kind, feed = NO_FEED, onSeen }) {
   const [enlarged, setEnlarged] = useState(false);
   const ref = useRef(null);
   const toggleIntent = useRef(null);
-  const authored = query.data?.slides;
-  // Today's feed slides lead; the hand-written slides stay as evergreen pages after them.
+  const pictures = query.data?.slides;
+  // Saved images are explicitly picture-album pages, never fixed lore posing as a new drop.
   const slides = useMemo(
-    () => [...feed.map(feedSlide), ...(authored ?? [])],
-    [feed, authored],
+    () => [...feed.map(feedSlide), ...(pictures ?? [])],
+    [feed, pictures],
   );
   const current = slides.length ? Math.min(active, slides.length - 1) : 0;
   const playing =
@@ -122,7 +122,7 @@ export default function LoreCarousel({ kind, feed = NO_FEED, onSeen }) {
       className={`lore-carousel lore-carousel--${kind}`}
       role="region"
       aria-roledescription="carousel"
-      aria-label={`${name} picture & lore collection`}
+      aria-label={`${name} picture collection`}
       data-motion-region
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -234,7 +234,7 @@ export default function LoreCarousel({ kind, feed = NO_FEED, onSeen }) {
                 </span>
                 <span className="pixel-label">{slide.label}</span>
                 <h3>{slide.title}</h3>
-                <p>{slide.body}</p>
+                {slide.body && <p>{slide.body}</p>}
                 {slide.feed && <FeedFacts item={slide.words} />}
                 {slide.song && (
                   <button

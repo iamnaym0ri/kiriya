@@ -12,15 +12,19 @@ import { readCheckin, saveCheckin, saveAddressPreference } from "../lib/checkin.
 import { publicProfileDefaults } from "../content/publicProfile.js";
 import { kiriya } from "../content/kiriya.js";
 import { maomaoBirthdayLetter } from "../content/birthday.js";
-import { collectionCards, musicPicks } from "../content/collection.js";
+import { collectionCards } from "../content/collection.js";
 import { curations } from "../content/curation.js";
+import { DISCOVERY_SECTIONS } from "../../shared/feedContent.js";
+import { readDiscoveryCollection, readSongCollection } from "../feeds/collections.js";
 import { songRoutes } from "./songs.js";
 import { atelierRoutes } from "./atelier.js";
 import { apothecaryRoutes } from "./apothecary.js";
 import { noteJarRoutes } from "./noteJar.js";
+import { maomaoRoutes } from "./maomao.js";
 
 export const meRoutes = new Hono();
 meRoutes.route("/note-jar", noteJarRoutes);
+meRoutes.route("/maomao", maomaoRoutes);
 
 function segmentOf(hour) {
   if (hour >= 5 && hour < 11) return "morning";
@@ -390,13 +394,14 @@ meRoutes.post("/letters/:id/open", async (c) => {
   return c.json({ ok: true });
 });
 
-// Browsable approved items, never ranked or inferred from behaviour.
-meRoutes.get("/discoveries", (c) => {
+// Old entry points now read the same published editions as the main feed sections.
+meRoutes.get("/discoveries", async (c) => {
   const kind = c.req.query("kind");
-  if (!collectionCards[kind]) return c.json({ error: "not_found" }, 404);
-  return c.json({ items: collectionCards[kind] });
+  if (kind === "art") return c.json({ items: collectionCards.art });
+  if (!Object.hasOwn(DISCOVERY_SECTIONS, kind)) return c.json({ error: "not_found" }, 404);
+  return c.json(await readDiscoveryCollection(await getDb(), kind));
 });
-meRoutes.get("/music-picks", (c) => c.json({ songs: musicPicks }));
+meRoutes.get("/music-picks", async (c) => c.json(await readSongCollection(await getDb())));
 meRoutes.get("/curation", (c) => {
   const kind = c.req.query("kind");
   if (!Object.hasOwn(curations, kind)) return c.json({ error: "not_found" }, 404);

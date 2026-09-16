@@ -1,0 +1,4 @@
+.song-artwork { display: block; width: 100%; height: 100%; object-fit: cover; }
+.song-artwork--empty { display: grid; place-items: center; min-height: 90px; background: repeating-radial-gradient(circle, #53405e 0 7px, #63506d 8px 9px); color: #fff1f9; }
+.song-artwork--empty > span { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #cfabc9; font-size: 28px; color: #4c3557; }
+.music-object__sleeve > .song-artwork { width: 78px; height: 90px; position: relative; z-index: 2; border: 4px solid #f2ebf7; object-fit: cover; }

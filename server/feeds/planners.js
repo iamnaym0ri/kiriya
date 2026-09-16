@@ -9,7 +9,7 @@
 //          (released Global news/events), 2 note (news/lore), 2 visual (art/GIF), 1 meme, 1 merch.
 //          7-day producer exclusion is hard; no producer twice in an edition; a non-Miku voicebank at
 //          least every other day. Reserve 20.
-// dressup  12 slots (+ her photo in meta = 13): daily three (miku, maomao, rotating fandom),
+// dressup  12 slots (+ her photo in meta = 13): daily three (maomao, maomao/related cosplay, miku),
 //          2 process (transformation/tutorial + wig/makeup/wip), 1 dare (wishlist-type cosplay),
 //          2 event (countdowns/new dates/this weekend), 1 extra (look → spot → wig find → scene by day),
 //          1 meme, 1 merch, 1 news. Reserve 20.
@@ -342,36 +342,31 @@ export function planDressup(items, ctx) {
       .map((i) => i.id),
   );
   const { pick, selected } = picker(taste, { ...ctx, countdownIds }, section);
-  const cosplay = pool.filter((i) => i.kind === "cosplay");
+  const cosplay = pool.filter((i) => i.kind === "cosplay" && hasMedia(i));
   const hints = {};
   const three = [];
-  const miku = pick(cosplay, (i) => lower(i.tags.characters).includes("hatsune miku"));
-  if (miku) three.push({ type: "three", primary: miku, companions: [], hook: "daily_three_miku" });
   const maomao = pick(cosplay, (i) => lower(i.tags.characters).includes("maomao"));
   if (maomao) three.push({ type: "three", primary: maomao, companions: [], hook: "daily_three_maomao" });
+  // Reserve Miku before choosing the middle look; thin editions leave missing roles empty.
+  const miku = pick(cosplay, (i) => lower(i.tags.characters).includes("hatsune miku"));
+  const middlePool = cosplay.filter((i) => !lower(i.tags.characters).includes("hatsune miku"));
+  let middle = pick(middlePool, (i) => lower(i.tags.characters).includes("maomao"))
+    ?? pick(middlePool, (i) => lower(i.tags.fandoms).some((tag) => /apothecary diaries|kusuriya/.test(tag)));
   let fandom = null;
-  for (let offset = 0; offset < taste.rotatingFandoms.length; offset++) {
+  if (!middle) for (let offset = 0; offset < taste.rotatingFandoms.length; offset++) {
     const candidate = rotatingFandom(taste, ctx.day, offset);
     const wanted = candidate === "music anime" ? MUSIC_ANIME : [candidate];
-    const found = pick(cosplay, (i) => hasAny(i.tags.fandoms, wanted));
-    if (found) {
+    middle = pick(middlePool, (i) => hasAny(i.tags.fandoms, wanted));
+    if (middle) {
       fandom = candidate;
-      three.push({ type: "three", primary: found, companions: [], hook: "daily_three_rotation" });
-      hints[found.id] = { why: [`today's rotating fandom: ${candidate}`] };
+      hints[middle.id] = { why: [`today's related cosplay pick: ${candidate}`] };
       break;
     }
   }
-  // Owner decision (2026-09-16, second pass): the dress-up shelf must always be real cosplay. The
-  // authored reference photos in Collections.jsx only appear when these three come back empty, so
-  // any slot the character match misses is filled with the next best cosplay photo, then any other
-  // image-bearing visual. Without this the section silently reverts to placeholders on a thin day.
-  while (three.length < 3) {
-    const filler =
-      pick(cosplay, hasMedia) ??
-      pick(pool, (i) => ["image", "clip", "look"].includes(i.kind) && hasMedia(i));
-    if (!filler) break;
-    three.push({ type: "three", primary: filler, companions: [], hook: "daily_three_rotation" });
-  }
+  middle ??= pick(middlePool);
+  if (middle) three.push({ type: "three", primary: middle, companions: [], hook: "daily_three_rotation" });
+  if (miku) three.push({ type: "three", primary: miku, companions: [], hook: "daily_three_miku" });
+  // Illustrations and product photos never fill cosplay-photo slots.
   const entries = [...three];
   const tutorial = pick(pool, (i) => i.kind === "tutorial" && hasAny(i.tags.formats, ["transformation", "tutorial"])) ?? pick(pool, (i) => i.kind === "tutorial");
   if (tutorial) entries.push({ type: "process", primary: tutorial, companions: [] });

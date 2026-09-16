@@ -88,8 +88,10 @@ const { localDay } = await import("../server/lib/time.js");
 const { GET, POST, PUT, DELETE } = await import("../api/index.js");
 
 function request(route, { method = "GET", cookie, body, headers = {} } = {}) {
-  const u = new URL("/api", "https://kiriya.love");
-  u.searchParams.set("__route", route);
+  const original = new URL(`/api/${route}`, "https://kiriya.love");
+  const u = new URL("/api", original);
+  u.search = original.search;
+  u.searchParams.set("__route", original.pathname.slice(5));
   return { GET, POST, PUT, DELETE }[method](
     new Request(u, {
       method,
@@ -442,10 +444,19 @@ try {
     const three = plan.slots.filter((x) => x.type === "three");
     assert.deepEqual(
       three.map((x) => x.hook),
-      ["daily_three_miku", "daily_three_maomao", "daily_three_rotation"],
+      ["daily_three_maomao", "daily_three_rotation", "daily_three_miku"],
     );
     assert.equal(plan.meta.rotatingFandom, first);
     assert.equal(plan.meta.personal.photoId, "photo-1");
+    const mao1 = cos(["maomao"]), mao2 = cos(["maomao"]), miku = cos(["hatsune miku"]);
+    const preferred = P.planDressup([miku, mao1, mao2, cos([], [wanted])], ctx());
+    const pickIds = preferred.slots.filter((x) => x.type === "three").map((x) => x.primaryId);
+    assert.deepEqual(new Set(pickIds.slice(0, 2)), new Set([mao1.id, mao2.id]));
+    assert.equal(pickIds[2], miku.id);
+    const illustration = row({ kind: "image", sections: ["dressup"], tags: { characters: ["maomao"] } });
+    const sparse = P.planDressup([miku, illustration], ctx());
+    assert.deepEqual(sparse.slots.filter((x) => x.type === "three").map((x) => x.primaryId), [miku.id]);
+
     // Empty dress-up slots are never filled with extra merch (first production run had 8 merch slots).
     const merchHeavy = P.planDressup(
       [cos(["hatsune miku"]), ...Array.from({ length: 9 }, () => row({ kind: "merch", sections: ["dressup", "merch"], source: "gsc", facts: { sgd: 50 } }))],
@@ -1262,6 +1273,49 @@ try {
       ),
     );
   });
+  await test("Discovery and music compatibility routes use published editions, exclude hidden items, and keep seed albums image-only", async () => {
+    const oldFixture = process.env.FEEDS_FIXTURE_MODE;
+    process.env.FEEDS_FIXTURE_MODE = "false";
+    try {
+      const cookie = await login("admin");
+      assert.equal((await request("me/discoveries?kind=maomao")).status, 401);
+      assert.equal((await request("me/discoveries?kind=__proto__", { cookie })).status, 404);
+      const day = localDay(), build = await createBuild(db, day, { mode: "live", force: true });
+      const note = await approvedItem(rawItem(901, { kind: "lore", media: [], title: "A fresh, published apothecary note" }));
+      const song = await approvedItem(rawItem(902, { kind: "song", sections: ["music"], title: "A fresh published song", media: [{ type: "youtube", url: "https://www.youtube.com/watch?v=abcdefghijk", poster: "https://img.example.test/song.jpg" }] }));
+      for (const [section, item, type] of [["maomao", note, "note"], ["music", song, "song"]]) {
+        await db.insert(s.feedEditions).values({
+          buildId: build.id, section, day, revision: `${build.id}:${section}`, tasteRevision: build.tasteRevision,
+          state: "staged", slots: [{ key: `${section}-audit`, type, primaryId: item.id, companionIds: [] }], reserve: [],
+          meta: { fixture: false, blurbs: { [item.id]: { headline: item.title, text: "Words from the published item." } }, fingerprints: { [item.id]: item.safety.fingerprint }, scores: {}, plan: null },
+        });
+      }
+      assert(!(await (await request("me/discoveries?kind=maomao", { cookie })).json()).items.some((item) => item.id === note.id), "staged notes must not leak");
+      await db.update(s.feedEditions).set({ state: "published", publishedAt: new Date() }).where(eq(s.feedEditions.buildId, build.id));
+      const notes = await (await request("me/discoveries?kind=maomao", { cookie })).json();
+      assert.deepEqual(notes.items.map((item) => item.id), [note.id]);
+      assert.equal(notes.items[0].body, "Words from the published item.");
+      const songs = await (await request("me/music-picks", { cookie })).json();
+      assert.deepEqual(songs.songs.map((item) => item.title), [song.title]);
+      assert.equal(songs.songs[0].embedId, "abcdefghijk");
+      await db.update(s.feedItems).set({ visibility: "hidden" }).where(eq(s.feedItems.id, note.id));
+      assert.deepEqual((await (await request("me/discoveries?kind=maomao", { cookie })).json()).items, []);
+      const album = await (await request("me/curation?kind=maomao", { cookie })).json();
+      assert(album.slides.length > 0);
+      assert(album.slides.every((slide) => slide.image?.url && !slide.body && !slide.song));
+      const art = await (await request("me/discoveries?kind=art", { cookie })).json();
+      assert(art.items.length > 0, "authored drawing prompts remain available");
+    } finally { process.env.FEEDS_FIXTURE_MODE = oldFixture; }
+  });
+
+  await test("Public music has no fixed default and never substitutes an unshared song", async () => {
+    assert.equal((await (await request("public/profile")).json()).song, null);
+    const [song] = await db.insert(s.songs).values({ kind: "link", url: "https://www.youtube.com/watch?v=abcdefghijk", title: "Explicit public choice", artist: "A saved artist", featured: true, isPublic: false }).returning();
+    assert.equal((await (await request("public/profile")).json()).song, null);
+    await db.update(s.songs).set({ isPublic: true }).where(eq(s.songs.id, song.id));
+    assert.equal((await (await request("public/profile")).json()).song.title, song.title);
+  });
+
 } finally {
   globalThis.fetch = originalFetch;
   // Let a background catch-up stage settle before closing the in-memory database.

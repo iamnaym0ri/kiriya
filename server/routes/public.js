@@ -5,7 +5,6 @@ import { localDay } from "../lib/time.js";
 import { birthdayInfo } from "../lib/birthday.js";
 import { parseSongUrl } from "../lib/songs.js";
 import {
-  defaultSong,
   publicProfileDefaults,
 } from "../content/publicProfile.js";
 
@@ -35,7 +34,7 @@ publicRoutes.get("/profile", async (c) => {
     .orderBy(desc(schema.songs.createdAt))
     .limit(1);
 
-  let song = defaultSong;
+  let song = null;
   if (featured) {
     const parsed =
       featured.kind === "upload"

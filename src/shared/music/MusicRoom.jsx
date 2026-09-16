@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { Icon, Picture } from "../WorldPrimitives.jsx";
+import { Icon } from "../WorldPrimitives.jsx";
+import SongArtwork from "./SongArtwork.jsx";
 import SongPlayer from "./SongPlayer.jsx";
 const MusicContext = createContext(null);
 export const useMusic = () => useContext(MusicContext);
@@ -40,17 +41,17 @@ export function MusicProvider({ children }) {
     </MusicContext.Provider>
   );
 }
-export function MusicObject({ song, compact = false }) {
+export function MusicObject({ song, compact = false, onPlay }) {
   const music = useMusic();
   return (
     <button
       className={`music-object ${compact ? "music-object--compact" : ""}`}
-      onClick={() => song && music.play(song)}
+      onClick={() => { if (song) { onPlay?.(); music.play(song); } }}
       disabled={!song}
       aria-label={song ? `Play ${song.title}` : "No song selected"}
     >
       <span className="music-object__sleeve">
-        <Picture name="miku" alt="" eager />
+        <SongArtwork song={song} eager />
         <span className="music-object__disc" aria-hidden="true">
           <span />
         </span>
@@ -60,7 +61,7 @@ export function MusicObject({ song, compact = false }) {
         <strong>{song?.title ?? "Your music, here"}</strong>
         <small>{song?.artist ?? "Choose a song in your music shelf"}</small>
         <span className="music-object__listen">
-          {music.song?.url === song?.url
+          {song && music.song?.url === song.url
             ? "Player open"
             : "Press play, stay awhile"}{" "}
           <Icon name="play" size={13} />

@@ -1,11 +1,11 @@
-// Finite editorial collection. No feeds, ranking, tracking or AI approval.
+// Authored art prompts and legacy reference pools. External discovery routes use published feeds.
 // Source checks and deliberately selected entries: docs/redesign/ASSETS.md.
 import { maomaoFacts } from "./pools/maomao.js";
 import { vocaloidLore } from "./pools/vocaloid.js";
 import { cosplayTips } from "./pools/cosplay.js";
 import { artTips, promptSubjects, promptTwists } from "./pools/art.js";
 import { defaultSong } from "./publicProfile.js";
-export const COLLECTION_VERSION = 2;
+export const COLLECTION_VERSION = 3;
 export const approvedMaomao = maomaoFacts.filter((f) =>
   [
     "mm-name",

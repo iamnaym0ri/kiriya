@@ -147,6 +147,53 @@ The game shelf now holds Colour Club, Memory Drawer, Odd Jar, Herb Sequence and 
 
 Memory Drawer starts with four pairs and offers six after completion. Odd Jar has five distinct mysteries and grows from six to nine jars. Colour Club randomizes its target proportions and asks for a 95% match, with directional hints followed by an optional exact mix after two checks. All game panels preserve their state when switching tabs.
 
+## The roaming companion (2026-09-16)
+
+Owner ask: Maomao should not sit at the top of one page. She should live in the site as though it
+were her home — walking about, minding her own apothecary business, thinking aloud — and engage with
+Kiriya only when she is interrupted. The chibi itself should read as a finished 2D character, and
+the passive moments should have real animation, not just a pose.
+
+**Where she lives.** `src/world/mascot/MaomaoCompanion.jsx`, mounted once by `WorldShell`, so she
+keeps her place, her mood and her train of thought while the route beneath her changes. The public
+landing page keeps the older pinned `MaomaoBuddy`; the roaming companion is for Kiriya's world only.
+`MaomaoBuddy` was removed from the private Today page so there is only ever one of her there.
+
+**Passive life.** Ten activities (`grind`, `brew`, `gather`, `inspect`, `notes`, `sort`,
+`conjecture`, `rest`, `peer`, `specimen`), each with a pose and its own animated workbench drawn by
+`CompanionScene.jsx`: the pestle turns and lifts dust, a leaf drifts into the basket, a flame gutters
+under a steaming pot, ink writes itself line by line, a jar is lifted out of the row and put back, a
+sprig turns in the light, a cup steams on a stool, and half-formed thoughts surface one at a time.
+She walks between these, facing the way she travels. Roughly half the activities are done in
+silence: the bench carries the moment and the talking is the exception.
+
+**Two registers.** Her passive lines are self-talk drawn from `working`, `musing`, `idle`, `notes`,
+`deduction`, `herb` and `poison`; they never use her name and render as a dashed, italic aside. An
+interruption — a poke, or arriving somewhere — switches to the pools that address Kiriya directly
+(`kiriya`, `hour`, `poke`, `pester`, `place`) in a solid bubble. A test enforces the split.
+
+**Expressions.** Eight added for the companion's ordinary range — `focused`, `fond`, `amused`,
+`alarmed`, `proud`, `conspiratorial`, `unimpressed`, `delighted` — bringing the face table to 25.
+The vocabulary now lives in `shared/maomaoExpressions.js` so the server can offer exactly the same
+set; a test fails if the shared list and the drawn face table ever drift apart.
+
+**Drawing.** The SVG gained a cool rim light down the shaded side, a warm sheen across the fringe,
+cloth shading on the robe and a grounding shadow that stays put while she breathes — the cheapest
+changes that stop a flat vector fill reading as clip art.
+
+**Ask her something.** `POST /me/maomao/ask` (`server/routes/maomao.js`) answers in character in at
+most two sentences, bending the reply toward an apothecary's view. It is deliberately small: the
+cheap model, 160 output tokens, a 40-a-day cap, and a check against the same daily budget the feeds
+respect. The question is passed as data to answer, never as instructions. Any failure — no key, cap
+reached, budget spent, an unreadable reply — returns 503 and the page falls back to her bundled
+library, so she always answers. She refuses medical advice, dosages and preparation in character.
+
+**Validation.** `npm run verify:maomao-companion` drives a real browser at phone, tablet and desktop
+widths: she changes activity and walks the width of the world, an interruption is addressed to
+Kiriya and opens the tray, seven pokes give seven different answers, the offers land, there is no
+horizontal overflow, and her layer never swallows a tap meant for the page. Reduced motion keeps her
+still and silent but still answerable. 13 checks pass.
+
 ## Editorial boundaries
 
 The source interviews describe a layered character, not a universal rule for every scene. This companion deliberately emphasizes the everyday apothecary and comedy register appropriate to a birthday page. Serious moral decisions, long relationships and the full emotional arc cannot be represented by a small randomized library.

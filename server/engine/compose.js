@@ -1,9 +1,8 @@
-// Stable date-based selection from the existing, source-checked pools.
+// Personal daily features only. External discoveries and songs come from published feeds.
 import { seededRandom, pickFresh } from "./pick.js";
 import {
   collectionCards,
   COLLECTION_VERSION,
-  musicPicks,
   approvedSubjects,
   approvedTwists,
   ocPrompts,
@@ -24,9 +23,7 @@ export function composeDay(
     if (item) used.push(`${key}:${idOf(item)}`);
     return item;
   };
-  const cards = ["maomao", "vocaloid", "cosplay"].map((kind) =>
-    choose(kind, collectionCards[kind], (x) => x.id.split(":")[1]),
-  );
+  const cards = [];
   const random = seededRandom(day, "art-prompt");
   const prompt =
     random() < 0.35
@@ -65,18 +62,17 @@ export function composeDay(
       (s) => s.art !== "pointe" && (!s.birthdayOnly || birthday.isBirthday),
     ),
   );
-  const song = choose("song", musicPicks, (s) => s.key);
   const pushes = [
     {
       category: "maomao",
       title: "A little apothecary note",
-      body: "A sealed discovery is waiting in your Maomao collection.",
+      body: "Come spend a little time in your Maomao corner.",
       navigate: "/world/apothecary",
     },
     {
       category: "vocaloid",
       title: "A little music for your day",
-      body: "There’s a selected listen on your music shelf.",
+      body: "A little time for your music shelf, whenever you feel like it.",
       navigate: "/world/stage",
     },
     note
@@ -99,7 +95,7 @@ export function composeDay(
     writer: "template",
     greetings: greetingSet,
     cards,
-    song,
+    song: null,
     drawer: { kind: "sticker", sticker },
     birthdayNote: birthday.isBirthdayWeek
       ? (birthdayWeekNotes.find((n) => n.day === birthday.dayOfWeek) ?? null)

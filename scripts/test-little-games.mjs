@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { inspectJar, JAR_CLUES, memoryTurn, newJarRound, newMemoryGame, LANTERNS_LIT, lanternNeighbors, lanternSolution, lanternTurn, newLanternGame, newSequenceGame, sequenceTurn, toggleLanterns } from "../src/world/play/littleGames.js";
 import { newPaletteRounds, matchScore, PALETTE_PASS_SCORE } from "../src/world/play/palette.js";
-import { createRemarkPicker, MAOMAO_REMARKS, remarkTopic } from "../src/shared/play/maomaoDialogue.js";
+import { readFile } from "node:fs/promises";
+import { addressRemark, createRemarkPicker, MAOMAO_REMARKS, remarkTopic } from "../src/shared/play/maomaoDialogue.js";
 
 test("Memory drawers prevent duplicate picks and preserve a mismatched pair until dismissed", () => {
   let game = newMemoryGame(() => 0.4);
@@ -155,4 +156,53 @@ test("Maomao's attention shifts toward herbs and medicine, with contextual and r
   const ambient = Array.from({ length: 100 }, (_, i) => remarkTopic({ mode: "idle", music: true, random: () => i / 100 }));
   assert(ambient.includes("music") && ambient.includes("herb") && ambient.includes("poison"));
   assert(!ambient.includes("pester"), "She should not scold someone who hasn't poked her");
+});
+
+// --- The roaming companion -------------------------------------------------------------------
+
+test("The companion's expression list stays in step with the SVG face table", async () => {
+  const { MAOMAO_EXPRESSIONS } = await import("../shared/maomaoExpressions.js");
+  const source = await readFile(new URL("../src/world/mascot/MaomaoFace.jsx", import.meta.url), "utf8");
+  const table = source.slice(source.indexOf("const FACES = {"), source.indexOf("\n};", source.indexOf("const FACES = {")));
+  const drawn = [...table.matchAll(/^\s{2}([a-z]+):/gm)].map((m) => m[1]);
+  assert.deepEqual(
+    [...MAOMAO_EXPRESSIONS].sort(),
+    drawn.sort(),
+    "every shared expression must have a face, and every face must be offerable",
+  );
+});
+
+test("Her own thoughts never address Kiriya, and the lines that do are reserved for her", () => {
+  // Passive pools are self-talk: she is working, not speaking to anyone.
+  for (const category of ["working", "musing", "idle", "notes", "deduction"])
+    for (const { text } of MAOMAO_REMARKS[category])
+      assert.ok(!text.includes("{name}"), `${category} should not address her: ${text}`);
+  // The pools that do greet her are the ones an interruption draws from.
+  assert.ok(MAOMAO_REMARKS.kiriya.some((l) => l.text.includes("{name}")));
+  assert.ok(MAOMAO_REMARKS.hour.some((l) => l.text.includes("{name}")));
+});
+
+test("A remark addressed to her uses her name, and falls back when there isn't one", () => {
+  assert.equal(addressRemark("Hello, {name}.", "kiriya"), "Hello, kiriya.");
+  assert.equal(addressRemark("Hello, {name}.", ""), "Hello, miss apothecary.");
+  assert.equal(addressRemark("No placeholder here.", "kiriya"), "No placeholder here.");
+});
+
+test("Every companion line is a usable remark with a drawable expression", async () => {
+  const { MAOMAO_EXPRESSIONS } = await import("../shared/maomaoExpressions.js");
+  const allowed = new Set(MAOMAO_EXPRESSIONS);
+  for (const [category, lines] of Object.entries(MAOMAO_REMARKS)) {
+    assert.ok(lines.length >= 5, `${category} is too thin to avoid repeating`);
+    for (const { expression, text } of lines) {
+      assert.ok(allowed.has(expression), `${category}: unknown expression ${expression}`);
+      assert.ok(text.trim().length > 0 && text.length <= 200, `${category}: unusable line ${text}`);
+    }
+  }
+});
+
+test("Poking her keeps producing new lines rather than cycling two", () => {
+  const pick = createRemarkPicker(() => 0.5);
+  const heard = new Set();
+  for (let i = 0; i < 12; i++) heard.add(pick("poke").text);
+  assert.ok(heard.size >= 12, `expected 12 distinct poke replies, heard ${heard.size}`);
 });

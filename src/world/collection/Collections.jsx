@@ -1,12 +1,16 @@
-import { useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api.js";
 import { usePublicProfile } from "../../lib/profile.js";
 import { useToday } from "../../lib/world.js";
+import { DISCOVERY_SECTIONS, discoveryEntries } from "../../../shared/feedContent.js";
 import { uploadFile, shrinkImage } from "../../lib/uploads.js";
-import { Icon, Modal, Picture, Star } from "../../shared/WorldPrimitives.jsx";
-import { MusicObject, useMusic } from "../../shared/music/MusicRoom.jsx";
+import { Icon, Modal } from "../../shared/WorldPrimitives.jsx";
+import { useMusic } from "../../shared/music/MusicRoom.jsx";
+import SongArtwork from "../../shared/music/SongArtwork.jsx";
+import ListeningPick from "../stage/ListeningPick.jsx";
+import { cosplayCollection, filterCosplays, isCosplay, selectCosplayPicks } from "../../lib/feedPresentation.js";
 import "./Collections.css";
 import LoreCarousel from "./LoreCarousel.jsx";
 import {
@@ -19,7 +23,6 @@ import {
   FeedSection,
   FeedSleeve,
   MerchLine,
-  PersonalPhoto,
   useSectionFeed,
 } from "../feeds/FeedPieces.jsx";
 
@@ -40,8 +43,6 @@ const NOTE_LABELS = {
   cosplay: "MORE DRESS-UP",
   visual: "A LITTLE PICTURE",
 };
-const titleCase = (text) =>
-  text.replace(/(^|\s)(\p{L})/gu, (_, gap, c) => gap + c.toUpperCase());
 
 export function SectionHeading({
   index,
@@ -71,14 +72,36 @@ export function SectionHeading({
     </header>
   );
 }
-export function Discovery({ kind = "maomao", card, label, another = false }) {
+export function Discovery(props) {
+  return props.card || props.kind === "art" ? <PersonalDiscovery {...props} /> : <FeedDiscovery {...props} />;
+}
+
+function FeedDiscovery({ kind = "maomao", label, another = false }) {
+  const section = DISCOVERY_SECTIONS[kind] ?? "maomao";
+  const source = useSectionFeed(section);
+  const [index, setIndex] = useState(0);
+  const items = discoveryEntries(source.entries);
+  const selected = items[index % items.length];
+  if (!selected) return <aside className="note-slip" data-discovery-source="feed">
+    <span className="micro-label">{label ?? "A LITTLE FIND FOR YOU"}</span>
+    <p>{source.feed.isPending ? "Finding the latest little notes…" : source.feed.isError ? "These little finds couldn’t load just now." : "No new notes in this drop yet. The next ones will land here."}</p>
+    {source.feed.isError && <button className="text-link" onClick={() => source.feed.refetch()}>Try again ↺</button>}
+  </aside>;
+  return <div data-discovery-source="feed">
+    <FeedCard key={selected.primary.id} entry={selected} label={label ?? "A LITTLE FIND FOR YOU"} showMedia={false} onSeen={source.markSeen} />
+    {another && items.length > 1 && <button className="text-link" onClick={() => setIndex((value) => value + 1)}>Another little find <Icon name="arrow" size={14} /></button>}
+  </div>;
+}
+
+// Personal letters and drawing prompts are authored features, separate from external discoveries.
+function PersonalDiscovery({ kind = "art", card, label, another = false }) {
   const today = useToday();
   const [revealed, setRevealed] = useState(false);
   const [index, setIndex] = useState(0);
   const collection = useQuery({
     queryKey: ["me", "discoveries", kind],
     queryFn: () => api(`/me/discoveries?kind=${kind}`),
-    enabled: another,
+    enabled: another && kind === "art",
     staleTime: Infinity,
   });
   const items = collection.data?.items ?? [];
@@ -244,41 +267,18 @@ export function CosplaySpread({ full = false }) {
       queryClient.invalidateQueries({ queryKey: ["me", "cosplay"] });
     },
   });
-  const references = [
-    {
-      url: "/images/maomao-floral.webp",
-      title: "Maomao",
-      caption: "Character illustration · supplied reference",
-      alt: "Maomao’s pink robe, green wrap and teal hair",
-    },
-    {
-      url: "/images/maomao-blossom-cosplay.webp",
-      title: "The little details",
-      caption: "Pink robes & cherry blossoms · supplied cosplay reference",
-      alt: "A Maomao cosplayer in pink and green robes holding a fan beneath cherry blossoms",
-      fullImage: true,
-      source:
-        "https://i.pinimg.com/736x/99/53/d4/9953d40bb8039d93160972f9e45b7c7d.jpg",
-    },
-    {
-      url: "/images/miku-birthday.webp",
-      title: "Hatsune Miku",
-      caption: "A birthday wish from Miku · supplied illustration",
-      alt: "Hatsune Miku smiling and holding a birthday cake beneath colourful confetti",
-      fullImage: true,
-      source:
-        "https://i.pinimg.com/736x/fa/53/de/fa53de0920761a74877d8e54fe7db0e1.jpg",
-    },
-  ];
-  const display = photos.length ? photos : references;
+  const display = photos;
   const dress = useSectionFeed("dressup");
-  const three = dress.entries.filter((e) => e.type === "three");
-  const community = dress.entries.filter(
-    (e) => !["three", "merch"].includes(e.type),
-  );
-  const personal = dress.data?.plan?.personal;
-  // The reference images are the fallback: they step aside only while today's three is showing.
-  const showReferences = photos.length > 0 || !(dress.live && three.length);
+  const [params, setParams] = useSearchParams();
+  const collection = ["apothecary", "miku"].includes(params.get("collection")) ? params.get("collection") : "all";
+  const selectedId = params.get("item");
+  const three = selectCosplayPicks(dress.entries);
+  const fullShelf = filterCosplays(dress.entries, collection, selectedId);
+  const community = dress.entries.filter((entry) => !isCosplay(entry) && !["three", "merch"].includes(entry.type));
+  const ready = fullShelf.length > 0;
+  useEffect(() => {
+    if (full && selectedId && ready) document.getElementById("cosplay-feed")?.scrollIntoView({ block: "start" });
+  }, [full, selectedId, ready]);
   return (
     <section className="editorial-section cosplay-spread" id="cosplay">
       <SectionHeading
@@ -294,63 +294,34 @@ export function CosplaySpread({ full = false }) {
         action="The lookbook"
         page={full}
       />
-      {dress.live && three.length > 0 && (
-        <FeedSection title={`Today’s cosplay picks${personal ? " + one of yours" : ""}`} subtitle={dress.data.plan?.rotatingFandom ? `Today’s rotation: ${dress.data.plan.rotatingFandom}` : "Looks, transformations & the people behind them."} symbol="♡" tone="rose">
-          <div className="feed-lookbook">
-            {three.map((entry, i) => (
-              <FeedPhoto
-                key={entry.key}
-                entry={entry}
-                index={i}
-                title={titleCase(
-                  entry.primary.tags?.characters?.[0] ?? "today’s pick",
-                )}
-                onSeen={dress.markSeen}
-              />
-            ))}
-            {personal && (
-              <PersonalPhoto personal={personal} index={three.length} />
-            )}
+      <FeedSection id="cosplay-feed" title={full ? "The cosplay feed" : "Today’s cosplay picks"} subtitle={full ? "Real makers, transformations & the details worth zooming in on." : "Maomao first, another lovely look, then a little Miku. Tap a photo to explore its lookbook."} symbol="♡" tone="rose">
+        {full ? <>
+          <div className="cosplay-filter-bar" aria-label="Cosplay collections">
+            {[["all", "All cosplay"], ["apothecary", "Maomao & the apothecary"], ["miku", "Hatsune Miku"]].map(([value, label]) => <button key={value} type="button" aria-pressed={collection === value} onClick={() => setParams(value === "all" ? {} : { collection: value })}>{label}</button>)}
           </div>
-        </FeedSection>
-      )}
-      {showReferences && !photos.length && (
-        <p className="collection-label">
-          <span />
-          CHARACTER & MAKER REFERENCES{" "}
-          <span className="collection-label__detail">
-            Your own photographs will live here.
-          </span>
-        </p>
-      )}
-      {showReferences && (
+          {fullShelf.length ? <div className="feed-lookbook">
+            {fullShelf.map((entry, i) => <div key={entry.key} className="cosplay-feed-item" data-selected={entry.primary.id === selectedId ? "" : undefined}>
+              {entry.primary.id === selectedId && <p className="micro-label">THE LOOK YOU OPENED ♡</p>}
+              <FeedPhoto entry={entry} index={i} onSeen={dress.markSeen} />
+            </div>)}
+          </div> : <p className="feed-empty">{dress.feed.isPending ? "Opening the lookbook…" : dress.feed.isError ? "The cosplay feed couldn’t load. Please try again in a little while." : "No published cosplay in this collection yet. Try another collection above."}</p>}
+        </> : <div className="feed-lookbook feed-cosplay-picks">
+          {three.map((entry, i) => entry ? <FeedPhoto key={entry.key} entry={entry} index={i} onSeen={dress.markSeen} to={`/world/atelier?collection=${cosplayCollection(entry.primary)}&item=${encodeURIComponent(entry.primary.id)}#cosplay-feed`} />
+            : <Link key={`empty-${i}`} className="cosplay-pick-empty" to={`/world/atelier?collection=${i === 2 ? "miku" : i === 0 ? "apothecary" : "all"}#cosplay-feed`}>
+              <span aria-hidden="true">{["( ˘͈ ᵕ ˘͈ )", "(¬‿¬)", "♫"][i]}</span><h4>{["Maomao looks", "More dress-up inspiration", "A little Miku"][i]}</h4>
+              <p>{dress.feed.isPending ? "Finding the latest looks…" : dress.feed.isError ? "The feed couldn’t load just now." : "No published look for this spot yet."}</p><small>Explore the lookbook →</small>
+            </Link>)}
+        </div>}
+      </FeedSection>
+      {photos.length > 0 && <FeedSection title="Your own dress-up diary" subtitle="The looks you brought to life." symbol="🎀" tone="rose">
         <div className="lookbook-grid">
-          {display.slice(0, full ? 12 : 3).map((item, i) => (
-            <button
-              className={`lookbook-photo lookbook-photo--${i % 3}`}
-              key={item.url}
-              onClick={() => setView(i)}
-            >
-              <img
-                className={
-                  item.fullImage ? "lookbook-photo__full-image" : undefined
-                }
-                src={item.url}
-                alt={item.alt}
-                loading="lazy"
-              />
-              <span className="lookbook-photo__caption">
-                <span>
-                  <small>{String(i + 1).padStart(2, "0")}</small>
-                  <strong>{item.title}</strong>
-                </span>
-                <Icon name="diagonal" size={19} />
-              </span>
-              <span className="lookbook-photo__credit">{item.caption}</span>
-            </button>
-          ))}
+          {display.slice(0, full ? 12 : 3).map((item, i) => <button className={`lookbook-photo lookbook-photo--${i % 3}`} key={item.url} onClick={() => setView(i)}>
+            <img src={item.url} alt={item.alt} loading="lazy" />
+            <span className="lookbook-photo__caption"><span><small>{String(i + 1).padStart(2, "0")}</small><strong>{item.title}</strong></span><Icon name="diagonal" size={19} /></span>
+            <span className="lookbook-photo__credit">{item.caption}</span>
+          </button>)}
         </div>
-      )}
+      </FeedSection>}
       <div className="lookbook-foot">
         <p className="handwritten">the wig is practically its own character.</p>
         <button className="text-link" onClick={() => setAdd(true)}>
@@ -362,7 +333,7 @@ export function CosplaySpread({ full = false }) {
           <FeedProgress data={dress.data} label="TODAY’S DRESS-UP DROP" />
           {community.length > 0 && (
             <div className="feed-notes">
-              {community.slice(0, full ? 30 : 2).map((entry) => (
+              {community.slice(0, full ? 30 : 6).map((entry) => (
                 <FeedCard
                   key={entry.key}
                   entry={entry}
@@ -373,30 +344,9 @@ export function CosplaySpread({ full = false }) {
             </div>
           )}
           {full && <EventsStrip />}
-          <MerchLine
-            entry={dress.entries.find((e) => e.type === "merch")}
-            onSeen={dress.markSeen}
-          />
+          {full && <MerchLine entry={dress.entries.find((e) => e.type === "merch")} onSeen={dress.markSeen} />}
           {full && <FeedPlaces />}
         </FeedSection>
-      )}
-      {full && (
-        <div className="cosplay-notes">
-          <Discovery kind="cosplay" label="FROM THE SEWING TABLE" another />
-          <aside className="note-slip">
-            <span className="micro-label">A MAKER’S MARGIN NOTE</span>
-            <p>
-              SajaLyn widened the overlap on her next wrap skirt after the first
-              opened when walking. A little movement test can change the whole
-              fit.
-            </p>
-            <div className="note-slip__source">
-              <a href={references[1].source} target="_blank" rel="noreferrer">
-                SajaLyn’s full process ↗
-              </a>
-            </div>
-          </aside>
-        </div>
       )}
       {view !== null && (
         <GalleryViewer
@@ -473,6 +423,10 @@ export function CosplaySpread({ full = false }) {
 export function MaomaoSpread({ full = false }) {
   const club = useSectionFeed("maomao");
   const memes = club.entries.filter((entry) => entry.type === "meme");
+  const visuals = club.entries.filter((entry) => entry.type === "visual");
+  const notes = club.entries.filter((entry) => !["visual", "merch", "meme"].includes(entry.type));
+  const companions = visuals.flatMap((entry) => (entry.companions ?? []).map((primary) => ({ key: primary.id, type: primary.kind, primary, ids: [primary.id], companions: [] })));
+  const allNotes = [...notes, ...companions].filter((entry, i, list) => list.findIndex((other) => other.primary.id === entry.primary.id) === i);
   return (
     <section className="editorial-section maomao-spread" id="maomao">
       <SectionHeading
@@ -487,13 +441,24 @@ export function MaomaoSpread({ full = false }) {
       <EpisodeBanner episode={club.data?.plan?.episode} />
       <FeedSection title={club.live ? "New Maomao drops" : "From the Maomao collection"} subtitle="Pictures, clips & a little apothecary lore." symbol="❀" tone="mint">
         <FeedProgress data={club.data} />
-        <LoreCarousel kind="maomao" feed={club.entries.filter((entry) => !["merch", "meme"].includes(entry.type))} onSeen={club.markSeen} />
+        {!club.live && <>
+          <p className="feed-empty">{club.feed.isPending ? "Checking for new Maomao posts…" : club.feed.isError ? "The Maomao drop couldn’t load. Your saved pictures are still here." : "No new Maomao posts have been published yet. These are pictures from the saved album."}</p>
+          <LoreCarousel kind="maomao" />
+        </>}
+        {visuals.length > 0 && <div className="feed-drop__group">
+          <h4 className="feed-drop__group-title">Fan art & little scenes <span aria-hidden="true">❀</span></h4>
+          <div className="feed-lookbook">{visuals.slice(0, full ? 30 : 6).map((entry, i) => <FeedPhoto key={entry.key} entry={entry} index={i} onSeen={club.markSeen} />)}</div>
+        </div>}
+        {allNotes.length > 0 && <div className="feed-drop__group">
+          <h4 className="feed-drop__group-title">News from the apothecary <span aria-hidden="true">✧</span></h4>
+          <div className="feed-notes">{allNotes.slice(0, full ? 30 : 4).map((entry) => <FeedCard key={entry.key} entry={entry} label={NOTE_LABELS[entry.type] ?? "A LITTLE LORE"} onSeen={club.markSeen} />)}</div>
+        </div>}
         {memes.length > 0 && <FeedSection title="Maomao memes" subtitle="The side-eye deserves its own corner." symbol="(¬‿¬)" tone="rose" level={4}>
           <div className="feed-lookbook">
-            {memes.slice(0, full ? 30 : 2).map((entry, index) => <FeedPhoto key={entry.key} entry={entry} index={index} title="a little Maomao meme" onSeen={club.markSeen} />)}
+            {memes.slice(0, full ? 30 : 2).map((entry, index) => <FeedPhoto key={entry.key} entry={entry} index={index} onSeen={club.markSeen} />)}
           </div>
         </FeedSection>}
-        <MerchLine entry={club.entries.find((entry) => entry.type === "merch")} onSeen={club.markSeen} />
+        {full && <MerchLine entry={club.entries.find((entry) => entry.type === "merch")} onSeen={club.markSeen} />}
       </FeedSection>
       <div className="maomao-afterword">
         <p>
@@ -512,15 +477,9 @@ export function MaomaoSpread({ full = false }) {
   );
 }
 export function MusicSpread({ full = false }) {
-  const profile = usePublicProfile();
   const library = useQuery({
     queryKey: ["me", "songs"],
     queryFn: () => api("/me/songs"),
-  });
-  const picks = useQuery({
-    queryKey: ["me", "music-picks"],
-    queryFn: () => api("/me/music-picks"),
-    staleTime: Infinity,
   });
   const music = useMusic();
   const drop = useSectionFeed("music");
@@ -531,14 +490,7 @@ export function MusicSpread({ full = false }) {
   const feedVisuals = drop.entries.filter((e) =>
     ["visual", "meme"].includes(e.type),
   );
-  // Owner decision (2026-09-16, second pass): this shelf should be her own collection and the live
-  // feed, not the authored stand-ins. Her saved songs always come first; the hardcoded picks only
-  // fill in on a day the feed brought no songs, so the shelf is never empty.
-  const hers = library.data?.songs ?? [];
-  const authored = feedSongs.length ? [] : (picks.data?.songs ?? []);
-  const songs = [...hers, ...authored]
-    .filter((s, i, list) => list.findIndex((x) => x.url === s.url) === i)
-    .slice(0, full ? 12 : 3);
+  const songs = (library.data?.songs ?? []).filter((song, i, list) => list.findIndex((other) => other.url === song.url) === i).slice(0, full ? 12 : 3);
   return (
     <section className="editorial-section music-spread" id="music">
       <SectionHeading
@@ -550,31 +502,20 @@ export function MusicSpread({ full = false }) {
         action="Your music"
         page={full}
       />
-      <LoreCarousel kind="miku" />
+      <FeedSection title="Press play, stay awhile" subtitle="A real song from your daily finds or saved collection. Try another whenever you like." symbol="♫">
+        <ListeningPick />
+      </FeedSection>
       <div className="music-shelf">
-        <MusicObject song={profile.data?.song} />
         {songs.length > 0 && (
           <div className="record-sleeves">
-            {songs.map((song, i) => (
+            {songs.map((song) => (
               <button
                 className="record-sleeve"
                 key={song.url}
                 onClick={() => music.play(song)}
               >
                 <span className="record-sleeve__image">
-                  {song.thumbnail ? (
-                    <img
-                      src={song.thumbnail}
-                      alt={`${song.title} video cover`}
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.src = "/images/miku.webp";
-                        e.currentTarget.onerror = null;
-                      }}
-                    />
-                  ) : (
-                    <Picture name={i % 2 ? "rin" : "miku"} alt="" />
-                  )}
+                  <SongArtwork song={song} />
                   <span className="record-play">
                     <Icon name="play" size={20} />
                   </span>
@@ -601,7 +542,7 @@ export function MusicSpread({ full = false }) {
             <div className="feed-drop__group">
             <h4 className="feed-drop__group-title">Songs to play <span aria-hidden="true">▷</span></h4>
             <div className="record-sleeves feed-sleeves">
-              {feedSongs.slice(0, full ? 25 : 3).map((entry) => (
+              {feedSongs.slice(0, full ? 25 : 6).map((entry) => (
                 <FeedSleeve
                   key={entry.key}
                   entry={entry}
@@ -615,7 +556,7 @@ export function MusicSpread({ full = false }) {
             <div className="feed-drop__group">
             <h4 className="feed-drop__group-title">News & little finds <span aria-hidden="true">✧</span></h4>
             <div className="feed-notes">
-              {feedNotes.slice(0, full ? 25 : 1).map((entry) => (
+              {feedNotes.slice(0, full ? 25 : 6).map((entry) => (
                 <FeedCard
                   key={entry.key}
                   entry={entry}
@@ -626,50 +567,24 @@ export function MusicSpread({ full = false }) {
             </div>
             </div>
           )}
-          {full && feedVisuals.length > 0 && (
+          {feedVisuals.length > 0 && (
             <div className="feed-drop__group">
             <h4 className="feed-drop__group-title">Fan art & memes <span aria-hidden="true">♡</span></h4>
             <div className="feed-lookbook">
-              {feedVisuals.map((entry, i) => (
+              {feedVisuals.slice(0, full ? 30 : 6).map((entry, i) => (
                 <FeedPhoto
                   key={entry.key}
                   entry={entry}
                   index={i}
-                  title={entry.type === "meme" ? "a little meme" : "fan art"}
                   onSeen={drop.markSeen}
                 />
               ))}
             </div>
             </div>
           )}
-          <MerchLine
-            entry={drop.entries.find((e) => e.type === "merch")}
-            onSeen={drop.markSeen}
-          />
+          {full && <MerchLine entry={drop.entries.find((e) => e.type === "merch")} onSeen={drop.markSeen} />}
           {full && <FeedPlaces />}
         </FeedSection>
-      )}
-      {full && (
-        <div className="kagamine-strip">
-          <Picture
-            name="rin"
-            alt="Kagamine Rin’s original character illustration"
-            width="600"
-            height="600"
-          />
-          <div>
-            <span className="micro-label">ALSO IN GOOD COMPANY</span>
-            <h2>Rin & Len</h2>
-            <p>Two familiar voices. Plenty of stories.</p>
-            <small>© Crypton Future Media, Inc. 2007 · CC BY-NC 3.0</small>
-          </div>
-          <Picture
-            name="len"
-            alt="Kagamine Len’s original character illustration"
-            width="600"
-            height="600"
-          />
-        </div>
       )}
     </section>
   );

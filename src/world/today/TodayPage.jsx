@@ -9,15 +9,15 @@ import {
   MusicSpread,
 } from "../collection/Collections.jsx";
 import { Icon, Star } from "../../shared/WorldPrimitives.jsx";
-import { MusicObject } from "../../shared/music/MusicRoom.jsx";
+import ListeningPick from "../stage/ListeningPick.jsx";
 import StickerArt from "../../shared/stickers/StickerArt.jsx";
-import { Bow, MaomaoBuddy } from "../../shared/play/PlayfulWorld.jsx";
+import { Bow } from "../../shared/play/PlayfulWorld.jsx";
 import PlayDesk from "../play/PlayDesk.jsx";
 import { useDailyStyle } from "../../shared/DailyStyle.jsx";
 import WorldWelcome from "../../shared/profile/WorldWelcome.jsx";
 import CosplayPortrait from "../../shared/profile/CosplayPortrait.jsx";
 import NoteJar from "./NoteJar.jsx";
-import { MemeOfTheDay, NewCount } from "../feeds/FeedPieces.jsx";
+import { EventsStrip, HomeMerch, MemeOfTheDay, NewCount } from "../feeds/FeedPieces.jsx";
 import { useFeed } from "../../lib/feeds.js";
 import "./TodayPage.css";
 
@@ -93,9 +93,10 @@ export default function TodayPage() {
           <CosplayPortrait className="home-portrait" avatarUrl={profile.data?.avatarUrl}/>
           <Star className="home-collage__star" />
           <div className="home-collage__music">
-            <MusicObject song={profile.data?.song} compact />
+            <ListeningPick compact />
           </div>
-          <MaomaoBuddy compact birthday={data?.birthday?.isBirthday} />
+          {/* Maomao is no longer pinned to this collage: she lives in the world now and walks it
+              (see world/mascot/MaomaoCompanion.jsx, mounted by WorldShell). */}
           <button
             className="home-surprise"
             onClick={() => {
@@ -148,10 +149,12 @@ export default function TodayPage() {
           🎀 dress-up
           <NewCount section="dressup" />
         </a>
+        <a href="#memes">(¬‿¬) memes</a>
+        <a href="#events">☆ events</a>
+        <a href="#merch">♡ wishlist</a>
         {feedsLive && (
           <>
             <Link to="/world/saves">♡ saves</Link>
-            <Link to="/world/merch">🛍 merch</Link>
           </>
         )}
       </div>
@@ -165,6 +168,8 @@ export default function TodayPage() {
       <MaomaoSpread />
       <MusicSpread />
       <CosplaySpread />
+      <EventsStrip standalone />
+      <HomeMerch />
       <section className="gift-margin">
         <Icon name="mail" size={33} />
         <div>

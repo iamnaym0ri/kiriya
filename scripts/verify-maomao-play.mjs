@@ -10,8 +10,10 @@ await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
 const checks = [], errors = [];
 const GAME_NAMES = ["Colour club", "Memory drawer", "Odd jar", "Herb sequence", "Lantern puzzle"];
+// The public page keeps the pinned buddy; inside her world Maomao roams instead
+// (src/world/mascot/MaomaoCompanion.jsx, covered by `npm run verify:maomao-companion`).
 const ready = async page => {
-  await page.locator(".maomao-buddy").waitFor();
+  await page.locator(".maomao-buddy, .companion__figure").first().waitFor();
   await page.evaluate(() => document.fonts.ready);
 };
 async function context(options = {}, authenticated = true) {
@@ -219,21 +221,27 @@ try {
     for (const [width, height] of [[320, 740], [390, 844], [430, 932], [650, 900], [700, 900], [820, 1180], [844, 390], [1024, 900], [1440, 1050]]) {
       await page.setViewportSize({ width, height });
       const buddy = page.locator(".maomao-buddy");
-      await buddy.scrollIntoViewIfNeeded();
-      await page.getByRole("button", { name: "Poke the apothecary" }).click();
-      const music = page.locator(".music-object").first();
-      assert(!overlaps(await buddy.boundingBox(), await music.boundingBox()), `${route} ${width}: companion overlaps music`);
-      for (const selector of [".buddy-bubble", ".maomao-buddy .mascot", ".music-object"]) {
-        const box = await page.locator(selector).first().boundingBox();
-        assert(box.x >= -1 && box.x + box.width <= width + 1, `${route} ${width}: ${selector} outside viewport`);
-      }
-      for (const button of await buddy.locator(".buddy-offers button").all()) {
-        const box = await button.boundingBox();
-        assert(box.height >= 44 && box.x >= 0 && box.x + box.width <= width + 1, `${route} ${width}: offer touch target`);
+      if (route === "/") {
+        await buddy.scrollIntoViewIfNeeded();
+        await page.getByRole("button", { name: "Poke the apothecary" }).click();
+        const music = page.locator(".music-object").first();
+        assert(!overlaps(await buddy.boundingBox(), await music.boundingBox()), `${route} ${width}: companion overlaps music`);
+        for (const selector of [".buddy-bubble", ".maomao-buddy .mascot", ".music-object"]) {
+          const box = await page.locator(selector).first().boundingBox();
+          assert(box.x >= -1 && box.x + box.width <= width + 1, `${route} ${width}: ${selector} outside viewport`);
+        }
+        for (const button of await buddy.locator(".buddy-offers button").all()) {
+          const box = await button.boundingBox();
+          assert(box.height >= 44 && box.x >= 0 && box.x + box.width <= width + 1, `${route} ${width}: offer touch target`);
+        }
+        await music.click({ trial: true });
+        if (width === 390) await screenshot(buddy, "phone-public-buddy");
+      } else {
+        // In her world the companion is fixed to the foot of the page and must stay inside it.
+        const box = await page.locator(".companion__stage > .mascot").boundingBox();
+        assert(box.x >= -1 && box.x + box.width <= width + 1, `${route} ${width}: companion outside viewport`);
       }
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${route} ${width}: horizontal overflow`);
-      await music.click({ trial: true });
-      if (width === 390) await screenshot(buddy, route === "/" ? "phone-public-buddy" : "phone-private-buddy");
       if (route === "/world") {
         for (const name of GAME_NAMES) {
           await page.getByRole("tab", { name }).click();
@@ -251,7 +259,7 @@ try {
   const movingCtx = await context({ viewport: { width: 1440, height: 1100 } });
   const moving = await movingCtx.newPage();
   await moving.clock.install();
-  await moving.goto(BASE + "/world");
+  await moving.goto(BASE + "/");
   await ready(moving);
   const bubble = moving.locator(".buddy-bubble");
   const poke = moving.getByRole("button", { name: "Poke the apothecary" });
@@ -285,7 +293,7 @@ try {
   await moving.waitForFunction(before => document.querySelector(".buddy-bubble").textContent !== before, beforeIdle);
   assert.equal(await moving.locator(".maomao-buddy .sr-only").innerText(), beforeIdle, "Idle speech must not interrupt screen readers");
   const beforeOffscreen = await bubble.innerText();
-  await moving.locator("#play-desk").scrollIntoViewIfNeeded();
+  await moving.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await moving.waitForTimeout(100);
   await moving.clock.fastForward(41000);
   assert.equal(await bubble.innerText(), beforeOffscreen, "Offscreen buddy should stay quiet");

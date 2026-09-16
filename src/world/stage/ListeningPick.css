@@ -1,0 +1,9 @@
+.listening-pick { min-width: 0; }
+.listening-pick__controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 10px; border-radius: 0 0 12px 12px; background: #f9effbeF; color: #684978; }
+.listening-pick__controls > button { min-width: 44px; min-height: 44px; font-size: 22px; border-radius: 50%; }
+.listening-pick__controls > button:hover { background: #e9d7ee; }
+.listening-pick__controls > span { font: 11px/1.5 var(--font-ui); text-align: center; }
+.listening-pick__empty { padding: 22px; border: 1px dashed #b894c6; border-radius: 12px; background: #fff9fde8; color: #62436f; }
+.listening-pick__empty > strong { font: 27px/1.1 var(--font-hand); }
+.listening-pick__empty > p { font-size: 12px; }
+.listening-pick .music-object { rotate: 0deg; transform: none; }

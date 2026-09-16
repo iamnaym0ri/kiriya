@@ -325,27 +325,7 @@ export function originalPrice(facts) {
   }).format(p.amount);
 }
 
-/** Songs and videos with recorded YouTube playback checks play in the existing listening room. */
-export function youtubeSong(item) {
-  const media = item.media?.find((m) => m.type === "youtube");
-  if (!media) return null;
-  let id = null;
-  try {
-    const url = new URL(media.url);
-    id = url.searchParams.get("v") ?? url.pathname.split("/").filter(Boolean).pop();
-  } catch {
-    return null;
-  }
-  if (!/^[\w-]{11}$/.test(id ?? "")) return null;
-  return {
-    provider: "youtube",
-    embedId: id,
-    url: `https://www.youtube.com/watch?v=${id}`,
-    title: item.title,
-    artist: item.credit?.name ?? "",
-    thumbnail: media.poster ?? `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
-  };
-}
+export { youtubeSong } from "../../shared/feedContent.js";
 
 export function creditLine(item) {
   const credit = item.credit ?? {};

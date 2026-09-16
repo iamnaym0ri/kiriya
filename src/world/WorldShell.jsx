@@ -5,6 +5,7 @@ import { Credits, Icon } from "../shared/WorldPrimitives.jsx";
 import { BirthdayRibbon, MotionToggle } from "../shared/play/PlayfulWorld.jsx";
 import { SketchbookProvider } from "./studio/SketchbookState.jsx";
 import { DailyStyleButton } from "../shared/DailyStyle.jsx";
+import MaomaoCompanion from "./mascot/MaomaoCompanion.jsx";
 import "./WorldShell.css";
 const TABS = [
   { to: "/world#play-desk", label: "doodle & play" },
@@ -121,6 +122,9 @@ export default function WorldShell() {
           <span>made with love ♡</span>
         </footer>
         {credits && <Credits onClose={() => setCredits(false)} />}
+        {/* She lives here rather than on one page: mounted by the shell so she keeps her place,
+            her mood and her train of thought while the route underneath her changes. */}
+        <MaomaoCompanion />
       </div>
     </SketchbookProvider>
   );

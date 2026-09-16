@@ -34,7 +34,7 @@ export async function prepareDay(db, day, { force = false } = {}) {
     song: bundle.song?.title ?? null,
     artwork: null,
     sources: [
-      { source: "Approved collection", ok: true, count: bundle.cards.length },
+      { source: "Personal notes & drawing prompts", ok: true, count: bundle.cards.length },
     ],
   };
 }

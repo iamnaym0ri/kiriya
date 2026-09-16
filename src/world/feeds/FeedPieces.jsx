@@ -1,6 +1,4 @@
-// Feed pieces, built from the world's existing cards (note-slip, lookbook-photo, record-sleeve,
-// Modal). None of these render anything when their feed is empty, so the existing sections look
-// exactly as before until an edition is published.
+// Published feed cards, visible home collections and full shelf viewers.
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -24,18 +22,18 @@ import {
   youtubeSong,
 } from "../../lib/feeds.js";
 import { usePlayful } from "../../shared/play/PlayfulWorld.jsx";
-import { Icon, Modal, Picture } from "../../shared/WorldPrimitives.jsx";
+import { Icon, Modal } from "../../shared/WorldPrimitives.jsx";
 import { useMusic } from "../../shared/music/MusicRoom.jsx";
-import MaomaoMascot from "../mascot/MaomaoMascot.jsx";
+import SongArtwork from "../../shared/music/SongArtwork.jsx";
 import "./FeedPieces.css";
 
 const SIGNATURE = "✦ kiriya.love";
 
 /** A visible chapter boundary, shared by every daily drop and its smaller shelves. */
-export function FeedSection({ title, subtitle, symbol = "✧", tone = "lilac", level = 3, className = "", children }) {
+export function FeedSection({ title, subtitle, symbol = "✧", tone = "lilac", level = 3, className = "", id: sectionId, children }) {
   const id = useId();
   const Heading = `h${level}`;
-  return <section className={`feed-drop ${className}`} data-tone={tone} aria-labelledby={id}>
+  return <section id={sectionId} className={`feed-drop ${className}`} data-tone={tone} aria-labelledby={id}>
     <header className="feed-drop__heading">
       <span className="feed-drop__symbol" aria-hidden="true">{symbol}</span>
       <div>
@@ -57,14 +55,6 @@ export function feedMediaLayout(item) {
     style: { "--feed-media-ratio": media?.width > 0 && media?.height > 0 ? `${media.width} / ${media.height}` : "16 / 9" },
   };
 }
-// The same four the lore carousel uses for text-only notes. Chosen from the item id so a card keeps
-// the same expression between renders instead of flickering on every re-render.
-const CARD_MASCOTS = ["curious", "smug", "thinking", "sparkle"];
-const cardMascot = (id) => {
-  let hash = 0;
-  for (const ch of String(id)) hash = (hash * 31 + ch.charCodeAt(0)) % 997;
-  return CARD_MASCOTS[hash % CARD_MASCOTS.length];
-};
 const LINK_ORDER = [
   "listen",
   "watch",
@@ -265,6 +255,8 @@ export function FeedLinks({ item, onOpen, limit = 4 }) {
 export function FeedFacts({ item }) {
   const f = item.facts ?? {};
   const bits = [];
+  if (item.source === "shootspots" && item.publishedAt)
+    bits.push(`Location guide · checked ${sgDate(item.publishedAt, { day: "numeric", month: "short", year: "numeric" })}`);
   const price = approxSgd(f);
   if (price)
     bits.push(`${price}${originalPrice(f) ? ` (${originalPrice(f)})` : ""}`);
@@ -392,7 +384,7 @@ export function FeedViewer({ entry, onClose, onSeen }) {
 }
 
 /** A note-slip card for any entry (notes, news, SEKAI, events, process posts, extras, memes). */
-export function FeedCard({ entry, label, onSeen, showMedia = true, children }) {
+export function FeedCard({ entry, label, onSeen, showMedia = true, className = "", children }) {
   const ref = useRef(null);
   const [open, setOpen] = useState(false);
   const reportGone = useReportGone();
@@ -402,7 +394,8 @@ export function FeedCard({ entry, label, onSeen, showMedia = true, children }) {
   return (
     <article
       ref={ref}
-      className="note-slip feed-card"
+      className={`note-slip feed-card ${className}`}
+      data-text-only={!showMedia || !item.media?.length ? "" : undefined}
       {...feedMediaLayout(item)}
       data-seen={entry.seen ? "" : undefined}
     >
@@ -410,8 +403,7 @@ export function FeedCard({ entry, label, onSeen, showMedia = true, children }) {
         {label}
         {entry.seen ? " · SEEN EARLIER" : ""}
       </span>
-      {showMedia &&
-        (item.media?.length > 0 ? (
+      {showMedia && item.media?.length > 0 && (
           <button
             type="button"
             className="feed-card__media"
@@ -423,17 +415,8 @@ export function FeedCard({ entry, label, onSeen, showMedia = true, children }) {
           >
             <FeedMedia item={item} onGone={reportGone} />
           </button>
-        ) : (
-          // News, lore and events carry no picture of their own: their sources give no display
-          // permission for one (docs/feeds/SOURCE-VERIFICATION.md), so the card borrows the chibi
-          // the lore carousel already uses rather than going out as a wall of text.
-          <span className="feed-card__mascot" aria-hidden="true">
-            <MaomaoMascot expression={cardMascot(item.id)} size={132} />
-          </span>
-        ))}
-      {item.blurb?.headline && (
-        <strong className="feed-card__headline">{item.blurb.headline}</strong>
       )}
+      <h4 className="feed-card__headline">{item.kind === "merch" ? item.title : item.blurb?.headline || item.title}</h4>
       <p>{item.blurb?.text}</p>
       <FeedFacts item={item} />
       {children}
@@ -452,37 +435,38 @@ export function FeedCard({ entry, label, onSeen, showMedia = true, children }) {
 }
 
 /** A lookbook-photo card for a picture entry (today's three, visuals strip, meme). */
-export function FeedPhoto({ entry, index, title, caption, onSeen }) {
+export function FeedPhoto({ entry, index, title, caption, onSeen, to }) {
   const ref = useRef(null);
   const [open, setOpen] = useState(false);
   const reportGone = useReportGone();
   const item = entry.primary;
+  const PhotoLink = to ? Link : "button";
   const seen = () => onSeen?.(entry.ids);
   useSeenOnView(ref, seen);
   if (!item.media?.length)
     return <FeedCard entry={entry} label={title} onSeen={onSeen} />;
   return (
     <div ref={ref} className="feed-photo" {...feedMediaLayout(item)}>
-      <button
-        type="button"
+      <PhotoLink
+        {...(to ? { to } : { type: "button" })}
         className={`lookbook-photo lookbook-photo--${index % 3}`}
         onClick={() => {
           seen();
-          setOpen(true);
+          if (!to) setOpen(true);
         }}
       >
         <FeedMedia item={item} onGone={reportGone} />
         <span className="lookbook-photo__caption">
           <span>
             <small>{String(index + 1).padStart(2, "0")}</small>
-            <strong>{title}</strong>
+            <strong>{title || item.blurb?.headline || item.title}</strong>
           </span>
           <Icon name="diagonal" size={19} />
         </span>
         <span className="lookbook-photo__credit">
           {caption ?? item.blurb?.headline} · {creditLine(item)}
         </span>
-      </button>
+      </PhotoLink>
       <FeedActions item={item} onSeen={seen} />
       {open && (
         <FeedViewer
@@ -511,20 +495,7 @@ export function FeedSleeve({ entry, onSeen }) {
   const inside = (
     <>
       <span className="record-sleeve__image">
-        {image ? (
-          <img
-            src={image}
-            alt={`${item.title} cover`}
-            referrerPolicy="no-referrer"
-            loading="lazy"
-            onError={(e) => {
-              e.currentTarget.src = "/images/miku.webp";
-              e.currentTarget.onerror = null;
-            }}
-          />
-        ) : (
-          <Picture name="miku" alt="" />
-        )}
+        <SongArtwork song={{ ...song, thumbnail: image }} />
         <span className="record-play">
           <Icon name={song ? "play" : "diagonal"} size={20} />
         </span>
@@ -672,100 +643,58 @@ export function NewCount({ section }) {
   return <span className="feed-new-count"> · {data.counts.new} new</span>;
 }
 
-/** A clearly separated merch pick, with a link to the whole shelf. */
+/** A full product card: real artwork when supplied, otherwise a strong text title. */
 export function MerchLine({ entry, onSeen }) {
-  const ref = useRef(null);
-  useSeenOnView(ref, () => entry && onSeen?.(entry.ids), {
-    enabled: Boolean(entry),
-  });
   if (!entry) return null;
-  const item = entry.primary;
-  const shop = (item.facts?.links ?? []).find((l) =>
-    ["retailer", "official", "sg_search"].includes(l.kind),
-  );
-  return (
-    <FeedSection title="Merch for your shelf" subtitle="A little find for your collection." symbol="♡" tone="rose" level={4}>
-    <div ref={ref} className="note-slip feed-merch-line">
-      <p>
-        <strong>{item.title}</strong>{" "}
-        {item.blurb?.text ? `· ${item.blurb.text}` : ""}
-      </p>
-      <FeedFacts item={item} />
-      <div className="note-slip__source">
-        {shop ? (
-          <a
-            href={shop.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => onSeen?.(entry.ids)}
-          >
-            {shop.label} ↗
-          </a>
-        ) : (
-          <FeedByline item={item} onOpen={() => onSeen?.(entry.ids)} />
-        )}
-        <Link to="/world/merch">the whole merch shelf →</Link>
-      </div>
-      <FeedActions item={item} onSeen={() => onSeen?.(entry.ids)} />
-    </div>
-    </FeedSection>
-  );
+  return <FeedSection title="Merch for your shelf" subtitle="A little find for your collection." symbol="♡" tone="rose" level={4}>
+    <FeedCard entry={entry} label="ON THE WISHLIST" onSeen={onSeen} />
+    <Link className="text-link" to="/world/merch">Browse the whole merch shelf →</Link>
+  </FeedSection>;
 }
 
-/** Home: one meme, with five more behind "one more". */
-/**
- * A browsable meme carousel. Owner decision (2026-09-16, second pass): memes are something she can
- * scroll through whenever she likes, not one a day, so this pages through the whole published set
- * instead of showing a single pick. Every meme carries an image or video and is checked for
- * relevance before it reaches here, and hiding one teaches the next edition (see dislikeSignals).
- */
+export function HomeMerch() {
+  const merch = useSectionFeed("merch");
+  const maomao = useSectionFeed("maomao");
+  const music = useSectionFeed("music");
+  const dress = useSectionFeed("dressup");
+  const sources = [merch, maomao, music, dress];
+  const picks = sources.flatMap((source) => source.entries
+    .filter((entry) => entry.type === "merch" || entry.primary.kind === "merch")
+    .map((entry) => ({ entry, markSeen: source.markSeen })))
+    .filter(({ entry }, i, list) => list.findIndex((pick) => pick.entry.primary.id === entry.primary.id) === i).slice(0, 6);
+  return <FeedSection id="merch" title="Merch & little treasures" subtitle="Figures, plushies & little things worth making shelf space for." symbol="♡" tone="rose" level={2} className="editorial-section feed-home-merch">
+    {picks.length ? <div className="feed-notes feed-merch-grid">
+      {picks.map(({ entry, markSeen }) => <FeedCard key={entry.primary.id} entry={entry} label="MERCH & LITTLE FINDS" onSeen={markSeen} />)}
+    </div> : <p className="feed-empty">{merch.feed.isPending ? "Opening the wishlist…" : merch.feed.isError ? "The wishlist couldn’t load. You can try the full shelf below." : "No merch picks in this drop yet. Your next little find will appear here."}</p>}
+    <Link className="text-link" to="/world/merch">Browse all merch & filter by fandom →</Link>
+  </FeedSection>;
+}
+
+/** A single big meme, with other actual posts visible below it instead of duplicate copy. */
 export function MemeOfTheDay() {
-  const { data, entries, markSeen, live } = useSectionFeed("meme");
+  const { feed, entries, markSeen, live } = useSectionFeed("meme");
   const [index, setIndex] = useState(0);
-  if (!live || !entries.length) return null;
+  if (!live || !entries.length) return <FeedSection id="memes" title="Memes & other nonsense" subtitle="A little space for your next laugh." symbol="(¬‿¬)" tone="rose" level={2} className="editorial-section feed-meme">
+    <p className="feed-empty">{feed.isPending ? "Finding the nonsense…" : feed.isError ? "The meme drop couldn’t load just now." : "No memes in this drop yet. The next ones will land right here."}</p>
+  </FeedSection>;
   const count = entries.length;
   const position = ((index % count) + count) % count;
   const entry = entries[position];
-  const go = (next) => {
-    markSeen(entry.ids);
-    setIndex(next);
-  };
-  return (
-    <FeedSection title="Memes for u" subtitle="A very important break for unserious things." symbol="(¬‿¬)" tone="rose" level={2} className="editorial-section feed-meme">
-      <div className="feed-meme__inner">
-        <FeedPhoto
-          key={entry.key}
-          entry={entry}
-          index={position}
-          title="memes for u"
-          caption={entry.primary.blurb?.headline}
-          onSeen={markSeen}
-        />
-        <aside className="note-slip">
-          <span className="micro-label">
-            {entry.seen ? "SEEN EARLIER" : "A LITTLE LAUGH"}
-          </span>
-          <p>{entry.primary.blurb?.text}</p>
-          <FeedByline item={entry.primary} onOpen={() => markSeen(entry.ids)} />
-          {count > 1 && (
-            <div className="lore-pagination">
-              <button aria-label="Previous meme" onClick={() => go(index - 1)}>
-                ←
-              </button>
-              <span aria-label={`Meme ${position + 1} of ${count}`}>
-                {String(position + 1).padStart(2, "0")}{" "}
-                <i>/ {String(count).padStart(2, "0")}</i>
-              </span>
-              <button aria-label="Next meme" onClick={() => go(index + 1)}>
-                →
-              </button>
-            </div>
-          )}
-          {data.closing && <p className="feed-note">{data.closing}</p>}
-        </aside>
-      </div>
-    </FeedSection>
-  );
+  const previews = Array.from({ length: Math.min(2, count - 1) }, (_, i) => entries[(position + i + 1) % count]);
+  const go = (next) => { markSeen(entry.ids); setIndex(next); };
+  return <FeedSection id="memes" title="Memes & other nonsense" subtitle="Meme of the day. And a few more, because self-control is overrated." symbol="(¬‿¬)" tone="rose" level={2} className="editorial-section feed-meme">
+    <div className="feed-meme__masthead"><span className="micro-label">YOUR DAILY DOSE OF NONSENSE</span><span aria-hidden="true">( ˘͈ ᵕ ˘͈ )</span></div>
+    <FeedCard key={entry.key} entry={entry} label="MEME OF THE DAY" onSeen={markSeen} className="feed-meme__feature" />
+    {count > 1 && <div className="feed-meme__navigation">
+      <button className="text-link" aria-label="Previous meme" onClick={() => go(index - 1)}>← previous</button>
+      <span aria-label={`Meme ${position + 1} of ${count}`}>{position + 1} / {count}</span>
+      <button className="button-plum" aria-label="Next meme" onClick={() => go(index + 1)}>another one →</button>
+    </div>}
+    {previews.length > 0 && <div className="feed-drop__group">
+      <h3 className="feed-drop__group-title">Also on the nonsense agenda <span aria-hidden="true">✧</span></h3>
+      <div className="feed-notes">{previews.map((preview) => <FeedCard key={preview.key} entry={preview} label="MORE UNNECESSARY INFORMATION" onSeen={markSeen} />)}</div>
+    </div>}
+  </FeedSection>;
 }
 
 function countdownLabel(days) {
@@ -777,7 +706,7 @@ function countdownLabel(days) {
 }
 
 /** Upcoming events with countdowns and TBC tags (her picks first). */
-export function EventsStrip({ limit = 6 }) {
+export function EventsStrip({ limit = 6, standalone = false }) {
   const events = useQuery({
     queryKey: ["me", "events"],
     queryFn: () => api("/me/events"),
@@ -794,9 +723,10 @@ export function EventsStrip({ limit = 6 }) {
         ),
     )
     .slice(0, limit);
-  if (!list.length) return null;
+  if (!list.length && !standalone) return null;
   return (
-    <FeedSection title="Events coming up" subtitle="Dates and little plans for your calendar." symbol="☆" tone="mint" level={4} className="feed-events">
+    <FeedSection id={standalone ? "events" : undefined} title="Events coming up" subtitle="Dates and little plans for your calendar." symbol="☆" tone="mint" level={standalone ? 2 : 3} className={`feed-events ${standalone ? "editorial-section" : ""}`}>
+      {!list.length && <p className="feed-empty">{events.isPending ? "Checking the calendar…" : events.isError ? "The calendar couldn’t load just now." : "No upcoming dates confirmed yet. Fresh events will appear here."}</p>}
       <ul>
         {list.map((event) => {
           const days = event.tbc ? null : daysUntil(event.startsOn);
@@ -809,7 +739,7 @@ export function EventsStrip({ limit = 6 }) {
                   : (event.city ?? "REGIONAL").toUpperCase()}
                 {event.tbc ? " · TBC" : ""}
               </span>
-              <strong className="feed-card__headline">{event.name}</strong>
+              <h4 className="feed-card__headline">{event.name}</h4>
               <p className="feed-facts">
                 {event.tbc
                   ? "dates to be confirmed"
