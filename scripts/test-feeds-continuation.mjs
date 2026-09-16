@@ -484,6 +484,22 @@ try {
     const fandomOnly = P.planMeme([fandomMeme, offTopic], ctx());
     assert.deepEqual([fandomOnly.slots.length, fandomOnly.slots[0]?.primaryId], [1, fandomMeme.id]);
 
+    // Production shipped an empty meme section because community memes carry no taggable subject:
+    // a picture from an anime community scored zero affinity and was dropped. Coming FROM one of
+    // her communities is the second route to being relevant; a general community still is not.
+    const community = (name) =>
+      row({
+        kind: "meme",
+        sections: ["meme"],
+        source: "lemmy",
+        credit: { name: "poster", handle: "poster", profileUrl: null, platform: `Lemmy · !${name}@ani.social`, license: "" },
+      });
+    const hersByPlace = community("animemes");
+    const anyoneElse = community("memes");
+    const placed = P.planMeme([hersByPlace, anyoneElse], ctx());
+    assert.ok(ids(placed).includes(hersByPlace.id), "a meme from her anime community is relevant");
+    assert.ok(!ids(placed).includes(anyoneElse.id), "a general community meme still needs a subject she follows");
+
     const merch = (facts) =>
       row({ kind: "merch", sections: ["merch"], source: "gsc", facts: { sgd: 60, ...facts } });
     const later = merch({ preorderUntil: "2026-10-30T00:00:00Z" });

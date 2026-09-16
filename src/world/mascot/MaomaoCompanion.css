@@ -167,6 +167,46 @@
   font-style: italic;
   box-shadow: none;
 }
+.companion__offers {
+  pointer-events: auto;
+  display: flex;
+  gap: 10px;
+}
+.companion__offer {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--theme-line, #ceb2d9);
+  border-radius: 50%;
+  background: var(--theme-paper, #fff9fd);
+  box-shadow: 0 3px 10px #49365322;
+  cursor: pointer;
+  animation: offer-pop 260ms cubic-bezier(0.2, 1.2, 0.4, 1) both;
+}
+.companion__offer:nth-child(2) {
+  animation-delay: 70ms;
+}
+.companion__offer > svg {
+  width: 26px;
+  height: 26px;
+}
+.companion__offer:hover,
+.companion__offer:focus-visible {
+  background: #f6ecfa;
+  scale: 1.07;
+}
+@keyframes offer-pop {
+  from {
+    opacity: 0;
+    scale: 0.4;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
 .companion__tray {
   pointer-events: auto;
   position: relative;
@@ -218,11 +258,11 @@
 /* Her shelf on the nav bar: hangs from its lower edge, centred on her, behind everything else. */
 .companion__shelf {
   position: absolute;
-  /* Its base lands on the bar's lower edge — the same line her seat rests on. */
-  bottom: 44%;
+  /* Sized to the bar so the hanging bundles never clip off the top of the screen. */
+  bottom: 0;
   left: 50%;
   width: 240px;
-  height: 78px;
+  height: 96px;
   translate: -50% 0;
   pointer-events: none;
   overflow: visible;

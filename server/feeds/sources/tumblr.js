@@ -43,15 +43,21 @@ export const TUMBLR_TERMS_URL = "https://www.tumblr.com/docs/en/api_agreement";
 const DOCS_URL = "https://www.tumblr.com/docs/en/api/v2";
 export const TUMBLR_VERIFIED_AT = "2026-09-15T14:49:30Z";
 export const TUMBLR_CACHE_HOURS = 72;
+// How far back a meme may be collected from. This is OUR freshness choice, not Tumblr's rule: the
+// 72 h above is a retention obligation (how long a stored payload may live), and re-using it as the
+// recency floor was throttling the one healthy blog to roughly one post a fetch when it publishes
+// about eleven image memes a fortnight. Collected posts are still dropped after 72 h of storage.
+export const TUMBLR_MEME_MAX_AGE_HOURS = 7 * 24;
 const HOUR = 3_600_000;
 const MAX_PASSES_PER_STEP = 2;
 const BLOG = /^[a-z0-9](?:[a-z0-9-]{0,30}[a-z0-9])?$/;
 
 export const TUMBLR_MEME_BLOGS = [
   { blog: "pjsk--shitposts", fandom: "project sekai" },
-  { blog: "project-sekai-but-incorrect", fandom: "project sekai" },
 ];
 export const TUMBLR_REJECTED_BLOGS = {
+  "project-sekai-but-incorrect":
+    "2026-09-16 RSS: 20 posts over nine days, NONE carrying an image — it is an 'incorrect quotes' blog and posts text only. Since memes must carry an image or video it can no longer contribute anything, and polling it cost two requests a fetch.",
   ghostinthegutter:
     "2026-09-15 RSS: every recent item was a reblog of other blogs about Stranger Things, TGCF or random memes, with no Apothecary Diaries meme since before May; wrong fandom and wrong credit.",
 };
@@ -605,7 +611,7 @@ async function fetchTumblrMemes(ctx) {
   const blog = steps[state.index];
   const { doc } = await ctx.http.xml(`https://${blog.blog}.tumblr.com/rss`);
   if (!doc?.rss?.channel) throw new FeedError("source_shape", 503);
-  const floor = anchorMs(ctx.day) - TUMBLR_CACHE_HOURS * HOUR;
+  const floor = anchorMs(ctx.day) - TUMBLR_MEME_MAX_AGE_HOURS * HOUR;
   const seen = new Set();
   const eligible = [];
   for (const raw of feedEntries(doc)) {
@@ -711,6 +717,6 @@ export const tumblrMemes = {
   requiredCredentials: [],
   optionalCredentials: ["TUMBLR_API_KEY"],
   maxRequests: TUMBLR_MEME_BLOGS.length * MAX_PASSES_PER_STEP + 1,
-  notes: `Keyless blog RSS from the allowlist pjsk--shitposts (SEKAI image/text memes) and project-sekai-but-incorrect (incorrect quotes → kind meme, format text_post, quote text in excerpts). Original posts from the last 72 h with a SEKAI/Vocaloid (or Apothecary) tag; reblogs and 'not a shitpost/quote post' posts skipped. URLs canonicalized to www.tumblr.com/<blog>/<id>. Recheck uses the API when TUMBLR_API_KEY reaches recheck (needs jobs.js to pass credentials); otherwise RSS presence → present, absence → transient. ${POLICY_NOTES}`,
+  notes: `Keyless blog RSS from the allowlist pjsk--shitposts (SEKAI image memes). Memes must carry an image or video, so text-only posts are dropped at the adapter and project-sekai-but-incorrect (incorrect quotes, no images at all) was removed from the allowlist. Original posts from the last 7 days with a SEKAI/Vocaloid (or Apothecary) tag — the collection window is ours; Tumblr's 72 h limit is a storage obligation and stored payloads still expire then; reblogs and 'not a shitpost/quote post' posts skipped. URLs canonicalized to www.tumblr.com/<blog>/<id>. Recheck uses the API when TUMBLR_API_KEY reaches recheck (needs jobs.js to pass credentials); otherwise RSS presence → present, absence → transient. ${POLICY_NOTES}`,
   fetch: fetchTumblrMemes,
 };

@@ -438,6 +438,20 @@ export function planDressup(items, ctx) {
 export const hasMedia = (item) =>
   (item.media ?? []).some((m) => m.type === "image" || m.poster);
 
+// Her corner of the internet. A meme counts as relevant when it is ABOUT something she follows
+// (taste affinity), or when it simply came FROM one of her communities — an anime or Vocaloid feed
+// is her interest by construction, even when nothing in the picture is taggable. Without this
+// second route almost every community meme scored zero affinity and the section published empty.
+const HER_COMMUNITIES = /anime|manga|vocaloid|miku|sekai|kusuriya|apothecary|cosplay|minecraft/i;
+// Anchored to the whole community name: "animemes" is hers, "memes" is everyone's.
+const GENERAL_COMMUNITIES = /!(?:memes|me_irl|lemmyshitpost)@/i;
+const fromHerCorner = (item) => {
+  const where = String(item.credit?.platform ?? "");
+  if (GENERAL_COMMUNITIES.test(where)) return false;
+  // tumblr-memes is already gated at the adapter to her SEKAI/Vocaloid/Apothecary blogs.
+  return HER_COMMUNITIES.test(where) || item.source === "tumblr-memes";
+};
+
 const HUMOR_WEIGHT = { relatable: 1, dark: 0.9, absurd: 0.85, wholesome: 0.4 };
 export function planMeme(items, ctx) {
   const section = "meme";
@@ -452,9 +466,8 @@ export function planMeme(items, ctx) {
   const alreadySectioned = (i) => (i.sections.includes("maomao") || i.sections.includes("music") ? 0.35 : 0);
   const ranked = pool
     .map((item) => ({ item, ...scoreItem(item, ctx.taste, { day: ctx.day, section, recentCreators: ctx.recentCreators ?? [], dislikes: ctx.dislikes }) }))
-    // Relevance is a requirement, not a ranking nudge: taste affinity is the max match across her
-    // characters, voicebanks, fandoms and units, so 0 means the meme is about nothing she follows.
-    .filter((r) => r.parts.taste > 0)
+    // Relevance stays a requirement, by either route: about her fandoms, or from her communities.
+    .filter((r) => r.parts.taste > 0 || fromHerCorner(r.item))
     .map((r) => ({ ...r, score: r.score + humor(r.item) + format(r.item) - alreadySectioned(r.item) }))
     .sort((a, b) => b.score - a.score || a.tie - b.tie || a.item.id.localeCompare(b.item.id));
   const chosen = [];

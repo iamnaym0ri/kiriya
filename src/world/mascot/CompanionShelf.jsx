@@ -50,7 +50,7 @@ export default function CompanionShelf() {
   return (
     <svg
       className="companion__shelf"
-      viewBox="0 0 240 78"
+      viewBox="0 0 240 96"
       aria-hidden="true"
       focusable="false"
     >
@@ -60,7 +60,7 @@ export default function CompanionShelf() {
       <Bundle x={198} length={22} delay={820} />
       <Bundle x={214} length={15} delay={1240} />
       {/* Two small jars, pushed to the ends so they sit either side of her. */}
-      <g className="shelf__jar" transform="translate(74 43)">
+      <g className="shelf__jar" transform="translate(74 58)">
         <rect
           x="-8"
           y="10"
@@ -74,7 +74,7 @@ export default function CompanionShelf() {
         <rect x="-7" y="7" width="14" height="6" rx="2" fill="#ba9c72" />
         <rect x="-5" y="19" width="10" height="9" rx="1.5" fill="#fff3d3" />
       </g>
-      <g className="shelf__jar" transform="translate(174 46)">
+      <g className="shelf__jar" transform="translate(174 62)">
         <rect
           x="-7"
           y="10"

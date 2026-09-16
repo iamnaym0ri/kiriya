@@ -465,11 +465,12 @@ test("tumblr-memes RSS: canonical URLs, text-only/reblog/off-topic posts skipped
     day: "2026-09-09",
     routes: inFamily("tumblr", [
       { match: "https://pjsk--shitposts.tumblr.com/rss", type: RSS_TYPE, file: "rss-pjsk--shitposts.xml" },
-      { match: "https://project-sekai-but-incorrect.tumblr.com/rss", type: RSS_TYPE, file: "rss-project-sekai-but-incorrect.xml" },
     ]),
   });
-  assert.equal(pages, 2);
-  assert.equal(calls.length, 2);
+  // project-sekai-but-incorrect was dropped from the allowlist: it is an "incorrect quotes" blog and
+  // posts no images at all, so under the media rule it could never contribute (see TUMBLR_REJECTED_BLOGS).
+  assert.equal(pages, 1);
+  assert.equal(calls.length, 1);
   const found = byNative(items);
   // Owner decision (2026-09-16, second pass): a meme must be something you can look at, so text-only
   // posts (including the quote posts this blog favours) are dropped at the adapter rather than
@@ -477,9 +478,8 @@ test("tumblr-memes RSS: canonical URLs, text-only/reblog/off-topic posts skipped
   assert.deepEqual(Object.keys(found).sort(), ["827305658892337152", "827770718343331840"]);
   for (const skipped of [
     "827246622567202816", "827032510046339072", "826867435873370112", "827212982434070528",
-    // Text-only from here down: a plain text post, two quote posts and a dialogue quote.
-    "827790989093715969", "827306251538087937", "827757145859719168", "827757146956546048",
-    "827757148759015424",
+    // Text-only: a plain text post from this blog.
+    "827790989093715969",
   ])
     assert.equal(found[skipped], undefined);
   assert.ok(items.every((i) => i.media.length), "every meme carries media");

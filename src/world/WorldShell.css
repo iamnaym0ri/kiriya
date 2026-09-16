@@ -11,7 +11,8 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  height: 86px;
+  /* Tall enough for Maomao to sit on this bar without overhanging it (world/mascot/). */
+  height: 104px;
   padding: 14px max(4%, calc((100vw - 1200px) / 2));
   display: flex;
   align-items: center;
@@ -115,7 +116,7 @@
 }
 @media (max-width: 720px) {
   .world-mast {
-    height: 72px;
+    height: 88px;
     padding: 12px 21px;
     gap: 16px;
   }

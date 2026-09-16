@@ -112,6 +112,13 @@ here because it changes what the pipeline will surface, and `RULE_VERSION` was b
   `sexual/minors` threshold stays at 0.01. Lowering the bar on sexiness raises the risk here, which
   is exactly why the age gate was added at the same time.
 - **Gore, horror and politics** were not part of the relaxation and still reject.
+- **Meme relevance has two routes** (fixed 2026-09-16 after the section published empty): a meme
+  counts when it is ABOUT something she follows (taste affinity), or when it came FROM one of her
+  communities — `!animemes`, `!anime_irl`, `!hatsunemiku`, `!vocaloid`, `!minecraft`, the SEKAI
+  Tumblr blogs. Requiring taste tags alone dropped almost every community meme, because a picture
+  from an anime community carries no taggable subject. `!memes`, `!me_irl` and `!lemmyshitpost`
+  still need a subject she follows. The meme check quota also rose from 15 to 40 a build, because
+  most meme candidates were sitting unchecked.
 - **Memes** must carry an image or video (text-only posts are dropped at the adapter, saving the
   collection and check budget) and must be **relevant to her taste** — positive affinity against her
   characters, voicebanks, fandoms or units. Humour style no longer filters anything. Fandom memes are

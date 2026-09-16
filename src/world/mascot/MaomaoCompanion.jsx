@@ -215,10 +215,10 @@ function roam(rail, width = 112) {
   const mark = document
     .querySelector(".world-mast > a, .world-mast > *")
     ?.getBoundingClientRect();
-  const clearOfName = (mark?.right ?? 0) + 14;
-  // On a narrow bar, reserving the wordmark would leave her nowhere to go; there she uses the
-  // whole width and can simply be carried aside if she is ever in the way.
-  return right - clearOfName < 150 ? [8, right] : [clearOfName, right];
+  // Never give away more than the left third of the bar, and if what is left is too cramped to
+  // walk in, take the whole width instead — she can always be carried aside if she is in the way.
+  const clearOfName = Math.min((mark?.right ?? 0) + 14, window.innerWidth * 0.34);
+  return right - clearOfName < 200 ? [8, right] : [clearOfName, right];
 }
 
 /**
@@ -227,11 +227,13 @@ function roam(rail, width = 112) {
  * would otherwise shunt her up and down the screen.
  */
 function railY(rail, height) {
-  // Sitting on the bar with her legs over the edge: seat on the line, most of her below it.
-  // 45% above the line: her seat reads as being on the bar without burying a nav link.
-  if (rail === "ledge") return shelfEdge() - height * 0.45;
+  // On the bar she sits INSIDE it, feet just above its lower edge, not overhanging onto the ribbon.
+  if (rail === "ledge") return Math.max(2, shelfEdge() - height - 3);
   return window.innerHeight - FLOOR_GAP - height;
 }
+/** She scales down to fit the bar, and stands full height on the floor. */
+const bodyWidth = (rail) =>
+  rail === "ledge" ? Math.min(78, shelfEdge() - 26) : 112;
 
 export default function MaomaoCompanion() {
   const { moving } = usePlayful();
@@ -257,14 +259,13 @@ export default function MaomaoCompanion() {
   const [pose, setPose] = useState("sit");
   const [said, setSaid] = useState(null);
   const [tray, setTray] = useState(false);
-  const [asking, setAsking] = useState(false);
-  const [question, setQuestion] = useState("");
-  const [pending, setPending] = useState(false);
   const [reaction, setReaction] = useState(0);
   const [held, setHeld] = useState(false);
   const [prints, setPrints] = useState([]);
   const holdRef = useRef(false);
   const railRef = useRef("ledge");
+  // Set while she is part-way between rails, so a staged hop keeps its destination.
+  const descending = useRef(null);
   railRef.current = rail;
   holdRef.current = held;
 
@@ -341,17 +342,20 @@ export default function MaomaoCompanion() {
         return;
       }
       // Roughly a third of the time she changes shelf; otherwise she walks where she already is.
-      const swapRail = Math.random() < 0.34;
-      const nextRail = swapRail
-        ? railRef.current === "ledge"
-          ? "floor"
-          : "ledge"
-        : railRef.current;
+      // Part-way between rails she is already committed; otherwise she decides afresh.
+      const swapRail = descending.current !== null || Math.random() < 0.34;
+      const nextRail =
+        descending.current ??
+        (swapRail
+          ? railRef.current === "ledge"
+            ? "floor"
+            : "ledge"
+          : railRef.current);
       const from = x.get();
       const span = 90 + Math.random() * 260;
       const target = clamp(
         from + (Math.random() < 0.5 ? -span : span),
-        ...roam(nextRail),
+        ...roam(nextRail, size.current.w),
       );
       setFacing(target >= from ? 1 : -1);
       setActivity(TRAVELLING);
@@ -374,9 +378,15 @@ export default function MaomaoCompanion() {
       // Changing shelf is a hop, not a slide: crouch, push off, arc across, land and straighten up.
       if (swapRail) {
         clearInterval(stride);
-        const hopTo = railY(nextRail, size.current.h);
+        const full = railY(nextRail, size.current.h);
         const from = y.get();
-        const apex = Math.min(from, hopTo) - (nextRail === "floor" ? 26 : 54);
+        // She never leaps the whole screen in one go. A long drop is taken in stages, with a
+        // breath between each, so it reads as hopping down rather than falling off a building.
+        const MAX_HOP = 190;
+        const staged = Math.abs(full - from) > MAX_HOP;
+        descending.current = staged ? nextRail : null;
+        const hopTo = staged ? from + Math.sign(full - from) * MAX_HOP : full;
+        const apex = Math.min(from, hopTo) - (full > from ? 22 : 48);
         setPose("crouch");
         timer = setTimeout(() => {
           if (cancelled) return;
@@ -400,9 +410,14 @@ export default function MaomaoCompanion() {
             .then(() => across.finished)
             .then(() => {
               if (cancelled) return;
+              setPose("land");
+              if (staged) {
+                // Landed on the way down; gather herself, then take the next hop.
+                timer = setTimeout(() => !cancelled && move(), 520);
+                return;
+              }
               setRail(nextRail);
               railRef.current = nextRail;
-              setPose("land");
               timer = setTimeout(work, 420);
             })
             .catch(() => {});
@@ -443,10 +458,10 @@ export default function MaomaoCompanion() {
   }, [said, tray]);
 
   useEffect(() => {
-    if (!tray || asking) return undefined;
+    if (!tray) return undefined;
     const t = setTimeout(() => setTray(false), 14000);
     return () => clearTimeout(t);
-  }, [tray, asking, said]);
+  }, [tray, said]);
 
   const poke = () => {
     if (held) return;
@@ -497,40 +512,7 @@ export default function MaomaoCompanion() {
       .catch(() => setHeld(false));
   };
 
-  const offer = (topic) => {
-    setAsking(false);
-    speak(topic);
-  };
-
-  const ask = async (event) => {
-    event.preventDefault();
-    const text = question.trim();
-    if (!text || pending) return;
-    setPending(true);
-    try {
-      const res = await fetch("/api/me/maomao/ask", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question: text }),
-      });
-      const data = res.ok ? await res.json() : null;
-      if (data?.text) {
-        setSaid({
-          expression: data.expression ?? "thinking",
-          text: data.text,
-          announce: true,
-          at: Date.now(),
-        });
-        setReaction((n) => n + 1);
-      } else speak("tap");
-    } catch {
-      speak("tap");
-    } finally {
-      setPending(false);
-      setQuestion("");
-      setAsking(false);
-    }
-  };
+  const offer = (topic) => speak(topic);
 
   const expression = held
     ? (said?.expression ?? "alarmed")
@@ -584,7 +566,7 @@ export default function MaomaoCompanion() {
           <MaomaoMascot
             expression={expression}
             reactionKey={reaction}
-            size={112}
+            size={bodyWidth(rail)}
             pose={pose}
             onPoke={poke}
           />
@@ -601,55 +583,59 @@ export default function MaomaoCompanion() {
           )}
           {tray && !held && (
             <div
-              className="companion__tray"
+              className="companion__offers"
               role="group"
               aria-label="Show Maomao something"
             >
-              {asking ? (
-                <form className="companion__ask" onSubmit={ask}>
-                  <label className="sr-only" htmlFor="companion-question">
-                    Ask Maomao something
-                  </label>
-                  <input
-                    id="companion-question"
-                    autoFocus
-                    maxLength={160}
-                    placeholder="ask her something…"
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
+              <button
+                type="button"
+                className="companion__offer"
+                aria-label="Show her an herb"
+                title="show her an herb"
+                onClick={() => offer("herb")}
+              >
+                <svg viewBox="0 0 34 34" aria-hidden="true">
+                  <path
+                    d="M17 27V13"
+                    stroke="#527653"
+                    strokeWidth="2.2"
+                    fill="none"
+                    strokeLinecap="round"
                   />
-                  <button type="submit" disabled={pending || !question.trim()}>
-                    {pending ? "…" : "ask"}
-                  </button>
-                  <button
-                    type="button"
-                    className="quiet-button"
-                    onClick={() => setAsking(false)}
-                  >
-                    never mind
-                  </button>
-                </form>
-              ) : (
-                <>
-                  <button type="button" onClick={() => offer("herb")}>
-                    show her an herb
-                  </button>
-                  <button type="button" onClick={() => offer("vial")}>
-                    a curious vial
-                  </button>
-                  <button type="button" onClick={() => setAsking(true)}>
-                    ask her something
-                  </button>
-                  {/* Not a dismissal: she simply gets on with what she was doing. */}
-                  <button
-                    type="button"
-                    className="quiet-button"
-                    onClick={() => setTray(false)}
-                  >
-                    let her work
-                  </button>
-                </>
-              )}
+                  <path
+                    d="M17 14C6 12 7 3 7 3c10 0 13 6 10 11ZM17 16c11-2 10-9 10-9-9 0-12 4-10 9Z"
+                    fill="#8eb45e"
+                    stroke="#527653"
+                    strokeWidth="1.5"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="companion__offer"
+                aria-label="Show her a curious vial"
+                title="a curious vial"
+                onClick={() => offer("vial")}
+              >
+                <svg viewBox="0 0 34 34" aria-hidden="true">
+                  <rect
+                    x="12"
+                    y="4"
+                    width="10"
+                    height="5"
+                    rx="1.6"
+                    fill="#ba9c72"
+                  />
+                  <path
+                    d="M13 9h8v16a4 4 0 0 1-8 0Z"
+                    fill="#b3a3c6"
+                    stroke="#6d6486"
+                    strokeWidth="1.6"
+                  />
+                  <path d="M13 19h8v6a4 4 0 0 1-8 0Z" fill="#8fb7a8" />
+                  <circle cx="16" cy="22" r="1.3" fill="#ffffff" opacity=".7" />
+                </svg>
+              </button>
             </div>
           )}
         </div>

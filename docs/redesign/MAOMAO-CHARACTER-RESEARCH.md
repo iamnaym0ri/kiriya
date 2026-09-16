@@ -200,6 +200,14 @@ never swallow a button. The bubble is a small chat bubble with a tail that point
 heights. The braziers gained coals that breathe and a ladle that stirs; the mortar gained grist that
 shifts under the pestle; the basket gains a late sprig.
 
+**Third pass (2026-09-16).** The nav bar was found to be styled from `src/styles/strawpage.css`
+(`:root .world-mast`, higher specificity than the component's own rule) — that is the one to change.
+It grew from 78px to 104px (88px on phones) and she scales down on the bar so she sits INSIDE it
+rather than overhanging onto the ribbon below. Her offers are now two round icon buttons — a leaf
+and a vial — that pop out when she is poked; "ask her something" and "let her work" were removed, so
+tapping her is the whole interaction. A drop longer than 190px is taken in stages with a beat
+between each, so leaving the bar reads as hopping down rather than falling the height of the screen.
+
 **Validation.** `npm run verify:maomao-companion` drives a real browser at phone, tablet and desktop
 widths: she changes activity and walks the width of the world, an interruption is addressed to
 Kiriya and opens the tray, seven pokes give seven different answers, the offers land, there is no

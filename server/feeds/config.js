@@ -36,7 +36,7 @@ export function feedConfig() {
     checkDailyShare: 0.7,
     // Paid (image, moving-media, meme) checks queued per build, by the items most likely to be
     // planned in each section. Unchecked items stay pending for the next build.
-    checkQuotas: { maomao: 45, music: 35, dressup: 45, meme: 15, merch: 45 },
+    checkQuotas: { maomao: 45, music: 35, dressup: 45, meme: 40, merch: 45 },
     // Provider requests (including free moderation and retries) per stage INVOCATION. Each claim
     // resets this counter; `stageRequestCaps` bounds the cumulative total per build and stage.
     maxRequests: Math.floor(

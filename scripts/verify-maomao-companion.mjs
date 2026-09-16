@@ -145,13 +145,16 @@ try {
     const engaged = await page.evaluate(() => ({
       text: document.querySelector(".companion__bubble")?.textContent?.trim() ?? "",
       aside: document.querySelector(".companion__bubble")?.hasAttribute("data-aside"),
-      tray: [...document.querySelectorAll(".companion__tray button")].map((b) => b.textContent.trim()),
+      tray: [...document.querySelectorAll(".companion__offer")].map((b) => b.getAttribute("aria-label")),
     }));
     assert.ok(engaged.text.length > 0, `${label}: a poke should get an answer`);
     assert.equal(engaged.aside, false, `${label}: an answer to Kiriya is not an aside`);
-    for (const offer of ["show her an herb", "a curious vial", "ask her something"])
-      assert.ok(engaged.tray.includes(offer), `${label}: tray missing "${offer}" (saw ${engaged.tray.join(" / ")})`);
-    checks.push(`✓ ${label}: interrupting her engages Kiriya directly and opens the tray`);
+    assert.deepEqual(
+      engaged.tray,
+      ["Show her an herb", "Show her a curious vial"],
+      `${label}: two round offers, nothing else (saw ${engaged.tray.join(" / ") || "none"})`,
+    );
+    checks.push(`✓ ${label}: interrupting her engages Kiriya directly and offers the leaf and vial`);
 
     // Keep poking: she should not repeat herself.
     const said = new Set([engaged.text]);
@@ -165,7 +168,7 @@ try {
     checks.push(`✓ ${label}: ${said.size} different answers from seven pokes`);
 
     // The direct offers land, and she never covers or blocks the page.
-    await page.getByRole("button", { name: "show her an herb" }).click();
+    await page.getByRole("button", { name: "Show her an herb" }).click();
     await page.waitForTimeout(700);
     const layout = await page.evaluate(() => ({
       expression: document.querySelector(".companion .mascot")?.dataset.expression,

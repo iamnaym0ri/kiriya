@@ -86,7 +86,8 @@
   border-style: dashed;
 }
 :root .world-mast {
-  height: 78px;
+  /* Tall enough for Maomao to sit on this bar rather than overhang it (world/mascot/). */
+  height: 104px;
   background: #fff9fdf2;
   border-bottom: 1px dashed #c7a5d2;
   gap: 20px;
@@ -659,7 +660,7 @@
 }
 @media (max-width: 720px) {
   :root .world-mast {
-    height: 70px;
+    height: 88px;
     padding-inline: 19px;
   }
   :root .world-mobile-menu {
