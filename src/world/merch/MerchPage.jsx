@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { SectionHeading } from "../collection/Collections.jsx";
-import { FeedCard, FeedProgress, useSectionFeed } from "../feeds/FeedPieces.jsx";
+import { FeedCard, FeedProgress, FeedSection, useSectionFeed } from "../feeds/FeedPieces.jsx";
 
 const options = (entries, key) =>
   [...new Set(entries.flatMap((e) => e.primary.tags?.[key] ?? []))].sort();
@@ -31,7 +31,7 @@ export default function MerchPage() {
         page
       />
       {shelf.live ? (
-        <>
+        <FeedSection title="New merch drops" subtitle="Little finds, favourites & things to keep an eye on." symbol="♡" tone="rose" level={2}>
           <FeedProgress data={shelf.data} label="ON THE SHELF TODAY" />
           {(fandoms.length > 1 || types.length > 1) && (
             <div className="feed-filters">
@@ -76,7 +76,7 @@ export default function MerchPage() {
           {!visible.length && (
             <p className="status-copy">nothing matches both of those right now. try “all of them”.</p>
           )}
-        </>
+        </FeedSection>
       ) : (
         <aside className="note-slip">
           <span className="micro-label">THE SHELF IS STILL EMPTY</span>

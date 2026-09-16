@@ -658,9 +658,9 @@ function selectMeme(entry, cand, step) {
   if (commonSkip(cand) || cand.quote || cand.external) return null;
   const all = [cand.text, ...cand.media.map((m) => m.alt), cand.hashtags.join(" ")].join("\n");
   if (ADULT_CUES.test(all) || cand.hashtags.some((t) => AD_TAGS.has(t))) return null;
-  // Text-only memes come only from allowlisted accounts and must carry their text (no links or quotes).
-  const textPost = !cand.media.length && !cand.hasLinks && cand.text.trim().length >= 20 && cand.text.length <= 600;
-  if (!cand.media.length && !(step.allowlisted && textPost)) return null;
+  // Owner decision (2026-09-16, second pass): a meme has to be something you can look at, so
+  // text-only posts are dropped here rather than collected and rejected later.
+  if (!cand.media.length) return null;
   if (!step.allowlisted && !(MEME_CUES.test(all) || cand.hashtags.some((t) => /meme|shitpost/.test(t)))) return null;
   const tags = topicTags([cand.text, ...cand.media.map((m) => m.alt)], cand.hashtags);
   tags.formats = memeFormats(cand);

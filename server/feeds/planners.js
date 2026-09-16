@@ -13,7 +13,10 @@
 //          2 process (transformation/tutorial + wig/makeup/wip), 1 dare (wishlist-type cosplay),
 //          2 event (countdowns/new dates/this weekend), 1 extra (look → spot → wig find → scene by day),
 //          1 meme, 1 merch, 1 news. Reserve 20.
-// meme     1 featured + 5 reserve: general/relatable/anime memes only (fandom memes stay in sections).
+// meme     1 featured + deep reserve, browsed as a carousel: must carry an image or video and must
+//          be relevant to her taste
+//          (positive affinity). Fandom memes qualify; they take a small penalty so a general meme
+//          wins a tie and the maomao/music sections don't get repeated on the home page.
 // merch    shelf: up to 40 live items (seen items stay listed), preorder deadline → fandom → budget.
 // Empty categories reallocate their slot to the best remaining eligible item; nothing is invented.
 import { scoreItem } from "./score.js";
@@ -24,7 +27,9 @@ export const QUOTAS = {
   maomao: { visual: 8, meme: 2, merch: 1, note: 1, reserve: 20 },
   music: { song: 5, sekai: 2, note: 2, visual: 2, meme: 1, merch: 1, reserve: 20 },
   dressup: { three: 3, process: 2, dare: 1, event: 2, extra: 1, meme: 1, merch: 1, news: 1, reserve: 20 },
-  meme: { featured: 1, reserve: 5 },
+  // Owner decision (2026-09-16, second pass): memes are a browsable carousel, not one a day, so the
+  // reserve is deep enough to keep scrolling. Supply, not the quota, is the practical limit.
+  meme: { featured: 1, reserve: 29 },
   merch: { shelf: 40 },
 };
 const COUNTDOWN_DAYS = [30, 14, 7, 1, 0];
@@ -55,6 +60,7 @@ function ranker(taste, ctx, section) {
           recentCreators: ctx.recentCreators ?? [],
           episodeDay: Boolean(ctx.episodeRelated?.has(item.id)),
           countdown: Boolean(ctx.countdownIds?.has(item.id)),
+          dislikes: ctx.dislikes,
         }),
       );
     return cache.get(key);
@@ -206,7 +212,7 @@ export function planMaomao(items, ctx) {
     const m = pick(pool, (i) => i.kind === "meme");
     if (m) memes.push({ type: "meme", primary: m, companions: [] });
   }
-  const merch = pick(pool, (i) => i.kind === "merch" && i.media?.length > 0);
+  const merch = pick(pool, (i) => i.kind === "merch" && hasMedia(i));
   const note = lead ? null : pick(notes);
   // Interleave: visuals with a meme after the 2nd and 6th, merch after the 5th, a note at 4th.
   const sequence = [];
@@ -235,7 +241,7 @@ export function planMaomao(items, ctx) {
       position === 3 || position === 8
         ? pick(pool, (i) => i.kind === "meme") ?? takeVisual()
         : position === 6
-          ? pick(pool, (i) => i.kind === "merch" && i.media?.length > 0) ?? takeVisual()
+          ? pick(pool, (i) => i.kind === "merch" && hasMedia(i)) ?? takeVisual()
           : takeVisual() ?? pick(notes);
     if (!item) break;
     const type = item.kind === "meme" ? "meme" : item.kind === "merch" ? "merch" : ["lore", "news", "event"].includes(item.kind) ? "note" : "visual";
@@ -290,7 +296,7 @@ export function planMusic(items, ctx) {
   }
   const meme = pick(pool, (i) => i.kind === "meme");
   if (meme) entries.push({ type: "meme", primary: meme, companions: [] });
-  const merch = pick(pool, (i) => i.kind === "merch");
+  const merch = pick(pool, (i) => i.kind === "merch" && hasMedia(i));
   if (merch) entries.push({ type: "merch", primary: merch, companions: [] });
   // Order: song, visual, song, sekai, song, note, song, meme, song, visual, sekai, note, merch.
   const byType = (t) => entries.filter((e) => e.type === t);
@@ -312,7 +318,7 @@ export function planMusic(items, ctx) {
       : t === "sekai" ? pick(sekai)
       : t === "note" ? pick(notes)
       : t === "meme" ? pick(pool, (i) => i.kind === "meme")
-      : pick(pool, (i) => i.kind === "merch");
+      : pick(pool, (i) => i.kind === "merch" && hasMedia(i));
     if (item) reserve.push({ type: t, primary: item, companions: [] });
   }
   return finish(section, ordered, reserve, selected, { allocation: "music-v1", nonMikuRequired: needNonMiku }, hints);
@@ -355,6 +361,17 @@ export function planDressup(items, ctx) {
       break;
     }
   }
+  // Owner decision (2026-09-16, second pass): the dress-up shelf must always be real cosplay. The
+  // authored reference photos in Collections.jsx only appear when these three come back empty, so
+  // any slot the character match misses is filled with the next best cosplay photo, then any other
+  // image-bearing visual. Without this the section silently reverts to placeholders on a thin day.
+  while (three.length < 3) {
+    const filler =
+      pick(cosplay, hasMedia) ??
+      pick(pool, (i) => ["image", "clip", "look"].includes(i.kind) && hasMedia(i));
+    if (!filler) break;
+    three.push({ type: "three", primary: filler, companions: [], hook: "daily_three_rotation" });
+  }
   const entries = [...three];
   const tutorial = pick(pool, (i) => i.kind === "tutorial" && hasAny(i.tags.formats, ["transformation", "tutorial"])) ?? pick(pool, (i) => i.kind === "tutorial");
   if (tutorial) entries.push({ type: "process", primary: tutorial, companions: [] });
@@ -395,7 +412,7 @@ export function planDressup(items, ctx) {
   if (fallbackExtra) entries.push({ type: "extra", primary: fallbackExtra, companions: [] });
   const meme = pick(pool, (i) => i.kind === "meme");
   if (meme) entries.push({ type: "meme", primary: meme, companions: [] });
-  const merch = pick(pool, (i) => i.kind === "merch");
+  const merch = pick(pool, (i) => i.kind === "merch" && hasMedia(i));
   if (merch) entries.push({ type: "merch", primary: merch, companions: [] });
   const news = pick(pool, (i) => i.kind === "news");
   if (news) entries.push({ type: "news", primary: news, companions: [] });
@@ -413,23 +430,37 @@ export function planDressup(items, ctx) {
       : t === "look" ? pick(pool, (i) => ["look", "spot", "creator"].includes(i.kind))
       : t === "event" ? pick(events)
       : t === "meme" ? pick(pool, (i) => i.kind === "meme")
-      : t === "merch" ? pick(pool, (i) => i.kind === "merch")
+      : t === "merch" ? pick(pool, (i) => i.kind === "merch" && hasMedia(i))
       : pick(pool, (i) => i.kind === "news");
     if (item) reserve.push({ type: t, primary: item, companions: [] });
   }
   return finish(section, entries, reserve, selected, { allocation: "dressup-v1", rotatingFandom: fandom, extraKind, personal: ctx.personal ?? null }, hints);
 }
 
+// A hero image: something the card can actually show. Kinds like news/lore/event carry no media by
+// licensing decision (see docs/feeds/SOURCE-VERIFICATION.md), so this is a preference for the slots
+// that are meant to be looked at, not a global eligibility rule.
+export const hasMedia = (item) =>
+  (item.media ?? []).some((m) => m.type === "image" || m.poster);
+
 const HUMOR_WEIGHT = { relatable: 1, dark: 0.9, absurd: 0.85, wholesome: 0.4 };
 export function planMeme(items, ctx) {
   const section = "meme";
-  // Fandom memes stay in their sections; the home meme is general/anime/relatable.
-  const pool = items.filter((i) => inSection(i, section) && i.kind === "meme" && !i.sections.includes("maomao") && !i.sections.includes("music"));
+  // Owner decision (2026-09-16, second pass): a meme only earns the slot if it is about something
+  // she actually follows — anything goes as long as it is hers. Her fandoms are her interests, so
+  // maomao/music memes are no longer excluded outright; they take a small penalty instead, which
+  // keeps a general meme in front when one is equally relevant and avoids repeating a meme that the
+  // maomao or music section already used. Humour style no longer filters anything.
+  const pool = items.filter((i) => inSection(i, section) && i.kind === "meme" && hasMedia(i));
   const humor = (i) => HUMOR_WEIGHT[i.safety?.vision?.[0]?.meme?.humor] ?? 0.5;
   const format = (i) => (hasAny(i.tags.formats, lower(ctx.taste.memeFormats)) ? 0.2 : 0);
+  const alreadySectioned = (i) => (i.sections.includes("maomao") || i.sections.includes("music") ? 0.35 : 0);
   const ranked = pool
-    .map((item) => ({ item, ...scoreItem(item, ctx.taste, { day: ctx.day, section, recentCreators: ctx.recentCreators ?? [] }) }))
-    .map((r) => ({ ...r, score: r.score + humor(r.item) + format(r.item) }))
+    .map((item) => ({ item, ...scoreItem(item, ctx.taste, { day: ctx.day, section, recentCreators: ctx.recentCreators ?? [], dislikes: ctx.dislikes }) }))
+    // Relevance is a requirement, not a ranking nudge: taste affinity is the max match across her
+    // characters, voicebanks, fandoms and units, so 0 means the meme is about nothing she follows.
+    .filter((r) => r.parts.taste > 0)
+    .map((r) => ({ ...r, score: r.score + humor(r.item) + format(r.item) - alreadySectioned(r.item) }))
     .sort((a, b) => b.score - a.score || a.tie - b.tie || a.item.id.localeCompare(b.item.id));
   const chosen = [];
   let lastCreator = null;
@@ -453,7 +484,7 @@ export function planMerch(items, ctx) {
   );
   const ranked = pool
     .map((item) => {
-      const base = scoreItem(item, taste, { day: ctx.day, section });
+      const base = scoreItem(item, taste, { day: ctx.day, section, dislikes: ctx.dislikes });
       const deadline = item.facts?.preorderUntil ? new Date(item.facts.preorderUntil) - now : null;
       const urgent = deadline !== null && deadline >= 0 ? Math.max(0, 1 - deadline / (30 * 86400000)) : 0;
       return { item, ...base, score: base.score + urgent };

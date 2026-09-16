@@ -38,6 +38,9 @@ export const VisionSchema = z
       })
       .strict(),
     suggestive: z.enum(["none", "uncertain", "suggestive", "explicit"]),
+    // Required age read. Suggestive content is allowed for adult subjects only, so this is the
+    // one axis where uncertainty rejects instead of approving (see judge).
+    apparentMinor: z.boolean(),
     gore: z.boolean(),
     horror: z.boolean(),
     political: z.boolean(),
@@ -171,14 +174,20 @@ export async function checkItem(
     // is approved and flagged in the evidence for admin review.
     const isUncertain = (v) =>
       v.suggestive === "uncertain" || v.aiLikelihood === "uncertain" || v.aiConfidence < 0.75;
+    // Owner decision (2026-09-16, second pass): the bar for sexiness is lowered to "not explicit" so
+    // the dress-up/cosplay shelves actually fill. Suggestive and mildly sexy art stays.
+    const sexualised = (v) => v.suggestive !== "none";
     const judge = (v) => {
+      // Non-negotiable: anything sexualised must read as an adult. Unlike every other axis, an
+      // uncertain age read rejects rather than approves.
+      if (sexualised(v) && v.apparentMinor) return ["rejected", "apparent_minor"];
       if (
-        ["suggestive", "explicit"].includes(v.suggestive) ||
+        v.suggestive === "explicit" ||
         v.gore ||
         v.horror ||
         v.political ||
         (v.aiLikelihood === "high" && v.aiConfidence >= 0.75) ||
-        v.quality < 3
+        v.quality < 2
       )
         return ["rejected", "vision"];
       return null;
@@ -203,16 +212,9 @@ export async function checkItem(
         results.push(v);
       }
     } else if (item.kind === "meme") {
-      // A text-post meme still needs humour/politics classification; without it, withhold.
-      if (!provider.classifyText) return verdict("pending", "meme_classification_unavailable");
-      const parsed = VisionSchema.safeParse(await provider.classifyText(item));
-      if (!parsed.success) return verdict("pending", "incomplete_vision");
-      const v = parsed.data;
-      evidence.vision = [v];
-      evidence.scope = "text-classification";
-      if (["suggestive", "explicit"].includes(v.suggestive) || v.gore || v.horror || v.political)
-        return verdict("rejected", "vision");
-      results.push(v);
+      // Owner decision (2026-09-16, second pass): a meme has to be something you can look at.
+      // Text-only posts are dropped here, before spending a classification request on them.
+      return verdict("rejected", "meme_needs_media");
     }
     if (results.some(isUncertain)) evidence.uncertain = true;
 

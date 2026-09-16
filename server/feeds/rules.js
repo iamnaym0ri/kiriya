@@ -1,5 +1,5 @@
 // Bump when a rule change should re-evaluate earlier vision/moderation decisions (see checkQueue).
-export const RULE_VERSION = "2026-09-16.1";
+export const RULE_VERSION = "2026-09-16.2";
 export const THRESHOLDS = {
   sexual: 0.12,
   "sexual/minors": 0.01,
@@ -7,8 +7,11 @@ export const THRESHOLDS = {
   "self-harm": 0.1,
   hate: 0.1,
 };
+// Owner decision (2026-09-16, second pass): swimwear, underwear and cleavage are "suggestive", not
+// explicit, so they no longer fail the pre-check — the vision pass judges them with the image in
+// hand, and anything sexualised still has to read as an adult. Nudity and NSFW labels stay out.
 export const BAD_TAGS =
-  /(?:^|[\s_-])(ai[\s_-]?(?:generated|assisted)|guro|blood|injury|corpse|nude|nudity|underwear|swimsuit|bikini|cleavage|ass|panties|nsfw|gore|horror)(?:$|[\s_-])/i;
+  /(?:^|[\s_-])(ai[\s_-]?(?:generated|assisted)|guro|blood|injury|corpse|nude|nudity|nsfw|gore|horror)(?:$|[\s_-])/i;
 export const BAD_TEXT =
   /\bai[\s_-]?(?:art|generated|assisted)\b|midjourney|stable[ -]?diffusion|nijijourney|#nsfw|18\+|r-?18\b|lewd|onlyfans|fansly|patreon exclusive|lawsuit|\bsue[sd]?\b|arrest|scandal|allegation|controvers|harass|abus|assault|\bdied\b|\bdeath\b|passed away|layoff|boycott|callout|\bdrama\b|\bleak(?:ed|s)?\b|plagiar|cancel(?:l)?ed over/i;
 export const POLITICS =
@@ -26,7 +29,10 @@ const BAD_LABELS = new Set([
   "!no-unauthenticated",
 ]);
 
-const GENERAL_RATING = { danbooru: "g", sakugabooru: "s" };
+// Owner decision (2026-09-16, second pass): the bar drops to "not explicit", so Danbooru's
+// "sensitive" tier joins "general". Questionable and explicit stay out, and every surviving post
+// still goes through moderation, the vision check and the apparent-minor gate.
+const GENERAL_RATING = { danbooru: ["g", "s"], sakugabooru: ["s"] };
 
 export function sourceVerdict(
   item,
@@ -55,7 +61,7 @@ export function sourceVerdict(
   // Source families share rules across purpose-specific entries (danbooru-maomao, danbooru-memes…).
   // Each booru's safest tier: Danbooru "g" (general); Moebooru/Sakugabooru "s" (safe).
   const family = item.source.split("-")[0];
-  if (family in GENERAL_RATING && safety.rating !== GENERAL_RATING[family])
+  if (family in GENERAL_RATING && !GENERAL_RATING[family].includes(safety.rating))
     return "source_rating";
   if (
     item.facts.sourceScore <

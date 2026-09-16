@@ -2,6 +2,7 @@ import { seededRandom } from "../engine/pick.js";
 import { localDay, zonedInstant } from "../lib/time.js";
 const maxMatch = (tags, weights) =>
   Math.max(0, ...tags.map((t) => weights[t] ?? 0));
+const lowerTags = (list) => (list ?? []).map((t) => String(t).toLowerCase());
 
 export function scoreItem(
   item,
@@ -14,6 +15,7 @@ export function scoreItem(
     recentCreators = [],
     episodeDay = false,
     countdown = false,
+    dislikes = { tags: {}, creators: {} },
   } = {},
 ) {
   const tags = item.tags;
@@ -95,7 +97,18 @@ export function scoreItem(
     boosts += taste.memeFormatBonus;
   const creator =
     `${item.source}:${item.credit.handle || item.credit.name}`.toLowerCase();
-  const penalties = recentCreators.includes(creator) ? 0.3 : 0;
+  // "Not for me" feeds back here. Each repeatedly-hidden tag the item carries costs a little, and a
+  // hidden creator costs more; both are capped so a run of hides damps a subject rather than
+  // erasing it, and an explicit favourite can still outscore the penalty.
+  const hiddenTags = ["characters", "fandoms", "topics", "formats"].reduce(
+    (n, key) =>
+      n + lowerTags(tags[key]).filter((t) => dislikes.tags?.[`${key}:${t}`]).length,
+    0,
+  );
+  const disliked =
+    Math.min(0.6, 0.2 * hiddenTags) +
+    Math.min(0.5, 0.25 * (dislikes.creators?.[creator] ?? 0));
+  const penalties = (recentCreators.includes(creator) ? 0.3 : 0) + disliked;
   const parts = {
     taste: affinity,
     freshness,

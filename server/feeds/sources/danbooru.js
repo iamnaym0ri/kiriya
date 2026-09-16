@@ -309,7 +309,9 @@ export function skipReason(post) {
   if (post.is_deleted) return "deleted";
   if (post.is_banned) return "banned";
   if (post.is_pending || post.is_flagged) return "unmoderated";
-  if (post.rating !== "g") return "rating";
+  // Owner decision (2026-09-16, second pass): "sensitive" is allowed alongside "general";
+  // questionable/explicit are not. The vision check and the apparent-minor gate still apply.
+  if (!DANBOORU_RATINGS.includes(post.rating)) return "rating";
   const meta = split(post.tag_string_meta);
   const general = split(post.tag_string_general);
   if ([...meta, ...general].some((t) => t === "ai-generated" || t === "ai-assisted")) return "ai";
@@ -506,7 +508,7 @@ export async function recheckDanbooru(item, ctx) {
   try {
     const post = await ctx.http.json(`https://${HOST}/posts/${item.nativeId}.json?only=id,rating,is_deleted,is_banned`);
     if (!post || typeof post !== "object" || !Number.isInteger(post.id)) return { state: "transient", scope };
-    if (post.is_deleted || post.is_banned || post.rating !== "g") return { state: "removed", scope };
+    if (post.is_deleted || post.is_banned || !DANBOORU_RATINGS.includes(post.rating)) return { state: "removed", scope };
     return { state: "present", scope };
   } catch (error) {
     return {
@@ -548,22 +550,23 @@ const COMMON = {
 
 // Query tags: at most 2 counted tags each; everything else is a free metatag.
 export const MAOMAO_QUERIES = [
-  { key: "maomao", tags: "maomao_(kusuriya_no_hitorigoto) rating:g status:active age:<30d score:>=8", pages: 2 },
+  { key: "maomao", tags: "maomao_(kusuriya_no_hitorigoto) rating:g,s status:active age:<30d score:>=8", pages: 2 },
 ];
 export const VOCALOID_QUERIES = [
-  { key: "miku", tags: "hatsune_miku rating:g status:active age:<7d score:>=10", pages: 2 },
-  { key: "miku-gif", tags: "hatsune_miku animated_gif rating:g status:active age:<1y score:>=3", pages: 1 },
-  { key: "rin-len", tags: "~kagamine_rin ~kagamine_len rating:g status:active age:<7d score:>=5", pages: 1 },
-  { key: "luka-kaito", tags: "~megurine_luka ~kaito_(vocaloid) rating:g status:active age:<7d score:>=5", pages: 1 },
-  { key: "meiko-teto", tags: "~meiko_(vocaloid) ~kasane_teto rating:g status:active age:<7d score:>=5", pages: 1 },
-  { key: "gumi", tags: "gumi rating:g status:active age:<7d score:>=5", pages: 1 },
+  { key: "miku", tags: "hatsune_miku rating:g,s status:active age:<7d score:>=10", pages: 2 },
+  { key: "miku-gif", tags: "hatsune_miku animated_gif rating:g,s status:active age:<1y score:>=3", pages: 1 },
+  { key: "rin-len", tags: "~kagamine_rin ~kagamine_len rating:g,s status:active age:<7d score:>=5", pages: 1 },
+  { key: "luka-kaito", tags: "~megurine_luka ~kaito_(vocaloid) rating:g,s status:active age:<7d score:>=5", pages: 1 },
+  { key: "meiko-teto", tags: "~meiko_(vocaloid) ~kasane_teto rating:g,s status:active age:<7d score:>=5", pages: 1 },
+  { key: "gumi", tags: "gumi rating:g,s status:active age:<7d score:>=5", pages: 1 },
 ];
+export const DANBOORU_RATINGS = ["g", "s"];
 export const MEME_QUERIES = [
-  { key: "anime", tags: "meme rating:g status:active age:<7d score:>=10", pages: 2 },
-  { key: "apothecary", tags: "kusuriya_no_hitorigoto meme rating:g status:active", pages: 2 },
-  { key: "sekai", tags: "project_sekai meme rating:g status:active age:<1y score:>=3", pages: 1 },
-  { key: "vocaloid", tags: "vocaloid meme rating:g status:active age:<1y score:>=3", pages: 1 },
-  { key: "minecraft", tags: "minecraft meme rating:g status:active age:<1y score:>=3", pages: 1 },
+  { key: "anime", tags: "meme rating:g,s status:active age:<7d score:>=10", pages: 2 },
+  { key: "apothecary", tags: "kusuriya_no_hitorigoto meme rating:g,s status:active", pages: 2 },
+  { key: "sekai", tags: "project_sekai meme rating:g,s status:active age:<1y score:>=3", pages: 1 },
+  { key: "vocaloid", tags: "vocaloid meme rating:g,s status:active age:<1y score:>=3", pages: 1 },
+  { key: "minecraft", tags: "minecraft meme rating:g,s status:active age:<1y score:>=3", pages: 1 },
 ];
 
 export const danbooruMaomao = {
@@ -572,7 +575,7 @@ export const danbooruMaomao = {
   sections: ["maomao"],
   maxRequests: 4,
   notes:
-    "Tag maomao_(kusuriya_no_hitorigoto) (2,062 posts, character category) with rating:g status:active age:<30d score:>=8 — one counted tag. AI (ai-generated/ai-assisted), deleted/banned/pending/flagged, non-g, artist-less, fanservice/gore-tagged, webm/zip and >8 MiB clips are skipped in code. Stills use the 720x720 CDN variant; mp4/animated GIFs use the original file with the 720x720 still as poster. Credit: artist tag; source link from pixiv_id or the post's source on an allowlisted host. Anonymous requests carry the helper User-Agent; help:api also asks for a user ID (optional DANBOORU_USER_ID, no account was created). robots.txt disallows /*.json for crawlers: this is bounded use of the documented API (help:api), not crawling — owner/orchestrator should confirm that reading.",
+    "Tag maomao_(kusuriya_no_hitorigoto) (2,062 posts, character category) with rating:g,s status:active age:<30d score:>=8 — one counted tag. AI (ai-generated/ai-assisted), deleted/banned/pending/flagged, questionable/explicit, artist-less, fanservice/gore-tagged, webm/zip and >8 MiB clips are skipped in code. Stills use the 720x720 CDN variant; mp4/animated GIFs use the original file with the 720x720 still as poster. Credit: artist tag; source link from pixiv_id or the post's source on an allowlisted host. Anonymous requests carry the helper User-Agent; help:api also asks for a user ID (optional DANBOORU_USER_ID, no account was created). robots.txt disallows /*.json for crawlers: this is bounded use of the documented API (help:api), not crawling — owner/orchestrator should confirm that reading.",
   fetch: queryFetcher({ id: "danbooru-maomao", sections: ["maomao"] }, "maomao", MAOMAO_QUERIES),
 };
 export const danbooruVocaloid = {

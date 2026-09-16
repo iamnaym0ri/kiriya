@@ -66,9 +66,10 @@ const M = await import("../server/feeds/motion.js");
 const storage = await import("../server/feeds/storage.js");
 const { ensureSave, SAVE_LIMITS } = await import("../server/feeds/saves.js");
 const { normalizeItem } = await import("../server/feeds/normalize.js");
-const { ingestItem, createBuild, rows } = await import(
+const { ingestItem, createBuild, rows, hideItems, dislikeSignals } = await import(
   "../server/feeds/repository.js"
 );
+const { scoreItem } = await import("../server/feeds/score.js");
 const { readFeed, markSeen, deletionFresh } = await import(
   "../server/feeds/editions.js"
 );
@@ -452,18 +453,25 @@ try {
     );
     assert.ok(merchHeavy.slots.filter((x) => x.type === "merch").length <= 1);
 
+    // Owner decision (2026-09-16, second pass): a meme must carry an image or video and must be
+    // about something she actually follows. Fandom memes now qualify instead of being excluded —
+    // they just rank below an equally relevant general meme so the sections don't repeat.
+    const hers = { characters: ["maomao"] };
     const general = Array.from({ length: 7 }, () =>
-      row({ kind: "meme", sections: ["meme"], source: "lemmy" }),
+      row({ kind: "meme", sections: ["meme"], source: "lemmy", tags: hers }),
     );
-    const fandomMeme = row({
-      kind: "meme",
-      sections: ["meme", "maomao"],
-      source: "bluesky",
-    });
-    const memes = P.planMeme([fandomMeme, ...general], ctx());
+    const offTopic = row({ kind: "meme", sections: ["meme"], source: "lemmy" });
+    const textOnly = row({ kind: "meme", sections: ["meme"], source: "lemmy", tags: hers, media: [] });
+    const fandomMeme = row({ kind: "meme", sections: ["meme", "maomao"], source: "bluesky", tags: hers });
+    const memes = P.planMeme([fandomMeme, textOnly, offTopic, ...general], ctx());
     assert.equal(memes.slots.length, 1);
-    assert.ok(memes.reserve.length <= 5);
-    assert.ok(!ids(memes).includes(fandomMeme.id));
+    assert.ok(memes.reserve.length <= P.QUOTAS.meme.reserve);
+    assert.ok(!ids(memes).includes(offTopic.id), "a meme about nothing she follows is not relevant");
+    assert.ok(!ids(memes).includes(textOnly.id), "a text-only meme has nothing to look at");
+    assert.notEqual(memes.slots[0].primaryId, fandomMeme.id, "an equally relevant general meme leads");
+    // When her fandom is all that's relevant, the fandom meme is used rather than leaving it empty.
+    const fandomOnly = P.planMeme([fandomMeme, offTopic], ctx());
+    assert.deepEqual([fandomOnly.slots.length, fandomOnly.slots[0]?.primaryId], [1, fandomMeme.id]);
 
     const merch = (facts) =>
       row({ kind: "merch", sections: ["merch"], source: "gsc", facts: { sgd: 60, ...facts } });
@@ -648,6 +656,7 @@ try {
       isMeme: false,
       meme: { format: "other", humor: "unknown", political: false, topics: [], text: "", fandom: "" },
       suggestive: "none",
+      apparentMinor: false,
       gore: false,
       horror: false,
       political: false,
@@ -682,8 +691,18 @@ try {
     // Owner decision (2026-09-16): uncertainty approves (flagged); definite suggestive/explicit rejects.
     const unsure = await checkItem(gif, { ...provider, vision: async (item, index) => ({ ...vision(index === 0 ? ["maomao"] : []), suggestive: "uncertain", aiConfidence: 0.5 }) }, { source });
     assert.deepEqual([unsure.status, unsure.evidence.uncertain], ["approved", true]);
-    for (const level of ["suggestive", "explicit"])
-      assert.equal((await checkItem(gif, { ...provider, vision: async () => ({ ...vision(["maomao"]), suggestive: level }) }, { source })).status, "rejected");
+    // Owner decision (2026-09-16, second pass): suggestive/sexy passes, only explicit rejects…
+    const suggestive = await checkItem(gif, { ...provider, vision: async (item, index) => ({ ...vision(index === 0 ? ["maomao"] : []), suggestive: "suggestive" }) }, { source });
+    assert.equal(suggestive.status, "approved");
+    assert.equal((await checkItem(gif, { ...provider, vision: async () => ({ ...vision(["maomao"]), suggestive: "explicit" }) }, { source })).status, "rejected");
+    // …except that anything sexualised must read as an adult. Here uncertainty rejects, and it
+    // applies to the merely-suggestive and the uncertain alike, not just the explicit.
+    for (const level of ["uncertain", "suggestive", "explicit"]) {
+      const minor = await checkItem(gif, { ...provider, vision: async () => ({ ...vision(["maomao"]), suggestive: level, apparentMinor: true }) }, { source });
+      assert.deepEqual([minor.status, minor.reason], ["rejected", "apparent_minor"], `suggestive=${level} + apparentMinor must reject`);
+    }
+    // A non-sexualised image of a young-looking character is ordinary content and stays.
+    assert.equal((await checkItem(gif, { ...provider, vision: async (item, index) => ({ ...vision(index === 0 ? ["maomao"] : []), suggestive: "none", apparentMinor: true }) }, { source })).status, "approved");
     const noMaomao = { ...provider, vision: async () => vision(["frieren"]) };
     assert.deepEqual(
       [(await checkItem(gif, noMaomao, { source })).reason],
@@ -831,6 +850,38 @@ try {
     assert.ok(payloadsRemoved >= 1);
     assert.equal((await db.select().from(s.feedItems).where(eq(s.feedItems.id, post.id))).length, 0);
     assert.equal((await db.select().from(s.saves).where(eq(s.saves.id, saved.id))).length, 1);
+  });
+
+  await test("\"Not for me\" hides the post and teaches the next edition, without burying a whole subject", async () => {
+    // Owner ask (2026-09-16): hiding should filter out things she doesn't like, not just that post.
+    const genshin = { characters: ["furina"], fandoms: ["genshin impact"] };
+    const hidden = [];
+    for (let n = 0; n < 2; n++)
+      hidden.push(await approvedItem(rawItem(600 + n, { kind: "meme", sections: ["meme"], tags: genshin, credit: { name: "repeat poster", handle: "repeat", profileUrl: null, platform: "Test", license: "" } })));
+    const once = await approvedItem(rawItem(610, { kind: "meme", sections: ["meme"], tags: { fandoms: ["frieren"] } }));
+
+    // Nothing is learned until she actually hides something.
+    assert.deepEqual(await dislikeSignals(db), { tags: {}, creators: {} });
+    await hideItems(db, hidden.map((i) => i.id), "kiriya");
+    await hideItems(db, [once.id], "kiriya");
+    const signals = await dislikeSignals(db);
+    // Two hides of the same subject register; a single hide of another does not bury it.
+    assert.equal(signals.tags["fandoms:genshin impact"], 2);
+    assert.equal(signals.tags["fandoms:frieren"], undefined, "one hide never buries a whole fandom");
+    assert.equal(signals.creators["copytest:repeat"], 2);
+
+    // An owner moderation hide is not her preference and must not train anything.
+    const ownerHidden = await approvedItem(rawItem(620, { kind: "meme", sections: ["meme"], tags: { fandoms: ["bocchi the rock!"] } }));
+    await hideItems(db, [ownerHidden.id], "owner");
+    assert.equal((await dislikeSignals(db)).tags["fandoms:bocchi the rock!"], undefined);
+
+    // The learned signal actually moves ranking: same item, lower score once its subject is hidden.
+    const candidate = await approvedItem(rawItem(630, { kind: "meme", sections: ["meme"], tags: genshin }));
+    const opts = { day: DAY, section: "meme" };
+    const before = scoreItem(candidate, taste, opts);
+    const after = scoreItem(candidate, taste, { ...opts, dislikes: signals });
+    assert.ok(after.score < before.score, "a hidden subject ranks lower next time");
+    assert.ok(after.parts.penalties > before.parts.penalties);
   });
 
   await test("Deletion deadlines hide stale community items; the merch shelf keeps items she has already looked at", async () => {

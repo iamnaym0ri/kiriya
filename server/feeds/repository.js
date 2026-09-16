@@ -140,6 +140,36 @@ export async function eligibleItems(
       !blocked.creators.includes(creatorKey(i)),
   );
 }
+/**
+ * What "not for me" has taught us. Owner decision (2026-09-16, second pass): hiding should filter
+ * out more than the one post, so her hides now feed scoring. Only HER hides count (the owner's
+ * moderation hides are not preferences), and a tag has to be hidden `minCount` times before it
+ * counts, so a single hide never buries a whole fandom. Creators are penalised from the first hide
+ * because "not this person again" is the usual intent.
+ */
+export async function dislikeSignals(db, { minCount = 2, days = 90 } = {}) {
+  const hidden = await db
+    .select({ tags: s.feedItems.tags, source: s.feedItems.source, credit: s.feedItems.credit })
+    .from(s.feedItems)
+    .where(and(eq(s.feedItems.visibility, "hidden"), eq(s.feedItems.hiddenBy, "kiriya")))
+    .orderBy(desc(s.feedItems.fetchedAt))
+    .limit(400);
+  const tally = new Map();
+  const creators = new Map();
+  for (const item of hidden) {
+    for (const key of ["characters", "fandoms", "topics", "formats"])
+      for (const value of item.tags?.[key] ?? []) {
+        const tag = `${key}:${String(value).toLowerCase()}`;
+        tally.set(tag, (tally.get(tag) ?? 0) + 1);
+      }
+    const creator = creatorKey({ source: item.source, credit: item.credit });
+    creators.set(creator, (creators.get(creator) ?? 0) + 1);
+  }
+  return {
+    tags: Object.fromEntries([...tally].filter(([, n]) => n >= minCount)),
+    creators: Object.fromEntries(creators),
+  };
+}
 export async function hideItems(db, ids, who = "kiriya") {
   const result = await db.execute(sql`
     WITH hidden AS (UPDATE feed_items SET visibility='hidden',hidden_by=${who},reason='hidden'

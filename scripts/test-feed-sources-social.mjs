@@ -211,7 +211,7 @@ test("bluesky-fashion: J-fashion looks with FASHION_STYLES only from explicit ta
   assert.deepEqual(items.find((i) => i.credit.handle === "frillana.bsky.social").tags.formats, []);
 });
 
-test("bluesky-memes: allowlisted text posts keep their text; feeds need meme cues", async () => {
+test("bluesky-memes: text-only posts are dropped even from allowlisted accounts; feeds need meme cues", async () => {
   bsky.resetBlueskySessions();
   const { items, calls } = await runAdapterAll(bsky.blueskyMemes, {
     day: "2026-09-12",
@@ -224,15 +224,12 @@ test("bluesky-memes: allowlisted text posts keep their text; feeds need meme cue
     ]),
   });
   assert.equal(calls.length, 6);
+  // Owner decision (2026-09-16, second pass): memes must carry an image or video. The allowlisted
+  // text-post account contributes nothing now, and its images here are older than the 72 h window.
   const text = items.filter((i) => i.credit.handle === "adhdforreal.bsky.social");
-  assert.equal(text.length, 3, "images older than the 72 h window are dropped");
-  for (const item of text) {
-    assert.equal(item.kind, "meme");
-    assert.deepEqual(item.media, []);
-    assert.deepEqual(item.sections, ["meme"]);
-    assert.ok(item.tags.formats.includes("text_post"));
-    assert.equal(item.facts.excerpts[0], item.title);
-  }
+  assert.deepEqual(text, [], "text-only posts no longer become memes");
+  assert.ok(items.every((i) => i.media.length), "every meme carries media");
+  assert.ok(items.every((i) => !i.tags.formats.includes("text_post")), "no text_post formats remain");
   const feedMemes = items.filter((i) => i.credit.handle !== "adhdforreal.bsky.social");
   assert.deepEqual(feedMemes.map((i) => i.credit.handle), ["sarumarux.bsky.social"]);
   assert.deepEqual(feedMemes[0].sections, ["meme", "maomao"]);
@@ -462,7 +459,7 @@ const TUMBLR_KEY = { TUMBLR_API_KEY: "fixture-consumer-key-not-real" };
 const tagged = (tag) => (href) =>
   href.startsWith("https://api.tumblr.com/v2/tagged?") && new URL(href).searchParams.get("tag") === tag;
 
-test("tumblr-memes RSS: canonical URLs, text_post quotes, reblogs/off-topic skipped, expiresAt ≤ 72 h", async () => {
+test("tumblr-memes RSS: canonical URLs, text-only/reblog/off-topic posts skipped, expiresAt ≤ 72 h", async () => {
   const before = Date.now();
   const { items, calls, pages } = await runAdapterAll(tumblr.tumblrMemes, {
     day: "2026-09-09",
@@ -474,35 +471,27 @@ test("tumblr-memes RSS: canonical URLs, text_post quotes, reblogs/off-topic skip
   assert.equal(pages, 2);
   assert.equal(calls.length, 2);
   const found = byNative(items);
-  assert.deepEqual(Object.keys(found).sort(), [
-    "827305658892337152",
-    "827306251538087937",
-    "827757145859719168",
-    "827757146956546048",
+  // Owner decision (2026-09-16, second pass): a meme must be something you can look at, so text-only
+  // posts (including the quote posts this blog favours) are dropped at the adapter rather than
+  // collected and rejected later. Only the two posts carrying images survive.
+  assert.deepEqual(Object.keys(found).sort(), ["827305658892337152", "827770718343331840"]);
+  for (const skipped of [
+    "827246622567202816", "827032510046339072", "826867435873370112", "827212982434070528",
+    // Text-only from here down: a plain text post, two quote posts and a dialogue quote.
+    "827790989093715969", "827306251538087937", "827757145859719168", "827757146956546048",
     "827757148759015424",
-    "827770718343331840",
-    "827790989093715969",
-  ]);
-  for (const skipped of ["827246622567202816", "827032510046339072", "826867435873370112", "827212982434070528"])
+  ])
     assert.equal(found[skipped], undefined);
-  const textPost = found["827790989093715969"];
-  assert.equal(textPost.url, "https://www.tumblr.com/pjsk--shitposts/827790989093715969");
-  assert.equal(textPost.kind, "meme");
-  assert.deepEqual(textPost.media, []);
-  assert.ok(textPost.tags.formats.includes("text_post"));
-  assert.ok(textPost.facts.excerpts[0].startsWith("Project Sekai stories every 5 minutes be like"));
-  assert.deepEqual(textPost.sections, ["meme", "music"]);
-  assert.equal(textPost.credit.name, "pjsk--shitposts");
-  assert.equal(textPost.credit.profileUrl, "https://www.tumblr.com/pjsk--shitposts");
+  assert.ok(items.every((i) => i.media.length), "every meme carries media");
+  assert.ok(items.every((i) => !i.tags.formats.includes("text_post")), "no text_post formats remain");
   const image = found["827770718343331840"];
+  assert.equal(image.credit.name, "pjsk--shitposts");
+  assert.equal(image.credit.profileUrl, "https://www.tumblr.com/pjsk--shitposts");
   assert.equal(image.media.length, 1);
   assert.equal(new URL(image.media[0].url).hostname, "64.media.tumblr.com");
   assert.match(image.media[0].url, /\/s1280x1920\//);
   assert.equal(image.media[0].width, 1280);
   assert.match(image.mediaIdentity, /^tumblr-media:[0-9a-f]{32}\/[0-9a-z]+-[0-9a-z]+$/);
-  const quote = found["827757148759015424"];
-  assert.match(quote.facts.excerpts[0], /^Airi: Haruka, you can trust me\./);
-  assert.ok(quote.facts.excerpts[0].includes("\nHaruka:"), "quote lines stay on separate lines");
   for (const item of items) {
     const expires = Date.parse(item.expiresAt);
     assert.ok(expires <= Date.now() + 72 * 3600_000 && expires >= before + 71 * 3600_000);

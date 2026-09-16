@@ -15,9 +15,14 @@ async function valueAt(db, key) {
 }
 
 export function chooseNote(state, { feeling = null, energy = 2, random = Math.random, pool = NOTE_JAR_NOTES } = {}) {
-  let candidates = pool.filter(note => !state.seen.includes(note.id));
+  // Keep mood-specific hype/nudges out of difficult moments, even after many pulls.
+  // With no check-in, the library remains available; low battery still limits teasing.
+  const eligible = pool.filter(note =>
+    (!feeling || !note.feelings.length || note.feelings.includes(feeling)) &&
+    !(note.avoidFeelings ?? []).includes(feeling) && energy >= (note.minEnergy ?? 0));
+  let candidates = eligible.filter(note => !state.seen.includes(note.id));
   const reset = candidates.length === 0;
-  if (reset) candidates = pool.filter(note => note.id !== state.lastNote);
+  if (reset) candidates = eligible.filter(note => note.id !== state.lastNote);
   const recent = state.recent ?? [];
   const scored = candidates.map(note => {
     let score = random() * 4;
@@ -27,12 +32,11 @@ export function chooseNote(state, { feeling = null, energy = 2, random = Math.ra
     if (recent[0] === note.theme) score -= 9;
     else if (recent.includes(note.theme)) score -= 3;
     if (energy <= 1 && note.text.length < 155) score += 2;
-    if (energy <= 1 && ["rest", "soft", "space", "steady"].includes(note.theme)) score += 2;
-    if (["sad", "anxious", "overwhelmed", "angry"].includes(feeling) && ["humour", "bright"].includes(note.theme)) score -= 5;
+    if (energy <= 1 && ["rest", "sad", "anxious", "overwhelmed", "angry"].includes(note.theme)) score += 2;
     return { note, score };
   });
   scored.sort((a, b) => b.score - a.score);
-  return { note: scored[0].note, reset };
+  return { note: scored[0].note, reset, resetIds: reset ? eligible.map(note => note.id) : [] };
 }
 
 export async function readNoteJar(db, day = localDay()) {
@@ -59,11 +63,13 @@ export async function pullNote(db, requestId, { day = localDay(), now = new Date
     const existing = await valueAt(db, key);
     if (existing) return existing;
     const state = await valueAt(db, STATE);
-    const { note, reset } = chooseNote(state, context);
+    const { note, resetIds } = chooseNote(state, context);
     const record = { id: requestId, note, day, at: now.toISOString(), ordinal: state.revision + 1, saved: false, revisited: state.ever.includes(note.id) };
     const next = {
       revision: state.revision + 1,
-      seen: [...(reset ? [] : state.seen), note.id],
+      // Only refresh the exhausted mood-compatible set. Switching moods must not
+      // forget notes already read in another mood; immutable history stays intact.
+      seen: [...state.seen.filter(id => !resetIds.includes(id)), note.id],
       ever: [...new Set([...state.ever, note.id])],
       recent: [note.theme, ...state.recent].slice(0, 4),
       last: requestId, lastNote: note.id,

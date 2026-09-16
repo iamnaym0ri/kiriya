@@ -507,7 +507,8 @@ export function rssMemeItem(entry, blogConfig, raw) {
   if (categories.some((c) => /^not a (?:shitpost|quote post|meme)\b/.test(c) || NSFW_TAGS.test(c))) return null;
   const media = htmlImages(html);
   const text = htmlText(html);
-  if (!media.length && text.length < 20) return null;
+  // Owner decision (2026-09-16, second pass): memes must carry an image or video, never text alone.
+  if (!media.length) return null;
   const tags = topicTags([text], categories);
   if (!isMusic(tags) && !isApothecary(tags)) return null;
   const sections = ["meme"];

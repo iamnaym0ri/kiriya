@@ -89,7 +89,8 @@ test("danbooru-maomao normalizes real posts into credited, tagged image items", 
   assert.equal(page.done, false);
   assert.equal(calls.length, 1);
   const url = new URL(calls[0].url);
-  assert.equal(url.searchParams.get("tags"), "maomao_(kusuriya_no_hitorigoto) rating:g status:active age:<30d score:>=8");
+  // Owner decision (2026-09-16, second pass): "sensitive" joins "general"; q/e stay excluded.
+  assert.equal(url.searchParams.get("tags"), "maomao_(kusuriya_no_hitorigoto) rating:g,s status:active age:<30d score:>=8");
   assert.equal(url.searchParams.get("page"), null);
   assert.match(calls[0].headers["user-agent"], /^kiriya\.love personal feed\/1\.0/);
 

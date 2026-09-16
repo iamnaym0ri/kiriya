@@ -16,17 +16,19 @@ const day="2026-09-16",options={day,now:new Date("2026-09-16T02:00:00Z"),random:
 const blank=()=>({revision:0,seen:[],ever:[],recent:[],last:null,daily:null});
 try {
   await test("Jar library is substantial, distinct and second-person, with grounded fan-note bylines",()=>{
-    assert(NOTE_JAR_NOTES.length>=280);
+    assert(NOTE_JAR_NOTES.length>=340);
     const canonical=text=>text.toLowerCase().replace(/[^\p{L}\p{N}]/gu,"");
     assert.equal(new Set(NOTE_JAR_NOTES.map(n=>canonical(n.text))).size,NOTE_JAR_NOTES.length);
     assert.equal(new Set(NOTE_JAR_NOTES.map(n=>n.id)).size,NOTE_JAR_NOTES.length);
     assert(NOTE_JAR_NOTES.every(n=>n.text.length>=50&&n.text.length<400));
     assert(NOTE_JAR_NOTES.filter(n=>n.voice==="maomao").every(n=>n.byline.includes("Maomao-inspired")));
+    for(const feeling of ["sad","anxious","overwhelmed","angry","happy","content","excited","playful"])
+      assert(NOTE_JAR_NOTES.filter(n=>n.theme===feeling).length>=15,feeling);
   });
   await test("Every note can be pulled before repetition; the complete library never imposes a daily stop",()=>{
     let state=blank();
     for(let i=0;i<NOTE_JAR_NOTES.length;i++){
-      const {note,reset}=chooseNote(state,{random:()=>.3,feeling:"sad",energy:0});
+      const {note,reset}=chooseNote(state,{random:()=>.3});
       assert(!reset);assert(!state.seen.includes(note.id));
       state={...state,seen:[...state.seen,note.id],lastNote:note.id,recent:[note.theme,...state.recent].slice(0,4)};
     }
@@ -37,7 +39,29 @@ try {
       const {note}=chooseNote(blank(),{feeling,energy:2,random:()=>.3});assert(note.feelings.includes(feeling),feeling);
     }
     const calm=chooseNote(blank(),{energy:0,random:()=>.3}).note;
-    assert(["rest","soft","space","steady"].includes(calm.theme));
+    assert(["rest","sad","anxious","overwhelmed","angry"].includes(calm.theme));
+  });
+  await test("Mood and battery remain appropriate through exhaustion; changing mood keeps prior seen IDs",()=>{
+    for(const feeling of ["sad","anxious","overwhelmed","angry","happy","content","excited","playful"]){
+      for(const energy of [0,2,4]){
+        let state=blank(),resets=0;
+        for(let i=0;i<NOTE_JAR_NOTES.length+10;i++){
+          const {note,reset,resetIds}=chooseNote(state,{feeling,energy,random:()=>.3});
+          assert(!note.feelings.length||note.feelings.includes(feeling));
+          assert(!note.avoidFeelings.includes(feeling));assert(note.minEnergy<=energy);
+          assert.notEqual(note.id,state.lastNote);
+          if(reset){resets++;assert(resetIds.length>1);}else assert(!state.seen.includes(note.id));
+          state={...state,seen:[...state.seen.filter(id=>!resetIds.includes(id)),note.id],lastNote:note.id,recent:[note.theme,...state.recent].slice(0,4)};
+        }
+        assert(resets>=1);
+      }
+    }
+    const all=NOTE_JAR_NOTES.map(n=>n.id),happy=NOTE_JAR_NOTES.find(n=>n.theme==="happy");
+    const {note,resetIds}=chooseNote({...blank(),seen:all},{feeling:"sad"});
+    assert(!resetIds.includes(happy.id));
+    const state={...blank(),seen:[...all.filter(id=>!resetIds.includes(id)),note.id]};
+    assert(state.seen.includes(happy.id));
+    assert(!chooseNote(state,{feeling:"happy"}).reset,"A new mood can use unread general notes first");
   });
   await test("A read consumes nothing; first daily note and saved cards persist across later pulls/days",async()=>{
     assert.equal((await readNoteJar(db,day)).current,null);
@@ -74,6 +98,14 @@ try {
     const note=first.items[0];await keepNote(db,note.id,true);await keepNote(db,note.id,false);
     assert.equal((await readNoteJar(db,day)).pulled,total);
     assert.equal((await db.select().from(schema.kv).where(eq(schema.kv.key,"notejar:pull:"+note.id)))[0].value.note.text,note.note.text);
+    // Simulate a saved delivery from the retired library: it must keep its text
+    // even though its content ID no longer exists in the rewritten collection.
+    const retired={...note,saved:true,note:{...note.note,id:"retired-library-note",text:"an original kept note from before the library rewrite."}};
+    await db.update(schema.kv).set({value:retired}).where(eq(schema.kv.key,"notejar:pull:"+note.id));
+    assert.deepEqual((await noteHistory(db,{saved:true})).items.find(n=>n.id===note.id),retired);
+    assert.equal((await readNoteJar(db,day)).current.note.text,retired.note.text);
+    assert.notEqual((await pullNote(db,randomUUID(),options)).note.id,retired.note.id);
+    assert.equal((await noteHistory(db,{saved:true})).items.find(n=>n.id===note.id).note.text,retired.note.text);
   });
   await test("Admin preview leaves daily selection, delivery history and favourites untouched",async()=>{
     const before=await readNoteJar(db,day),history=await noteHistory(db);

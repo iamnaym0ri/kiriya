@@ -16,6 +16,7 @@ import {
   FeedPhoto,
   FeedPlaces,
   FeedProgress,
+  FeedSection,
   FeedSleeve,
   MerchLine,
   PersonalPhoto,
@@ -39,7 +40,8 @@ const NOTE_LABELS = {
   cosplay: "MORE DRESS-UP",
   visual: "A LITTLE PICTURE",
 };
-const titleCase = (text) => text.replace(/(^|\s)(\p{L})/gu, (_, gap, c) => gap + c.toUpperCase());
+const titleCase = (text) =>
+  text.replace(/(^|\s)(\p{L})/gu, (_, gap, c) => gap + c.toUpperCase());
 
 export function SectionHeading({
   index,
@@ -255,7 +257,8 @@ export function CosplaySpread({ full = false }) {
       caption: "Pink robes & cherry blossoms · supplied cosplay reference",
       alt: "A Maomao cosplayer in pink and green robes holding a fan beneath cherry blossoms",
       fullImage: true,
-      source: "https://i.pinimg.com/736x/99/53/d4/9953d40bb8039d93160972f9e45b7c7d.jpg",
+      source:
+        "https://i.pinimg.com/736x/99/53/d4/9953d40bb8039d93160972f9e45b7c7d.jpg",
     },
     {
       url: "/images/miku-birthday.webp",
@@ -263,7 +266,8 @@ export function CosplaySpread({ full = false }) {
       caption: "A birthday wish from Miku · supplied illustration",
       alt: "Hatsune Miku smiling and holding a birthday cake beneath colourful confetti",
       fullImage: true,
-      source: "https://i.pinimg.com/736x/fa/53/de/fa53de0920761a74877d8e54fe7db0e1.jpg",
+      source:
+        "https://i.pinimg.com/736x/fa/53/de/fa53de0920761a74877d8e54fe7db0e1.jpg",
     },
   ];
   const display = photos.length ? photos : references;
@@ -291,16 +295,7 @@ export function CosplaySpread({ full = false }) {
         page={full}
       />
       {dress.live && three.length > 0 && (
-        <>
-          <p className="collection-label">
-            <span />
-            TODAY’S THREE{personal ? " + ONE OF URS" : ""}{" "}
-            <span className="collection-label__detail">
-              {dress.data.plan?.rotatingFandom
-                ? `today’s rotation: ${dress.data.plan.rotatingFandom}`
-                : "real cosplayers, credited"}
-            </span>
-          </p>
+        <FeedSection title={`Today’s cosplay picks${personal ? " + one of yours" : ""}`} subtitle={dress.data.plan?.rotatingFandom ? `Today’s rotation: ${dress.data.plan.rotatingFandom}` : "Looks, transformations & the people behind them."} symbol="♡" tone="rose">
           <div className="feed-lookbook">
             {three.map((entry, i) => (
               <FeedPhoto
@@ -317,7 +312,7 @@ export function CosplaySpread({ full = false }) {
               <PersonalPhoto personal={personal} index={three.length} />
             )}
           </div>
-        </>
+        </FeedSection>
       )}
       {showReferences && !photos.length && (
         <p className="collection-label">
@@ -363,7 +358,7 @@ export function CosplaySpread({ full = false }) {
         </button>
       </div>
       {dress.live && (
-        <div className="feed-dressup">
+        <FeedSection title="New dress-up drops" subtitle="Fresh finds from your little cosplay world." symbol="✂" className="feed-dressup">
           <FeedProgress data={dress.data} label="TODAY’S DRESS-UP DROP" />
           {community.length > 0 && (
             <div className="feed-notes">
@@ -383,7 +378,7 @@ export function CosplaySpread({ full = false }) {
             onSeen={dress.markSeen}
           />
           {full && <FeedPlaces />}
-        </div>
+        </FeedSection>
       )}
       {full && (
         <div className="cosplay-notes">
@@ -477,6 +472,7 @@ export function CosplaySpread({ full = false }) {
 }
 export function MaomaoSpread({ full = false }) {
   const club = useSectionFeed("maomao");
+  const memes = club.entries.filter((entry) => entry.type === "meme");
   return (
     <section className="editorial-section maomao-spread" id="maomao">
       <SectionHeading
@@ -489,12 +485,16 @@ export function MaomaoSpread({ full = false }) {
         page={full}
       />
       <EpisodeBanner episode={club.data?.plan?.episode} />
-      <LoreCarousel
-        kind="maomao"
-        feed={club.entries}
-        onSeen={club.markSeen}
-      />
-      <FeedProgress data={club.data} />
+      <FeedSection title={club.live ? "New Maomao drops" : "From the Maomao collection"} subtitle="Pictures, clips & a little apothecary lore." symbol="❀" tone="mint">
+        <FeedProgress data={club.data} />
+        <LoreCarousel kind="maomao" feed={club.entries.filter((entry) => !["merch", "meme"].includes(entry.type))} onSeen={club.markSeen} />
+        {memes.length > 0 && <FeedSection title="Maomao memes" subtitle="The side-eye deserves its own corner." symbol="(¬‿¬)" tone="rose" level={4}>
+          <div className="feed-lookbook">
+            {memes.slice(0, full ? 30 : 2).map((entry, index) => <FeedPhoto key={entry.key} entry={entry} index={index} title="a little Maomao meme" onSeen={club.markSeen} />)}
+          </div>
+        </FeedSection>}
+        <MerchLine entry={club.entries.find((entry) => entry.type === "merch")} onSeen={club.markSeen} />
+      </FeedSection>
       <div className="maomao-afterword">
         <p>
           A little shrine to the girl
@@ -531,7 +531,12 @@ export function MusicSpread({ full = false }) {
   const feedVisuals = drop.entries.filter((e) =>
     ["visual", "meme"].includes(e.type),
   );
-  const songs = [...(library.data?.songs ?? []), ...(picks.data?.songs ?? [])]
+  // Owner decision (2026-09-16, second pass): this shelf should be her own collection and the live
+  // feed, not the authored stand-ins. Her saved songs always come first; the hardcoded picks only
+  // fill in on a day the feed brought no songs, so the shelf is never empty.
+  const hers = library.data?.songs ?? [];
+  const authored = feedSongs.length ? [] : (picks.data?.songs ?? []);
+  const songs = [...hers, ...authored]
     .filter((s, i, list) => list.findIndex((x) => x.url === s.url) === i)
     .slice(0, full ? 12 : 3);
   return (
@@ -548,39 +553,41 @@ export function MusicSpread({ full = false }) {
       <LoreCarousel kind="miku" />
       <div className="music-shelf">
         <MusicObject song={profile.data?.song} />
-        <div className="record-sleeves">
-          {songs.map((song, i) => (
-            <button
-              className="record-sleeve"
-              key={song.url}
-              onClick={() => music.play(song)}
-            >
-              <span className="record-sleeve__image">
-                {song.thumbnail ? (
-                  <img
-                    src={song.thumbnail}
-                    alt={`${song.title} video cover`}
-                    loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.src = "/images/miku.webp";
-                      e.currentTarget.onerror = null;
-                    }}
-                  />
-                ) : (
-                  <Picture name={i % 2 ? "rin" : "miku"} alt="" />
-                )}
-                <span className="record-play">
-                  <Icon name="play" size={20} />
+        {songs.length > 0 && (
+          <div className="record-sleeves">
+            {songs.map((song, i) => (
+              <button
+                className="record-sleeve"
+                key={song.url}
+                onClick={() => music.play(song)}
+              >
+                <span className="record-sleeve__image">
+                  {song.thumbnail ? (
+                    <img
+                      src={song.thumbnail}
+                      alt={`${song.title} video cover`}
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.src = "/images/miku.webp";
+                        e.currentTarget.onerror = null;
+                      }}
+                    />
+                  ) : (
+                    <Picture name={i % 2 ? "rin" : "miku"} alt="" />
+                  )}
+                  <span className="record-play">
+                    <Icon name="play" size={20} />
+                  </span>
                 </span>
-              </span>
-              <strong>{song.title}</strong>
-              <small>{song.artist}</small>
-              <span className="record-sleeve__label">
-                {song.id ? "YOUR COLLECTION" : "A SELECTED LISTEN"}
-              </span>
-            </button>
-          ))}
-        </div>
+                <strong>{song.title}</strong>
+                <small>{song.artist}</small>
+                <span className="record-sleeve__label">
+                  {song.id ? "YOUR COLLECTION" : "A SELECTED LISTEN"}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
         <Discovery
           kind="vocaloid"
           label="A NOTE BETWEEN SONGS"
@@ -588,9 +595,11 @@ export function MusicSpread({ full = false }) {
         />
       </div>
       {drop.live && (
-        <div className="music-shelf feed-music">
+        <FeedSection title="New music drops" subtitle="Songs, news & finds for your next little obsession." symbol="♫" className="feed-music">
           <FeedProgress data={drop.data} label="TODAY’S SONGS & FINDS" />
           {feedSongs.length > 0 && (
+            <div className="feed-drop__group">
+            <h4 className="feed-drop__group-title">Songs to play <span aria-hidden="true">▷</span></h4>
             <div className="record-sleeves feed-sleeves">
               {feedSongs.slice(0, full ? 25 : 3).map((entry) => (
                 <FeedSleeve
@@ -600,8 +609,11 @@ export function MusicSpread({ full = false }) {
                 />
               ))}
             </div>
+            </div>
           )}
           {feedNotes.length > 0 && (
+            <div className="feed-drop__group">
+            <h4 className="feed-drop__group-title">News & little finds <span aria-hidden="true">✧</span></h4>
             <div className="feed-notes">
               {feedNotes.slice(0, full ? 25 : 1).map((entry) => (
                 <FeedCard
@@ -612,8 +624,11 @@ export function MusicSpread({ full = false }) {
                 />
               ))}
             </div>
+            </div>
           )}
           {full && feedVisuals.length > 0 && (
+            <div className="feed-drop__group">
+            <h4 className="feed-drop__group-title">Fan art & memes <span aria-hidden="true">♡</span></h4>
             <div className="feed-lookbook">
               {feedVisuals.map((entry, i) => (
                 <FeedPhoto
@@ -625,13 +640,14 @@ export function MusicSpread({ full = false }) {
                 />
               ))}
             </div>
+            </div>
           )}
           <MerchLine
             entry={drop.entries.find((e) => e.type === "merch")}
             onSeen={drop.markSeen}
           />
           {full && <FeedPlaces />}
-        </div>
+        </FeedSection>
       )}
       {full && (
         <div className="kagamine-strip">

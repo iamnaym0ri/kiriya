@@ -101,6 +101,15 @@
   max-height: 420px;
   object-fit: contain;
 }
+/* Text-only cards (news, lore, events) borrow the chibi so the eye has something to land on. */
+.feed-card__mascot {
+  display: flex;
+  justify-content: center;
+  margin: 2px 0 10px;
+  padding: 6px 0;
+  border-radius: 12px;
+  background: #f4ecf6;
+}
 .feed-card__headline {
   display: block;
   font: 700 27px/1.05 var(--font-hand);
@@ -288,4 +297,156 @@
   .feed-filters > label {
     width: 100%;
   }
+}
+
+/* A readable chapter boundary for every drop, including the small merch/meme shelves. */
+.feed-drop {
+  --drop-tint: #e9dcee;
+  --drop-accent: var(--theme-accent, #81548e);
+  min-width: 0;
+  margin-block: 32px;
+  border: 1px solid var(--theme-line, #ceb2d9);
+  border-radius: 20px 20px 12px 12px;
+  background: color-mix(in srgb, var(--theme-paper, #fff9fd) 93%, transparent);
+  box-shadow: 4px 5px 0 #a88bb31a;
+  overflow: clip;
+}
+.feed-drop[data-tone="rose"] { --drop-tint: #f0dce8; }
+.feed-drop[data-tone="mint"] { --drop-tint: #ddebe6; }
+:root .feed-drop.editorial-section { padding: 0; border-top: 1px solid var(--theme-line, #ceb2d9); }
+.feed-drop__heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  border-top: 4px solid var(--drop-accent);
+  border-bottom: 1px dashed var(--theme-line, #ceb2d9);
+  background: linear-gradient(110deg, var(--drop-tint), color-mix(in srgb, var(--drop-tint) 45%, #fffafd));
+}
+.feed-drop__heading > div { min-width: 0; }
+.feed-drop__symbol {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  min-width: 52px;
+  height: 52px;
+  padding-inline: 8px;
+  border: 1px solid #fffafdaa;
+  border-radius: 15px;
+  background: #fffafda6;
+  color: var(--drop-accent);
+  font: 28px/1 var(--font-hand);
+}
+.feed-drop__heading :is(h2, h3, h4) {
+  margin: 0;
+  font: 700 clamp(30px, 3.2vw, 40px)/1.1 var(--font-hand);
+  letter-spacing: -0.025em;
+  color: var(--theme-ink, #54385f);
+  text-wrap: balance;
+}
+.feed-drop__heading p {
+  margin: 7px 0 0;
+  font: 12px/1.65 var(--font-ui);
+  color: var(--theme-ink, #654f70);
+}
+.feed-drop__body {
+  display: grid;
+  gap: 26px;
+  min-width: 0;
+  padding: 26px;
+}
+.feed-drop__body > :is(.feed-drop, .feed-progress, .feed-lookbook, .feed-closing) { margin: 0; }
+.feed-drop__group { min-width: 0; }
+.feed-drop__group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--theme-line, #ceb2d9);
+  color: var(--theme-ink, #54385f);
+  font: 700 29px/1.1 var(--font-hand);
+}
+.feed-drop__group-title > span { color: var(--drop-accent); }
+.feed-drop .feed-lookbook { margin-bottom: 0; }
+.feed-drop.feed-dressup { display: block; }
+.feed-drop .feed-progress {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #eee4f266;
+  color: var(--theme-ink, #654f70);
+}
+.feed-progress .collection-label__detail {
+  border: 1px solid var(--theme-line, #ceb2d9);
+  border-radius: 20px;
+  padding: 3px 10px;
+  background: #fffafd;
+  color: var(--theme-ink, #54385f);
+}
+.feed-drop .feed-merch-line { margin: 0; }
+.feed-events .feed-drop__body > ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.feed-drop .feed-meme__inner { align-items: start; }
+.feed-meme .lookbook-photo { transform: none; rotate: none; }
+
+@media (max-width: 720px) {
+  .feed-drop { margin-block: 28px; border-radius: 16px 16px 10px 10px; }
+  .feed-drop__heading { gap: 11px; padding: 18px 14px; }
+  .feed-drop__symbol { min-width: 40px; height: 44px; padding-inline: 5px; font-size: 23px; border-radius: 12px; }
+  .feed-drop__heading :is(h2, h3, h4) { font-size: 31px; }
+  .feed-drop__heading p { font-size: 11px; }
+  .feed-drop__body { padding: 18px 12px; gap: 24px; }
+  .feed-drop__body > .feed-drop .feed-drop__body { padding-inline: 10px; }
+  .feed-drop__group-title { font-size: 27px; }
+  .feed-drop .feed-progress { font-size: 9px; letter-spacing: 0.035em; }
+  .feed-progress .collection-label__detail { margin-left: 0; }
+
+  /* Music videos are full-width blocks on phones, with a readable title below. */
+  :root .music-spread .record-sleeves {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
+  :root .music-spread .record-sleeve__image { aspect-ratio: 16 / 9; }
+  :root .music-spread .record-sleeve > strong { font-size: 25px; line-height: 1.15; }
+  :root .music-spread .record-sleeve > small { font-size: 12px; }
+  :root .music-spread .record-sleeve__label { font-size: 9px; }
+  .feed-sleeve { padding-bottom: 18px; border-bottom: 1px dashed var(--theme-line, #ceb2d9); }
+  .feed-sleeve:last-child { padding-bottom: 0; border-bottom: 0; }
+
+  /* A video takes the whole row even in an otherwise two-column picture grid. */
+  .feed-photo[data-media-kind="video"],
+  .feed-card[data-media-kind="video"] { grid-column: 1 / -1; }
+  .feed-photo[data-media-kind="video"] .lookbook-photo { transform: none; rotate: none; }
+  .feed-photo[data-media-kind="video"] .lookbook-photo > :is(.feed-media, .feed-media__still, .feed-media__placeholder) {
+    aspect-ratio: var(--feed-media-ratio);
+    width: 100%;
+    height: auto;
+    max-height: 70svh;
+    object-fit: contain;
+    background: #f5edf7;
+  }
+  .feed-photo[data-media-kind="video"] .feed-media__still > img { object-fit: contain; }
+  .feed-card[data-media-kind="video"] .feed-card__media .feed-media { max-height: 70svh; }
+  .lore-picture[data-media-kind="video"] { rotate: none; padding: 5px 5px 0; }
+  .lore-picture[data-media-kind="video"] .lore-picture__enlarge {
+    aspect-ratio: var(--feed-media-ratio);
+    max-height: 70svh;
+  }
+  .lore-picture[data-media-kind="video"] .lore-picture__enlarge > .feed-media,
+  .lore-picture[data-media-kind="video"] .feed-media__still > img { object-fit: contain; }
+  .feed-drop .lore-slide { padding-inline: 12px; }
+  .feed-meme__inner { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .feed-drop .feed-notes { grid-template-columns: minmax(0, 1fr); }
+  :root .feed-drop .feed-card,
+  :root .feed-drop .feed-merch-line { padding: 18px 14px; }
 }

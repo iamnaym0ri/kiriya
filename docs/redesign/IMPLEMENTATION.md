@@ -2,6 +2,23 @@
 
 Implemented locally, September 14–16, 2026. Preview: **http://localhost:5173**. Development passphrases: `kiriya` for the private world, `admin` for the existing admin desk. No deployment, production-account changes or commit was made.
 
+## Latest: readable drop sections and bigger phone videos
+
+- Music/video sleeves stack in one full-width column at **720px and below**, including saved songs and daily music drops. Video entries in photo grids span both columns; portrait and landscape clips keep their source aspect ratio with containment rather than cropping. The Maomao carousel gives clips the same treatment. Playback still uses the existing native viewer or music player.
+- Daily Maomao, music and dress-up drops, cosplay picks, memes, merch and events now have a shared bordered section with a prominent handwritten heading, icon, tinted header and clear spacing. The lilac/pink palette remains, with a soft mint accent for Maomao and events. Music subgroups have visible titles too.
+- Maomao memes and the merch pick now appear in separately named blocks beneath the main carousel. Feed ordering within each displayed group, credits, saves, hide controls and meme navigation stay connected to their existing handlers.
+- Browser verification used local portrait/landscape MP4 and feed-response fixtures in an admin preview; it did not create feed editions or alter Kiriya's saved content. At **320, 390, 430, 650, 720, 820 and 1440px**, pages fit without horizontal overflow. Checks confirm full-row phone cards, uncropped portrait video, meme next/previous, native playback with controls, the music player, and named sections on home, music, cosplay, Maomao and merch routes. No browser errors. Local evidence: `.data/redesign/feed-phone/checks.json` and screenshots in that folder. These are Chromium checks, not a physical iPhone test.
+- Final `npm run build` passed, including the private-string leak check. Log: `.data/redesign/feed-phone-build.log`.
+
+## Latest: everyday profile and note-jar voice
+
+- Public and private openings now share the same welcome, Parisienne name and full-frame cosplay portrait. The supplied `IMG_5446` appears first for September 16–17 Singapore time; `IMG_5445` follows September 18–19, repeating every two days. One hundred original cosplay praise captions rotate every two hours, with pose-specific text matched to its photo. An explicit admin avatar still overrides the album. Birthday greetings return on September 15 only.
+- The note jar now contains **340 rewritten original notes**: direct praise, encouragement, interest-specific affection, teasing and occasional caring tough love. Every saved feeling has fifteen dedicated notes. [Research, source limits, examples and editorial rules](NOTE-JAR-VOICE.md) explain the voice.
+- Mood-specific content is restricted to its matching feeling; tough love and stronger teasing need an appropriate mood and battery. Exhausting a compatible pool permits labelled revisits without forcing incompatible notes. Existing saved notes and delivered history retain their original text.
+- Profile timing checks confirm live two-hour caption changes and the two-day photo boundary. Earlier responsive checks covered public 320–1440px and private 320–1440px without overflow; shared heading/font and private-door access were checked. Final validation: **11 note-jar tests passed**; `verify:note-jar` passed against an isolated local database with no browser errors (320–1440px, save/reopen/retry, quiet/reduced motion and annual birthday return); `npm run build` passed including the private-string leak check. The portrait also passed reload stability, the next 48-hour return, reduced motion and September 15/16 greeting checks. Logs: `.data/redesign/note-jar-voice-*.log`; profile timing: `.data/redesign/cosplay-profile/timing-checks.json`.
+
+Older sections below describe the earlier redesign and may retain superseded screenshots, copy and asset descriptions.
+
 ## Result
 
 The latest pass is a **phone-first birthday scrapbook, led by Strawpage**. The name and main portrait lead the phone opening, with Maomao, a music sleeve, bows, handwriting and a birthday ribbon. The public profile keeps its links, visit counter, music and private door. The private page is a place to linger: a candle, one combined doodle workspace beside five games, character/lore slides, songs, cosplay pictures and saved art. Navigation jumps to these interests in the page; deeper tools remain available.

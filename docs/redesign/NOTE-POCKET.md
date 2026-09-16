@@ -25,7 +25,7 @@ Review: [desktop](screenshots/note-jar-desktop.png) · [phone](screenshots/note-
 
 ## Personal library
 
-**280 individually written notes**, with unique normalized text and stable content-derived IDs, are kept in `server/content/noteJar.js`. Fourteen families contain twenty notes each:
+**340 individually written notes**, with unique normalized text and stable content-derived IDs, are kept in `server/content/noteJar.js`. Nineteen families cover interests, direct praise, caring nudges and each of the eight feelings. See [voice research and writing rules](NOTE-JAR-VOICE.md) for the latest rewrite:
 
 | Family | Personal focus |
 | --- | --- |
@@ -38,19 +38,18 @@ Review: [desktop](screenshots/note-jar-desktop.png) · [phone](screenshots/note-
 | Humour | Sass, funny observations and affectionate bestie teasing |
 | Style | Purple/pink, self-expression, her smile and personal taste |
 | Rest | Gentle reminders to pause, eat, drink and let unfinished things wait |
-| Soft | Company for sad or overwhelmed days |
-| Steady | Undemanding encouragement for anxious or overwhelmed days |
-| Space | Room to feel angry or overloaded without being scolded |
-| Bright | Happy, excited, content and playful moments |
+| Sad, anxious, overwhelmed, angry | Fifteen distinct notes per feeling: affection, reassurance, space and specific encouragement |
+| Happy, excited, content, playful | Fifteen distinct notes per feeling: celebration, interest, quiet appreciation or sass |
+| Tough love | Twenty caring nudges, restricted to lighter moods with sufficient energy |
 | Maomao | Twenty original fan notes using restrained approval, herbs, labels and practical care |
 
 The general voice is lowercase bestie, signed **✦ kiriya.love**. Character cards explicitly say **“a Maomao-inspired little note.”** These are not quotations, authored Josh letters or claims of a live conversation with Maomao.
 
-Selection favours relevant emotional tags, gentler families for low battery, and varied recent themes. Presentation does not determine mood or pronouns. Notes use “u/you,” so they do not contradict the independent address settings. Difficult moods reduce the chance of hype; check-in is optional and never required to pull.
+Selection favours relevant emotional tags, gentler families for low battery, and varied recent themes. Presentation does not determine mood or pronouns. Notes use “u/you,” so they do not contradict the independent address settings. Known moods exclude mismatched mood-specific cards; difficult moods exclude the humour and tough-love families; check-in is optional and never required to pull.
 
 ### Variety and unlimited pulls
 
-Every note is excluded until the entire current library has been drawn. Changing mood, unsaving or reloading does not reset this cycle. After all 280 notes have been read, pulls continue through another shuffled cycle, with **“a little favourite, revisited”** shown on returning cards. An immediate repeat of the last note is excluded.
+A note is excluded while unread notes compatible with the current mood/battery remain. Changing mood, unsaving or reloading does not discard seen history. After the compatible pool is exhausted, pulls continue through another cycle, with **“a little favourite, revisited”** shown on returning cards. An immediate repeat of the last note is excluded. Only that compatible pool is reset; IDs seen in other moods stay remembered. This replaces the earlier rule that could eventually force a mismatched note just to exhaust all themes.
 
 This fulfils unlimited pulls without claiming a finite library can supply infinitely unique writing. The earlier proposal to stop when the library ran out is superseded. Each delivered snapshot and the permanent seen-ID history are retained, including after favourites change. Adding genuinely new notes supplies new content IDs; ordinary selection prefers unread additions before starting another cycle.
 
@@ -90,7 +89,7 @@ All endpoints inherit private auth and write CSRF protection and send `private, 
 
 ## Validation
 
-- `npm test`: **55 passing tests**, including ten note-jar cases on isolated PGlite. Covers all 280 notes before a repeat, mood/energy influence, first-of-day retention, favourites, date boundaries, pagination, parallel unique draws, duplicate-request retries, preview isolation and birthdays in multiple future years.
+- `node --test scripts/test-note-jar.mjs`: **11 passing cases** on isolated PGlite. Covers the 340-note library, all eight moods at low/normal/high battery through pool exhaustion, preservation of seen IDs across mood changes, first-of-day retention, favourites, retired-library snapshots, pagination, concurrent pulls/retries, preview isolation and annual birthdays. The earlier whole-repository run (55 tests) predates this rewrite; no new whole-suite result is claimed.
 - `npm run verify:note-jar`: **passed** in local Chromium with an isolated database. Real private API persistence, save/reopen/reload, lost-response retry, repeated animation, quiet/reduced motion, 320–1440px layouts, phone card clearance, birthday return in 2027 and 2028, and private/admin behaviour passed without browser errors.
 - `npm run build`: **passed**, including private-string checks. No note-library text is shipped in the browser bundle.
 

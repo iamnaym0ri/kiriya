@@ -96,6 +96,30 @@ Checked 2026-09-15. Policies are declared in each module under `server/feeds/sou
 | iTunes Search | not used | robots.txt `Disallow: /search*` | Spotify/Apple links from VocaDB |
 | Doki Doki Anime Market | link only | Shopify terms ban crawling | events table entry without dates |
 
+## Safety policy, as set by the owner (2026-09-16, second pass)
+
+The acceptance bar was deliberately lowered so the dress-up and meme shelves actually fill. Recorded
+here because it changes what the pipeline will surface, and `RULE_VERSION` was bumped to
+`2026-09-16.2` so earlier vision/moderation rejections are re-decided under these rules.
+
+- **Sexiness:** "suggestive" and mildly sexy art now pass. Only **explicit** is rejected. Danbooru's
+  `sensitive` tier joins `general` (`rating:g,s`); questionable and explicit stay excluded. Swimwear,
+  underwear and cleavage tags no longer fail the pre-check — the vision pass judges the actual image.
+- **Apparent minors — not negotiable, and not the owner's call to relax.** Anything sexualised must
+  read as an adult. The vision schema gained a required `apparentMinor` field, and this is the one
+  axis where *uncertainty rejects*: `suggestive !== "none" && apparentMinor` → `apparent_minor`.
+  A non-sexualised picture of a young-looking character is ordinary content and stays. The OpenAI
+  `sexual/minors` threshold stays at 0.01. Lowering the bar on sexiness raises the risk here, which
+  is exactly why the age gate was added at the same time.
+- **Gore, horror and politics** were not part of the relaxation and still reject.
+- **Memes** must carry an image or video (text-only posts are dropped at the adapter, saving the
+  collection and check budget) and must be **relevant to her taste** — positive affinity against her
+  characters, voicebanks, fandoms or units. Humour style no longer filters anything. Fandom memes are
+  eligible for the home carousel, with a small rank penalty so the sections don't repeat.
+- **"Not for me" now trains scoring.** Her hides (never the owner's moderation hides) feed
+  `dislikeSignals`: a tag counts after 2 hides, a creator from the first. Both are capped, so a run of
+  hides damps a subject rather than erasing it.
+
 ## Decisions for the owner
 
 1. **Danbooru robots.txt** disallows `/*.json` for crawlers, while Danbooru's API documentation invites API clients who respect its rate limits. The collectors use the documented API (≈1 request/s, bounded pages). The weekly lexicon refresh makes one request to the same API. Keep this reading, or drop Danbooru (Maomao art and memes would then rely on Bluesky and Tumblr).
@@ -103,6 +127,14 @@ Checked 2026-09-15. Policies are declared in each module under `server/feeds/sou
 3. **Tumblr's API License Agreement** also asks applications to offer OAuth login, which a read-only personal feed doesn't do. Tumblr entries stay as designed (the owner supplied the key). Disable `tumblr-*` in `server/feeds/sources/index.js` if this clause should rule them out.
 4. **Dark and intense producers** (MARETU, Kairiki bear, Neru, Kikuo) are skipped entirely in music queries and their channels aren't collected. Confirm, or ask to allow them.
 5. **Fever (Apothecary Diaries Exhibition)**: the dates were read once by hand; the page is never fetched automatically. Confirm or adjust dates in admin → Events if they change.
+6. **Hero images for news, lore and events.** These cards carry no picture because their sources give
+   no clear display permission: ANN/Crunchyroll ("no thumbnails are shown"), AniList ("No cover images
+   are used"), Sekai-World ("text and links only, no images"), and SEGA forbids reposting while the
+   SEKAI image host blocks hotlinking. The RSS feeds *do* already parse `media:content`/`enclosure`,
+   so turning thumbnails on is a small code change — but it is a licensing decision, not a technical
+   one, so nothing was switched on. Meanwhile those cards borrow the lore carousel's chibi instead of
+   going out as plain text. Wikipedia and Fandom images are freely licensed (CC BY-SA) and would be
+   the safest ones to enable first, but that depends on decision 2 above.
 
 ## Research traffic disclosure (2026-09-15)
 

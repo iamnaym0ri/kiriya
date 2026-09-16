@@ -11,6 +11,7 @@ import {
   FeedFacts,
   FeedLinks,
   FeedMedia,
+  feedMediaLayout,
 } from "../feeds/FeedPieces.jsx";
 import "./LoreCarousel.css";
 
@@ -182,6 +183,7 @@ export default function LoreCarousel({ kind, feed = NO_FEED, onSeen }) {
             >
               <figure
                 className={`lore-picture ${slide.mascot ? "lore-picture--chibi" : ""} ${kind === "miku" && !slide.song ? "lore-picture--character" : ""}${slide.feed ? " lore-picture--feed" : ""}`}
+                {...(slide.feed ? feedMediaLayout(slide.feed.primary) : {})}
                 data-fit={slide.feed ? slide.fit : undefined}
               >
                 <Bow />

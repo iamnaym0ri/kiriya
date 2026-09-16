@@ -15,6 +15,7 @@ import {
   assertLease,
   blocklist,
   createBuild,
+  dislikeSignals,
   eligibleItems,
   fence,
   ingestItem,
@@ -223,9 +224,17 @@ async function collect(ctx) {
 }
 // Items whose check needs paid vision/classification (moderation alone is free).
 const paidCheck = (item) => item.media.length > 0 || item.kind === "meme";
+// Reasons worth re-deciding after a rules bump. `cosplay_required` and `required_character_missing`
+// are included because they depend on the same vision read that the bump re-runs.
+const RECHECKABLE = [
+  "vision",
+  "moderation",
+  "cosplay_required",
+  "required_character_missing",
+];
 const staleRejection = (item) =>
   item.safetyStatus === "rejected" &&
-  ["vision", "moderation"].includes(item.reason) &&
+  RECHECKABLE.includes(item.reason) &&
   item.safety?.rulesVersion !== RULE_VERSION;
 
 /**
@@ -383,6 +392,8 @@ async function planContext(ctx, section) {
     taste: build.taste,
     recentProducers: await recentProducers(db, day),
     recentCreators: creators,
+    // What "not for me" has taught us; see dislikeSignals.
+    dislikes: await dislikeSignals(db),
   };
   if (section === "music") {
     const yesterday = recent.filter((r) => r.section === "music" && r.day === addDays(day, -1)).flatMap((r) => r.ids ?? []);
