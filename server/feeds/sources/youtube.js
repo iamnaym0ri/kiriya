@@ -143,12 +143,35 @@ export const TUTORIAL_QUERIES = [
 export const SEARCH_CALLS_PER_DAY = 5;
 
 /**
- * Meme channels, resolved by @handle at runtime like the Apothecary channel. Empty until the
- * YOUTUBE_API_KEY can be read outside Vercel: a channel list is only worth adding once
- * channels.list has confirmed each one (see docs/feeds/SOURCE-VERIFICATION.md). Until then the meme
- * collector works from searches alone, which need no channel IDs.
+ * A reliable daily floor of her own fandom's jokes, so the meme carousel never depends on what a
+ * search happens to return. Both were found and verified live on 2026-09-17 (search.list type=channel,
+ * then channels.list, playlistItems for cadence and videos.list for playability): embeddable, not
+ * age-restricted, not made-for-kids, not blocked in SG.
+ *
+ * `provenance: "search_result"` on purpose: these are edit and compilation channels, so the uploader
+ * is not the author of the footage. We credit the uploader, and the tier says we do not claim more.
+ * Channels found but rejected: 踏切アニメメメ (88k subs, last upload 246 days ago), ぬぬぬ… (885k, 391
+ * days), "Apothecary diaries lover" and "apothecarydiaries" (no audience, months idle), "Anime Memes"
+ * and other 0-subscriber channels (unvetted), "The Night Wolf" (218k but 0.3 uploads a week).
  */
-export const MEME_CHANNELS = [];
+export const MEME_CHANNELS = [
+  {
+    id: "UCfuv60_q3H5lBzuBuje5vfw",
+    name: "MaomaoEdit",
+    titles: ["maomaoedit"],
+    fandoms: ["the apothecary diaries"],
+    provenance: "search_result",
+    evidence: "channels.list 2026-09-17: 115k subscribers, ~7 uploads a week, newest that day",
+  },
+  {
+    id: "UC6YCdcEWpbsU6Gg46CcaM8g",
+    name: "Mayuri Edits",
+    titles: ["mayuri edits"],
+    fandoms: ["the apothecary diaries"],
+    provenance: "search_result",
+    evidence: "channels.list 2026-09-17: 33k subscribers, ~2.6 uploads a week, newest two days before",
+  },
+];
 export const MEME_QUERIES = [
   "薬屋のひとりごと meme",
   "apothecary diaries funny moments",
@@ -251,7 +274,7 @@ export function youtubeLivesPlan(day) {
 }
 
 export function youtubeMemePlan(day) {
-  return dayPlan(day, { channels: MEME_CHANNELS, channelsPerDay: 3, queries: MEME_QUERIES, searchesPerDay: MEME_SEARCHES_PER_DAY });
+  return dayPlan(day, { channels: MEME_CHANNELS, channelsPerDay: 2, queries: MEME_QUERIES, searchesPerDay: MEME_SEARCHES_PER_DAY });
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -590,7 +613,8 @@ async function fetchPlanned(ctx, entry, spec) {
     if (!playlist) return nextPage(ctx, state, plan.length, []);
     ids = (await recentUploads(ctx.http, key, playlist, { max: spec.uploadsMax ?? 15, windowMs: spec.windowMs, now })).map((u) => u.id);
     expectedChannel = step.channel.id;
-    if (resolved.t[position] === "1") provenance = spec.channelProvenance ?? "creator_upload";
+    // A channel may declare its own tier: an edit or compilation channel is not the author.
+    if (resolved.t[position] === "1") provenance = step.channel.provenance ?? spec.channelProvenance ?? "creator_upload";
   } else {
     // search.list: 100 quota units a call, strict SafeSearch, embeddable videos only.
     const data = await ctx.http.json(
@@ -966,9 +990,9 @@ export const youtubeMemes = {
     "Shorts are kept and tagged \"short\". An item is kept only when the title/description reads as a joke, edit or " +
     "compilation AND names one of her fandoms or characters, which also decides whether it is offered to the maomao, music " +
     "or dressup meme slot. Search results are search_result provenance, allowed here by owner decision (2026-09-17); the " +
-    "thumbnail still goes through moderation and vision. MEME_CHANNELS is empty until the API key can be read outside " +
-    "Vercel to confirm channel IDs; the searches alone were verified live on 2026-09-17 and returned real fan edits. " +
-    "About 400 search units/day.",
+    "title still goes through moderation. Two channels a day from MEME_CHANNELS (MaomaoEdit, Mayuri Edits — verified " +
+    "live 2026-09-17) give the carousel a floor that does not depend on the day's search results; both are edit " +
+    "channels, so they carry search_result provenance too. About 600 search units + 6 list units/day.",
 };
 
 export const youtubeApothecary = {

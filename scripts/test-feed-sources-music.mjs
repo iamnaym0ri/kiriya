@@ -561,14 +561,22 @@ describe("youtube-tutorials", () => {
 
 describe("youtube-memes", () => {
   const routes = [
+    { match: /\/youtube\/v3\/channels\?/, source: "youtube", file: "channels-memes.json" },
+    { match: /\/youtube\/v3\/playlistItems\?/, source: "youtube", file: "playlist-memes.json" },
     { match: /\/youtube\/v3\/search\?/, source: "youtube", file: "search-memes.json" },
     { match: /\/youtube\/v3\/videos\?/, source: "youtube", file: "videos-memes.json" },
   ];
 
   test("her fandoms' jokes and edits, Shorts included, offered to the sections they belong to", async () => {
     const { items, calls, pages } = await runAdapterAll(Y.youtubeMemes, { routes, credentials });
-    assert.deepEqual(Y.MEME_CHANNELS, [], "channel IDs wait for a readable API key");
-    assert.equal(pages, Y.MEME_SEARCHES_PER_DAY, "searches only, one page each");
+    // Two verified edit channels give the carousel a floor, then the day's searches.
+    assert.equal(Y.MEME_CHANNELS.length, 2);
+    for (const channel of Y.MEME_CHANNELS) {
+      assert.match(channel.id, /^UC[\w-]{22}$/, channel.name);
+      assert.equal(channel.provenance, "search_result", `${channel.name} is an edit channel, not the author`);
+      assert.match(channel.evidence, /channels\.list/, channel.name);
+    }
+    assert.equal(pages, 2 + Y.MEME_SEARCHES_PER_DAY, "two channels, then one page per search");
     const searches = googleCalls(calls).filter((c) => c.url.includes("/youtube/v3/search?"));
     assert.equal(searches.length, Y.MEME_SEARCHES_PER_DAY);
     for (const call of searches) {
@@ -577,8 +585,13 @@ describe("youtube-memes", () => {
       assert.equal(param(call.url, "regionCode"), "SG");
       assert.ok(Y.MEME_QUERIES.includes(param(call.url, "q")));
     }
-    assert.deepEqual(items.map((i) => i.nativeId), ["MemeMaomao1", "MemeMiku001"], "a joke with none of her fandoms is dropped");
-    const [maomao, miku] = items;
+    // One item per video even though both channel pages return the same upload, then the searches.
+    assert.deepEqual(items.map((i) => i.nativeId), ["MemeChan001", "MemeMaomao1", "MemeMiku001"], "a joke with none of her fandoms is dropped");
+    const fromChannel = items.find((i) => i.nativeId === "MemeChan001");
+    assert.equal(fromChannel.facts.playback.provenance, "search_result", "an edit channel is not the author");
+    assert.equal(fromChannel.credit.name, "MaomaoEdit");
+    const maomao = items.find((i) => i.nativeId === "MemeMaomao1");
+    const miku = items.find((i) => i.nativeId === "MemeMiku001");
     assert.equal(maomao.kind, "meme");
     assert.deepEqual(maomao.sections, ["meme", "maomao"]);
     assert.deepEqual(maomao.tags.formats, ["short"]);

@@ -1,0 +1,18 @@
+{
+  "kind": "youtube#playlistItemListResponse",
+  "etag": "mock-etag-playlist-memes",
+  "pageInfo": {
+    "totalResults": 1,
+    "resultsPerPage": 1
+  },
+  "items": [
+    {
+      "kind": "youtube#playlistItem",
+      "etag": "mock-pl-1",
+      "contentDetails": {
+        "videoId": "MemeChan001",
+        "videoPublishedAt": "2026-09-13T09:00:00Z"
+      }
+    }
+  ]
+}

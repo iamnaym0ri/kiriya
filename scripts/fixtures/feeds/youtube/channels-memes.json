@@ -1,0 +1,38 @@
+{
+  "kind": "youtube#channelListResponse",
+  "etag": "mock-etag-channels-memes",
+  "pageInfo": {
+    "totalResults": 2,
+    "resultsPerPage": 2
+  },
+  "items": [
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-maomaoedit",
+      "id": "UCfuv60_q3H5lBzuBuje5vfw",
+      "snippet": {
+        "title": "MaomaoEdit",
+        "description": "edits"
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "uploads": "UUfuv60_q3H5lBzuBuje5vfw"
+        }
+      }
+    },
+    {
+      "kind": "youtube#channel",
+      "etag": "mock-mayuri",
+      "id": "UC6YCdcEWpbsU6Gg46CcaM8g",
+      "snippet": {
+        "title": "Mayuri Edits",
+        "description": "edits"
+      },
+      "contentDetails": {
+        "relatedPlaylists": {
+          "uploads": "UU6YCdcEWpbsU6Gg46CcaM8g"
+        }
+      }
+    }
+  ]
+}
