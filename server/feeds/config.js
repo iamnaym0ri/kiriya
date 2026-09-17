@@ -43,8 +43,12 @@ export function feedConfig() {
       bounded(process.env.FEED_MAX_REQUESTS_PER_RUN, 60, 120),
     ),
     stageRequestCaps: {
-      "fetch-a": 40,
-      "fetch-b": 40,
+      // Raised from 40 on 2026-09-17: with 25 and 11 sources, a 40-request build spent its budget on
+      // the sources at the front of the list and the YouTube collectors at the back never ran, which
+      // is what left the meme and cosplay slots empty. Each invocation is still bounded by
+      // FEED_MAX_REQUESTS_PER_RUN and the stage deadline, and continuations (16) cover the rest.
+      "fetch-a": 90,
+      "fetch-b": 120,
       check: 720,
       "plan-write": 90,
       publish: 40,

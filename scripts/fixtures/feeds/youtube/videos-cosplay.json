@@ -1,0 +1,60 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "mock-etag-videos",
+  "pageInfo": {
+    "totalResults": 1,
+    "resultsPerPage": 1
+  },
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-CosMaomao01",
+      "id": "CosMaomao01",
+      "snippet": {
+        "publishedAt": "2026-09-13T09:00:00Z",
+        "channelId": "UCmockCosChannel0000001",
+        "title": "maomao cosplay ✿ #shorts (mock)",
+        "description": "Apothecary Diaries cosplay, finished look.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/CosMaomao01/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Mock Cosplayer",
+        "categoryId": "24",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT40S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": false,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "12000",
+        "likeCount": "400",
+        "favoriteCount": "0",
+        "commentCount": "20"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"270\" height=\"480\" src=\"//www.youtube.com/embed/CosMaomao01\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "270",
+        "embedHeight": "480"
+      }
+    }
+  ]
+}

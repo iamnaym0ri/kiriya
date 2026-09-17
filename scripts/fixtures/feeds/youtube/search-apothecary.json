@@ -1,0 +1,47 @@
+{
+  "kind": "youtube#searchListResponse",
+  "etag": "mock-etag-search",
+  "regionCode": "SG",
+  "pageInfo": {
+    "totalResults": 2,
+    "resultsPerPage": 10
+  },
+  "items": [
+    {
+      "kind": "youtube#searchResult",
+      "etag": "mock-KusuClip001",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "KusuClip001"
+      },
+      "snippet": {
+        "publishedAt": "2026-09-14T09:00:00Z",
+        "channelId": "UCmockClipChannel000001",
+        "title": "薬屋のひとりごと 名シーン #shorts (mock)",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "Mock Clip Channel",
+        "liveBroadcastContent": "none",
+        "publishTime": "2026-09-14T09:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "mock-OtherShow01",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "OtherShow01"
+      },
+      "snippet": {
+        "publishedAt": "2026-09-13T09:00:00Z",
+        "channelId": "UCmockClipChannel000002",
+        "title": "another anime scene (mock)",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "Mock Other",
+        "liveBroadcastContent": "none",
+        "publishTime": "2026-09-13T09:00:00Z"
+      }
+    }
+  ]
+}

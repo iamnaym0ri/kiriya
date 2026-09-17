@@ -1,0 +1,65 @@
+{
+  "kind": "youtube#searchListResponse",
+  "etag": "mock-etag-search",
+  "regionCode": "SG",
+  "pageInfo": {
+    "totalResults": 3,
+    "resultsPerPage": 10
+  },
+  "items": [
+    {
+      "kind": "youtube#searchResult",
+      "etag": "mock-MemeMaomao1",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "MemeMaomao1"
+      },
+      "snippet": {
+        "publishedAt": "2026-09-12T09:00:00Z",
+        "channelId": "UCmockMemeChannel000001",
+        "title": "apothecary diaries funny moments #shorts (mock)",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "Mock Anime Clips",
+        "liveBroadcastContent": "none",
+        "publishTime": "2026-09-12T09:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "mock-MemeMiku001",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "MemeMiku001"
+      },
+      "snippet": {
+        "publishedAt": "2026-09-11T09:00:00Z",
+        "channelId": "UCmockMemeChannel000002",
+        "title": "hatsune miku meme compilation (mock)",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "Mock Vocaloid Memes",
+        "liveBroadcastContent": "none",
+        "publishTime": "2026-09-11T09:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "mock-MemeRandom1",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "MemeRandom1"
+      },
+      "snippet": {
+        "publishedAt": "2026-09-10T09:00:00Z",
+        "channelId": "UCmockMemeChannel000003",
+        "title": "funny cat compilation (mock)",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "Mock Random",
+        "liveBroadcastContent": "none",
+        "publishTime": "2026-09-10T09:00:00Z"
+      }
+    }
+  ]
+}

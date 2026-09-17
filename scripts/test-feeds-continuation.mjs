@@ -663,6 +663,12 @@ try {
     assert.deepEqual(mediaGate(yt(fresh, null), embed, now), ["pending", "poster_missing"]);
     assert.equal(mediaGate(yt(fresh), embed, now), null);
     assert.deepEqual(mediaGate(yt(fresh), { mediaPolicy: "still_only" }, now), ["pending", "moving_review_required"]);
+    // Owner decision (2026-09-17): an upload found by search publishes, but only for the collectors
+    // that say so; every other embed source still withholds it.
+    const searched = yt({ ...fresh, provenance: "search_result" });
+    assert.deepEqual(mediaGate(searched, embed, now), ["pending", "provenance_unverified"]);
+    assert.equal(mediaGate(searched, { ...embed, searchProvenance: true }, now), null);
+    assert.deepEqual(mediaGate(yt({ ...fresh, provenance: "unknown" }), { ...embed, searchProvenance: true }, now), ["pending", "provenance_unverified"]);
 
     const gif = row({
       kind: "clip",

@@ -1,0 +1,160 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "mock-etag-videos",
+  "pageInfo": {
+    "totalResults": 3,
+    "resultsPerPage": 3
+  },
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-MemeMaomao1",
+      "id": "MemeMaomao1",
+      "snippet": {
+        "publishedAt": "2026-09-12T09:00:00Z",
+        "channelId": "UCmockMemeChannel000001",
+        "title": "apothecary diaries funny moments #shorts (mock)",
+        "description": "Maomao being unimpressed, again. 薬屋のひとりごと",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/MemeMaomao1/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Mock Anime Clips",
+        "categoryId": "24",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT45S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": false,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "12000",
+        "likeCount": "400",
+        "favoriteCount": "0",
+        "commentCount": "20"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"270\" height=\"480\" src=\"//www.youtube.com/embed/MemeMaomao1\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "270",
+        "embedHeight": "480"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-MemeMiku001",
+      "id": "MemeMiku001",
+      "snippet": {
+        "publishedAt": "2026-09-11T09:00:00Z",
+        "channelId": "UCmockMemeChannel000002",
+        "title": "hatsune miku meme compilation (mock)",
+        "description": "Vocaloid memes of the week.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/MemeMiku001/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Mock Vocaloid Memes",
+        "categoryId": "24",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT4M10S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": false,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "12000",
+        "likeCount": "400",
+        "favoriteCount": "0",
+        "commentCount": "20"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/MemeMiku001\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-MemeRandom1",
+      "id": "MemeRandom1",
+      "snippet": {
+        "publishedAt": "2026-09-10T09:00:00Z",
+        "channelId": "UCmockMemeChannel000003",
+        "title": "funny cat compilation (mock)",
+        "description": "Cats.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/MemeRandom1/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Mock Random",
+        "categoryId": "24",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT5M",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": false,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "12000",
+        "likeCount": "400",
+        "favoriteCount": "0",
+        "commentCount": "20"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/MemeRandom1\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    }
+  ]
+}

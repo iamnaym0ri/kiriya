@@ -83,9 +83,11 @@ export function mediaGate(item, source, now = Date.now()) {
       if (!p.embeddable || !p.regionOk) return ["rejected", "playback_unavailable"];
       if (p.ageRestricted) return ["rejected", "age_restricted"];
       // A channel verified as the creator's own (e.g. a cosplay tutorial maker) counts like an official
-      // channel; only unverified uploads (possible reposts) stay pending.
-      if (!["official_channel", "vocadb_original", "creator_upload"].includes(p.provenance))
-        return ["pending", "provenance_unverified"];
+      // channel. Search-found uploads count only for sources that say so (owner decision 2026-09-17):
+      // the uploader may be reposting someone else's work, and the checks below see the thumbnail only.
+      const allowed = ["official_channel", "vocadb_original", "creator_upload"];
+      if (source?.searchProvenance === true) allowed.push("search_result");
+      if (!allowed.includes(p.provenance)) return ["pending", "provenance_unverified"];
       if (now - new Date(p.checkedAt).getTime() > PLAYBACK_MAX_AGE_MS)
         return ["pending", "playback_stale"];
       if (!media.poster) return ["pending", "poster_missing"];

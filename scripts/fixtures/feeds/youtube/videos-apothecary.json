@@ -1,0 +1,110 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "mock-etag-videos",
+  "pageInfo": {
+    "totalResults": 2,
+    "resultsPerPage": 2
+  },
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-KusuClip001",
+      "id": "KusuClip001",
+      "snippet": {
+        "publishedAt": "2026-09-14T09:00:00Z",
+        "channelId": "UCmockClipChannel000001",
+        "title": "薬屋のひとりごと 名シーン #shorts (mock)",
+        "description": "Maomao tastes the medicine. 薬屋のひとりごと",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/KusuClip001/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Mock Clip Channel",
+        "categoryId": "24",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "ja"
+      },
+      "contentDetails": {
+        "duration": "PT50S",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": false,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "12000",
+        "likeCount": "400",
+        "favoriteCount": "0",
+        "commentCount": "20"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"270\" height=\"480\" src=\"//www.youtube.com/embed/KusuClip001\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "270",
+        "embedHeight": "480"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-OtherShow01",
+      "id": "OtherShow01",
+      "snippet": {
+        "publishedAt": "2026-09-13T09:00:00Z",
+        "channelId": "UCmockClipChannel000002",
+        "title": "another anime scene (mock)",
+        "description": "Unrelated show.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/OtherShow01/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Mock Other",
+        "categoryId": "24",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT3M",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": false,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "12000",
+        "likeCount": "400",
+        "favoriteCount": "0",
+        "commentCount": "20"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/OtherShow01\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    }
+  ]
+}

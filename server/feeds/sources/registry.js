@@ -31,6 +31,10 @@ export const BASE_POLICY = {
   requiredCredentials: [],
   linkHosts: null, // defaults to hosts
   mediaPolicy: "still_only", // still_only | moving_sampled | embed_provenance | link_only
+  // Owner decision (2026-09-17): an embed_provenance source may also publish uploads found by
+  // keyword search, where the uploader is not known to be the creator. Off unless stated, because
+  // the safety check only ever sees the thumbnail.
+  searchProvenance: false,
   copyPolicy: "link_only",
   copyPermission: null, // {basis, sourceUrl, verifiedAt} when copyPolicy is private_copy
   deletionPolicy: "none", // none | recheck_before_publish | honor_deletions

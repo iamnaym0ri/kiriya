@@ -1,7 +1,7 @@
 // Section planners. Each returns {slots, reserve, selected, meta, hints} for stageEdition/writer.
 // Allocation (recorded once; PIPELINE.md §8.2–8.5, using the primary/companion slot contract):
 //
-// maomao   12 slots: 8 visual (image|clip|cosplay≤2|video≤1, ≥2 clips when available) each with ≤1
+// maomao   12 slots: 8 visual (image|clip|cosplay≤2|video≤3, ≥2 clips when available) each with ≤1
 //          companion note (lore|news|event); 2 meme; 1 merch; 1 note (episode/exhibition/news).
 //          Episode-day: airing today → episode note leads slot 0; day after → episode-related
 //          visuals/notes lead. Reserve 20 in the same proportions.
@@ -24,7 +24,9 @@ import { ERAS, VOICEBANKS } from "./sources/tags.js";
 import { addDays, localDay, zonedInstant } from "../lib/time.js";
 
 export const QUOTAS = {
-  maomao: { visual: 8, meme: 2, merch: 1, note: 1, reserve: 20 },
+  // video: long-form YouTube inside the 8 visual slots. Raised from 1 on 2026-09-17, when the owner
+  // asked for a mostly-YouTube feed; pictures and Shorts still come first (see takeVisual).
+  maomao: { visual: 8, video: 3, meme: 2, merch: 1, note: 1, reserve: 20 },
   music: { song: 5, sekai: 2, note: 2, visual: 2, meme: 1, merch: 1, reserve: 20 },
   dressup: { three: 3, process: 2, dare: 1, event: 2, extra: 1, meme: 1, merch: 1, news: 1, reserve: 20 },
   // Owner decision (2026-09-16, second pass): memes are a browsable carousel, not one a day, so the
@@ -167,7 +169,7 @@ export function planMaomao(items, ctx) {
   const visuals = pool.filter((i) => ["image", "clip", "cosplay", "video"].includes(i.kind));
   const notes = pool.filter((i) => ["lore", "news", "event"].includes(i.kind));
   const counts = { cosplay: 0, video: 0 };
-  const visualOk = (i) => (i.kind === "cosplay" ? counts.cosplay < 2 : i.kind === "video" ? counts.video < 1 : true);
+  const visualOk = (i) => (i.kind === "cosplay" ? counts.cosplay < 2 : i.kind === "video" ? counts.video < q.video : true);
   const takeVisual = (prefer) => {
     const item = pick(visuals, (i) => visualOk(i) && (!prefer || prefer(i)));
     if (item && counts[item.kind] !== undefined) counts[item.kind]++;
@@ -448,8 +450,9 @@ const GENERAL_COMMUNITIES = /!(?:memes|me_irl|lemmyshitpost)@/i;
 const fromHerCorner = (item) => {
   const where = String(item.credit?.platform ?? "");
   if (GENERAL_COMMUNITIES.test(where)) return false;
-  // tumblr-memes is already gated at the adapter to her SEKAI/Vocaloid/Apothecary blogs.
-  return HER_COMMUNITIES.test(where) || item.source === "tumblr-memes";
+  // These adapters are already gated to her corners: tumblr-memes to her SEKAI/Vocaloid/Apothecary
+  // blogs, youtube-memes to her fandoms' channels and searches.
+  return HER_COMMUNITIES.test(where) || ["tumblr-memes", "youtube-memes"].includes(item.source);
 };
 
 const HUMOR_WEIGHT = { relatable: 1, dark: 0.9, absurd: 0.85, wholesome: 0.4 };

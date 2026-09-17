@@ -116,7 +116,8 @@ export const FactsSchema = z
         regionOk: z.boolean(),
         ageRestricted: z.boolean(),
         checkedAt: z.string().datetime({ offset: true }),
-        provenance: z.enum(["official_channel", "vocadb_original", "creator_upload", "unknown"]),
+        // search_result: found by a keyword search, so the uploader is not known to be the creator.
+        provenance: z.enum(["official_channel", "vocadb_original", "creator_upload", "search_result", "unknown"]),
       })
       .strict()
       .nullable()

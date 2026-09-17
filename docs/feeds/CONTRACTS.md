@@ -315,7 +315,7 @@ The sections below extend the foundation contract. Where they differ from the te
   - Unqueued items stay `pending` for later builds; retention prunes them.
 - **Daily pacing:** `reserveRequest` refuses a pipeline request (`paused_for_budget`) once today's Singapore-day spend plus the estimate exceeds `dailyLimitMicros`. Diagnostics and `admin-tools` are exempt but stay inside the atomic monthly ceiling.
 - **Early finish:** paid checks stop at `checkDailyShare` of the daily limit, and `check` finishes as done (`stats.stoppedForDailyBudget`). Today's plan uses what is already approved.
-- **Invocation limits:** `FEED_MAX_REQUESTS_PER_RUN` (default 60, max 120) bounds provider requests per invocation. `stageRequestCaps` bounds each build/stage cumulatively (check 720, plan-write 90, events 40, maintenance 80, diagnostics 8, admin-tools 40). `invocation_request_limit` checkpoints; `request_limit` pauses.
+- **Invocation limits:** `FEED_MAX_REQUESTS_PER_RUN` (default 60, max 120) bounds provider requests per invocation. `stageRequestCaps` bounds each build/stage cumulatively (fetch-a 90, fetch-b 120 — both raised from 40 on 2026-09-17 so the collectors at the back of the list actually run — check 720, plan-write 90, events 40, maintenance 80, diagnostics 8, admin-tools 40). `invocation_request_limit` checkpoints; `request_limit` pauses.
 
 ## Section planners (recorded allocation)
 

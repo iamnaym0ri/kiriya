@@ -1,0 +1,29 @@
+{
+  "kind": "youtube#searchListResponse",
+  "etag": "mock-etag-search",
+  "regionCode": "SG",
+  "pageInfo": {
+    "totalResults": 1,
+    "resultsPerPage": 10
+  },
+  "items": [
+    {
+      "kind": "youtube#searchResult",
+      "etag": "mock-CosMaomao01",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "CosMaomao01"
+      },
+      "snippet": {
+        "publishedAt": "2026-09-13T09:00:00Z",
+        "channelId": "UCmockCosChannel0000001",
+        "title": "maomao cosplay ✿ #shorts (mock)",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "Mock Cosplayer",
+        "liveBroadcastContent": "none",
+        "publishTime": "2026-09-13T09:00:00Z"
+      }
+    }
+  ]
+}

@@ -36,7 +36,7 @@ before(() => mock.timers.enable({ apis: ["Date"], now: NOW }));
 after(() => mock.timers.reset());
 
 describe("entry contracts", () => {
-  const entries = [V.vocadb, V.vocadbSongs, Y.youtubeMusic, Y.youtubeTutorials, Y.youtubeApothecary, S.sekaiGlobal, S.sekaiNewsGlobal, P.piaproNews, P.piaproGoods, N.annPressVocaloid, N.siliconeraMiku];
+  const entries = [V.vocadb, V.vocadbSongs, Y.youtubeMusic, Y.youtubeTutorials, Y.youtubeApothecary, Y.youtubeMemes, S.sekaiGlobal, S.sekaiNewsGlobal, P.piaproNews, P.piaproGoods, N.annPressVocaloid, N.siliconeraMiku];
 
   test("every entry passes defineSource with exact hosts, bounded bytes and declared policies", () => {
     const ids = new Set();
@@ -54,13 +54,19 @@ describe("entry contracts", () => {
         assert.ok(entry.docsUrl || entry.termsUrl, `${entry.id} policy URL`);
       }
     }
-    for (const entry of [Y.youtubeMusic, Y.youtubeTutorials, Y.youtubeApothecary]) {
+    for (const entry of [Y.youtubeMusic, Y.youtubeTutorials, Y.youtubeApothecary, Y.youtubeMemes]) {
       assert.deepEqual(entry.requiredCredentials, ["YOUTUBE_API_KEY"]);
-      assert.equal(entry.stage, "fetch-b");
       assert.equal(entry.mediaPolicy, "embed_provenance");
       assert.equal(entry.copyPolicy, "link_only");
       assert.equal(entry.cacheSeconds, 30 * 86400);
     }
+    // The meme collector runs in the other fetch stage so it isn't queued behind the slow,
+    // heavily paced social sources in fetch-b.
+    assert.deepEqual([Y.youtubeMusic, Y.youtubeTutorials, Y.youtubeApothecary].map((e) => e.stage), ["fetch-b", "fetch-b", "fetch-b"]);
+    assert.equal(Y.youtubeMemes.stage, "fetch-a");
+    // Only the collectors the owner allowed may publish uploads found by search (2026-09-17).
+    assert.equal(defineSource(Y.youtubeMusic).searchProvenance, false, "the default stays off");
+    for (const entry of [Y.youtubeTutorials, Y.youtubeApothecary, Y.youtubeMemes]) assert.equal(entry.searchProvenance, true);
     assert.deepEqual(V.vocadbSongs.optionalCredentials, ["YOUTUBE_API_KEY"]);
     assert.deepEqual(V.vocadbSongs.requiredCredentials, []);
     for (const entry of [S.sekaiGlobal, S.sekaiNewsGlobal, P.piaproNews, N.annPressVocaloid]) {
@@ -498,10 +504,10 @@ describe("youtube-tutorials", () => {
 
   test("channel uploads and strict searches become tutorials with cosplay formats and character mentions", async () => {
     const { items, calls, pages } = await runAdapterAll(Y.youtubeTutorials, { routes, credentials });
-    assert.equal(pages, 6);
+    assert.equal(pages, 3 + Y.SEARCH_CALLS_PER_DAY);
     const google = googleCalls(calls);
     const searches = google.filter((c) => c.url.includes("/youtube/v3/search?"));
-    assert.equal(searches.length, Y.SEARCH_CALLS_PER_DAY, "at most 3 search.list calls a day (separate 100/day bucket)");
+    assert.equal(searches.length, Y.SEARCH_CALLS_PER_DAY, "a fixed few search.list calls a day (100 quota units each)");
     for (const call of searches) {
       assert.equal(param(call.url, "safeSearch"), "strict");
       assert.equal(param(call.url, "type"), "video");
@@ -510,8 +516,11 @@ describe("youtube-tutorials", () => {
       assert.ok(Y.TUTORIAL_QUERIES.includes(param(call.url, "q")));
     }
     assert.equal(google.filter((c) => c.url.includes("/youtube/v3/videos?")).length, 2, "a search result already emitted is not looked up again");
-    assert.deepEqual(items.map((i) => i.nativeId), ["CowWig00001", "SearchMake1"]);
-    const [wig, makeup] = items;
+    assert.equal(items.filter((i) => i.tags.formats.includes("short")).length, 1);
+    assert.deepEqual(items.map((i) => i.nativeId), ["CowWig00001", "CowShort001", "SearchMake1"]);
+    const [wig, short, makeup] = items;
+    assert.equal(short.kind, "tutorial");
+    assert.deepEqual(short.tags.formats, ["wig", "short"], "a Short how-to is kept and tagged");
     assert.equal(wig.kind, "tutorial");
     assert.deepEqual(wig.sections, ["dressup"]);
     assert.deepEqual(wig.tags.formats, ["wig", "tutorial"]);
@@ -521,7 +530,25 @@ describe("youtube-tutorials", () => {
     assert.deepEqual(makeup.tags.formats, ["makeup", "transformation"]);
     assert.deepEqual(makeup.tags.characters, ["frieren", "fern"], "tags.js mentions(): the series name also names Frieren");
     assert.deepEqual(makeup.tags.fandoms, ["frieren"]);
-    assert.equal(makeup.facts.playback.provenance, "unknown");
+    assert.equal(makeup.facts.playback.provenance, "search_result", "a search result publishes, credited to its uploader");
+    noKey(items);
+  });
+
+  test("a costume with no how-to words is a showcase for the photo slots, and Maomao's goes to her section too", async () => {
+    const showcase = [
+      ...routes.filter((r) => !/search|videos/.test(String(r.file ?? ""))),
+      { match: /\/youtube\/v3\/search\?/, source: "youtube", file: "search-cosplay.json" },
+      { match: (url) => url.includes("/youtube/v3/videos?") && url.includes("CosMaomao01"), source: "youtube", file: "videos-cosplay.json" },
+      { match: (url) => url.includes("/youtube/v3/videos?") && url.includes("CowWig00001"), source: "youtube", file: "videos-cowbutt.json" },
+    ];
+    const { items } = await runAdapterAll(Y.youtubeTutorials, { routes: showcase, credentials });
+    const cosplay = items.find((i) => i.nativeId === "CosMaomao01");
+    assert.ok(cosplay, "the showcase was collected");
+    assert.equal(cosplay.kind, "cosplay");
+    assert.deepEqual(cosplay.sections, ["dressup", "maomao"]);
+    assert.deepEqual(cosplay.tags.formats, ["short"], "a Short is kept and tagged");
+    assert.equal(cosplay.media[0].height > cosplay.media[0].width, true, "the card gets the tall shape");
+    assert.equal(items.find((i) => i.nativeId === "CowWig00001").kind, "tutorial", "a how-to is still a tutorial");
     noKey(items);
   });
 
@@ -532,10 +559,45 @@ describe("youtube-tutorials", () => {
   });
 });
 
+describe("youtube-memes", () => {
+  const routes = [
+    { match: /\/youtube\/v3\/search\?/, source: "youtube", file: "search-memes.json" },
+    { match: /\/youtube\/v3\/videos\?/, source: "youtube", file: "videos-memes.json" },
+  ];
+
+  test("her fandoms' jokes and edits, Shorts included, offered to the sections they belong to", async () => {
+    const { items, calls, pages } = await runAdapterAll(Y.youtubeMemes, { routes, credentials });
+    assert.deepEqual(Y.MEME_CHANNELS, [], "channel IDs wait for a readable API key");
+    assert.equal(pages, Y.MEME_SEARCHES_PER_DAY, "searches only, one page each");
+    const searches = googleCalls(calls).filter((c) => c.url.includes("/youtube/v3/search?"));
+    assert.equal(searches.length, Y.MEME_SEARCHES_PER_DAY);
+    for (const call of searches) {
+      assert.equal(param(call.url, "safeSearch"), "strict");
+      assert.equal(param(call.url, "videoEmbeddable"), "true");
+      assert.equal(param(call.url, "regionCode"), "SG");
+      assert.ok(Y.MEME_QUERIES.includes(param(call.url, "q")));
+    }
+    assert.deepEqual(items.map((i) => i.nativeId), ["MemeMaomao1", "MemeMiku001"], "a joke with none of her fandoms is dropped");
+    const [maomao, miku] = items;
+    assert.equal(maomao.kind, "meme");
+    assert.deepEqual(maomao.sections, ["meme", "maomao"]);
+    assert.deepEqual(maomao.tags.formats, ["short"]);
+    assert.deepEqual(maomao.tags.characters, ["maomao"]);
+    assert.equal(maomao.facts.playback.provenance, "search_result");
+    assert.equal(maomao.credit.name, "Mock Anime Clips", "the uploader is credited, not the original artist");
+    assert.equal(maomao.credit.license, "YouTube video; rights stay with the uploader");
+    assert.deepEqual(miku.sections, ["meme", "music"]);
+    assert.deepEqual(miku.tags.formats, [], "a full-length upload is not tagged short");
+    noKey(items);
+  });
+});
+
 describe("youtube-apothecary", () => {
   const routes = [
     { match: (url) => url.includes("/youtube/v3/channels?") && param(url, "forHandle") === "@TOHOanimation", source: "youtube", file: "channel-toho.json" },
     { match: (url) => url.includes("/youtube/v3/playlistItems?") && url.includes("playlistId=UUmockTOHOanimation00000"), source: "youtube", file: "playlist-toho.json" },
+    { match: /\/youtube\/v3\/search\?/, source: "youtube", file: "search-apothecary.json" },
+    { match: (url) => url.includes("/youtube/v3/videos?") && url.includes("KusuClip001"), source: "youtube", file: "videos-apothecary.json" },
     { match: /\/youtube\/v3\/videos\?/, source: "youtube", file: "videos-toho.json" },
   ];
 
@@ -543,22 +605,41 @@ describe("youtube-apothecary", () => {
     Y.clearChannelCache();
     const calls = [];
     const { items, page } = await runAdapterPage(Y.youtubeApothecary, { routes, credentials, calls });
-    assert.equal(page.done, true);
+    assert.equal(page.done, false, "the official channel first, then the clip searches");
     assert.deepEqual(googleCalls(calls).map((c) => new URL(c.url).pathname.split("/").pop()), ["channels", "playlistItems", "videos"]);
     const videoIds = param(googleCalls(calls)[2].url, "id").split(",");
     assert.ok(videoIds.includes("KusuPV00001") && !videoIds.includes("OtherAnime1"), "uploads filtered by title before videos.list");
     assert.ok(videoIds.includes("9rProUQlD-I") && videoIds.includes("HP5wg0kTh54"), "official-site PVs are checked");
-    assert.deepEqual(items.map((i) => i.nativeId), ["KusuPV00001", "9rProUQlD-I"]);
+    assert.deepEqual(items.map((i) => i.nativeId), ["KusuPV00001", "KusuShort01", "9rProUQlD-I"]);
     for (const item of items) {
-      assert.equal(item.kind, "video");
       assert.deepEqual(item.sections, ["maomao"]);
       assert.deepEqual(item.tags.fandoms, ["the apothecary diaries"]);
       assert.equal(item.facts.playback.provenance, "official_channel");
     }
+    // A Short is a clip, which is what the maomao section wants at least two of; a full upload is a video.
+    assert.deepEqual(items.map((i) => i.kind), ["video", "clip", "video"]);
+    assert.deepEqual(items[1].tags.formats, ["short"]);
     assert.deepEqual(items[0].tags.characters, ["maomao", "jinshi"]);
     const again = [];
     await runAdapterPage(Y.youtubeApothecary, { routes, credentials, calls: again });
     assert.equal(again.filter((c) => c.url.includes("/youtube/v3/channels?")).length, 0, "handle lookup cached");
+    noKey(items);
+  });
+
+  test("then searches for clips of the show; anything that doesn't name it is dropped", async () => {
+    Y.clearChannelCache();
+    const { items, calls, pages } = await runAdapterAll(Y.youtubeApothecary, { routes, credentials });
+    assert.equal(pages, 1 + Y.APOTHECARY_SEARCHES_PER_DAY);
+    const searches = googleCalls(calls).filter((c) => c.url.includes("/youtube/v3/search?"));
+    assert.equal(searches.length, Y.APOTHECARY_SEARCHES_PER_DAY);
+    for (const call of searches) assert.ok(Y.APOTHECARY_QUERIES.includes(param(call.url, "q")));
+    const clip = items.find((i) => i.nativeId === "KusuClip001");
+    assert.ok(clip, "the clip search published");
+    assert.equal(clip.kind, "clip");
+    assert.deepEqual(clip.sections, ["maomao"]);
+    assert.equal(clip.facts.playback.provenance, "search_result");
+    assert.equal(clip.credit.name, "Mock Clip Channel");
+    assert.ok(!items.some((i) => i.nativeId === "OtherShow01"), "another show's scene is not hers");
     noKey(items);
   });
 });

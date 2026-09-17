@@ -2,12 +2,15 @@
 // key exists only as a Vercel Sensitive value; live verification is pending deployment.
 //
 // Basis (developers.google.com, read 2026-09-15; pages show "Last updated 2026-09-14"):
-// - Quota (determine_quota_cost): channels.list, playlistItems.list and videos.list cost 1 unit each from
-//   the shared 10,000/day bucket; search.list has its own bucket of 100 calls/day at 1 unit each
-//   (revision history, 2026-06-01).
+// - Quota (determine_quota_cost): channels.list, playlistItems.list and videos.list cost 1 unit each and
+//   search.list costs 100 units, all from the shared 10,000/day bucket. An earlier note here claimed
+//   search.list had its own 100-calls/day bucket at 1 unit; that was wrong, so searches are budgeted as
+//   100 units each (about 1,700 units/day across the five collectors).
 // - Uploads: channels.list contentDetails.relatedPlaylists.uploads, then playlistItems.list. The
-//   "UULF"/"UUSH" playlist prefixes are not documented anywhere, so they are not used; Shorts are dropped
-//   by aspect ratio (player.embedWidth/embedHeight with maxWidth) and duration instead.
+//   "UULF"/"UUSH" playlist prefixes are not documented anywhere, so they are not used. Shorts are
+//   recognised by aspect ratio (player.embedWidth/embedHeight with maxWidth) and duration: the music
+//   collector drops them, and the meme, cosplay and apothecary collectors keep them (owner decision
+//   2026-09-17 — Shorts are where her memes and quick cosplay clips live) and tag them "short".
 // - Developer Policies III.E.4: Non-Authorized Data at most 30 days, then refresh or delete; III.E.4.j:
 //   look up madeForKids for embedded videos (requested with part=status); III.F.2.a: show YouTube as the
 //   source. III.D.7 forbids undocumented APIs, so oEmbed and channel RSS are not used. Channel pages are
@@ -129,14 +132,53 @@ export const TUTORIAL_QUERIES = [
   "project sekai cosplay wig",
   "witch hat atelier cosplay",
   "genshin cosplay makeup tutorial",
+  // Showcases and transformations, for the dress-up photo slots rather than the how-to slots.
+  "maomao cosplay transformation",
+  "apothecary diaries cosplay",
+  "hatsune miku cosplay transformation",
+  "project sekai cosplay",
 ];
-export const SEARCH_CALLS_PER_DAY = 3;
+export const SEARCH_CALLS_PER_DAY = 4;
+
+/**
+ * Meme channels, resolved by @handle at runtime like the Apothecary channel. Empty until the
+ * YOUTUBE_API_KEY can be read outside Vercel: a channel list is only worth adding once
+ * channels.list has confirmed each one (see docs/feeds/SOURCE-VERIFICATION.md). Until then the meme
+ * collector works from searches alone, which need no channel IDs.
+ */
+export const MEME_CHANNELS = [];
+export const MEME_QUERIES = [
+  "薬屋のひとりごと meme",
+  "apothecary diaries funny moments",
+  "maomao funny moments",
+  "project sekai meme",
+  "vocaloid meme",
+  "hatsune miku meme",
+  "anime memes",
+  "apothecary diaries edit",
+];
+export const MEME_SEARCHES_PER_DAY = 4;
+export const MEME_WINDOW_MS = 21 * DAY_MS;
+/** Something that reads as a joke, an edit or a clip — not a lecture about the show. */
+const MEME_TEXT = /\bmemes?\b|\bshitpost|\bfunny\b|\bhumou?r\b|\bedit\b|\bcursed\b|out of context|\bcompilation\b|面白|ミーム|コラ/i;
+/** A person in costume, for the dress-up photo slots. */
+const COSPLAY_TEXT = /\bcosplay(?:er|ing)?\b|\bcos ?test\b|コスプレ/i;
 
 /** TOHO animation's channel, linked by handle from https://www.toho.co.jp/sns/ (checked 2026-09-15). */
 export const APOTHECARY_CHANNEL = { handle: "@TOHOanimation", name: "TOHO animation チャンネル" };
 /** PVs embedded by the official site (kusuriyanohitorigoto.jp trailer carousel, news/2623 and news/2520). */
 export const APOTHECARY_SEED_VIDEOS = ["9rProUQlD-I", "HP5wg0kTh54", "g1pKfngmcAM", "a4j4V8iZ_wg"];
 const APOTHECARY_TEXT = /薬屋のひとりごと|kusuriya|apothecary diaries/i;
+/** Clips and edits of the show, which the official channel alone does not supply daily. */
+export const APOTHECARY_QUERIES = [
+  "薬屋のひとりごと 公式",
+  "apothecary diaries season 3",
+  "apothecary diaries clip",
+  "maomao apothecary diaries edit",
+  "薬屋のひとりごと 名シーン",
+  "apothecary diaries english dub clip",
+];
+export const APOTHECARY_SEARCHES_PER_DAY = 3;
 
 export function youtubeMusicPlan(day) {
   const n = dayIndex(day);
@@ -146,14 +188,22 @@ export function youtubeMusicPlan(day) {
   return [...official, ...Array.from({ length: 5 }, (_, k) => producers[(start + k) % producers.length])];
 }
 
-export function youtubeTutorialPlan(day) {
+/** A day's steps for a collector that reads a few channels and then runs a few searches. */
+export function dayPlan(day, { channels = [], channelsPerDay = 0, queries = [], searchesPerDay = 0 }) {
   const n = dayIndex(day);
-  const channels = Array.from({ length: 3 }, (_, k) => ({ type: "channel", channel: TUTORIAL_CHANNELS[(n * 3 + k) % TUTORIAL_CHANNELS.length] }));
-  const searches = Array.from({ length: SEARCH_CALLS_PER_DAY }, (_, k) => ({
-    type: "search",
-    query: TUTORIAL_QUERIES[(n * SEARCH_CALLS_PER_DAY + k) % TUTORIAL_QUERIES.length],
-  }));
-  return [...channels, ...searches];
+  const perDay = Math.min(channelsPerDay, channels.length);
+  const steps = Array.from({ length: perDay }, (_, k) => ({ type: "channel", channel: channels[(n * perDay + k) % channels.length] }));
+  const searches = Math.min(searchesPerDay, queries.length);
+  for (let k = 0; k < searches; k++) steps.push({ type: "search", query: queries[(n * searches + k) % queries.length] });
+  return steps;
+}
+
+export function youtubeTutorialPlan(day) {
+  return dayPlan(day, { channels: TUTORIAL_CHANNELS, channelsPerDay: 3, queries: TUTORIAL_QUERIES, searchesPerDay: SEARCH_CALLS_PER_DAY });
+}
+
+export function youtubeMemePlan(day) {
+  return dayPlan(day, { channels: MEME_CHANNELS, channelsPerDay: 3, queries: MEME_QUERIES, searchesPerDay: MEME_SEARCHES_PER_DAY });
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -331,8 +381,9 @@ function videoItem(entry, video, { kind, sections, provenance, checkedAt, now, f
  * Kept only when it is a regular, finished upload that embeds and plays in Singapore and is not age
  * restricted (PIPELINE §5.2 and §7). The playback facts recorded on each item come from the same check.
  */
-export function usable(video) {
-  if (!video || isShort(video) || liveOrUpcoming(video)) return false;
+export function usable(video, { allowShorts = false } = {}) {
+  if (!video || liveOrUpcoming(video)) return false;
+  if (!allowShorts && isShort(video)) return false;
   return playable(playbackFrom(video, { provenance: "unknown", checkedAt: new Date(0).toISOString() }));
 }
 
@@ -440,27 +491,40 @@ export function cosplayFormats(text) {
 }
 export const TUTORIAL_WINDOW_MS = 60 * DAY_MS;
 
-function tutorialItem(video, { provenance, checkedAt, now }) {
+/**
+ * A how-to keeps the process slots (kind "tutorial"); someone showing a finished costume fills the
+ * dress-up photo slots instead (kind "cosplay"), and a Maomao costume also belongs in her Maomao
+ * section. Anything that is neither is dropped.
+ */
+export function dressupItem(video, { provenance, checkedAt, now }) {
   const text = `${video.snippet?.title ?? ""}\n${firstParagraph(video.snippet?.description)}`;
   const formats = cosplayFormats(text);
-  if (!formats.length) return null;
+  const short = isShort(video);
+  const tagged = short ? [...formats, "short"] : formats;
+  const characters = mentions(text, CHARACTER_ALIASES);
+  const shared = { provenance, checkedAt, now, characters, formats: tagged };
+  if (formats.length) return videoItem(youtubeTutorials, video, { kind: "tutorial", sections: ["dressup"], ...shared });
+  if (!COSPLAY_TEXT.test(text)) return null;
+  const maomao = /apothecary|kusuriya|薬屋/i.test(text) || characters.includes("maomao");
   return videoItem(youtubeTutorials, video, {
-    kind: "tutorial",
-    sections: ["dressup"],
-    provenance,
-    checkedAt,
-    now,
-    characters: mentions(text, CHARACTER_ALIASES),
-    formats,
+    kind: "cosplay",
+    sections: maomao ? ["dressup", "maomao"] : ["dressup"],
+    ...shared,
   });
 }
 
-async function fetchYoutubeTutorials(ctx) {
+/**
+ * Collects a day's plan of channel uploads and keyword searches. Channel steps resolve their uploads
+ * playlist once and keep `creator_upload`/`official_channel` provenance only when the returned
+ * channel title matches; search steps are `search_result` for the collectors the owner allowed it
+ * for, and `unknown` otherwise (moderate.js withholds those).
+ */
+async function fetchPlanned(ctx, entry, spec) {
   const key = requireKey(ctx);
-  const plan = youtubeTutorialPlan(ctx.day);
+  const plan = spec.plan(ctx.day);
   let state = readState(ctx);
   if (state.i >= plan.length) return { items: [], cursor: null, done: true };
-  const channelSteps = plan.filter((s) => s.type === "channel");
+  const channelSteps = plan.filter((step) => step.type === "channel");
   const step = plan[state.i];
   const limit = Math.max(0, Math.min(8, ctx.limits.items));
   const now = Date.now();
@@ -476,11 +540,11 @@ async function fetchYoutubeTutorials(ctx) {
     const position = channelSteps.indexOf(step);
     const playlist = resolved.u[position];
     if (!playlist) return nextPage(ctx, state, plan.length, []);
-    ids = (await recentUploads(ctx.http, key, playlist, { max: 15, windowMs: TUTORIAL_WINDOW_MS, now })).map((u) => u.id);
+    ids = (await recentUploads(ctx.http, key, playlist, { max: spec.uploadsMax ?? 15, windowMs: spec.windowMs, now })).map((u) => u.id);
     expectedChannel = step.channel.id;
-    if (resolved.t[position] === "1") provenance = "creator_upload";
+    if (resolved.t[position] === "1") provenance = spec.channelProvenance ?? "creator_upload";
   } else {
-    // search.list: separate 100/day bucket, 1 unit per call; strict SafeSearch, embeddable videos only.
+    // search.list: 100 quota units a call, strict SafeSearch, embeddable videos only.
     const data = await ctx.http.json(
       youtubeUrl(
         "search",
@@ -492,7 +556,7 @@ async function fetchYoutubeTutorials(ctx) {
           videoEmbeddable: "true",
           regionCode: "SG",
           relevanceLanguage: "en",
-          publishedAfter: new Date(now - TUTORIAL_WINDOW_MS).toISOString(),
+          publishedAfter: new Date(now - spec.windowMs).toISOString(),
           order: "relevance",
           maxResults: 10,
         },
@@ -502,6 +566,7 @@ async function fetchYoutubeTutorials(ctx) {
     ids = listItems(data, "youtube#searchListResponse")
       .map((result) => result?.id?.videoId)
       .filter((id) => VIDEO_ID.test(id ?? ""));
+    if (entry.searchProvenance === true) provenance = "search_result";
   }
   // Videos already examined earlier in this run (overlapping searches) are not requested again.
   const examined = Array.isArray(state.s) ? state.s.filter((id) => VIDEO_ID.test(String(id))) : [];
@@ -513,13 +578,59 @@ async function fetchYoutubeTutorials(ctx) {
   for (const id of ids) {
     if (items.length >= limit) break;
     const video = videos.get(id);
-    if (!usable(video)) continue;
+    if (!usable(video, { allowShorts: spec.allowShorts })) continue;
     if (expectedChannel && video.snippet?.channelId !== expectedChannel) continue;
-    const item = tutorialItem(video, { provenance, checkedAt, now });
+    const item = spec.build(video, { provenance, checkedAt, now });
     if (item) items.push(item);
   }
   return nextPage(ctx, state, plan.length, items);
 }
+
+const fetchYoutubeTutorials = (ctx) =>
+  fetchPlanned(ctx, youtubeTutorials, {
+    plan: youtubeTutorialPlan,
+    windowMs: TUTORIAL_WINDOW_MS,
+    allowShorts: true,
+    channelProvenance: "creator_upload",
+    build: dressupItem,
+  });
+
+// ---------------------------------------------------------------------------------------------
+// youtube-memes
+// ---------------------------------------------------------------------------------------------
+
+/** The joke, the edit or the clip: kept only when it reads as one and comes from her fandoms. */
+function memeItem(video, { provenance, checkedAt, now }) {
+  const text = `${video.snippet?.title ?? ""}\n${firstParagraph(video.snippet?.description)}`;
+  const fandoms = canonicalFandoms(mentions(text, FANDOM_ALIASES));
+  const characters = mentions(text, CHARACTER_ALIASES);
+  const about = (pattern) => pattern.test(text) || fandoms.some((f) => pattern.test(f));
+  // A search can return anything; a meme earns its place by being a joke AND being hers.
+  if (!MEME_TEXT.test(text)) return null;
+  if (!fandoms.length && !characters.length) return null;
+  const sections = ["meme"];
+  if (about(/apothecary|kusuriya|薬屋/i) || characters.includes("maomao")) sections.push("maomao");
+  if (about(/vocaloid|project sekai|miku|鏡音|巡音/i)) sections.push("music");
+  if (COSPLAY_TEXT.test(text)) sections.push("dressup");
+  return videoItem(youtubeMemes, video, {
+    kind: "meme",
+    sections,
+    provenance,
+    checkedAt,
+    now,
+    characters,
+    formats: isShort(video) ? ["short"] : [],
+  });
+}
+
+const fetchYoutubeMemes = (ctx) =>
+  fetchPlanned(ctx, youtubeMemes, {
+    plan: youtubeMemePlan,
+    windowMs: MEME_WINDOW_MS,
+    allowShorts: true,
+    channelProvenance: "creator_upload",
+    build: memeItem,
+  });
 
 // ---------------------------------------------------------------------------------------------
 // youtube-apothecary
@@ -529,37 +640,60 @@ export const APOTHECARY_WINDOW_MS = 60 * DAY_MS;
 /** The official-site PVs are offered for this long after their upload date. */
 export const APOTHECARY_SEED_WINDOW_MS = 120 * DAY_MS;
 
+export function youtubeApothecaryPlan(day) {
+  return [{ type: "official" }, ...dayPlan(day, { queries: APOTHECARY_QUERIES, searchesPerDay: APOTHECARY_SEARCHES_PER_DAY })];
+}
+
+/** Official uploads and PVs; a Short is a clip, a full upload is a video (maomao's visual slots). */
+function apothecaryItem(video, { provenance, checkedAt, now }) {
+  const text = `${video.snippet?.title ?? ""}\n${firstParagraph(video.snippet?.description)}`;
+  if (!APOTHECARY_TEXT.test(text)) return null;
+  const short = isShort(video);
+  return videoItem(youtubeApothecary, video, {
+    kind: short ? "clip" : "video",
+    sections: ["maomao"],
+    provenance,
+    checkedAt,
+    now,
+    fandoms: ["the apothecary diaries"],
+    characters: mentions(text, CHARACTER_ALIASES),
+    formats: short ? ["short"] : [],
+  });
+}
+
 async function fetchYoutubeApothecary(ctx) {
   const key = requireKey(ctx);
+  const plan = youtubeApothecaryPlan(ctx.day);
+  const state = readState(ctx);
+  if (state.i >= plan.length) return { items: [], cursor: null, done: true };
+  const step = plan[state.i];
   const limit = Math.max(0, Math.min(8, ctx.limits.items));
+  const now = Date.now();
+  const checkedAt = new Date(now).toISOString();
+  if (!limit) return nextPage(ctx, state, plan.length, []);
+  if (step.type !== "official")
+    return fetchPlanned(ctx, youtubeApothecary, {
+      plan: youtubeApothecaryPlan,
+      windowMs: APOTHECARY_WINDOW_MS,
+      allowShorts: true,
+      build: apothecaryItem,
+    });
+
   const channel = await channelByHandle(ctx.http, key, APOTHECARY_CHANNEL.handle);
   if (!channel?.uploads) throw new FeedError("youtube_channel_unavailable", 503);
-  const now = Date.now();
   const uploads = await recentUploads(ctx.http, key, channel.uploads, { max: 50, windowMs: APOTHECARY_WINDOW_MS, now, part: "snippet,contentDetails" });
   const ids = unique([...uploads.filter((u) => APOTHECARY_TEXT.test(u.title)).map((u) => u.id), ...APOTHECARY_SEED_VIDEOS]);
   const videos = await youtubeVideos(ctx.http, key, ids, VIDEO_PARTS, { maxWidth: 480 });
-  const checkedAt = new Date(now).toISOString();
   const items = [...videos.values()]
     // Only the verified official channel's uploads; a seed ID uploaded elsewhere is ignored.
-    .filter((video) => usable(video) && video.snippet?.channelId === channel.id && APOTHECARY_TEXT.test(`${video.snippet?.title ?? ""} ${video.snippet?.description ?? ""}`))
+    .filter((video) => usable(video, { allowShorts: true }) && video.snippet?.channelId === channel.id)
     .filter((video) => now - (Date.parse(video.snippet?.publishedAt ?? "") || 0) <= APOTHECARY_SEED_WINDOW_MS)
     .sort((a, b) => (Date.parse(b.snippet?.publishedAt ?? "") || 0) - (Date.parse(a.snippet?.publishedAt ?? "") || 0))
     .slice(0, limit)
-    .map((video) => {
-      const text = `${video.snippet?.title ?? ""}\n${firstParagraph(video.snippet?.description)}`;
-      return videoItem(youtubeApothecary, video, {
-        kind: "video",
-        sections: ["maomao"],
-        provenance: "official_channel",
-        checkedAt,
-        now,
-        fandoms: ["the apothecary diaries"],
-        characters: mentions(text, CHARACTER_ALIASES),
-      });
-    });
-  return { items, cursor: null, done: true };
+    .map((video) => apothecaryItem(video, { provenance: "official_channel", checkedAt, now }))
+    .filter(Boolean);
+  return nextPage(ctx, state, plan.length, items);
 }
-
 // ---------------------------------------------------------------------------------------------
 // Shared recheck and policies
 // ---------------------------------------------------------------------------------------------
@@ -627,20 +761,49 @@ export const youtubeTutorials = {
   stage: "fetch-b",
   status: "enabled",
   enabled: true,
-  sections: ["dressup"],
+  sections: ["dressup", "maomao"],
   hosts: ["www.googleapis.com", "www.youtube.com"],
   linkHosts: ["www.youtube.com"],
-  // 1 channels.list + 3 channels x 2 + 3 searches x 2, plus retries.
-  maxRequests: 20,
+  // 1 channels.list + 3 channels x 2 + 4 searches x 2, plus retries.
+  maxRequests: 24,
   paceMs: 250,
+  searchProvenance: true,
   fetch: fetchYoutubeTutorials,
   recheck: recheckVideo("creator_upload"),
   notes:
-    "Uploads (last 60 days) of 3 of the 6 tutorial channels per day plus 3 search.list calls (own 100/day bucket, " +
-    "safeSearch=strict, videoEmbeddable=true, regionCode=SG). Only videos whose title/description names a COSPLAY_FORMATS " +
-    "format are kept. Channel IDs are from the research run (not re-confirmed by a primary source); channels.list must return " +
-    "a matching title for creator_upload provenance, else unknown. About 7 shared units + 3 search calls/day. Live verification " +
-    "pending deployment.",
+    "Uploads (last 60 days) of 3 of the 6 tutorial channels per day plus 4 search.list calls (100 quota units each, " +
+    "safeSearch=strict, videoEmbeddable=true, regionCode=SG). A video naming a COSPLAY_FORMATS format is a tutorial for the " +
+    "process slots; one that only says cosplay is a showcase (kind cosplay) for the dress-up photo slots, and a Maomao " +
+    "costume is offered to the maomao section too. Shorts are kept and tagged \"short\" (owner decision 2026-09-17). Channel " +
+    "IDs are from the research run (not re-confirmed by a primary source); channels.list must return a matching title for " +
+    "creator_upload provenance. Search results are search_result provenance, which this source is allowed to publish " +
+    "(owner decision 2026-09-17: vetted channels plus searches). About 7 shared units + 400 search units/day. Live " +
+    "verification pending a readable YOUTUBE_API_KEY.",
+};
+
+export const youtubeMemes = {
+  ...YOUTUBE_POLICY,
+  id: "youtube-memes",
+  stage: "fetch-a",
+  status: "enabled",
+  enabled: true,
+  sections: ["meme", "maomao", "music", "dressup"],
+  hosts: ["www.googleapis.com", "www.youtube.com"],
+  linkHosts: ["www.youtube.com"],
+  // 4 searches x 2 (+ channels.list and uploads once MEME_CHANNELS is filled), plus retries.
+  maxRequests: 24,
+  paceMs: 250,
+  searchProvenance: true,
+  fetch: fetchYoutubeMemes,
+  recheck: recheckVideo("search_result"),
+  notes:
+    "Her fandoms' jokes, edits and funny clips, for the meme carousel and the meme slot in each section. 4 of 8 " +
+    "search.list calls a day (100 quota units each, safeSearch=strict, videoEmbeddable=true, regionCode=SG, last 21 days); " +
+    "Shorts are kept and tagged \"short\". An item is kept only when the title/description reads as a joke, edit or " +
+    "compilation AND names one of her fandoms or characters, which also decides whether it is offered to the maomao, music " +
+    "or dressup meme slot. Search results are search_result provenance, allowed here by owner decision (2026-09-17); the " +
+    "thumbnail still goes through moderation and vision. MEME_CHANNELS is empty until the API key can be read outside " +
+    "Vercel to confirm channel IDs. About 400 search units/day.",
 };
 
 export const youtubeApothecary = {
@@ -652,14 +815,19 @@ export const youtubeApothecary = {
   sections: ["maomao"],
   hosts: ["www.googleapis.com", "www.youtube.com"],
   linkHosts: ["www.youtube.com"],
-  maxRequests: 6,
+  // official channel (3) + 3 searches x 2, plus retries.
+  maxRequests: 14,
   paceMs: 250,
+  searchProvenance: true,
   fetch: fetchYoutubeApothecary,
   recheck: recheckVideo("official_channel"),
   notes:
     "TOHO animation (@TOHOanimation, linked from https://www.toho.co.jp/sns/; TOHO lists Season 3 and the film at " +
     "toho.co.jp/anime and /movie/lineup). The handle is resolved with channels.list?forHandle (cached a day), uploads " +
     "from the last 60 days are kept when the title names 薬屋のひとりごと/Kusuriya/Apothecary Diaries, plus the PVs the " +
-    "official site embeds (9rProUQlD-I S3 PV, HP5wg0kTh54 film trailer) if videos.list shows the same channel. " +
-    "3 units/day. Live verification pending deployment.",
+    "official site embeds (9rProUQlD-I S3 PV, HP5wg0kTh54 film trailer) if videos.list shows the same channel. Then 3 of 6 " +
+    "search.list calls a day (100 quota units each) for clips and edits of the show, kept only when the title or " +
+    "description names it; those are search_result provenance, allowed here by owner decision (2026-09-17). Shorts are " +
+    "kept as kind clip, full uploads as kind video (owner decision 2026-09-17). About 3 units + 300 search units/day. " +
+    "Live verification pending a readable YOUTUBE_API_KEY.",
 };
