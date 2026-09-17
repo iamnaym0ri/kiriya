@@ -2,7 +2,7 @@
   "kind": "youtube#videoListResponse",
   "etag": "mock-etag-videos",
   "pageInfo": {
-    "totalResults": 2,
+    "totalResults": 3,
     "resultsPerPage": 2
   },
   "items": [
@@ -79,6 +79,56 @@
       },
       "contentDetails": {
         "duration": "PT3M",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": false,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "processed",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "12000",
+        "likeCount": "400",
+        "favoriteCount": "0",
+        "commentCount": "20"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/OtherShow01\" frameborder=\"0\" allowfullscreen></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-SlopNews01",
+      "id": "SlopNews01",
+      "snippet": {
+        "publishedAt": "2026-09-13T09:00:00Z",
+        "channelId": "UCmockClipChannel000003",
+        "title": "Apothecary Diaries Season 3 Release Date & Everything We Know (mock)",
+        "description": "The Apothecary Diaries season 3 news round-up.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/OtherShow01/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Mock Aggregator",
+        "categoryId": "24",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "PT8M",
         "dimension": "2d",
         "definition": "hd",
         "caption": "false",

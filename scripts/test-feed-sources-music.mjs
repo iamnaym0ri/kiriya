@@ -598,6 +598,7 @@ describe("youtube-apothecary", () => {
     { match: (url) => url.includes("/youtube/v3/playlistItems?") && url.includes("playlistId=UUmockTOHOanimation00000"), source: "youtube", file: "playlist-toho.json" },
     { match: /\/youtube\/v3\/search\?/, source: "youtube", file: "search-apothecary.json" },
     { match: (url) => url.includes("/youtube/v3/videos?") && url.includes("KusuClip001"), source: "youtube", file: "videos-apothecary.json" },
+    { match: (url) => url.includes("/youtube/v3/videos?") && url.includes("SlopNews01"), source: "youtube", file: "videos-apothecary.json" },
     { match: /\/youtube\/v3\/videos\?/, source: "youtube", file: "videos-toho.json" },
   ];
 
@@ -640,6 +641,9 @@ describe("youtube-apothecary", () => {
     assert.equal(clip.facts.playback.provenance, "search_result");
     assert.equal(clip.credit.name, "Mock Clip Channel");
     assert.ok(!items.some((i) => i.nativeId === "OtherShow01"), "another show's scene is not hers");
+    // Checked live on 2026-09-17: searches return a lot of "release date / everything we know"
+    // filler, and with no vision read nothing downstream would catch it.
+    assert.ok(!items.some((i) => i.nativeId === "SlopNews01"), "channel-farm filler is dropped by title");
     noKey(items);
   });
 });

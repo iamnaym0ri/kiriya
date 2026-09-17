@@ -1,5 +1,7 @@
-// YouTube Data API v3 collectors (API key only). Written from the official documentation because the
-// key exists only as a Vercel Sensitive value; live verification is pending deployment.
+// YouTube Data API v3 collectors (API key only). Written from the official documentation; verified
+// live on 2026-09-17, once the owner put a readable key in .env.local. All 32 channel IDs below
+// resolve and pass channelTitleMatches, and every collector returned real items (see
+// docs/feeds/SOURCE-VERIFICATION.md and .data/feed-probes/).
 //
 // Basis (developers.google.com, read 2026-09-15; pages show "Last updated 2026-09-14"):
 // - Quota (determine_quota_cost): channels.list, playlistItems.list and videos.list cost 1 unit each and
@@ -169,15 +171,27 @@ export const APOTHECARY_CHANNEL = { handle: "@TOHOanimation", name: "TOHO animat
 /** PVs embedded by the official site (kusuriyanohitorigoto.jp trailer carousel, news/2623 and news/2520). */
 export const APOTHECARY_SEED_VIDEOS = ["9rProUQlD-I", "HP5wg0kTh54", "g1pKfngmcAM", "a4j4V8iZ_wg"];
 const APOTHECARY_TEXT = /薬屋のひとりごと|kusuriya|apothecary diaries/i;
-/** Clips and edits of the show, which the official channel alone does not supply daily. */
+/**
+ * Clips and edits of the show, which the official channel alone does not supply daily. Checked live
+ * on 2026-09-17: "apothecary diaries season 3" and "apothecary diaries clip" mostly returned trailer
+ * reuploads and "release date / everything we know" videos from aggregator channels, so they were
+ * replaced by the two queries that returned actual fan clips and edits. "薬屋のひとりごと 猫猫 かわいい"
+ * was tried and rejected: unrelated Japanese news and craft videos.
+ */
 export const APOTHECARY_QUERIES = [
   "薬屋のひとりごと 公式",
-  "apothecary diaries season 3",
-  "apothecary diaries clip",
+  "maomao apothecary diaries funny",
+  "apothecary diaries out of context",
   "maomao apothecary diaries edit",
   "薬屋のひとりごと 名シーン",
   "apothecary diaries english dub clip",
 ];
+/**
+ * Channel-farm filler that searches return for any anime: countdowns, explainers and ranking bait.
+ * The official channel covers real announcements, and with no vision read (owner decision
+ * 2026-09-17) nothing downstream would catch these, so they are dropped by title here.
+ */
+const SLOP_TEXT = /release date|everything we know|all we know|explained|\bexplain(?:ing|er)\b|\bleaks?\b|\btop \d+\b|ranking|tier list|you (?:missed|didn.t know)|coming out|what to expect|\brecap\b/i;
 export const APOTHECARY_SEARCHES_PER_DAY = 3;
 
 export function youtubeMusicPlan(day) {
@@ -607,6 +621,7 @@ function memeItem(video, { provenance, checkedAt, now }) {
   const about = (pattern) => pattern.test(text) || fandoms.some((f) => pattern.test(f));
   // A search can return anything; a meme earns its place by being a joke AND being hers.
   if (!MEME_TEXT.test(text)) return null;
+  if (SLOP_TEXT.test(video.snippet?.title ?? "")) return null;
   if (!fandoms.length && !characters.length) return null;
   const sections = ["meme"];
   if (about(/apothecary|kusuriya|薬屋/i) || characters.includes("maomao")) sections.push("maomao");
@@ -648,6 +663,8 @@ export function youtubeApothecaryPlan(day) {
 function apothecaryItem(video, { provenance, checkedAt, now }) {
   const text = `${video.snippet?.title ?? ""}\n${firstParagraph(video.snippet?.description)}`;
   if (!APOTHECARY_TEXT.test(text)) return null;
+  // The official channel is trusted; a search result that reads as channel-farm filler is not.
+  if (provenance !== "official_channel" && SLOP_TEXT.test(video.snippet?.title ?? "")) return null;
   const short = isShort(video);
   return videoItem(youtubeApothecary, video, {
     kind: short ? "clip" : "video",
@@ -807,7 +824,8 @@ export const youtubeMemes = {
     "compilation AND names one of her fandoms or characters, which also decides whether it is offered to the maomao, music " +
     "or dressup meme slot. Search results are search_result provenance, allowed here by owner decision (2026-09-17); the " +
     "thumbnail still goes through moderation and vision. MEME_CHANNELS is empty until the API key can be read outside " +
-    "Vercel to confirm channel IDs. About 400 search units/day.",
+    "Vercel to confirm channel IDs; the searches alone were verified live on 2026-09-17 and returned real fan edits. " +
+    "About 400 search units/day.",
 };
 
 export const youtubeApothecary = {
@@ -833,5 +851,6 @@ export const youtubeApothecary = {
     "search.list calls a day (100 quota units each) for clips and edits of the show, kept only when the title or " +
     "description names it; those are search_result provenance, allowed here by owner decision (2026-09-17). Shorts are " +
     "kept as kind clip, full uploads as kind video (owner decision 2026-09-17). About 3 units + 300 search units/day. " +
-    "Live verification pending a readable YOUTUBE_API_KEY.",
+    "Verified live on 2026-09-17; the two queries that returned trailer reuploads were replaced, and SLOP_TEXT drops " +
+    "\"release date / everything we know\" filler from the rest.",
 };

@@ -3,7 +3,7 @@
   "etag": "mock-etag-search",
   "regionCode": "SG",
   "pageInfo": {
-    "totalResults": 2,
+    "totalResults": 3,
     "resultsPerPage": 10
   },
   "items": [
@@ -41,6 +41,24 @@
         "channelTitle": "Mock Other",
         "liveBroadcastContent": "none",
         "publishTime": "2026-09-13T09:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "mock-SlopNews01",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "SlopNews01"
+      },
+      "snippet": {
+        "publishedAt": "2026-09-12T09:00:00Z",
+        "channelId": "UCmockClipChannel000003",
+        "title": "Apothecary Diaries Season 3 Release Date & Everything We Know (mock)",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "Mock Aggregator",
+        "liveBroadcastContent": "none",
+        "publishTime": "2026-09-12T09:00:00Z"
       }
     }
   ]
