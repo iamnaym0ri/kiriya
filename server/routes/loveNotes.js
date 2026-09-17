@@ -20,6 +20,16 @@ import {
 
 const MAX_AHEAD_MS = 90 * 24 * 60 * 60 * 1000;
 
+/** A readable name for a subscribed device, from its browser's description of itself. */
+export function deviceName(userAgent = "") {
+  if (/iPhone/.test(userAgent)) return "iPhone";
+  if (/iPad/.test(userAgent)) return "iPad";
+  if (/Android/.test(userAgent)) return "Android phone";
+  if (/Macintosh/.test(userAgent)) return "Mac";
+  if (/Windows/.test(userAgent)) return "Windows computer";
+  return "a device";
+}
+
 /** Sends a note now, or schedules it; shared by the note composer and letter announcements. */
 export async function sendOrSchedule(db, fields) {
   const note = await createLoveNote(db, fields);
@@ -49,12 +59,21 @@ adminLoveNoteRoutes.get("/", async (c) => {
   const [notes, settings, devices] = await Promise.all([
     recentLoveNotes(db),
     notificationSettings(db),
-    db.select({ role: schema.pushSubscriptions.role }).from(schema.pushSubscriptions),
+    db.select().from(schema.pushSubscriptions),
   ]);
   return c.json({
     notes,
     window: { startHour: settings.startHour, endHour: settings.endHour, enabled: settings.enabled },
     devices: { kiriya: devices.filter((d) => d.role === "kiriya").length, admin: devices.filter((d) => d.role === "admin").length },
+    // A phone belongs to whichever passphrase last opened the app on it.
+    phones: devices.map((d) => ({
+      id: d.id,
+      role: d.role,
+      device: deviceName(d.userAgent ?? ""),
+      lastSeenAt: d.lastSeenAt,
+      lastSuccessAt: d.lastSuccessAt,
+      lastError: d.lastError,
+    })),
     push: pushConfigured(),
     scheduler: qstashConfigured(),
   });

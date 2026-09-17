@@ -287,6 +287,14 @@ try {
     assert.equal(subscribed.status, 200);
     const [device] = await db.select().from(schema.pushSubscriptions).where(eq(schema.pushSubscriptions.endpoint, "https://web.push.apple.com/test-admin-phone"));
     assert.equal(device.role, "admin", "Test notes reach this phone; Kiriya's notes never do");
+    const iphone = { "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X)" };
+    await request("push/subscribe", { method: "POST", cookie: kiriya, headers: iphone, body: { endpoint: device.endpoint, keys: { p256dh: "p".repeat(20), auth: "a".repeat(16) } } });
+    const switched = await json(await request("admin/love-notes", { cookie: admin }));
+    assert.deepEqual(switched.devices, { kiriya: 1, admin: 0 }, "Opening the app with her passphrase makes the phone one of hers");
+    await request("push/subscribe", { method: "POST", cookie: admin, headers: iphone, body: { endpoint: device.endpoint, keys: { p256dh: "p".repeat(20), auth: "a".repeat(16) } } });
+    const back = await json(await request("admin/love-notes", { cookie: admin }));
+    assert.deepEqual(back.devices, { kiriya: 0, admin: 1 }, "And the admin phrase makes it a test device again");
+    assert.equal(back.phones[0].role, "admin");
     await request("push/unsubscribe", { method: "POST", cookie: admin, body: { endpoint: device.endpoint } });
     const prefs = await json(await request("me/prefs", { method: "PATCH", cookie: admin, body: { hints: { notifications: true } } }));
     assert.equal(prefs.hints.notifications, true);

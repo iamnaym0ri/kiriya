@@ -428,9 +428,13 @@ function Surprises() {
 
       {state === "on" && !ownsSettings && (
         <p className="settings-card__hint">
-          This is a test phone. Kiriya’s notification hours stay hers; notes you send to
-          “my test devices” arrive here.
+          This is a test phone: it gets notes sent to “my test devices”, never Kiriya’s.
+          Her notification hours stay hers. (Unlocked with her passphrase, this phone would
+          become one of hers.)
         </p>
+      )}
+      {state === "on" && ownsSettings && (
+        <p className="settings-card__hint">This phone gets your notes, new letters and surprises.</p>
       )}
       {settings && state === "on" && ownsSettings && (
         <div className="settings-grid">

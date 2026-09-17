@@ -219,6 +219,29 @@ function LoveNotes() {
           {!data.scheduler && " · no scheduler here: timed notes go out with the daily backstop"}
         </p>
       )}
+      {data?.phones.length > 0 && (
+        <ul className="admin-list">
+          {data.phones.map((phone) => (
+            <li key={phone.id}>
+              <div>
+                <strong>
+                  {phone.device} · {phone.role === "kiriya" ? "gets Kiriya’s notes" : "test device"}
+                </strong>
+                <p className="admin-muted">
+                  last opened {sgTime(phone.lastSeenAt)}
+                  {phone.lastSuccessAt ? ` · last delivered ${sgTime(phone.lastSuccessAt)}` : ""}
+                  {phone.lastError ? ` · last error: ${phone.lastError}` : ""}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="admin-muted">
+        A phone follows the passphrase that last opened the app on it: Kiriya’s phrase makes it one of
+        her phones, the admin phrase makes it a test device. To switch, lock the app and unlock it with
+        the other phrase.
+      </p>
       <form
         className="admin-form"
         onSubmit={(e) => {
