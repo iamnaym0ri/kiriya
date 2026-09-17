@@ -84,15 +84,16 @@ Open `https://kiriya.love/admin` and unlock with the **admin** phrase (saved pri
 
 1. In Safari open `https://kiriya.love`, tap Share → **Add to Home Screen** (keep "Open as Web App" on) → Add.
 2. Open **kiriya** from the Home Screen and unlock with the **admin** phrase. The Home Screen app keeps its own sign-in, separate from Safari, and asks again every two days.
-3. Settings (gear) → **Notes & surprises on your phone** → Turn on → Allow → **Send a test**.
-4. Settings → **This device** → **Open the admin desk** is there when you're signed in as admin, since the app has no address bar.
+3. Turn on notifications **inside the kiriya app**. Your iPhone's own Settings → Notifications won't list kiriya until the site has asked once. Either tap **Turn on notifications** on the slip at the top of home, or open **☰ → Settings → Notes & surprises on your phone → Turn on notifications**. The gear icon is hidden on phones. Choose **Allow**, then tap **Send a test**.
+4. **☰ → Settings → This device → Open the admin desk** is there when you're signed in as admin, since the app has no address bar.
+5. As admin, your phone only receives notes sent to **my test devices**. Kiriya's notification hours stay hers; the hour settings are hidden on a test phone.
 
 ### 4. Notes
 
 1. Admin desk → Little notes to her phone → **To my test devices** → title and note → Send now.
 2. The notification should arrive. Tapping it opens that note in the app. The admin list then shows "read".
 3. Schedule one 3–5 minutes ahead ("At a time", Singapore time) to test QStash. Then try **Surprise me**, which picks a time inside the notification hours.
-4. A letter with "Tell her phone" ticked notifies **Kiriya's** devices, not yours. Use it only once you're happy.
+4. Letters: on the letter form, type a title and tap **Try this notification on my phone first**. It sends exactly what she'd see ("a new letter for you ✉") to your test phone without saving a letter. Saving a letter with **Tell her phone** ticked notifies **Kiriya's** devices, and the letter itself is real, so she'll see it.
 
 ### 5. Shortcuts one-tap button (built into iOS)
 

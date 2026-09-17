@@ -196,6 +196,21 @@ adminRoutes.post("/pushes/custom", async (c) => {
 
 // ---------- letters ----------
 
+// What her phone shows for a new letter. The test route sends the same thing to the admin's phone.
+const letterAnnouncement = (title) => ({
+  kind: "update",
+  title: "a new letter for you ✉",
+  body: `“${title}” is waiting in your letters ♡`,
+  link: "/world/letters",
+});
+
+// Try a letter's notification on the admin's own phone without saving a letter she would see.
+adminRoutes.post("/letters/test-announcement", async (c) => {
+  const parsed = z.object({ title: z.string().trim().min(1).max(120) }).safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_letter", message: "Give the letter a title first." }, 400);
+  return c.json(await sendOrSchedule(await getDb(), { ...letterAnnouncement(parsed.data.title), recipient: "admin", sendAt: new Date() }));
+});
+
 const letterBody = z.object({
   kind: z.enum(["birthday", "open_when", "note"]),
   title: z.string().trim().min(1).max(120),
@@ -238,11 +253,8 @@ adminRoutes.post("/letters", async (c) => {
     .returning();
   const announcement = notify
     ? await sendOrSchedule(db, {
+        ...letterAnnouncement(row.title),
         recipient: "kiriya",
-        kind: "update",
-        title: "a new letter for you ✉",
-        body: `“${row.title}” is waiting in your letters ♡`,
-        link: "/world/letters",
         sendAt: row.unlockAt && row.unlockAt.getTime() > Date.now() ? row.unlockAt : new Date(),
       })
     : null;

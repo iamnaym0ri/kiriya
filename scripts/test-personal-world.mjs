@@ -278,6 +278,20 @@ try {
     assert.deepEqual(list.devices, { kiriya: 0, admin: 0 });
   });
 
+  await test("Only Kiriya's own settings change her notification hours; the admin phone can still subscribe", async () => {
+    const hours = { enabled: true, perDay: 2, startHour: 9, endHour: 21 };
+    assert.equal((await json(await request("push/settings", { method: "PUT", cookie: admin, body: { ...hours, enabled: false } }), 403)).error, "hers_only");
+    assert.deepEqual(await json(await request("push/settings", { method: "PUT", cookie: kiriya, body: hours })), hours);
+    assert.equal((await json(await request("push/status", { cookie: admin }))).settings.enabled, true);
+    const subscribed = await request("push/subscribe", { method: "POST", cookie: admin, body: { endpoint: "https://web.push.apple.com/test-admin-phone", keys: { p256dh: "p".repeat(20), auth: "a".repeat(16) } } });
+    assert.equal(subscribed.status, 200);
+    const [device] = await db.select().from(schema.pushSubscriptions).where(eq(schema.pushSubscriptions.endpoint, "https://web.push.apple.com/test-admin-phone"));
+    assert.equal(device.role, "admin", "Test notes reach this phone; Kiriya's notes never do");
+    await request("push/unsubscribe", { method: "POST", cookie: admin, body: { endpoint: device.endpoint } });
+    const prefs = await json(await request("me/prefs", { method: "PATCH", cookie: admin, body: { hints: { notifications: true } } }));
+    assert.equal(prefs.hints.notifications, true);
+  });
+
   await test("Notification timing and previews stay inside her window and lock-screen sized", () => {
     const settings = { startHour: 10, endHour: 22 };
     const morning = new Date("2026-09-16T00:30:00Z"); // 08:30 in Singapore
@@ -302,6 +316,15 @@ try {
     assert.equal(locked.announcement.note.status, "scheduled");
     assert.equal(new Date(locked.announcement.note.sendAt).toISOString(), unlockAt);
     assert.equal((await json(await request("admin/letters", { method: "POST", cookie: admin, body: { kind: "note", title: "quiet", body: "hi" } }))).announcement, null);
+
+    const lettersBefore = (await db.select().from(schema.letters)).length;
+    const tried = await json(await request("admin/letters/test-announcement", { method: "POST", cookie: admin, body: { title: "a draft" } }));
+    assert.equal(tried.note.recipient, "admin", "Trying a letter notification only reaches the admin's phone");
+    assert.equal(tried.note.link, "/world/letters");
+    assert.equal(tried.note.body, "“a draft” is waiting in your letters ♡");
+    assert.equal((await db.select().from(schema.letters)).length, lettersBefore, "No letter is saved for her to see");
+    assert.ok(!(await json(await request("me/notes", { cookie: kiriya }))).notes.some((note) => note.id === tried.note.id));
+    assert.equal((await request("admin/letters/test-announcement", { method: "POST", cookie: kiriya, body: { title: "x" } })).status, 401);
   });
 
   await test("Widget keys are shown once, stored hashed, scoped to their person and revocable", async () => {

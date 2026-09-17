@@ -80,12 +80,13 @@ export default function WorldShell() {
             </NavLink>
             <button
               className="icon-button world-menu-toggle"
-              aria-label={menu ? "Close section menu" : "Open section menu"}
+              aria-label={menu ? "Close section menu" : unread ? `Open section menu, ${unread} new notes` : "Open section menu"}
               aria-expanded={menu}
               aria-controls="world-mobile-menu"
               onClick={() => setMenu(!menu)}
             >
               <Icon name={menu ? "close" : "menu"} />
+              {unread > 0 && !menu && <span className="world-notes-link__count world-menu-toggle__count" aria-hidden="true">{unread > 9 ? "9+" : unread}</span>}
             </button>
           </div>
         </header>

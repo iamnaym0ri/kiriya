@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { useNotes } from "../../lib/notes.js";
 import { usePrefs, useSetPrefs } from "../../lib/prefs.js";
 import { isIos, isStandalone } from "../../lib/pwa.js";
+import { useSurprises } from "../../lib/surprises.js";
 import { Icon } from "../../shared/WorldPrimitives.jsx";
 import "./HomeNudges.css";
 
@@ -12,6 +13,7 @@ export default function HomeNudges() {
   const setPrefs = useSetPrefs();
   const hints = prefs.data?.hints ?? {};
   const dismiss = (key) => setPrefs.mutate({ hints: { [key]: true } });
+  const surprises = useSurprises();
   const newest = notes.data?.notes.find((note) => !note.openedAt);
   const slips = [];
   if (newest)
@@ -25,6 +27,24 @@ export default function HomeNudges() {
         <Link className="button-plum" to={`/world/notes?open=${newest.id}`}>
           Open it <Icon name="arrow" size={15} />
         </Link>
+      </aside>,
+    );
+  // Inside the Home Screen app (or any browser that can), offer notifications with the switch right here.
+  if (prefs.data && !hints.notifications && surprises.support === "ok" && surprises.state === "off")
+    slips.push(
+      <aside key="notifications" className="home-nudge">
+        <span className="home-nudge__mark" aria-hidden="true"><Icon name="mail" size={18} /></span>
+        <p>
+          <strong>let little notes reach your phone?</strong>
+          <span>New notes, letters and surprises arrive as notifications. Tap, then choose Allow.</span>
+          {surprises.message && <span role="alert">{surprises.message}</span>}
+        </p>
+        <div className="home-nudge__actions">
+          <button className="button-paper" disabled={surprises.busy} onClick={surprises.turnOn}>
+            {surprises.busy ? "Asking your phone…" : "Turn on notifications"}
+          </button>
+          <button className="text-link" onClick={() => dismiss("notifications")}>not now</button>
+        </div>
       </aside>,
     );
   if (prefs.data && !prefs.data.sharingChosen && !hints.sharing)

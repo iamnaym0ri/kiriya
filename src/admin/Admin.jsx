@@ -369,6 +369,11 @@ function Letters() {
     mutationFn: (id) => api(`/admin/letters/${id}`, { method: "DELETE" }),
     onSuccess: refresh,
   });
+  // Sends only the notification to the admin's phone; no letter is saved, so she sees nothing.
+  const tryNotification = useMutation({
+    mutationFn: () =>
+      api("/admin/letters/test-announcement", { method: "POST", body: { title: draft.title } }),
+  });
 
   return (
     <section className="admin-card">
@@ -432,6 +437,24 @@ function Letters() {
             />
             Tell her phone{draft.unlockAt ? " when it unlocks" : ""}
           </label>
+        )}
+        {!editing && (
+          <div className="admin-row">
+            <button
+              type="button"
+              className="btn btn--ghost btn--small"
+              disabled={!draft.title.trim() || tryNotification.isPending}
+              onClick={() => tryNotification.mutate()}
+            >
+              {tryNotification.isPending ? "Sending…" : "Try this notification on my phone first"}
+            </button>
+            {tryNotification.isSuccess && (
+              <span className="admin-muted">{noteOutcome(tryNotification.data.note)}</span>
+            )}
+            {tryNotification.error && (
+              <span className="admin-error">{tryNotification.error.message}</span>
+            )}
+          </div>
         )}
         <div className="admin-row">
           <button

@@ -9,7 +9,7 @@ export const SHARING_KEYS = ["address", "presentation", "feeling", "energy"];
 // Which parts of today's check-in the public profile may show.
 export const SHARING_DEFAULTS = { address: false, presentation: false, feeling: false, energy: false };
 // Little one-time suggestions she can dismiss for good.
-export const HINT_KEYS = ["install", "sharing", "widget"];
+export const HINT_KEYS = ["install", "sharing", "widget", "notifications"];
 
 const prefsSchema = z.object({
   address: z.partialRecord(z.enum(Object.keys(moodByKey)), z.enum(Object.keys(ADDRESS_OPTIONS))).optional(),

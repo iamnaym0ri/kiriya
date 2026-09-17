@@ -24,14 +24,20 @@ export function registerServiceWorker() {
     registrationPromise = Promise.resolve(null);
     return registrationPromise;
   }
+  // `ready` never settles if the worker can't activate, so give up after a while and let a later
+  // tap try again instead of leaving the notification switch stuck on "checking".
+  const settle = (value) => {
+    if (!value) registrationPromise = null;
+    return value;
+  };
   registrationPromise = navigator.serviceWorker
     .register("/sw.js", { scope: "/" })
-    .then(() => navigator.serviceWorker.ready)
+    .then(() => Promise.race([navigator.serviceWorker.ready, new Promise((resolve) => setTimeout(() => resolve(null), 10_000))]))
     .then((reg) => {
       registration = reg;
-      return reg;
+      return settle(reg);
     })
-    .catch(() => null);
+    .catch(() => settle(null));
   return registrationPromise;
 }
 
@@ -48,7 +54,7 @@ function keyToBytes(base64) {
 export async function enableSurprises() {
   if (!pushSupported()) return { state: "unsupported" };
   const reg = registration ?? (await registerServiceWorker());
-  if (!reg) return { state: "unsupported" };
+  if (!reg) return { state: "error", message: "the app is still getting ready. Close kiriya fully, open it again from your Home Screen, and try once more." };
   try {
     const subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyToBytes(VAPID_PUBLIC_KEY) });
     await api("/push/subscribe", { method: "POST", body: subscription.toJSON() });

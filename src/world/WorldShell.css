@@ -194,3 +194,23 @@
   line-height: 17px;
   text-align: center;
 }
+
+.world-menu-toggle {
+  position: relative;
+}
+
+.world-menu-toggle__count {
+  display: none;
+}
+
+/* On phones Maomao perches on the bar right where the heart sits, so new notes badge the menu
+   instead; "Notes for you" is inside it. */
+@media (max-width: 480px) {
+  :root .world-notes-link {
+    display: none;
+  }
+
+  .world-menu-toggle__count {
+    display: block;
+  }
+}

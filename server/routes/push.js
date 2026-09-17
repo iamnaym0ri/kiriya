@@ -118,6 +118,9 @@ const settingsBody = z.object({
 });
 
 pushRoutes.put("/settings", async (c) => {
+  // These are Kiriya's delivery hours. An admin phone subscribes for test notes without changing them.
+  if (c.get("session").role !== "kiriya")
+    return c.json({ error: "hers_only", message: "Notification hours belong to Kiriya’s settings." }, 403);
   const parsed = settingsBody.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success || parsed.data.endHour - parsed.data.startHour < 4) {
     return c.json(

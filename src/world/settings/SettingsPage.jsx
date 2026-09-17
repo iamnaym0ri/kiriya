@@ -5,14 +5,7 @@ import { api } from "../../lib/api.js";
 import { useLock, useSession } from "../../lib/session.js";
 import { usePrefs, useSetPrefs } from "../../lib/prefs.js";
 import { todayKey } from "../../lib/world.js";
-import {
-  currentSurpriseState,
-  disableSurprises,
-  enableSurprises,
-  isIos,
-  isStandalone,
-  pushSupported,
-} from "../../lib/pwa.js";
+import { useSurprises } from "../../lib/surprises.js";
 import MaomaoMascot from "../mascot/MaomaoMascot.jsx";
 import MyFaves from "./MyFaves.jsx";
 import "./SettingsPage.css";
@@ -350,63 +343,20 @@ function PhoneWidget() {
   );
 }
 
+const UNAVAILABLE = {
+  "update-ios": "Notifications need iOS 16.4 or newer. Update your iPhone in Settings → General → Software Update, then open kiriya from your Home Screen again.",
+  unsupported: "This browser can’t receive notifications. Your world works without them.",
+  "not-configured": "Notifications aren’t set up on the server yet. Your world works without them.",
+};
+
 function Surprises() {
-  const queryClient = useQueryClient();
-  const status = useQuery({
-    queryKey: ["push", "status"],
-    queryFn: () => api("/push/status"),
-  });
-  const [state, setState] = useState("checking");
-  const [message, setMessage] = useState(null);
-
-  useEffect(() => {
-    currentSurpriseState()
-      .then(setState)
-      .catch(() => setState("off"));
-  }, []);
-
-  const saveSettings = useMutation({
-    mutationFn: (settings) =>
-      api("/push/settings", { method: "PUT", body: settings }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["push", "status"] }),
-  });
+  const surprises = useSurprises();
+  const { support, state, settings, ownsSettings, saveSettings, message, setMessage, busy } = surprises;
   const test = useMutation({
     mutationFn: () => api("/push/test", { method: "POST", body: {} }),
     onSuccess: () => setMessage("Sent. It should arrive in a few seconds."),
     onError: (error) => setMessage(error.message),
   });
-
-  const needsInstall = isIos() && !isStandalone();
-  const settings = status.data?.settings;
-
-  async function turnOn() {
-    setMessage(null);
-    try {
-      const result = await enableSurprises();
-      setState(result.state);
-      if (result.state === "on" && settings)
-        await saveSettings.mutateAsync({ ...settings, enabled: true });
-      if (result.state === "error")
-        setMessage(`That didn't work: ${result.message}`);
-      queryClient.invalidateQueries({ queryKey: ["push", "status"] });
-    } catch (error) {
-      setMessage(error.message);
-    }
-  }
-
-  async function turnOff() {
-    setMessage(null);
-    try {
-      if (settings)
-        await saveSettings.mutateAsync({ ...settings, enabled: false });
-      const result = await disableSurprises();
-      setState(result.state);
-      queryClient.invalidateQueries({ queryKey: ["push", "status"] });
-    } catch (error) {
-      setMessage(error.message);
-    }
-  }
 
   return (
     <section className="settings-card" id="surprises" aria-labelledby="surprises-title">
@@ -424,26 +374,23 @@ function Surprises() {
         </div>
       </div>
 
-      {needsInstall ? (
+      {support === "install" ? (
         <>
           <p className="settings-card__lead">
             On iPhone, notifications work once kiriya lives on your Home Screen:
           </p>
           <InstallGuide />
         </>
-      ) : !pushSupported() ? (
-        <p className="settings-card__lead">
-          Notifications aren’t available here yet. Your world works without
-          them.
-        </p>
+      ) : UNAVAILABLE[support] ? (
+        <p className="settings-card__lead">{UNAVAILABLE[support]}</p>
       ) : state === "denied" ? (
         <p className="settings-card__lead">
           Notifications are blocked for kiriya. Turn them back on in your
-          phone's Settings → Notifications → kiriya, then reopen the app.
+          iPhone’s Settings → Notifications → kiriya, then reopen the app.
         </p>
       ) : state === "on" ? (
         <div className="settings-card__row">
-          <span className="status-pill status-pill--on">Surprises are on</span>
+          <span className="status-pill status-pill--on">On for this phone</span>
           <button
             type="button"
             className="btn btn--soft btn--small"
@@ -455,24 +402,37 @@ function Surprises() {
           <button
             type="button"
             className="btn btn--ghost btn--small"
-            onClick={turnOff}
+            onClick={surprises.turnOff}
+            disabled={busy}
           >
             Turn off
           </button>
         </div>
       ) : (
-        <button
-          type="button"
-          className="btn btn--primary"
-          onClick={turnOn}
-          disabled={state === "checking"}
-        >
-          Turn on surprises
-        </button>
+        <>
+          <p className="settings-card__lead">
+            Tap below, then choose <strong>Allow</strong>. Your iPhone only lists kiriya
+            under Settings → Notifications after this.
+          </p>
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={surprises.turnOn}
+            disabled={busy}
+          >
+            {busy ? "Asking your phone…" : "Turn on notifications"}
+          </button>
+        </>
       )}
-      {message && <p className="settings-card__message">{message}</p>}
+      {message && <p className="settings-card__message" role="alert">{message}</p>}
 
-      {settings && state === "on" && (
+      {state === "on" && !ownsSettings && (
+        <p className="settings-card__hint">
+          This is a test phone. Kiriya’s notification hours stay hers; notes you send to
+          “my test devices” arrive here.
+        </p>
+      )}
+      {settings && state === "on" && ownsSettings && (
         <div className="settings-grid">
           <label>
             <span>Surprises a day</span>
