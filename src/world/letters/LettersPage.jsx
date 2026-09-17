@@ -8,6 +8,9 @@ import MaomaoMascot from "../mascot/MaomaoMascot.jsx";
 import { Modal } from "../../shared/WorldPrimitives.jsx";
 import BirthdayTakeover from "../today/BirthdayTakeover.jsx";
 import { useToday } from "../../lib/world.js";
+import { useSession } from "../../lib/session.js";
+import { HEART } from "../../../shared/reactions.js";
+import ReactionBar from "../../shared/ReactionBar.jsx";
 import "./LettersPage.css";
 
 const dateFormat = new Intl.DateTimeFormat("en-SG", {
@@ -16,7 +19,7 @@ const dateFormat = new Intl.DateTimeFormat("en-SG", {
   timeZone: "Asia/Singapore",
 });
 
-function Envelope({ title, from, onOpen, unread, locked, unlockAt, tone }) {
+function Envelope({ title, from, onOpen, unread, locked, unlockAt, tone, reaction }) {
   return (
     <button
       type="button"
@@ -26,19 +29,21 @@ function Envelope({ title, from, onOpen, unread, locked, unlockAt, tone }) {
       disabled={locked}
     >
       <span className="envelope__flap" aria-hidden="true" />
-      <span className="envelope__seal" aria-hidden="true">
-        ♡
+      {/* Her reaction becomes the wax seal. */}
+      <span className="envelope__seal" data-reaction={reaction ? (reaction === HEART ? "heart" : "emoji") : undefined} aria-hidden="true">
+        {reaction === HEART ? "♥" : reaction ?? "♡"}
       </span>
       <span className="envelope__title">{title}</span>
       <span className="envelope__from">
         {locked ? `Opens ${dateFormat.format(new Date(unlockAt))}` : from}
       </span>
       {unread && !locked && <span className="envelope__new">new</span>}
+      {reaction && <span className="sr-only">{reaction === HEART ? ", you hearted this" : `, you reacted ${reaction}`}</span>}
     </button>
   );
 }
 
-function LetterSheet({ letter, onClose }) {
+function LetterSheet({ letter, onClose, reactions }) {
   return (
     <Modal title={letter.title} onClose={onClose} className="letter-modal">
       <article className="letter-paper">
@@ -53,6 +58,7 @@ function LetterSheet({ letter, onClose }) {
           ))}
         </div>
         {letter.signoff && <p className="letter__signoff">{letter.signoff}</p>}
+        {reactions}
         <button className="button-paper" onClick={onClose}>
           Fold it back up
         </button>
@@ -76,6 +82,26 @@ export default function LettersPage() {
       queryClient.invalidateQueries({ queryKey: todayKey });
     },
   });
+  const react = useMutation({
+    mutationFn: ({ id, reaction }) =>
+      api(`/me/letters/${id}/reaction`, { method: "PUT", body: { reaction } }),
+    // Shows straight away; a failed save puts the old reaction back.
+    onMutate: async ({ id, reaction }) => {
+      await queryClient.cancelQueries({ queryKey: ["me", "letters"] });
+      const previous = queryClient.getQueryData(["me", "letters"])?.letters.find((l) => l.id === id)?.reaction ?? null;
+      patchReaction(id, reaction);
+      return { previous };
+    },
+    onError: (_error, { id }, context) => {
+      patchReaction(id, context?.previous ?? null);
+      queryClient.invalidateQueries({ queryKey: ["me", "letters"] });
+    },
+  });
+  const patchReaction = (id, reaction) =>
+    queryClient.setQueryData(["me", "letters"], (old) =>
+      old && { ...old, letters: old.letters.map((l) => (l.id === id ? { ...l, reaction } : l)) },
+    );
+  const session = useSession();
   const [reading, setReading] = useState(null);
 
   if (letters.isPending) return <PageLoader />;
@@ -86,6 +112,7 @@ export default function LettersPage() {
   const fromGiver = list.filter((l) => l.author === "giver");
 
   function open(letter) {
+    react.reset();
     if (letter.id && !letter.openedAt) markOpen.mutate(letter.id);
     setReading(letter);
   }
@@ -108,6 +135,7 @@ export default function LettersPage() {
             unread={!letter.openedAt}
             locked={letter.locked}
             unlockAt={letter.unlockAt}
+            reaction={letter.reaction}
             onOpen={() =>
               open({
                 id: letter.id,
@@ -143,7 +171,22 @@ export default function LettersPage() {
 
       <AnimatePresence>
         {reading && (
-          <LetterSheet letter={reading} onClose={() => setReading(null)} />
+          <LetterSheet
+            letter={reading}
+            onClose={() => setReading(null)}
+            reactions={
+              reading.id && (
+                <ReactionBar
+                  what="this letter"
+                  reaction={list.find((l) => l.id === reading.id)?.reaction ?? null}
+                  onReact={(reaction) => react.mutate({ id: reading.id, reaction })}
+                  readOnly={session.data?.role !== "kiriya"}
+                  note={session.data?.role === "admin" ? "Preview: this is Kiriya’s reaction, and only she can change it." : null}
+                  error={react.isError ? "That reaction didn’t save. Try again?" : null}
+                />
+              )
+            }
+          />
         )}
       </AnimatePresence>
     </div>

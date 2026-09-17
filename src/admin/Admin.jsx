@@ -9,6 +9,8 @@ import UnlockSheet from "../shared/UnlockSheet.jsx";
 import Wordmark from "../shared/Wordmark.jsx";
 import "./Admin.css";
 import FeedPanel from "./FeedPanel.jsx";
+import { HEART } from "../../shared/reactions.js";
+import ReactionBar from "../shared/ReactionBar.jsx";
 
 const SERVICE_LABELS = {
   database: "Database",
@@ -150,6 +152,9 @@ function Daily() {
   );
 }
 
+// How her reaction reads on the desk: "♥" for a heart, otherwise the emoji she picked.
+const reactionText = (reaction) => (reaction === HEART ? "♥" : reaction);
+
 const sgTime = (value) =>
   new Date(value).toLocaleString("en-SG", { timeZone: "Asia/Singapore", dateStyle: "medium", timeStyle: "short" });
 
@@ -165,7 +170,8 @@ function noteOutcome(note) {
       : push.targets === 0
         ? "in their world; no phone has notifications on"
         : `notified ${push.sent} of ${push.targets} device(s)`;
-  return `${sgTime(note.sentAt ?? note.sendAt)} · ${phone}${note.openedAt ? ` · read ${sgTime(note.openedAt)} ♡` : " · not read yet"}`;
+  const reacted = note.reaction ? ` · reacted ${reactionText(note.reaction)}` : "";
+  return `${sgTime(note.sentAt ?? note.sendAt)} · ${phone}${note.openedAt ? ` · read ${sgTime(note.openedAt)} ♡` : " · not read yet"}${reacted}`;
 }
 
 const EMPTY_NOTE = { recipient: "kiriya", kind: "note", title: "", body: "", mode: "now", at: "" };
@@ -515,6 +521,7 @@ function Letters() {
                   ? `, opens ${new Date(letter.unlockAt).toLocaleDateString("en-SG")}`
                   : ""}
                 {letter.openedAt ? ", read ♡" : ", not read yet"}
+                {letter.reaction ? `, she reacted ${reactionText(letter.reaction)}` : ""}
               </p>
             </div>
             <div className="admin-row">
@@ -551,6 +558,130 @@ function Letters() {
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+const ARTWORK_NOTE_MAX = 300;
+
+function Doodles() {
+  const queryClient = useQueryClient();
+  const artworks = useQuery({ queryKey: ["admin", "artworks"], queryFn: () => api("/admin/artworks") });
+  const [drafts, setDrafts] = useState({});
+  const [notify, setNotify] = useState(true);
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["admin", "artworks"] });
+  const add = useMutation({
+    mutationFn: ({ id, body }) => api(`/admin/artworks/${id}/notes`, { method: "POST", body: { body, notify } }),
+    onSuccess: (_data, { id }) => {
+      setDrafts((current) => ({ ...current, [id]: "" }));
+      refresh();
+    },
+  });
+  const remove = useMutation({
+    mutationFn: (noteId) => api(`/admin/artworks/notes/${noteId}`, { method: "DELETE" }),
+    onSuccess: refresh,
+  });
+  const patchReaction = (id, reaction) =>
+    queryClient.setQueryData(["admin", "artworks"], (old) =>
+      old && { ...old, artworks: old.artworks.map((art) => (art.id === id ? { ...art, reaction } : art)) },
+    );
+  // Shows straight away; a failed save puts the old reaction back.
+  const react = useMutation({
+    mutationFn: ({ id, reaction }) => api(`/admin/artworks/${id}/reaction`, { method: "PUT", body: { reaction } }),
+    onMutate: async ({ id, reaction }) => {
+      await queryClient.cancelQueries({ queryKey: ["admin", "artworks"] });
+      const previous = queryClient.getQueryData(["admin", "artworks"])?.artworks.find((art) => art.id === id)?.reaction ?? null;
+      patchReaction(id, reaction);
+      return { previous };
+    },
+    onError: (_error, { id }, context) => {
+      patchReaction(id, context?.previous ?? null);
+      refresh();
+    },
+  });
+  const list = artworks.data?.artworks ?? [];
+
+  return (
+    <section className="admin-card">
+      <h2>Her doodles</h2>
+      <p className="admin-muted">
+        Everything she keeps in her gallery, newest first. A heart or a note you leave shows beside that doodle in her
+        gallery; notes are signed with your signature.
+      </p>
+      <label className="admin-row">
+        <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
+        Tell her phone when I leave a note (it opens the doodle)
+      </label>
+      {artworks.isPending && <p className="admin-muted">Opening her gallery…</p>}
+      {artworks.error && <p className="admin-error">{artworks.error.message}</p>}
+      {artworks.data && list.length === 0 && <p className="admin-muted">No saved doodles yet.</p>}
+      <ul className="admin-doodles">
+        {list.map((art) => {
+          const draft = drafts[art.id] ?? "";
+          const adding = add.isPending && add.variables?.id === art.id;
+          const added = add.isSuccess && add.variables?.id === art.id ? add.data : null;
+          return (
+            <li key={art.id} className="admin-doodle">
+              <a href={art.url} target="_blank" rel="noreferrer" className="admin-doodle__picture">
+                <img src={art.url} alt={art.prompt || "An untitled doodle"} loading="lazy" />
+              </a>
+              <div className="admin-doodle__side">
+                <strong>{art.prompt || "a little untitled thing"}</strong>
+                <p className="admin-muted">{sgTime(art.createdAt)}</p>
+                <ReactionBar
+                  what="this doodle"
+                  reaction={art.reaction ?? null}
+                  onReact={(reaction) => react.mutate({ id: art.id, reaction })}
+                  error={react.isError && react.variables?.id === art.id ? "That reaction didn’t save. Try again?" : null}
+                />
+                {art.notes.map((note) => (
+                  <div key={note.id} className="admin-doodle__note">
+                    <p>{note.body}</p>
+                    <div className="admin-row">
+                      <span className="admin-muted">
+                        {sgTime(note.createdAt)} · {note.seenAt ? `seen ${sgTime(note.seenAt)} ♡` : "not seen yet"}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--small"
+                        disabled={remove.isPending && remove.variables === note.id}
+                        onClick={() => remove.mutate(note.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <form
+                  className="admin-form"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    add.mutate({ id: art.id, body: draft });
+                  }}
+                >
+                  <textarea
+                    className="field admin-textarea admin-doodle__textarea"
+                    rows={2}
+                    maxLength={ARTWORK_NOTE_MAX}
+                    placeholder="A little note on this one…"
+                    aria-label={`A little note on ${art.prompt || "this doodle"}`}
+                    value={draft}
+                    onChange={(e) => setDrafts((current) => ({ ...current, [art.id]: e.target.value }))}
+                  />
+                  <div className="admin-row">
+                    <button type="submit" className="btn btn--primary btn--small" disabled={!draft.trim() || adding}>
+                      {adding ? "Leaving it…" : "Leave note"}
+                    </button>
+                    {added?.announcement && <span className="admin-muted">{noteOutcome(added.announcement.note)}</span>}
+                  </div>
+                  {add.error && add.variables?.id === art.id && <p className="admin-error">{add.error.message}</p>}
+                </form>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      {remove.error && <p className="admin-error">{remove.error.message}</p>}
     </section>
   );
 }
@@ -790,6 +921,7 @@ export default function Admin() {
       <LoveNotes />
       <FeedPanel />
       <Letters />
+      <Doodles />
       <Notes />
       <ProfileMedia />
       <Passphrases />

@@ -29,23 +29,25 @@
   --base-wash: #efe8f5;
 }
 :root[data-mood="night"] {
-  --base-accent: #696783; --base-accent-hover: #7a7894;
-  --base-ink: #48455f; --base-muted: #726e88; --base-hand: #88819e;
-  --base-page: #edecf5; --base-paper: #faf9ff; --base-notebook: #faf9f7;
-  --base-soft: #dcdbea; --base-line: #c7c5da; --base-deep: #49465e;
-  --base-wash: #e9eaf4;
+  --base-accent: #706483; --base-accent-hover: #817594;
+  --base-ink: #4e425f; --base-muted: #796b88; --base-hand: #8f7e9d;
+  --base-page: #efebf5; --base-paper: #fcf8ff; --base-notebook: #faf9f7;
+  --base-soft: #e0d9ea; --base-line: #ccc3da; --base-deep: #4f435e;
+  --base-wash: #ebe9f4;
 }
 :root[data-mood="cloud"] {
-  --base-accent: #737684; --base-accent-hover: #838694;
-  --base-ink: #4f505c; --base-muted: #767580; --base-hand: #8a8397;
-  --base-page: #eff0f3; --base-paper: #fcfbfd; --base-notebook: #fcfaf7;
-  --base-soft: #e2e1e8; --base-line: #d1cddc; --base-deep: #51505e;
-  --base-wash: #eeeef3;
+  --base-accent: #776d81; --base-accent-hover: #887e92;
+  --base-ink: #574d5c; --base-muted: #7e727f; --base-hand: #987d92;
+  --base-page: #f1eff4; --base-paper: #fefafc; --base-notebook: #fcfaf7;
+  --base-soft: #e7dfe7; --base-line: #dcc9d9; --base-deep: #5a4c5d;
+  --base-wash: #f1edf3;
 }
 /*
-  Each mood brings its own colour family over the lilac base, which stays when no mood is chosen.
-  The blossom photo turns toward the same colour, and the drifting charms change with it
-  (see PlayfulWorld.css). Every palette keeps text at least as readable as the lilac one.
+  Every mood stays lilac. Each one turns the lilac a few degrees toward its own colour and makes it a
+  little richer or quieter (angles are OKLCH hue, measured from the lilac base above), so the world
+  is always purple-pink and the mood is a tint, not a new colour. The blossom photo and the drifting
+  charms lean the same small way. scripts/test-lilac-palette.mjs keeps every mood inside the lilac
+  hue band and readable.
 */
 :root {
   --feeling-hue: 0deg;
@@ -79,61 +81,61 @@
   --theme-deep: var(--base-deep);
   --scene-wash: var(--base-wash);
 }
-/* happy: purple-pink orchid, petals drifting down */
+/* happy: orchid-pink lilac, petals drifting down (12° toward pink, a little richer) */
 :root[data-feeling="happy"] {
-  --f-accent: #96477f; --f-accent-hover: #a6578f; --f-ink: #512547; --f-muted: #7d5673; --f-hand: #a8558f;
-  --f-page: #f8e9f3; --f-paper: #fff8fc; --f-notebook: #fff9fb; --f-soft: #eed0e4; --f-line: #ddb3d1; --f-deep: #6a2f5d; --f-wash: #f5e2ef;
-  --feeling-hue: 35deg; --feeling-richness: 1.1;
-  --charm-color: #d487c0; --charm-1: "✿"; --charm-2: "☼"; --charm-3: "✧"; --charm-4: "♡";
+  --f-accent: #844b7f; --f-accent-hover: #945e8d; --f-ink: #5e325d; --f-muted: #826181; --f-hand: #a06795;
+  --f-page: #f6eaf7; --f-paper: #fff8fc; --f-notebook: #fffaf4; --f-soft: #ebd2eb; --f-line: #dfbadd; --f-deep: #5e3b61; --f-wash: #f4e6f4;
+  --feeling-hue: 8deg; --feeling-richness: 1.06;
+  --charm-color: #b578ad; --charm-1: "✿"; --charm-2: "☼"; --charm-3: "✧"; --charm-4: "♡";
 }
-/* content: sage green, leaves floating slowly */
+/* content: a calmer, softer lilac, leaves floating slowly (5° toward blue, quieter) */
 :root[data-feeling="content"] {
-  --f-accent: #4a7362; --f-accent-hover: #5a8372; --f-ink: #2f4a3f; --f-muted: #56705f; --f-hand: #537b69;
-  --f-page: #eaf3ee; --f-paper: #f9fdf9; --f-notebook: #fbfcf6; --f-soft: #d3e6dc; --f-line: #b9d3c5; --f-deep: #33574a; --f-wash: #e6f1ea;
-  --feeling-hue: -130deg; --feeling-richness: .7;
-  --charm-color: #6fa58c; --charm-1: "❦"; --charm-2: "✿"; --charm-3: "❧"; --charm-4: "❀";
+  --f-accent: #70597d; --f-accent-hover: #806a8b; --f-ink: #4e3d5a; --f-muted: #75687f; --f-hand: #8c7394;
+  --f-page: #f0ecf5; --f-paper: #fefafd; --f-notebook: #fefaf8; --f-soft: #e0d7e8; --f-line: #cfc1da; --f-deep: #50445d; --f-wash: #eee9f3;
+  --feeling-hue: -4deg; --feeling-richness: .8;
+  --charm-color: #9c86ac; --charm-1: "❦"; --charm-2: "✿"; --charm-3: "❧"; --charm-4: "❀";
 }
-/* excited: golden hour, confetti stars spinning down */
+/* excited: warm pink lilac, confetti stars spinning down (20° toward pink, a little richer) */
 :root[data-feeling="excited"] {
-  --f-accent: #8a5719; --f-accent-hover: #9a6728; --f-ink: #4f3514; --f-muted: #7c6138; --f-hand: #9e6f25;
-  --f-page: #fbf2e0; --f-paper: #fffbf2; --f-notebook: #fffbee; --f-soft: #f3e0b8; --f-line: #e6cc96; --f-deep: #6b4518; --f-wash: #f9eed6;
-  --feeling-hue: 130deg; --feeling-richness: 1.1;
-  --charm-color: #dca640; --charm-1: "★"; --charm-2: "✦"; --charm-3: "✶"; --charm-4: "✧";
+  --f-accent: #884b77; --f-accent-hover: #975e86; --f-ink: #613156; --f-muted: #85607c; --f-hand: #a3678c;
+  --f-page: #f7e9f5; --f-paper: #fff8fb; --f-notebook: #fefbf4; --f-soft: #edd2e7; --f-line: #e2b9d7; --f-deep: #613b5b; --f-wash: #f5e6f2;
+  --feeling-hue: 14deg; --feeling-richness: 1.08;
+  --charm-color: #b977a3; --charm-1: "★"; --charm-2: "✦"; --charm-3: "✶"; --charm-4: "✧";
 }
-/* sad: soft blue, gentle rain */
+/* sad: lilac with a little blue, gentle rain (15° toward blue, a little quieter) */
 :root[data-feeling="sad"] {
-  --f-accent: #4a6897; --f-accent-hover: #5a78a7; --f-ink: #2f3f5c; --f-muted: #5b6a84; --f-hand: #5d7cab;
-  --f-page: #e9f0fa; --f-paper: #f8fbff; --f-notebook: #fafbff; --f-soft: #d3e0f3; --f-line: #b8cae6; --f-deep: #34496e; --f-wash: #e4edf9;
-  --feeling-hue: -70deg; --feeling-richness: .85;
-  --charm-color: #7f9fd0; --charm-1: ""; --charm-2: "♡"; --charm-3: ""; --charm-4: "";
+  --f-accent: #6c5985; --f-accent-hover: #7c6a93; --f-ink: #4a3d60; --f-muted: #726884; --f-hand: #88739c;
+  --f-page: #efecf7; --f-paper: #fdfafe; --f-notebook: #fffaf7; --f-soft: #ded8ed; --f-line: #ccc2e0; --f-deep: #4d4463; --f-wash: #ece9f5;
+  --feeling-hue: -12deg; --feeling-richness: .88;
+  --charm-color: #9786b6; --charm-1: ""; --charm-2: "♡"; --charm-3: ""; --charm-4: "";
 }
-/* angry: rosy red, embers rising */
+/* angry: rosy lilac, embers rising (26° toward pink, a little richer) */
 :root[data-feeling="angry"] {
-  --f-accent: #a23d4c; --f-accent-hover: #b24d5c; --f-ink: #5a2830; --f-muted: #845458; --f-hand: #b04f5d;
-  --f-page: #fbe9ea; --f-paper: #fff9f9; --f-notebook: #fffaf7; --f-soft: #f3d0d3; --f-line: #e5b2b8; --f-deep: #6e2c36; --f-wash: #f8e2e4;
-  --feeling-hue: 75deg; --feeling-richness: 1.1;
-  --charm-color: #dc6878; --charm-1: "✦"; --charm-2: "•"; --charm-3: "✹"; --charm-4: "•";
+  --f-accent: #8a4a71; --f-accent-hover: #9a5e80; --f-ink: #633151; --f-muted: #876078; --f-hand: #a66787;
+  --f-page: #f8e9f3; --f-paper: #fff9fa; --f-notebook: #fdfbf5; --f-soft: #efd2e4; --f-line: #e4b9d3; --f-deep: #633a57; --f-wash: #f6e6f1;
+  --feeling-hue: 18deg; --feeling-richness: 1.05;
+  --charm-color: #bc779b; --charm-1: "✦"; --charm-2: "•"; --charm-3: "✹"; --charm-4: "•";
 }
-/* anxious: calm periwinkle, slow breathing bubbles */
+/* anxious: periwinkle lilac, slow breathing bubbles (21° toward blue, a little quieter) */
 :root[data-feeling="anxious"] {
-  --f-accent: #5a60a2; --f-accent-hover: #6a70b2; --f-ink: #34385e; --f-muted: #62668a; --f-hand: #6c72b4;
-  --f-page: #eceefb; --f-paper: #fafaff; --f-notebook: #fbfbff; --f-soft: #d9dcf4; --f-line: #c0c4e8; --f-deep: #3d4275; --f-wash: #e8eafa;
-  --feeling-hue: -40deg; --feeling-richness: .8;
-  --charm-color: #9096d6; --charm-1: "○"; --charm-2: "◦"; --charm-3: "○"; --charm-4: "°";
+  --f-accent: #685a88; --f-accent-hover: #796c96; --f-ink: #473e62; --f-muted: #6f6985; --f-hand: #84759f;
+  --f-page: #eeedf8; --f-paper: #fdfafe; --f-notebook: #fffaf8; --f-soft: #dcd8ee; --f-line: #c9c3e2; --f-deep: #4a4564; --f-wash: #ebeaf6;
+  --feeling-hue: -16deg; --feeling-richness: .86;
+  --charm-color: #9188b8; --charm-1: "○"; --charm-2: "◦"; --charm-3: "○"; --charm-4: "°";
 }
-/* overwhelmed: quiet grey, only a few soft lights */
+/* overwhelmed: hushed grey lilac, only a few soft lights (no turn, half as rich) */
 :root[data-feeling="overwhelmed"] {
-  --f-accent: #666472; --f-accent-hover: #767482; --f-ink: #3e3d48; --f-muted: #6a6975; --f-hand: #7a7886;
-  --f-page: #f0f0f2; --f-paper: #fbfbfc; --f-notebook: #fbfbfa; --f-soft: #dfdfe4; --f-line: #cbcbd3; --f-deep: #45444f; --f-wash: #ededf0;
-  --feeling-hue: 0deg; --feeling-richness: .35;
-  --charm-color: #a4a3b0; --charm-1: "●"; --charm-2: "●"; --charm-3: "●"; --charm-4: "●";
+  --f-accent: #6e5c73; --f-accent-hover: #7e6d83; --f-ink: #4d3f52; --f-muted: #746a79; --f-hand: #89768b;
+  --f-page: #f0ecf2; --f-paper: #fdfafc; --f-notebook: #fdfaf8; --f-soft: #e0d8e4; --f-line: #cec3d3; --f-deep: #4f4556; --f-wash: #eeeaf0;
+  --feeling-hue: 0deg; --feeling-richness: .55;
+  --charm-color: #9d87a5; --charm-1: "●"; --charm-2: "●"; --charm-3: "●"; --charm-4: "●";
 }
-/* playful: candy pink, hearts bouncing about */
+/* playful: candy-pink lilac, hearts bouncing about (32° toward pink, richer) */
 :root[data-feeling="playful"] {
-  --f-accent: #b03d68; --f-accent-hover: #c04d78; --f-ink: #5c2238; --f-muted: #88526a; --f-hand: #bb4a78;
-  --f-page: #fde9f0; --f-paper: #fff8fa; --f-notebook: #fffafa; --f-soft: #f8cfdd; --f-line: #ecb1c5; --f-deep: #772a48; --f-wash: #fbe2ea;
-  --feeling-hue: 60deg; --feeling-richness: 1.2;
-  --charm-color: #f08aad; --charm-1: "♡"; --charm-2: "\2665\FE0E"; --charm-3: "✦"; --charm-4: "☆";
+  --f-accent: #91466c; --f-accent-hover: #a05a7b; --f-ink: #682d4e; --f-muted: #8c5e75; --f-hand: #ac6381;
+  --f-page: #fae8f2; --f-paper: #fff8f9; --f-notebook: #fdfbf4; --f-soft: #f3d0e2; --f-line: #eab7d0; --f-deep: #673754; --f-wash: #f9e5ef;
+  --feeling-hue: 22deg; --feeling-richness: 1.12;
+  --charm-color: #c47294; --charm-1: "♡"; --charm-2: "\2665\FE0E"; --charm-3: "✦"; --charm-4: "☆";
 }
 :root, :root[data-mood] {
   --page: var(--theme-page); --surface: var(--theme-paper); --paper: var(--theme-paper);

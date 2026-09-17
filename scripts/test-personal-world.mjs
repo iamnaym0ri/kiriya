@@ -456,6 +456,73 @@ try {
     assert.deepEqual((await json(await request("me/device-keys", { cookie: kiriya }))).keys, [], "Signing out other devices also turns off widget keys");
     assert.equal((await request("widget", { headers: { authorization: `Bearer ${adminKey.key}` }, csrf: false })).status, 200, "Only her own keys");
   });
+
+  await test("She can heart a note or letter, or pick one emoji, and the admin desk sees it", async () => {
+    const note = await json(await request("admin/love-notes", { method: "POST", cookie: admin, body: { recipient: "kiriya", title: "react to me", body: "♡", when: { mode: "now" } } }));
+    const react = (path, reaction, cookie = kiriya) => request(`me/${path}/reaction`, { method: "PUT", cookie, body: { reaction } });
+    assert.equal((await json(await react(`notes/${note.note.id}`, "heart"))).note.reaction, "heart");
+    assert.equal((await json(await react(`notes/${note.note.id}`, "🥹"))).note.reaction, "🥹", "An emoji replaces the heart");
+    assert.equal((await json(await request("me/notes", { cookie: kiriya }))).notes.find((item) => item.id === note.note.id).reaction, "🥹");
+    const desk = (await json(await request("admin/love-notes", { cookie: admin }))).notes.find((item) => item.id === note.note.id);
+    assert.equal(desk.reaction, "🥹");
+    assert.ok(desk.reactedAt);
+    for (const reaction of ["hi", "🥹🥹", "<3", "", 3]) assert.equal((await react(`notes/${note.note.id}`, reaction)).status, 400, `rejects ${JSON.stringify(reaction)}`);
+    assert.equal((await react(`notes/${note.note.id}`, "heart", admin)).status, 404, "The admin can't react to her notes");
+    const future = await json(await request("admin/love-notes", { method: "POST", cookie: admin, body: { recipient: "kiriya", title: "not yet", body: "later", when: { mode: "at", at: new Date(Date.now() + 3_600_000).toISOString() } } }));
+    assert.equal((await react(`notes/${future.note.id}`, "heart")).status, 404, "A note can't be reacted to before it arrives");
+    const cleared = await json(await react(`notes/${note.note.id}`, null));
+    assert.equal(cleared.note.reaction, null);
+    assert.equal((await db.select().from(schema.loveNotes).where(eq(schema.loveNotes.id, note.note.id)))[0].reactedAt, null);
+
+    const letter = await json(await request("admin/letters", { method: "POST", cookie: admin, body: { kind: "note", title: "a letter to heart", body: "hi" } }));
+    const sealed = await json(await request("admin/letters", { method: "POST", cookie: admin, body: { kind: "open_when", title: "sealed", body: "hi", unlockAt: new Date(Date.now() + 86_400_000).toISOString() } }));
+    assert.deepEqual(await json(await react(`letters/${letter.id}`, "heart")), { id: letter.id, reaction: "heart" });
+    assert.equal((await json(await request("me/letters", { cookie: kiriya }))).letters.find((item) => item.id === letter.id).reaction, "heart");
+    assert.equal((await json(await request("me/letters", { cookie: admin }))).letters.find((item) => item.id === letter.id).reaction, "heart", "The admin preview shows her reaction");
+    assert.equal((await json(await react(`letters/${letter.id}`, "😭", admin), 403)).error, "preview_only", "The admin preview can't change it");
+    assert.equal((await react(`letters/${sealed.id}`, "heart")).status, 404, "A sealed letter can't be reacted to");
+    assert.equal((await react("letters/not-a-letter", "heart")).status, 404);
+    assert.equal((await json(await request("admin/letters", { cookie: admin }))).find((item) => item.id === letter.id).reaction, "heart");
+  });
+
+  await test("The admin can leave little notes on her doodles; she sees them, and opening one marks them seen", async () => {
+    const [doodle] = await db.insert(schema.artworks).values({ url: "/api/uploads/media?path=art/noted.png", prompt: "a cat", width: 400, height: 400 }).returning();
+    assert.equal((await request("admin/artworks", { cookie: kiriya })).status, 401);
+    assert.ok((await json(await request("admin/artworks", { cookie: admin }))).artworks.some((art) => art.id === doodle.id));
+    const quiet = await json(await request(`admin/artworks/${doodle.id}/notes`, { method: "POST", cookie: admin, body: { body: "the whiskers!!" } }));
+    assert.equal(quiet.announcement, null);
+    const loud = await json(await request(`admin/artworks/${doodle.id}/notes`, { method: "POST", cookie: admin, body: { body: "framing this one", notify: true } }));
+    assert.equal(loud.announcement.note.recipient, "kiriya");
+    assert.equal(loud.announcement.note.link, `/world?gallery=1&doodle=${doodle.id}#play-desk`);
+    assert.ok(loveNotes.isNoteLink(loud.announcement.note.link));
+    assert.equal(loud.announcement.note.body, "on “a cat”: framing this one");
+    for (const body of [{ body: "" }, { body: "x".repeat(301) }]) assert.equal((await request(`admin/artworks/${doodle.id}/notes`, { method: "POST", cookie: admin, body })).status, 400);
+    assert.equal((await request("admin/artworks/00000000-0000-4000-8000-000000000000/notes", { method: "POST", cookie: admin, body: { body: "hi" } })).status, 404);
+
+    const gallery = async (cookie = kiriya) => (await json(await request("me/artworks", { cookie }))).artworks.find((art) => art.id === doodle.id);
+    assert.deepEqual((await gallery()).notes.map((note) => [note.body, note.seenAt]), [["the whiskers!!", null], ["framing this one", null]]);
+    assert.deepEqual(await json(await request(`me/artworks/${doodle.id}/notes/seen`, { method: "POST", cookie: admin, body: {} })), { seen: 0 });
+    assert.equal((await gallery(admin)).notes[0].seenAt, null, "The admin preview leaves them new for her");
+    assert.deepEqual(await json(await request(`me/artworks/${doodle.id}/notes/seen`, { method: "POST", cookie: kiriya, body: {} })), { seen: 2 });
+    assert.ok((await gallery()).notes.every((note) => note.seenAt));
+
+    const reactToDoodle = (id, reaction, cookie = admin) => request(`admin/artworks/${id}/reaction`, { method: "PUT", cookie, body: { reaction } });
+    assert.deepEqual(await json(await reactToDoodle(doodle.id, "heart")), { id: doodle.id, reaction: "heart" });
+    assert.equal((await gallery()).reaction, "heart", "She sees the heart in her gallery");
+    assert.equal((await json(await reactToDoodle(doodle.id, "🥰"))).reaction, "🥰", "An emoji replaces the heart");
+    assert.equal((await json(await request("admin/artworks", { cookie: admin }))).artworks.find((art) => art.id === doodle.id).reaction, "🥰");
+    assert.equal((await reactToDoodle(doodle.id, "heart", kiriya)).status, 401, "Only the admin reacts to her doodles");
+    for (const reaction of ["hi", "🥰🥰", ""]) assert.equal((await reactToDoodle(doodle.id, reaction)).status, 400, `rejects ${JSON.stringify(reaction)}`);
+    assert.equal((await reactToDoodle("00000000-0000-4000-8000-000000000000", "heart")).status, 404);
+    assert.equal((await json(await reactToDoodle(doodle.id, null))).reaction, null);
+    assert.equal((await db.select().from(schema.artworks).where(eq(schema.artworks.id, doodle.id)))[0].reactedAt, null);
+
+    await json(await request(`admin/artworks/notes/${quiet.note.id}`, { method: "DELETE", cookie: admin }));
+    assert.equal((await request(`admin/artworks/notes/${quiet.note.id}`, { method: "DELETE", cookie: admin })).status, 404);
+    assert.deepEqual((await gallery()).notes.map((note) => note.body), ["framing this one"]);
+    await json(await request(`me/artworks/${doodle.id}`, { method: "DELETE", cookie: kiriya }));
+    assert.equal((await db.select().from(schema.artworkNotes).where(eq(schema.artworkNotes.artworkId, doodle.id))).length, 0, "Deleting a doodle takes its notes with it");
+  });
 } finally {
   await client.close();
 }

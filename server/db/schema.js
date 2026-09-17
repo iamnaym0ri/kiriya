@@ -138,6 +138,9 @@ export const letters = pgTable("letters", {
   openWhen: text("open_when"),
   unlockAt: timestamp("unlock_at", { withTimezone: true }),
   openedAt: timestamp("opened_at", { withTimezone: true }),
+  // Kiriya's reaction: "heart" or one emoji. The admin preview can't set it.
+  reaction: text("reaction"),
+  reactedAt: timestamp("reacted_at", { withTimezone: true }),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
@@ -204,6 +207,9 @@ export const loveNotes = pgTable(
     pushResult: jsonb("push_result"),
     sentAt: timestamp("sent_at", { withTimezone: true }),
     openedAt: timestamp("opened_at", { withTimezone: true }),
+    // The recipient's reaction: "heart" or one emoji.
+    reaction: text("reaction"),
+    reactedAt: timestamp("reacted_at", { withTimezone: true }),
     createdAt: createdAt(),
   },
   (t) => [index("love_notes_recipient_send_at").on(t.recipient, t.sendAt), index("love_notes_status_send_at").on(t.status, t.sendAt)],
@@ -228,8 +234,25 @@ export const artworks = pgTable("artworks", {
   prompt: text("prompt"),
   width: integer("width"),
   height: integer("height"),
+  // The admin's reaction to her doodle: "heart" or one emoji.
+  reaction: text("reaction"),
+  reactedAt: timestamp("reacted_at", { withTimezone: true }),
   createdAt: createdAt(),
 });
+
+// Little notes the admin leaves on her saved doodles. They show beside the doodle in her gallery;
+// `seen_at` is set the first time she opens that doodle.
+export const artworkNotes = pgTable(
+  "artwork_notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    artworkId: uuid("artwork_id").notNull().references(() => artworks.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    seenAt: timestamp("seen_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("artwork_notes_artwork_created").on(t.artworkId, t.createdAt)],
+);
 
 export const cosplayProjects = pgTable("cosplay_projects", {
   id: uuid("id").primaryKey().defaultRandom(),

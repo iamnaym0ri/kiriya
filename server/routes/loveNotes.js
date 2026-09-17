@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getDb, schema } from "../db/client.js";
 import { notificationSettings, qstashConfigured } from "../push/planner.js";
 import { pushConfigured } from "../push/webpush.js";
+import { isReaction } from "../../shared/reactions.js";
 import {
   NOTE_BODY_MAX,
   NOTE_KINDS,
@@ -12,6 +13,7 @@ import {
   deliverLoveNote,
   inbox,
   openLoveNote,
+  reactToLoveNote,
   recentLoveNotes,
   scheduleLoveNote,
   surpriseTime,
@@ -115,5 +117,16 @@ meLoveNoteRoutes.post("/:id/open", async (c) => {
   const id = c.req.param("id");
   if (!z.string().uuid().safeParse(id).success) return c.json({ error: "not_found", message: "That note couldn’t be found." }, 404);
   const note = await openLoveNote(await getDb(), c.get("session").role, id);
+  return note ? c.json({ note }) : c.json({ error: "not_found", message: "That note couldn’t be found." }, 404);
+});
+
+export const reactionBody = z.object({ reaction: z.string().refine(isReaction).nullable() }).strict();
+
+meLoveNoteRoutes.put("/:id/reaction", async (c) => {
+  const id = c.req.param("id");
+  if (!z.string().uuid().safeParse(id).success) return c.json({ error: "not_found", message: "That note couldn’t be found." }, 404);
+  const parsed = reactionBody.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_reaction", message: "A heart or one emoji, please." }, 400);
+  const note = await reactToLoveNote(await getDb(), c.get("session").role, id, parsed.data.reaction);
   return note ? c.json({ note }) : c.json({ error: "not_found", message: "That note couldn’t be found." }, 404);
 });

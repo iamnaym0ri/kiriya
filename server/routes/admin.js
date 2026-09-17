@@ -15,7 +15,9 @@ import { pushConfigured, sendToSubscribers } from "../push/webpush.js";
 import { COLLECTION_VERSION } from "../content/collection.js";
 import { kiriya } from "../content/kiriya.js";
 import { publicProfileDefaults } from "../content/publicProfile.js";
-import { sendOrSchedule } from "./loveNotes.js";
+import { reactionBody, sendOrSchedule } from "./loveNotes.js";
+import { ARTWORK_NOTE_MAX, addArtworkNote, artworkLink, artworksWithNotes, deleteArtworkNote, reactToArtwork } from "../lib/artworkNotes.js";
+import { notificationPreview } from "../lib/loveNotes.js";
 
 export const adminRoutes = new Hono();
 
@@ -293,6 +295,53 @@ adminRoutes.delete("/letters/:id", async (c) => {
     .delete(schema.letters)
     .where(eq(schema.letters.id, c.req.param("id")));
   return c.json({ ok: true });
+});
+
+// ---------- her doodles, and little notes left on them ----------
+
+adminRoutes.get("/artworks", async (c) => c.json({ artworks: await artworksWithNotes(await getDb()) }));
+
+const artworkNoteBody = z.object({
+  body: z.string().trim().min(1).max(ARTWORK_NOTE_MAX),
+  // Let her phone know, with a link that opens the doodle.
+  notify: z.boolean().optional(),
+});
+
+adminRoutes.post("/artworks/:id/notes", async (c) => {
+  const id = c.req.param("id");
+  if (!z.string().uuid().safeParse(id).success) return c.json({ error: "not_found", message: "That doodle is gone." }, 404);
+  const parsed = artworkNoteBody.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_note", message: `A little note, up to ${ARTWORK_NOTE_MAX} characters.` }, 400);
+  const db = await getDb();
+  const added = await addArtworkNote(db, id, parsed.data.body);
+  if (!added) return c.json({ error: "not_found", message: "That doodle is gone." }, 404);
+  const announcement = parsed.data.notify
+    ? await sendOrSchedule(db, {
+        recipient: "kiriya",
+        kind: "note",
+        title: "a little note on your doodle ✎",
+        body: notificationPreview(`on “${added.artwork.prompt || "a little untitled thing"}”: ${added.note.body}`, 900),
+        link: artworkLink(id),
+        sendAt: new Date(),
+      })
+    : null;
+  return c.json({ note: added.note, announcement });
+});
+
+// A heart or one emoji on her doodle. She sees it beside the doodle in her gallery.
+adminRoutes.put("/artworks/:id/reaction", async (c) => {
+  const id = c.req.param("id");
+  if (!z.string().uuid().safeParse(id).success) return c.json({ error: "not_found", message: "That doodle is gone." }, 404);
+  const parsed = reactionBody.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_reaction", message: "A heart or one emoji, please." }, 400);
+  const artwork = await reactToArtwork(await getDb(), id, parsed.data.reaction);
+  return artwork ? c.json(artwork) : c.json({ error: "not_found", message: "That doodle is gone." }, 404);
+});
+
+adminRoutes.delete("/artworks/notes/:noteId", async (c) => {
+  const noteId = c.req.param("noteId");
+  const note = z.string().uuid().safeParse(noteId).success ? await deleteArtworkNote(await getDb(), noteId) : null;
+  return note ? c.json({ ok: true }) : c.json({ error: "not_found", message: "That note is already gone." }, 404);
 });
 
 // ---------- notes sprinkled into days ----------

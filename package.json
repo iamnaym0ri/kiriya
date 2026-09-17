@@ -16,7 +16,7 @@
     "db:migrate": "node scripts/migrate.mjs",
     "check:leaks": "node scripts/check-leaks.mjs",
     "check:production": "node scripts/check-production-config.mjs",
-    "test": "node --test scripts/test-redesign.mjs scripts/test-production.mjs scripts/test-personal-world.mjs scripts/test-little-games.mjs scripts/test-doodle.mjs scripts/test-checkin.mjs scripts/test-feeds.mjs scripts/test-note-jar.mjs scripts/test-feeds-continuation.mjs scripts/test-feed-presentation.mjs scripts/test-feed-sources-anime.mjs scripts/test-feed-sources-social.mjs scripts/test-feed-sources-music.mjs scripts/test-feed-sources-shop.mjs scripts/test-feed-sources-events.mjs",
+    "test": "node --test scripts/test-lilac-palette.mjs scripts/test-redesign.mjs scripts/test-production.mjs scripts/test-personal-world.mjs scripts/test-little-games.mjs scripts/test-doodle.mjs scripts/test-checkin.mjs scripts/test-feeds.mjs scripts/test-note-jar.mjs scripts/test-feeds-continuation.mjs scripts/test-feed-presentation.mjs scripts/test-feed-sources-anime.mjs scripts/test-feed-sources-social.mjs scripts/test-feed-sources-music.mjs scripts/test-feed-sources-shop.mjs scripts/test-feed-sources-events.mjs",
     "verify:feeds": "node scripts/verify-feed-foundation.mjs",
     "verify:redesign": "node scripts/verify-redesign.mjs",
     "verify:strawpage": "node scripts/verify-strawpage.mjs",

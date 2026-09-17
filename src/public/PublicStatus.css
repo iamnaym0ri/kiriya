@@ -14,19 +14,19 @@
 .profile-today__pronouns { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
 .profile-today__updated { margin-top: 10px; text-align: right; font: 15px/1 var(--font-hand); color: var(--theme-muted); }
 
-/* Mood and presentation tiles take the colour of what she picked. */
-.profile-today__hero[data-tone="happy"] { --tone: #96477f; --tone-soft: #f6dcee; --tone-line: #ddb3d1; }
-.profile-today__hero[data-tone="content"] { --tone: #4a7362; --tone-soft: #dcede3; --tone-line: #b9d3c5; }
-.profile-today__hero[data-tone="excited"] { --tone: #8a5719; --tone-soft: #f7e7c4; --tone-line: #e6cc96; }
-.profile-today__hero[data-tone="sad"] { --tone: #4a6897; --tone-soft: #dde7f6; --tone-line: #b8cae6; }
-.profile-today__hero[data-tone="angry"] { --tone: #a23d4c; --tone-soft: #f6dadd; --tone-line: #e5b2b8; }
-.profile-today__hero[data-tone="anxious"] { --tone: #5a60a2; --tone-soft: #e0e2f7; --tone-line: #c0c4e8; }
-.profile-today__hero[data-tone="overwhelmed"] { --tone: #666472; --tone-soft: #e8e8ec; --tone-line: #cbcbd3; }
-.profile-today__hero[data-tone="playful"] { --tone: #b03d68; --tone-soft: #fad9e5; --tone-line: #ecb1c5; }
-.profile-today__hero[data-tone="rose"] { --tone: #9a4b78; --tone-soft: #f5dcea; --tone-line: #e0b5cf; }
+/* Mood and presentation tiles take the lilac tint of what she picked, the same shades as her world (daily-style.css). */
+.profile-today__hero[data-tone="happy"] { --tone: #844b7f; --tone-soft: #f1e0f1; --tone-line: #dfbadd; }
+.profile-today__hero[data-tone="content"] { --tone: #70597d; --tone-soft: #e9e3ef; --tone-line: #cfc1da; }
+.profile-today__hero[data-tone="excited"] { --tone: #884b77; --tone-soft: #f2e0ee; --tone-line: #e2b9d7; }
+.profile-today__hero[data-tone="sad"] { --tone: #6c5985; --tone-soft: #e8e4f2; --tone-line: #ccc2e0; }
+.profile-today__hero[data-tone="angry"] { --tone: #8a4a71; --tone-soft: #f4e0ec; --tone-line: #e4b9d3; }
+.profile-today__hero[data-tone="anxious"] { --tone: #685a88; --tone-soft: #e7e4f3; --tone-line: #c9c3e2; }
+.profile-today__hero[data-tone="overwhelmed"] { --tone: #6e5c73; --tone-soft: #e9e4ec; --tone-line: #cec3d3; }
+.profile-today__hero[data-tone="playful"] { --tone: #91466c; --tone-soft: #f7deeb; --tone-line: #eab7d0; }
+.profile-today__hero[data-tone="rose"] { --tone: #974875; --tone-soft: #f5dcea; --tone-line: #e0b5cf; }
 .profile-today__hero[data-tone="iris"] { --tone: #6f4f92; --tone-soft: #e8dcf4; --tone-line: #cfb9e4; }
-.profile-today__hero[data-tone="night"] { --tone: #4b5584; --tone-soft: #dfe2f1; --tone-line: #bec4de; }
-.profile-today__hero[data-tone="cloud"] { --tone: #62677a; --tone-soft: #e7e8ee; --tone-line: #cdd0da; }
+.profile-today__hero[data-tone="night"] { --tone: #614e7d; --tone-soft: #e5e0ef; --tone-line: #c9c0da; }
+.profile-today__hero[data-tone="cloud"] { --tone: #6e627a; --tone-soft: #ece5f3; --tone-line: #d4cddb; }
 
 .battery-meter { display: grid; gap: 6px; margin-top: 12px; padding: 13px 14px 12px; border-radius: 12px; background: #fffaffcc; border: 1.5px solid var(--theme-line); }
 .battery-meter__head { display: flex; align-items: center; justify-content: space-between; }

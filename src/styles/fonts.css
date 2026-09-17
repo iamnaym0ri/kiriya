@@ -20,6 +20,16 @@
   unicode-range: U+1F60A, U+1F60C, U+1F929, U+1F97A, U+1F624, U+1F630, U+1F635, U+1F4AB, U+1F60F, U+200D;
 }
 
+/* The eight reaction emoji offered on notes and letters, and 💌 for doodle notes, for devices without a colour emoji face. */
+@font-face {
+  font-family: "Reaction Emoji";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/reaction-emoji.woff2") format("woff2");
+  unicode-range: U+2728, U+1F48C, U+1F602, U+1F62D, U+1F633, U+1F92D, U+1F970, U+1F979, U+1FAF6;
+}
+
 /*
   Latin faces load up front. They're declared here (not via @fontsource's latin-*.css) because those
   files omit unicode-range, which would make the Latin file claim every character and hide the

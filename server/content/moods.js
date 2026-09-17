@@ -54,14 +54,14 @@ export const ADDRESS_OPTIONS = {
 };
 
 export const FEELINGS = [
-  { key: "happy", label: "Happy", emoji: "😊", hint: "life is kinda cute rn", response: "orchid pink petals for a good little day ♡" },
-  { key: "content", label: "Content", emoji: "😌", hint: "comfy. no plot twists pls", response: "soft sage and slow little leaves. absolutely no rush." },
-  { key: "excited", label: "Excited", emoji: "🤩", hint: "physically cannot be normal", response: "golden hour confetti. big main-character energy." },
-  { key: "sad", label: "Sad", emoji: "🥺", hint: "need a hug, not a lecture", response: "soft blue and gentle rain. you don’t have to perform happy here." },
-  { key: "angry", label: "Angry", emoji: "😤", hint: "my patience has left the chat", response: "a rosy red glow. your feelings get room, too." },
-  { key: "anxious", label: "Anxious", emoji: "😰", hint: "brain has 47 tabs open", response: "calm periwinkle, slow little bubbles. one thing at a time." },
-  { key: "overwhelmed", label: "Overwhelmed", emoji: "😵‍💫", hint: "everything is a bit too loud", response: "quiet grey, just a few soft lights. less to take in." },
-  { key: "playful", label: "Playful", emoji: "😏", hint: "a little menace, respectfully", response: "candy pink mischief, hearts bouncing about." },
+  { key: "happy", label: "Happy", emoji: "😊", hint: "life is kinda cute rn", response: "lilac with an orchid-pink blush, petals for a good little day ♡" },
+  { key: "content", label: "Content", emoji: "😌", hint: "comfy. no plot twists pls", response: "a softer, calmer lilac and slow little leaves. absolutely no rush." },
+  { key: "excited", label: "Excited", emoji: "🤩", hint: "physically cannot be normal", response: "lilac warmed up pink, with confetti stars. big main-character energy." },
+  { key: "sad", label: "Sad", emoji: "🥺", hint: "need a hug, not a lecture", response: "lilac with a little blue in it, and gentle rain. you don’t have to perform happy here." },
+  { key: "angry", label: "Angry", emoji: "😤", hint: "my patience has left the chat", response: "a rosier lilac glow. your feelings get room, too." },
+  { key: "anxious", label: "Anxious", emoji: "😰", hint: "brain has 47 tabs open", response: "lilac leaning periwinkle, slow little bubbles. one thing at a time." },
+  { key: "overwhelmed", label: "Overwhelmed", emoji: "😵‍💫", hint: "everything is a bit too loud", response: "a hushed, greyer lilac, just a few soft lights. less to take in." },
+  { key: "playful", label: "Playful", emoji: "😏", hint: "a little menace, respectfully", response: "lilac with a candy-pink wink, hearts bouncing about." },
 ];
 export const feelingByKey = Object.fromEntries(FEELINGS.map(feeling => [feeling.key, feeling]));
 export const ENERGY_LEVELS = [

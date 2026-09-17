@@ -104,3 +104,20 @@
   .doodle-keepsakes__links .doodle-link:first-child { font-size: 20px; }
   .doodle-link { font-size: 11px; }
 }
+.doodle-keepsakes .doodle-keepsakes__new { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; font: 19px/1.2 var(--font-hand); color: #a05d8a; }
+.doodle-emoji { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Reaction Emoji", sans-serif; font-style: normal; }
+.doodle-noted[data-new="true"] { display: inline-block; animation: doodle-note-nudge 2.4s ease-in-out 3; }
+.doodle-notes { display: grid; gap: 10px; list-style: none; padding: 0; margin: 4px 0 6px; }
+.doodle-note { position: relative; padding: 14px 16px 10px; background: #fffdf6; border: 1px solid #e8d6dc; box-shadow: 2px 3px 0 #e9d9e6; rotate: -.6deg; overflow-wrap: anywhere; }
+.doodle-note:nth-child(even) { rotate: .7deg; }
+.doodle-note::before { content: ""; position: absolute; top: -8px; left: 50%; translate: -50% 0; width: 58px; height: 16px; background: color-mix(in srgb, var(--theme-soft, #e4d5ec) 80%, transparent); rotate: -3deg; }
+.doodle-note p { margin: 0; font: 22px/1.25 var(--font-hand); color: #6c4b74; white-space: pre-line; }
+.doodle-note small { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 6px; font: 17px var(--font-hand); color: #9a7599; }
+.doodle-note__new { padding: 1px 7px; border-radius: 999px; background: #6c4b74; color: #fff9fd; font: 10px var(--font-ui); letter-spacing: .06em; }
+@keyframes doodle-note-nudge { 0%, 70%, 100% { rotate: 0deg; } 80% { rotate: -12deg; } 90% { rotate: 10deg; } }
+@media (prefers-reduced-motion: reduce) { .doodle-noted[data-new="true"] { animation: none; } }
+html[data-little-motion="off"] .doodle-noted[data-new="true"] { animation: none; }
+.doodle-reacted { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Reaction Emoji", sans-serif; font-style: normal; }
+.doodle-reacted[data-heart="true"] { font-family: var(--font-hand); color: #b9719f; }
+.gallery-dialog .doodle-reaction { display: flex; align-items: center; justify-content: center; gap: 6px; font: 19px/1.2 var(--font-hand); color: #9a7599; }
+.gallery-dialog .doodle-reaction .doodle-reacted { font-size: 22px; }

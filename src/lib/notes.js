@@ -35,3 +35,23 @@ export function useOpenNote() {
       }),
   });
 }
+
+/** Hearts or emoji-reacts to a note. It shows straight away; a failed save puts the old one back. */
+export function useReactToNote() {
+  const queryClient = useQueryClient();
+  const patch = (id, reaction) =>
+    queryClient.setQueryData(notesKey, (old) => old && { ...old, notes: old.notes.map((item) => (item.id === id ? { ...item, reaction } : item)) });
+  return useMutation({
+    mutationFn: ({ id, reaction }) => api(`/me/notes/${id}/reaction`, { method: "PUT", body: { reaction } }),
+    onMutate: async ({ id, reaction }) => {
+      await queryClient.cancelQueries({ queryKey: notesKey });
+      const previous = queryClient.getQueryData(notesKey)?.notes.find((item) => item.id === id)?.reaction ?? null;
+      patch(id, reaction);
+      return { previous };
+    },
+    onError: (_error, { id }, context) => {
+      patch(id, context?.previous ?? null);
+      queryClient.invalidateQueries({ queryKey: notesKey });
+    },
+  });
+}

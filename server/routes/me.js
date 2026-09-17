@@ -1,6 +1,6 @@
 import { isUploadUrl } from "../lib/media.js";
 import { Hono } from "hono";
-import { desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, schema } from "../db/client.js";
 import { env } from "../env.js";
@@ -24,9 +24,10 @@ import { apothecaryRoutes } from "./apothecary.js";
 import { noteJarRoutes } from "./noteJar.js";
 import { maomaoRoutes } from "./maomao.js";
 import { passphraseRoutes } from "./passphrase.js";
-import { meLoveNoteRoutes } from "./loveNotes.js";
+import { meLoveNoteRoutes, reactionBody } from "./loveNotes.js";
 import { MAX_ACTIVE_KEYS, createDeviceKey, listDeviceKeys, revokeDeviceKey } from "../lib/deviceKeys.js";
 import { scriptableWidget } from "../content/widgetScript.js";
+import { artworksWithNotes, markArtworkNotesSeen } from "../lib/artworkNotes.js";
 
 export const meRoutes = new Hono();
 meRoutes.route("/note-jar", noteJarRoutes);
@@ -310,14 +311,14 @@ const artworkBody = z.object({
   height: z.number().int().positive().max(8000).nullable().optional(),
 });
 
-meRoutes.get("/artworks", async (c) => {
-  const db = await getDb();
-  const rows = await db
-    .select()
-    .from(schema.artworks)
-    .orderBy(desc(schema.artworks.createdAt))
-    .limit(200);
-  return c.json({ artworks: rows });
+meRoutes.get("/artworks", async (c) => c.json({ artworks: await artworksWithNotes(await getDb()) }));
+
+// Opening a doodle marks its notes as seen. The admin's preview leaves them new for her.
+meRoutes.post("/artworks/:id/notes/seen", async (c) => {
+  const id = c.req.param("id");
+  if (!z.string().uuid().safeParse(id).success) return c.json({ error: "not_found", message: "That artwork isn’t in your gallery." }, 404);
+  if (c.get("session").role !== "kiriya") return c.json({ seen: 0 });
+  return c.json({ seen: await markArtworkNotesSeen(await getDb(), id) });
 });
 
 meRoutes.post("/artworks", async (c) => {
@@ -464,6 +465,7 @@ meRoutes.get("/letters", async (c) => {
         openWhen: l.openWhen,
         unlockAt: l.unlockAt,
         openedAt: l.openedAt,
+        reaction: l.reaction,
         locked: Boolean(locked),
         body: locked ? null : l.body,
       };
@@ -495,6 +497,33 @@ meRoutes.post("/letters/:id/open", async (c) => {
       .set({ openedAt: new Date() })
       .where(eq(schema.letters.id, id));
   return c.json({ ok: true });
+});
+
+// Letters are hers, so only her own session can react; the admin preview shows her reaction as is.
+meRoutes.put("/letters/:id/reaction", async (c) => {
+  const id = c.req.param("id");
+  if (!z.string().uuid().safeParse(id).success)
+    return c.json({ error: "not_found", message: "That letter doesn't exist." }, 404);
+  if (c.get("session").role !== "kiriya")
+    return c.json({ error: "preview_only", message: "Reactions on letters are Kiriya’s to give." }, 403);
+  const parsed = reactionBody.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success)
+    return c.json({ error: "bad_reaction", message: "A heart or one emoji, please." }, 400);
+  const { reaction } = parsed.data;
+  const now = new Date();
+  const [letter] = await (await getDb())
+    .update(schema.letters)
+    .set({ reaction, reactedAt: reaction ? now : null })
+    .where(
+      and(
+        eq(schema.letters.id, id),
+        or(isNull(schema.letters.unlockAt), lte(schema.letters.unlockAt, now)),
+      ),
+    )
+    .returning({ id: schema.letters.id, reaction: schema.letters.reaction });
+  return letter
+    ? c.json(letter)
+    : c.json({ error: "not_found", message: "That letter isn’t open yet." }, 404);
 });
 
 // Old entry points now read the same published editions as the main feed sections.

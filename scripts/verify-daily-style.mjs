@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { chromium } from "playwright";
+import { oklch } from "culori";
 import { checkinCopy } from "../server/lib/checkin.js";
 import { ADDRESS_OPTIONS } from "../server/content/moods.js";
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:5173";
@@ -103,7 +104,10 @@ try {
     assert.equal((await theme()).feeling,feeling.key); assert.equal((await theme()).key,'iris');
     assert.match(await page.locator('.daily-style-button .sr-only').innerText(),/he\/they/);
     const actual=await paints(); emotionColors[feeling.key]=actual;
-    assert(rgba(actual.accent).some((v,i)=>Math.abs(v-rgba(baseline.accent)[i])>=30),'Each feeling brings a clearly different colour family');
+    const [r,g,b]=rgba(actual.accent).map(v=>v/255), tint=oklch({mode:'rgb',r,g,b});
+    assert(rgba(actual.accent).some((v,i)=>Math.abs(v-rgba(baseline.accent)[i])>=3),'Each feeling tints the lilac a little');
+    assert(rgba(actual.accent).every((v,i)=>Math.abs(v-rgba(baseline.accent)[i])<=40),'The tint stays nuanced');
+    assert(tint.h>=290 && tint.h<=355 && tint.c>=.03,`${feeling.key} keeps the accent lilac (hue ${tint.h?.toFixed(0)})`);
     assert(rgba(actual.paper).every(v=>v>=235),'Paper stays light enough to read on');
   }
   assert.equal(new Set(Object.values(emotionColors).map(color=>color.accent)).size,8);
@@ -129,7 +133,7 @@ try {
   await cdp.detach();
   await page.keyboard.press('Escape');
   await page.reload(); await page.waitForFunction(()=>document.documentElement.dataset.feeling==='happy');
-  checks.push('All eight moods save independently of presentation, address and energy, with distinct but small palette shifts. Battery endpoints, keyboard adjustment, faces and sarcastic comments respond correctly; reload restores the mood.');
+  checks.push('All eight moods save independently of presentation, address and energy, each a distinct, nuanced tint that stays lilac. Battery endpoints, keyboard adjustment, faces and sarcastic comments respond correctly; reload restores the mood.');
   await choose("Masc", "they/them", 0); assert.equal((await theme()).key, "night"); assert.equal((await theme()).energy, "0");
   assert.match(await page.locator(".daily-style-button .sr-only").innerText(), /Masc, they\/them/);
   const low = (await theme()).filter;

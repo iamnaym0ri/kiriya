@@ -158,3 +158,17 @@
   justify-self: stretch;
   margin-top: var(--s-2);
 }
+
+.envelope__seal[data-reaction="emoji"] {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Reaction Emoji", sans-serif;
+  font-size: 22px;
+}
+
+.envelope__seal[data-reaction="heart"] {
+  font-size: 22px;
+}
+
+.letter-paper .reaction-bar {
+  padding-top: var(--s-3);
+  border-top: 1px dashed var(--line);
+}

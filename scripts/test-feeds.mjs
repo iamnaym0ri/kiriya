@@ -163,15 +163,14 @@ try {
       await readFile("server/db/migrations/0000_init.sql"),
     );
     await migrate(db, { migrationsFolder: tmp });
-    await db.insert(s.letters).values({
-      kind: "note",
-      author: "giver",
-      title: "keep letter",
-      body: "synthetic migration fixture",
-    });
-    await db
-      .insert(s.artworks)
-      .values({ url: "/api/uploads/file/art-0123456789abcdef.png" });
+    // Raw SQL: the current schema's letters and artworks have columns this first migration doesn't create yet.
+    await client.query(
+      "insert into letters (kind, author, title, body) values ($1, $2, $3, $4)",
+      ["note", "giver", "keep letter", "synthetic migration fixture"],
+    );
+    await client.query("insert into artworks (url) values ($1)", [
+      "/api/uploads/file/art-0123456789abcdef.png",
+    ]);
     await db
       .insert(s.songs)
       .values({ kind: "link", url: "https://example.invalid/test-song" });

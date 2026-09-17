@@ -132,6 +132,7 @@ const inboxFields = (note) => ({
   link: note.link,
   at: note.sendAt,
   openedAt: note.openedAt,
+  reaction: note.reaction,
 });
 
 /** Notes that have reached this person, newest first. */
@@ -160,6 +161,16 @@ export async function openLoveNote(db, recipient, id, now = new Date()) {
     return inboxFields(opened ?? note);
   }
   return inboxFields(note);
+}
+
+/** Hearts (or one emoji) a note that has reached this person; null takes the reaction back. */
+export async function reactToLoveNote(db, recipient, id, reaction, now = new Date()) {
+  const [note] = await db
+    .update(schema.loveNotes)
+    .set({ reaction, reactedAt: reaction ? now : null })
+    .where(and(eq(schema.loveNotes.id, id), eq(schema.loveNotes.recipient, recipient), delivered(now)))
+    .returning();
+  return note ? inboxFields(note) : null;
 }
 
 /** The admin desk's view: every recipient, upcoming and past. */

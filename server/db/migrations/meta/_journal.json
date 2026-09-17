@@ -29,6 +29,20 @@
       "when": 1789609185956,
       "tag": "0003_personal_world",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789654995993,
+      "tag": "0004_reactions_and_doodle_notes",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789663051863,
+      "tag": "0005_doodle_reactions",
+      "breakpoints": true
     }
   ]
 }

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import { useNotes, useOpenNote } from "../../lib/notes.js";
+import { useNotes, useOpenNote, useReactToNote } from "../../lib/notes.js";
+import { useSession } from "../../lib/session.js";
 import { useToday } from "../../lib/world.js";
 import { Icon, Modal } from "../../shared/WorldPrimitives.jsx";
 import PageLoader from "../../shared/PageLoader.jsx";
 import MaomaoMascot from "../mascot/MaomaoMascot.jsx";
+import ReactionBar, { ReactionMark } from "../../shared/ReactionBar.jsx";
 import "./NotesPage.css";
 
 const KIND = {
@@ -17,6 +19,8 @@ const when = new Intl.DateTimeFormat("en-SG", { day: "numeric", month: "long", h
 export default function NotesPage() {
   const notes = useNotes();
   const open = useOpenNote();
+  const react = useReactToNote();
+  const session = useSession();
   const today = useToday();
   const [params, setParams] = useSearchParams();
   const [reading, setReading] = useState(null);
@@ -35,6 +39,7 @@ export default function NotesPage() {
   }, [params, notes.data]);
 
   function read(id) {
+    react.reset();
     setReading(id);
     if (!list.find((item) => item.id === id)?.openedAt) open.mutate(id);
   }
@@ -75,6 +80,7 @@ export default function NotesPage() {
                   <span className="notes-card__preview">{item.body}</span>
                 </span>
                 {!item.openedAt && <span className="notes-card__new">new</span>}
+                <ReactionMark reaction={item.reaction} className="notes-card__reaction" />
               </button>
             </li>
           ))}
@@ -88,6 +94,13 @@ export default function NotesPage() {
               <p key={i}>{paragraph}</p>
             ))}
             <p className="notes-dialog__signoff">— {today.data?.signature ?? "with love"}</p>
+            <ReactionBar
+              what="this note"
+              reaction={note.reaction}
+              onReact={(reaction) => react.mutate({ id: note.id, reaction })}
+              error={react.isError && react.variables?.id === note.id ? "That reaction didn’t save. Try again?" : null}
+              note={session.data?.role === "admin" ? "Your test note: reacting here tries it out." : null}
+            />
             <div className="notes-dialog__actions">
               {note.link && (
                 <Link className="button-plum" to={note.link} onClick={() => setReading(null)}>
