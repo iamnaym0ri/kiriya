@@ -125,9 +125,18 @@ try {
 
     assert.equal((await request("me/public-preview")).status, 401);
     assert.equal((await json(await request("me/public-preview", { cookie: admin }))).today, null, "The admin's test copy shares nothing yet");
-    await json(await request("me/prefs", { method: "PATCH", cookie: admin, body: { sharing: { presentation: true } } }));
-    const preview = await json(await request("me/public-preview", { cookie: admin }));
-    assert.deepEqual(preview.today.items.map((item) => [item.key, item.value]), [["presentation", "Masc"]]);
+    const adminShares = async (sharing) => {
+      const prefs = await json(await request("me/prefs", { method: "PATCH", cookie: admin, body: { sharing } }));
+      return { prefs, today: (await json(await request("me/public-preview", { cookie: admin }))).today };
+    };
+    const withBattery = await adminShares({ presentation: true });
+    assert.equal(withBattery.prefs.sharing.energy, true, "Settings show the battery switch on");
+    assert.deepEqual(withBattery.today.items.map((item) => item.key), ["presentation", "energy"], "An untouched battery comes along with what she shares");
+    assert.deepEqual((await adminShares({ presentation: false })).today, null, "Sharing nothing hides an untouched battery too");
+    await adminShares({ presentation: true });
+    const withoutBattery = await adminShares({ energy: false });
+    assert.equal(withoutBattery.prefs.sharing.energy, false);
+    assert.deepEqual(withoutBattery.today.items.map((item) => [item.key, item.value]), [["presentation", "Masc"]], "Switched off, the battery stays off");
     assert.deepEqual((await json(await request("public/profile"))).today.items.map((item) => item.key), ["address", "energy"], "The admin's test never reaches visitors");
     assert.equal((await json(await request("me/public-preview", { cookie: kiriya }))).today.items.length, 2);
   });

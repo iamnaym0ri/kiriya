@@ -67,13 +67,24 @@ export async function updatePersonState(db, person, change) {
   throw Object.assign(new Error("Your choices changed at the same moment. Try again."), { status: 409 });
 }
 
+/**
+ * What the public profile may show. Her social battery comes along with whatever else she shares
+ * until she sets that switch herself; switched off, it stays off.
+ */
+function resolveSharing(sharing) {
+  const resolved = { ...SHARING_DEFAULTS, ...sharing };
+  if (sharing && !Object.hasOwn(sharing, "energy"))
+    resolved.energy = SHARING_KEYS.some((key) => key !== "energy" && resolved[key]);
+  return resolved;
+}
+
 /** Preferences as the interface uses them, with defaults filled in. */
 export function resolvePrefs(prefs = {}) {
   return {
     // null: this device keeps its own motion setting until she picks one while unlocked.
     motion: prefs.motion ?? null,
     cornerSmall: prefs.cornerSmall ?? false,
-    sharing: { ...SHARING_DEFAULTS, ...prefs.sharing },
+    sharing: resolveSharing(prefs.sharing),
     sharingChosen: Boolean(prefs.sharing),
     pins: prefs.pins ?? [],
     hints: prefs.hints ?? {},
