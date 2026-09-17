@@ -42,22 +42,28 @@
   --base-soft: #e2e1e8; --base-line: #d1cddc; --base-deep: #51505e;
   --base-wash: #eeeef3;
 }
+/*
+  Each mood brings its own colour family over the lilac base, which stays when no mood is chosen.
+  The blossom photo turns toward the same colour, and the drifting charms change with it
+  (see PlayfulWorld.css). Every palette keeps text at least as readable as the lilac one.
+*/
 :root {
-  --feeling-tint: var(--base-accent);
-  --feeling-paper: var(--base-paper);
+  --feeling-hue: 0deg;
   --feeling-richness: 1;
-  --theme-accent: color-mix(in srgb, var(--base-accent) 92%, var(--feeling-tint));
-  --theme-accent-hover: color-mix(in srgb, var(--base-accent-hover) 92%, var(--feeling-tint));
-  --theme-ink: color-mix(in srgb, var(--base-ink) 97%, var(--feeling-tint));
-  --theme-muted: color-mix(in srgb, var(--base-muted) 96%, var(--feeling-tint));
-  --theme-hand: color-mix(in srgb, var(--base-hand) 93%, var(--feeling-tint));
-  --theme-page: color-mix(in srgb, var(--base-page) 98%, var(--feeling-paper));
-  --theme-paper: color-mix(in srgb, var(--base-paper) 98%, var(--feeling-paper));
-  --theme-notebook: color-mix(in srgb, var(--base-notebook) 99%, var(--feeling-paper));
-  --theme-soft: color-mix(in srgb, var(--base-soft) 94%, var(--feeling-tint));
-  --theme-line: color-mix(in srgb, var(--base-line) 94%, var(--feeling-tint));
-  --theme-deep: color-mix(in srgb, var(--base-deep) 95%, var(--feeling-tint));
-  --scene-wash: color-mix(in srgb, var(--base-wash) 97%, var(--feeling-paper));
+}
+:root[data-feeling] {
+  --theme-accent: color-mix(in srgb, var(--f-accent) 85%, var(--base-accent));
+  --theme-accent-hover: color-mix(in srgb, var(--f-accent-hover) 85%, var(--base-accent-hover));
+  --theme-ink: color-mix(in srgb, var(--f-ink) 85%, var(--base-ink));
+  --theme-muted: color-mix(in srgb, var(--f-muted) 85%, var(--base-muted));
+  --theme-hand: color-mix(in srgb, var(--f-hand) 85%, var(--base-hand));
+  --theme-page: color-mix(in srgb, var(--f-page) 85%, var(--base-page));
+  --theme-paper: color-mix(in srgb, var(--f-paper) 85%, var(--base-paper));
+  --theme-notebook: color-mix(in srgb, var(--f-notebook) 85%, var(--base-notebook));
+  --theme-soft: color-mix(in srgb, var(--f-soft) 85%, var(--base-soft));
+  --theme-line: color-mix(in srgb, var(--f-line) 85%, var(--base-line));
+  --theme-deep: color-mix(in srgb, var(--f-deep) 85%, var(--base-deep));
+  --scene-wash: color-mix(in srgb, var(--f-wash) 85%, var(--base-wash));
 }
 :root:not([data-feeling]) {
   --theme-accent: var(--base-accent);
@@ -73,14 +79,62 @@
   --theme-deep: var(--base-deep);
   --scene-wash: var(--base-wash);
 }
-:root[data-feeling="happy"] { --feeling-tint: #ba839d; --feeling-paper: #fff1db; --feeling-richness: 1.02; }
-:root[data-feeling="content"] { --feeling-tint: #8e9f9a; --feeling-paper: #f2f7ef; --feeling-richness: 0.96; }
-:root[data-feeling="excited"] { --feeling-tint: #b77cba; --feeling-paper: #fff0f9; --feeling-richness: 1.04; }
-:root[data-feeling="sad"] { --feeling-tint: #7c91b5; --feeling-paper: #edf2fc; --feeling-richness: 0.94; }
-:root[data-feeling="angry"] { --feeling-tint: #b5758b; --feeling-paper: #faeaf0; --feeling-richness: 1; }
-:root[data-feeling="anxious"] { --feeling-tint: #8b8fab; --feeling-paper: #eff0fa; --feeling-richness: 0.93; }
-:root[data-feeling="overwhelmed"] { --feeling-tint: #a6a0af; --feeling-paper: #f8f6fa; --feeling-richness: 0.89; }
-:root[data-feeling="playful"] { --feeling-tint: #b378a0; --feeling-paper: #fff0f5; --feeling-richness: 1.02; }
+/* happy: peachy coral, petals drifting down */
+:root[data-feeling="happy"] {
+  --f-accent: #a9503d; --f-accent-hover: #b9604c; --f-ink: #5c3024; --f-muted: #855a4e; --f-hand: #b8644b;
+  --f-page: #fdeee6; --f-paper: #fffaf5; --f-notebook: #fffaf0; --f-soft: #f8d8c9; --f-line: #ecbfa9; --f-deep: #74402f; --f-wash: #fbe8dd;
+  --feeling-hue: 95deg; --feeling-richness: 1;
+  --charm-color: #e39374; --charm-1: "✿"; --charm-2: "☼"; --charm-3: "✧"; --charm-4: "♡";
+}
+/* content: sage green, leaves floating slowly */
+:root[data-feeling="content"] {
+  --f-accent: #4a7362; --f-accent-hover: #5a8372; --f-ink: #2f4a3f; --f-muted: #56705f; --f-hand: #537b69;
+  --f-page: #eaf3ee; --f-paper: #f9fdf9; --f-notebook: #fbfcf6; --f-soft: #d3e6dc; --f-line: #b9d3c5; --f-deep: #33574a; --f-wash: #e6f1ea;
+  --feeling-hue: -130deg; --feeling-richness: .7;
+  --charm-color: #6fa58c; --charm-1: "❦"; --charm-2: "✿"; --charm-3: "❧"; --charm-4: "❀";
+}
+/* excited: golden hour, confetti stars spinning down */
+:root[data-feeling="excited"] {
+  --f-accent: #8a5719; --f-accent-hover: #9a6728; --f-ink: #4f3514; --f-muted: #7c6138; --f-hand: #9e6f25;
+  --f-page: #fbf2e0; --f-paper: #fffbf2; --f-notebook: #fffbee; --f-soft: #f3e0b8; --f-line: #e6cc96; --f-deep: #6b4518; --f-wash: #f9eed6;
+  --feeling-hue: 130deg; --feeling-richness: 1.1;
+  --charm-color: #dca640; --charm-1: "★"; --charm-2: "✦"; --charm-3: "✶"; --charm-4: "✧";
+}
+/* sad: soft blue, gentle rain */
+:root[data-feeling="sad"] {
+  --f-accent: #4a6897; --f-accent-hover: #5a78a7; --f-ink: #2f3f5c; --f-muted: #5b6a84; --f-hand: #5d7cab;
+  --f-page: #e9f0fa; --f-paper: #f8fbff; --f-notebook: #fafbff; --f-soft: #d3e0f3; --f-line: #b8cae6; --f-deep: #34496e; --f-wash: #e4edf9;
+  --feeling-hue: -70deg; --feeling-richness: .85;
+  --charm-color: #7f9fd0; --charm-1: ""; --charm-2: "♡"; --charm-3: ""; --charm-4: "";
+}
+/* angry: rosy red, embers rising */
+:root[data-feeling="angry"] {
+  --f-accent: #a23d4c; --f-accent-hover: #b24d5c; --f-ink: #5a2830; --f-muted: #845458; --f-hand: #b04f5d;
+  --f-page: #fbe9ea; --f-paper: #fff9f9; --f-notebook: #fffaf7; --f-soft: #f3d0d3; --f-line: #e5b2b8; --f-deep: #6e2c36; --f-wash: #f8e2e4;
+  --feeling-hue: 75deg; --feeling-richness: 1.1;
+  --charm-color: #dc6878; --charm-1: "✦"; --charm-2: "•"; --charm-3: "✹"; --charm-4: "•";
+}
+/* anxious: calm periwinkle, slow breathing bubbles */
+:root[data-feeling="anxious"] {
+  --f-accent: #5a60a2; --f-accent-hover: #6a70b2; --f-ink: #34385e; --f-muted: #62668a; --f-hand: #6c72b4;
+  --f-page: #eceefb; --f-paper: #fafaff; --f-notebook: #fbfbff; --f-soft: #d9dcf4; --f-line: #c0c4e8; --f-deep: #3d4275; --f-wash: #e8eafa;
+  --feeling-hue: -40deg; --feeling-richness: .8;
+  --charm-color: #9096d6; --charm-1: "○"; --charm-2: "◦"; --charm-3: "○"; --charm-4: "°";
+}
+/* overwhelmed: quiet grey, only a few soft lights */
+:root[data-feeling="overwhelmed"] {
+  --f-accent: #666472; --f-accent-hover: #767482; --f-ink: #3e3d48; --f-muted: #6a6975; --f-hand: #7a7886;
+  --f-page: #f0f0f2; --f-paper: #fbfbfc; --f-notebook: #fbfbfa; --f-soft: #dfdfe4; --f-line: #cbcbd3; --f-deep: #45444f; --f-wash: #ededf0;
+  --feeling-hue: 0deg; --feeling-richness: .35;
+  --charm-color: #a4a3b0; --charm-1: "●"; --charm-2: "●"; --charm-3: "●"; --charm-4: "●";
+}
+/* playful: bubblegum pink, hearts bouncing about */
+:root[data-feeling="playful"] {
+  --f-accent: #a8437a; --f-accent-hover: #b8538a; --f-ink: #5c2644; --f-muted: #865470; --f-hand: #b85490;
+  --f-page: #fdeaf4; --f-paper: #fff8fc; --f-notebook: #fff9fb; --f-soft: #f7d0e5; --f-line: #ebb3d2; --f-deep: #742c55; --f-wash: #fbe3ef;
+  --feeling-hue: 45deg; --feeling-richness: 1.2;
+  --charm-color: #e881b8; --charm-1: "♡"; --charm-2: "\2665\FE0E"; --charm-3: "✦"; --charm-4: "☆";
+}
 :root, :root[data-mood] {
   --page: var(--theme-page); --surface: var(--theme-paper); --paper: var(--theme-paper);
   --surface-tint: var(--theme-soft); --surface-blush: var(--theme-paper);
@@ -97,7 +151,7 @@
 :root[data-energy="4"] { --scene-richness: .92; }
 #root { isolation: isolate; min-height: 100dvh; }
 #root::before, #root::after { content: ""; position: fixed; inset: 0; pointer-events: none; }
-#root::before { z-index: -2; background: url("/images/lilac-blossoms.webp") center / cover no-repeat; opacity: .68; filter: saturate(calc(var(--scene-richness) * var(--feeling-richness))); }
+#root::before { z-index: -2; background: url("/images/lilac-blossoms.webp") center / cover no-repeat; opacity: .68; filter: hue-rotate(var(--feeling-hue)) saturate(calc(var(--scene-richness) * var(--feeling-richness))); }
 #root::after { z-index: -1; background: color-mix(in srgb, var(--scene-wash) 72%, transparent); }
 :root .lilac-scene { background: transparent; }
 :root .lilac-scene::before, :root .lilac-scene::after { content: none; }
@@ -128,6 +182,7 @@
 .daily-style-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 44px; min-height: 44px; color: var(--theme-accent); font: 19px var(--font-hand); border: 1px dashed var(--theme-line); border-radius: 20px; padding: 4px 11px; }
 .daily-style-dot { font: 23px var(--font-hand); color: var(--theme-accent); }
 @media (prefers-reduced-motion: no-preference) {
+  html[data-little-motion="on"] #root::before { transition: filter .7s ease; }
   html[data-little-motion="on"] #root::after, html[data-little-motion="on"] .world-mast, html[data-little-motion="on"] .birthday-ribbon, html[data-little-motion="on"] .play-window, html[data-little-motion="on"] .button-plum { transition: background-color .45s ease, border-color .45s ease; }
 }
 @media (max-width: 1100px) {

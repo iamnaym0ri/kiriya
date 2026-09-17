@@ -103,8 +103,8 @@ try {
     assert.equal((await theme()).feeling,feeling.key); assert.equal((await theme()).key,'iris');
     assert.match(await page.locator('.daily-style-button .sr-only').innerText(),/he\/they/);
     const actual=await paints(); emotionColors[feeling.key]=actual;
-    assert(rgba(actual.accent).every((v,i)=>Math.abs(v-rgba(baseline.accent)[i])<14),'Feeling must keep the original accent close');
-    assert(rgba(actual.paper).every((v,i)=>Math.abs(v-rgba(baseline.paper)[i])<3),'Feeling paper tint must stay very subtle');
+    assert(rgba(actual.accent).some((v,i)=>Math.abs(v-rgba(baseline.accent)[i])>=30),'Each feeling brings a clearly different colour family');
+    assert(rgba(actual.paper).every(v=>v>=235),'Paper stays light enough to read on');
   }
   assert.equal(new Set(Object.values(emotionColors).map(color=>color.accent)).size,8);
   await open(); await dialog().getByRole('button',{name:/^Happy:/}).click();
@@ -212,12 +212,14 @@ try {
   assert.equal(await page.locator('.name-charm--heart').first().evaluate(el=>getComputedStyle(el).animationName),'none');
   checks.push('Corner and save controls fit phone, tablet and landscape; the collapsed corner clears the active music player. New charms and emoticon animate and respect reduced motion.');
 
-  // Midnight uses the same existing Singapore-day invalidation as the rest of the site.
+  // Her check-in stays chosen across Singapore midnight; the day refreshes, the choice doesn't reset.
   const midnight = await ctx.newPage();
   await midnight.clock.install({time:new Date('2026-09-15T15:59:59Z')}); state={...state,day:'2026-09-15'};
   await midnight.goto(BASE+'/world'); await midnight.waitForFunction(()=>!!document.documentElement.dataset.mood);
-  state={...state,day:'2026-09-16',current:null,copy:null}; await midnight.clock.fastForward(2500);
-  await midnight.waitForFunction(()=>!document.documentElement.dataset.mood && !document.documentElement.dataset.feeling);
+  const beforeMidnight = await midnight.evaluate(()=>document.documentElement.dataset.mood);
+  state={...state,day:'2026-09-16'}; await midnight.clock.fastForward(2500);
+  await midnight.waitForTimeout(500);
+  assert.equal(await midnight.evaluate(()=>document.documentElement.dataset.mood), beforeMidnight, 'Midnight keeps the saved choice');
   await midnight.close();
   await page.goto(BASE+'/world'); await page.locator('.home-opening').waitFor();
   await choose('Masc', 'he/him');
@@ -233,7 +235,7 @@ try {
   visitor.on('request',request=>{if(request.url().includes('/api/me/')) privateRequests++;});
   await visitor.goto(BASE+'/'); await visitor.locator('.identity-paper').waitFor(); assert.equal(privateRequests,0); assert.equal(await visitor.locator('.daily-style-button').count(),0);
   assert((await visitor.locator('#root').evaluate(el=>getComputedStyle(el,'::before').backgroundImage)).includes('lilac-blossoms.webp')); await guest.close();
-  checks.push("Singapore midnight clears the daily selection; locking clears the owner theme and unlocking restores the saved choice. Guests get the new background without requesting private check-in data.");
+  checks.push("Singapore midnight keeps the saved choice; locking clears the owner theme and unlocking restores the saved choice. Guests get the new background without requesting private check-in data.");
   assert.deepEqual(errors,[]);
   await writeFile(OUT+'checks.json',JSON.stringify({checks,errors,colors,storage:'Browser save responses are isolated fixtures; database persistence is covered by test-checkin.mjs.'},null,2));
   console.log(JSON.stringify({checks,errors},null,2));

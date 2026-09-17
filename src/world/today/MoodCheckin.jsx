@@ -1,8 +1,8 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useSetMood } from "../../lib/world.js";
 import "./MoodCheckin.css";
 
-export default function MoodCheckin({ data, onDone }) {
+export default function MoodCheckin({ data, onDone, onPreview }) {
   const save = useSetMood();
   const addressId = useId();
   const [key, setKey] = useState(data.current?.key ?? "");
@@ -12,6 +12,7 @@ export default function MoodCheckin({ data, onDone }) {
   const choice = data.choices.find(item => item.key === key);
   const emotion = data.feelings.find(item => item.key === feeling);
   const level = data.energyLevels[energy];
+  useEffect(() => { onPreview?.({ mood: key || null, feeling }); }, [key, feeling, onPreview]);
   const select = item => { setKey(item.key); setAddress(item.address.label); save.reset(); };
   const changeEnergy = value => { setEnergy(value); save.reset(); };
   return <form className="mood-checkin" onSubmit={event => { event.preventDefault(); if (choice) save.mutate({ mood: key, feeling, energy, address }, { onSuccess: onDone }); }}>

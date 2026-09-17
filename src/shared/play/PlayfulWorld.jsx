@@ -121,11 +121,10 @@ export function PlayfulProvider({ children }) {
       } }}
     >
       {children}
+      {/* The charms' shapes, colour and motion come from CSS and follow today's mood. */}
       <div className="ambient-charms" aria-hidden="true">
-        {["✧", "♡", "✦", "❀", "✧", "♡", "✦", "❀", "✧"].map((s, i) => (
-          <span key={i} style={{ "--i": i }}>
-            {s}
-          </span>
+        {Array.from({ length: 9 }, (_, i) => (
+          <span key={i} style={{ "--i": i }} />
         ))}
       </div>
       <CursorSparkles enabled={moving} />

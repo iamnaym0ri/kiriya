@@ -54,14 +54,14 @@ export const ADDRESS_OPTIONS = {
 };
 
 export const FEELINGS = [
-  { key: "happy", label: "Happy", emoji: "😊", hint: "life is kinda cute rn", response: "a little warmth for a good little day ♡" },
-  { key: "content", label: "Content", emoji: "😌", hint: "comfy. no plot twists pls", response: "soft colours. absolutely no rush." },
-  { key: "excited", label: "Excited", emoji: "🤩", hint: "physically cannot be normal", response: "a tiny extra blush. big main-character energy." },
-  { key: "sad", label: "Sad", emoji: "🥺", hint: "need a hug, not a lecture", response: "a softer little world. you don’t have to perform happy here." },
-  { key: "angry", label: "Angry", emoji: "😤", hint: "my patience has left the chat", response: "a little rosy edge. your feelings get room, too." },
-  { key: "anxious", label: "Anxious", emoji: "😰", hint: "brain has 47 tabs open", response: "a quiet violet tint. one little thing at a time." },
-  { key: "overwhelmed", label: "Overwhelmed", emoji: "😵‍💫", hint: "everything is a bit too loud", response: "turned the colour down a whisper. less to take in." },
-  { key: "playful", label: "Playful", emoji: "😏", hint: "a little menace, respectfully", response: "a lil pink mischief tucked into the lilac." },
+  { key: "happy", label: "Happy", emoji: "😊", hint: "life is kinda cute rn", response: "peachy warm petals for a good little day ♡" },
+  { key: "content", label: "Content", emoji: "😌", hint: "comfy. no plot twists pls", response: "soft sage and slow little leaves. absolutely no rush." },
+  { key: "excited", label: "Excited", emoji: "🤩", hint: "physically cannot be normal", response: "golden hour confetti. big main-character energy." },
+  { key: "sad", label: "Sad", emoji: "🥺", hint: "need a hug, not a lecture", response: "soft blue and gentle rain. you don’t have to perform happy here." },
+  { key: "angry", label: "Angry", emoji: "😤", hint: "my patience has left the chat", response: "a rosy red glow. your feelings get room, too." },
+  { key: "anxious", label: "Anxious", emoji: "😰", hint: "brain has 47 tabs open", response: "calm periwinkle, slow little bubbles. one thing at a time." },
+  { key: "overwhelmed", label: "Overwhelmed", emoji: "😵‍💫", hint: "everything is a bit too loud", response: "quiet grey, just a few soft lights. less to take in." },
+  { key: "playful", label: "Playful", emoji: "😏", hint: "a little menace, respectfully", response: "bubblegum pink mischief, hearts bouncing about." },
 ];
 export const feelingByKey = Object.fromEntries(FEELINGS.map(feeling => [feeling.key, feeling]));
 export const ENERGY_LEVELS = [

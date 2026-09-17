@@ -19,7 +19,7 @@ export function sinceLabel(current, today) {
   return `since ${new Intl.DateTimeFormat("en-SG", { day: "numeric", month: "short", timeZone: "Asia/Singapore" }).format(new Date(`${current.setDay}T12:00:00+08:00`))}`;
 }
 
-function CornerPanel({ query, data, onClose }) {
+function CornerPanel({ query, data, onClose, onPreview }) {
   const ref = useRef(null);
   useEffect(() => {
     const panel = ref.current;
@@ -38,7 +38,7 @@ function CornerPanel({ query, data, onClose }) {
     </header>
     {query.isError ? <div className="daily-style-panel__error"><p role="alert">Your check-in couldn’t load.</p><button className="button-plum" onClick={() => query.refetch()}>Try again</button></div>
       : !data ? <p role="status">Opening your little check-in…</p>
-      : <Suspense fallback={<p role="status">Opening your little check-in…</p>}><Checkin data={data} onDone={onClose} /></Suspense>}
+      : <Suspense fallback={<p role="status">Opening your little check-in…</p>}><Checkin data={data} onDone={onClose} onPreview={onPreview} /></Suspense>}
   </section>;
 }
 
@@ -55,20 +55,24 @@ export function DailyStyleProvider({ children }) {
   const data = allowed && inWorld && query.error?.status !== 401 ? query.data : null;
   const current = data?.current ?? null;
   const [editing, setEditing] = useState(false);
+  // While the corner is open, tapping a mood shows its colours straight away; closing without
+  // keeping it goes back to the saved one.
+  const [preview, setPreview] = useState(null);
   const small = prefs.data?.cornerSmall ?? false;
   const open = useCallback(() => setEditing(true), []);
-  const close = useCallback(() => setEditing(false), []);
+  const close = useCallback(() => { setEditing(false); setPreview(null); }, []);
+  const moodKey = (editing && preview?.mood) || current?.key || null;
+  const feelingKey = editing && preview ? preview.feeling : current?.feeling?.key ?? null;
+  const energy = current ? String(current.energy) : null;
   useEffect(() => {
     const root = document.documentElement;
-    if (current) {
-      root.dataset.mood = current.key;
-      root.dataset.energy = String(current.energy);
-      if (current.feeling) root.dataset.feeling = current.feeling.key;
-      else delete root.dataset.feeling;
-    } else { delete root.dataset.mood; delete root.dataset.energy; delete root.dataset.feeling; }
+    const apply = (name, value) => { if (value) root.dataset[name] = value; else delete root.dataset[name]; };
+    apply("mood", moodKey);
+    apply("feeling", feelingKey);
+    apply("energy", energy);
     return () => { delete root.dataset.mood; delete root.dataset.energy; delete root.dataset.feeling; };
-  }, [current]);
-  useEffect(() => { if (!allowed || !inWorld) setEditing(false); }, [allowed, inWorld]);
+  }, [moodKey, feelingKey, energy]);
+  useEffect(() => { if (!allowed || !inWorld) close(); }, [allowed, inWorld, close]);
   // /world?quick=status opens straight to the check-in: used by Home Screen shortcuts and widgets.
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -87,7 +91,7 @@ export function DailyStyleProvider({ children }) {
       </button>
       <button className="daily-style-corner__size" aria-label={small ? "Expand your little corner" : "Make your little corner smaller"} onClick={() => setPrefs.mutate({ cornerSmall: !small })}>{small ? "+" : "−"}</button>
     </aside>}
-    {editing && allowed && inWorld && <CornerPanel query={query} data={data} onClose={close} />}
+    {editing && allowed && inWorld && <CornerPanel query={query} data={data} onClose={close} onPreview={setPreview} />}
   </DailyStyleContext.Provider>;
 }
 export function DailyStyleButton() {
