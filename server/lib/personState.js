@@ -10,6 +10,8 @@ export const SHARING_KEYS = ["address", "presentation", "feeling", "energy"];
 export const SHARING_DEFAULTS = { address: false, presentation: false, feeling: false, energy: false };
 // Little one-time suggestions she can dismiss for good.
 export const HINT_KEYS = ["install", "sharing", "widget", "notifications"];
+export const PROFILE_LIMITS = { bioLines: 6, bioLine: 80, loves: 12, love: 40 };
+export const SOCIAL_HANDLE = /^[A-Za-z0-9._]{0,30}$/;
 
 const prefsSchema = z.object({
   address: z.partialRecord(z.enum(Object.keys(moodByKey)), z.enum(Object.keys(ADDRESS_OPTIONS))).optional(),
@@ -18,6 +20,17 @@ const prefsSchema = z.object({
   motion: z.enum(["lively", "quiet"]).optional(),
   cornerSmall: z.boolean().optional(),
   hints: z.partialRecord(z.enum(HINT_KEYS), z.boolean()).optional(),
+  // What the public page says about this person. Unset parts fall back to the site's profile.
+  profile: z
+    .object({
+      bioLines: z.array(z.string().trim().min(1).max(PROFILE_LIMITS.bioLine)).max(PROFILE_LIMITS.bioLines),
+      socials: z.object({ tiktok: z.string().regex(SOCIAL_HANDLE), instagram: z.string().regex(SOCIAL_HANDLE) }).partial(),
+      loves: z.array(z.string().trim().min(1).max(PROFILE_LIMITS.love)).max(PROFILE_LIMITS.loves),
+      introSongId: z.union([z.string().uuid(), z.literal("none")]),
+      showViews: z.boolean(),
+    })
+    .partial()
+    .optional(),
 });
 
 export async function readPersonState(db, person) {

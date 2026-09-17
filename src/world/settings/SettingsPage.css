@@ -318,3 +318,42 @@
   padding: 1px 5px;
   border-radius: 5px;
 }
+
+.settings-help {
+  display: block;
+  font-size: var(--t-sm);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.settings-help a {
+  color: var(--lead);
+  white-space: nowrap;
+}
+
+.settings-fieldset {
+  display: grid;
+  gap: 6px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.settings-fieldset legend {
+  padding: 0;
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--text-soft);
+}
+
+.settings-select {
+  min-height: 46px;
+  padding: 0 var(--s-3);
+  font-size: var(--t-md);
+}
+
+.settings-check > span {
+  display: grid;
+  gap: 2px;
+}

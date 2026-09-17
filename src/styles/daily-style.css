@@ -79,12 +79,12 @@
   --theme-deep: var(--base-deep);
   --scene-wash: var(--base-wash);
 }
-/* happy: peachy coral, petals drifting down */
+/* happy: purple-pink orchid, petals drifting down */
 :root[data-feeling="happy"] {
-  --f-accent: #a9503d; --f-accent-hover: #b9604c; --f-ink: #5c3024; --f-muted: #855a4e; --f-hand: #b8644b;
-  --f-page: #fdeee6; --f-paper: #fffaf5; --f-notebook: #fffaf0; --f-soft: #f8d8c9; --f-line: #ecbfa9; --f-deep: #74402f; --f-wash: #fbe8dd;
-  --feeling-hue: 95deg; --feeling-richness: 1;
-  --charm-color: #e39374; --charm-1: "✿"; --charm-2: "☼"; --charm-3: "✧"; --charm-4: "♡";
+  --f-accent: #96477f; --f-accent-hover: #a6578f; --f-ink: #512547; --f-muted: #7d5673; --f-hand: #a8558f;
+  --f-page: #f8e9f3; --f-paper: #fff8fc; --f-notebook: #fff9fb; --f-soft: #eed0e4; --f-line: #ddb3d1; --f-deep: #6a2f5d; --f-wash: #f5e2ef;
+  --feeling-hue: 35deg; --feeling-richness: 1.1;
+  --charm-color: #d487c0; --charm-1: "✿"; --charm-2: "☼"; --charm-3: "✧"; --charm-4: "♡";
 }
 /* content: sage green, leaves floating slowly */
 :root[data-feeling="content"] {
@@ -128,12 +128,12 @@
   --feeling-hue: 0deg; --feeling-richness: .35;
   --charm-color: #a4a3b0; --charm-1: "●"; --charm-2: "●"; --charm-3: "●"; --charm-4: "●";
 }
-/* playful: bubblegum pink, hearts bouncing about */
+/* playful: candy pink, hearts bouncing about */
 :root[data-feeling="playful"] {
-  --f-accent: #a8437a; --f-accent-hover: #b8538a; --f-ink: #5c2644; --f-muted: #865470; --f-hand: #b85490;
-  --f-page: #fdeaf4; --f-paper: #fff8fc; --f-notebook: #fff9fb; --f-soft: #f7d0e5; --f-line: #ebb3d2; --f-deep: #742c55; --f-wash: #fbe3ef;
-  --feeling-hue: 45deg; --feeling-richness: 1.2;
-  --charm-color: #e881b8; --charm-1: "♡"; --charm-2: "\2665\FE0E"; --charm-3: "✦"; --charm-4: "☆";
+  --f-accent: #b03d68; --f-accent-hover: #c04d78; --f-ink: #5c2238; --f-muted: #88526a; --f-hand: #bb4a78;
+  --f-page: #fde9f0; --f-paper: #fff8fa; --f-notebook: #fffafa; --f-soft: #f8cfdd; --f-line: #ecb1c5; --f-deep: #772a48; --f-wash: #fbe2ea;
+  --feeling-hue: 60deg; --feeling-richness: 1.2;
+  --charm-color: #f08aad; --charm-1: "♡"; --charm-2: "\2665\FE0E"; --charm-3: "✦"; --charm-4: "☆";
 }
 :root, :root[data-mood] {
   --page: var(--theme-page); --surface: var(--theme-paper); --paper: var(--theme-paper);

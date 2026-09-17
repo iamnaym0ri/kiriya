@@ -9,8 +9,8 @@ import { birthdayInfo } from "../lib/birthday.js";
 import { getOrCreateDay } from "../engine/day.js";
 import { ADDRESS_OPTIONS, moodByKey, feelingByKey } from "../content/moods.js";
 import { readCheckin, saveCheckin, saveAddressPreference } from "../lib/checkin.js";
-import { HINT_KEYS, MAX_PINS, SHARING_KEYS, readPersonState, resolvePrefs, updatePersonState } from "../lib/personState.js";
-import { buildPublicProfile } from "../lib/publicProfile.js";
+import { HINT_KEYS, MAX_PINS, PROFILE_LIMITS, SHARING_KEYS, SOCIAL_HANDLE, readPersonState, resolvePrefs, updatePersonState } from "../lib/personState.js";
+import { buildPublicProfile, profileFor, socialHandle } from "../lib/publicProfile.js";
 import { publicProfileDefaults } from "../content/publicProfile.js";
 import { kiriya } from "../content/kiriya.js";
 import { maomaoBirthdayLetter } from "../content/birthday.js";
@@ -219,59 +219,62 @@ meRoutes.put("/pins/:id", async (c) => {
 // public page built from their own test choices.
 meRoutes.get("/public-preview", async (c) => c.json(await buildPublicProfile(await getDb(), c.get("session").role)));
 
-const profileBody = z.object({
-  bioLines: z.array(z.string().trim().min(1).max(80)).min(1).max(6),
-  socials: z.object({
-    tiktok: z.object({ handle: z.string().trim().max(40) }),
-    discord: z.object({ username: z.string().trim().max(40) }),
-  }),
-  showViews: z.boolean(),
-});
+// ---------- her public page: bio, socials, things she loves, intro song, view counter ----------
+
+async function ownProfile(db, person) {
+  const [site, state] = await Promise.all([getSetting(db, "public_profile", null), readPersonState(db, person)]);
+  return { state, profile: profileFor({ ...publicProfileDefaults, ...(site ?? {}) }, state.prefs) };
+}
 
 meRoutes.get("/profile", async (c) => {
-  const db = await getDb();
-  const profile = {
-    ...publicProfileDefaults,
-    ...((await getSetting(db, "public_profile", null)) ?? {}),
-  };
-  return c.json({
-    bioLines: profile.bioLines,
-    socials: profile.socials,
-    showViews: profile.showViews,
-  });
+  const { profile, state } = await ownProfile(await getDb(), c.get("session").role);
+  return c.json({ ...profile, introSong: state.prefs.profile?.introSongId ?? "featured", limits: PROFILE_LIMITS });
 });
+
+const profileBody = z
+  .object({
+    bioLines: z.array(z.string().max(200)).max(20),
+    socials: z.object({ tiktok: z.string().max(200), instagram: z.string().max(200) }).strict(),
+    loves: z.array(z.string().max(200)).max(40),
+    introSong: z.union([z.literal("featured"), z.literal("none"), z.string().uuid()]),
+    showViews: z.boolean(),
+  })
+  .strict();
 
 meRoutes.put("/profile", async (c) => {
   const parsed = profileBody.safeParse(await c.req.json().catch(() => null));
-  if (!parsed.success)
-    return c.json(
-      {
-        error: "bad_profile",
-        message: "Each bio line needs 1–80 characters, and handles up to 40.",
-      },
-      400,
-    );
+  if (!parsed.success) return c.json({ error: "bad_profile", message: "Something in your profile couldn’t be saved. Try again." }, 400);
+  const { bioLines, socials, loves, introSong, showViews } = parsed.data;
+  const lines = bioLines.map((line) => line.trim()).filter(Boolean);
+  const things = loves.map((love) => love.trim()).filter(Boolean);
+  if (lines.length > PROFILE_LIMITS.bioLines || lines.some((line) => line.length > PROFILE_LIMITS.bioLine))
+    return c.json({ error: "bad_bio", message: `Your bio can have up to ${PROFILE_LIMITS.bioLines} lines, each up to ${PROFILE_LIMITS.bioLine} characters.` }, 400);
+  if (things.length > PROFILE_LIMITS.loves || things.some((love) => love.length > PROFILE_LIMITS.love))
+    return c.json({ error: "bad_loves", message: `Pick up to ${PROFILE_LIMITS.loves} things you love, each up to ${PROFILE_LIMITS.love} characters.` }, 400);
+  const handles = { tiktok: socialHandle(socials.tiktok), instagram: socialHandle(socials.instagram) };
+  for (const [site, handle] of Object.entries(handles))
+    if (!SOCIAL_HANDLE.test(handle))
+      return c.json({ error: "bad_handle", message: `That ${site === "tiktok" ? "TikTok" : "Instagram"} handle doesn’t look right. Just letters, numbers, dots and underscores, like @kiriya.` }, 400);
   const db = await getDb();
-  const current = (await getSetting(db, "public_profile", null)) ?? {};
-  const next = {
-    ...current,
-    ...parsed.data,
-    socials: {
-      tiktok: {
-        handle: parsed.data.socials.tiktok.handle.replace(/^@/, ""),
-        url: "",
+  if (introSong !== "featured" && introSong !== "none") {
+    const [song] = await db.select({ id: schema.songs.id }).from(schema.songs).where(eq(schema.songs.id, introSong));
+    if (!song) return c.json({ error: "bad_song", message: "That song isn’t on your music shelf anymore. Pick another one." }, 400);
+  }
+  const person = c.get("session").role;
+  await updatePersonState(db, person, (state) => ({
+    prefs: {
+      ...state.prefs,
+      profile: {
+        bioLines: lines,
+        socials: handles,
+        loves: things,
+        showViews,
+        ...(introSong === "featured" ? {} : { introSongId: introSong }),
       },
-      discord: parsed.data.socials.discord,
     },
-  };
-  await db
-    .insert(schema.settings)
-    .values({ key: "public_profile", value: next })
-    .onConflictDoUpdate({
-      target: schema.settings.key,
-      set: { value: next, updatedAt: new Date() },
-    });
-  return c.json({ ok: true });
+  }));
+  const { profile, state } = await ownProfile(db, person);
+  return c.json({ ...profile, introSong: state.prefs.profile?.introSongId ?? "featured", limits: PROFILE_LIMITS });
 });
 
 // ---------- phone widget and Shortcuts keys ----------

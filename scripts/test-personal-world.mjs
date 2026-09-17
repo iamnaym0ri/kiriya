@@ -132,6 +132,71 @@ try {
     assert.equal((await json(await request("me/public-preview", { cookie: kiriya }))).today.items.length, 2);
   });
 
+  await test("Her bio, socials, loves, intro song and view counter are hers to set; the admin's stay a test copy", async () => {
+    const defaults = await json(await request("public/profile"));
+    assert.deepEqual(defaults.loves, ["Vocaloid", "The Apothecary Diaries", "Drawing", "Cosplay"]);
+    assert.deepEqual(defaults.socials, { tiktok: null, instagram: null }, "No Discord, and nothing until she adds a handle");
+    assert.equal((await json(await request("me/profile", { cookie: kiriya }))).introSong, "featured");
+
+    const [upload] = await db.insert(schema.songs).values({ kind: "upload", provider: "audio", url: "/api/uploads/media?path=songs/intro-test.mp3", title: "intro test", artist: "kiriya", featured: false, isPublic: false }).returning();
+    const [link] = await db.insert(schema.songs).values({ kind: "link", provider: "youtube", url: "https://www.youtube.com/watch?v=shs0rAiwsGQ", title: "Senbonzakura", artist: "Kurousa-P", featured: true, isPublic: true }).returning();
+    assert.equal(defaults.song, null);
+    assert.equal((await json(await request("public/profile"))).song.title, "Senbonzakura", "With nothing picked, her featured song is the intro");
+
+    const saved = await json(await request("me/profile", { method: "PUT", cookie: kiriya, body: {
+      bioLines: ["maomao's no. 1 apprentice", "  ", "drawing past bedtime"],
+      socials: { tiktok: "https://www.tiktok.com/@kiri.ya?lang=en", instagram: "@kiriya_draws" },
+      loves: ["vocaloid", "", "cosplay"],
+      introSong: upload.id,
+      showViews: false,
+    } }));
+    assert.deepEqual(saved.bioLines, ["maomao's no. 1 apprentice", "drawing past bedtime"]);
+    assert.deepEqual(saved.socials, { tiktok: "kiri.ya", instagram: "kiriya_draws" });
+    const page = await json(await request("public/profile"));
+    assert.deepEqual(page.socials, {
+      tiktok: { handle: "kiri.ya", url: "https://www.tiktok.com/@kiri.ya" },
+      instagram: { handle: "kiriya_draws", url: "https://www.instagram.com/kiriya_draws/" },
+    });
+    assert.deepEqual(page.loves, ["vocaloid", "cosplay"]);
+    assert.equal(page.song.provider, "audio");
+    assert.equal(page.song.title, "intro test");
+    assert.equal(page.views, null, "Hidden view counter sends no count");
+    assert.equal(await isPublicMedia(upload.url), true, "Her uploaded intro song plays for visitors");
+
+    await json(await request("me/profile", { method: "PUT", cookie: admin, body: { bioLines: ["admin test bio"], socials: { tiktok: "admin.test", instagram: "" }, loves: ["testing"], introSong: "none", showViews: true } }));
+    const stillHers = await json(await request("public/profile"));
+    assert.deepEqual(stillHers.bioLines, ["maomao's no. 1 apprentice", "drawing past bedtime"], "The admin's test bio never reaches visitors");
+    assert.equal(stillHers.song.title, "intro test");
+    const adminPreview = await json(await request("me/public-preview", { cookie: admin }));
+    assert.deepEqual(adminPreview.bioLines, ["admin test bio"]);
+    assert.deepEqual(adminPreview.socials, { tiktok: { handle: "admin.test", url: "https://www.tiktok.com/@admin.test" }, instagram: null });
+    assert.equal(adminPreview.song, null, "No intro song, no tap-to-enter screen");
+    assert.equal(typeof adminPreview.views, "number");
+
+    for (const body of [
+      { socials: { tiktok: "not a handle!", instagram: "" } },
+      { socials: { tiktok: "", instagram: "x".repeat(31) } },
+      { bioLines: Array.from({ length: 7 }, (_, i) => `line ${i}`) },
+      { bioLines: ["x".repeat(81)] },
+      { loves: Array.from({ length: 13 }, (_, i) => `love ${i}`) },
+      { introSong: "00000000-0000-4000-8000-000000000000" },
+      { discord: "someone" },
+    ]) {
+      const response = await request("me/profile", { method: "PUT", cookie: kiriya, body: { bioLines: [], socials: { tiktok: "", instagram: "" }, loves: [], introSong: "featured", showViews: true, ...body } });
+      assert.equal(response.status, 400, JSON.stringify(body));
+    }
+    assert.match((await json(await request("me/profile", { method: "PUT", cookie: kiriya, body: { bioLines: [], socials: { tiktok: "no spaces allowed", instagram: "" }, loves: [], introSong: "featured", showViews: true } }), 400)).message, /TikTok handle/);
+
+    await json(await request("me/profile", { method: "PUT", cookie: kiriya, body: { bioLines: [], socials: { tiktok: "", instagram: "" }, loves: [], introSong: "featured", showViews: true } }));
+    assert.equal(await isPublicMedia(upload.url), false, "Once it's not her intro song, the upload is private again");
+    const reset = await json(await request("public/profile"));
+    assert.equal(reset.song.title, "Senbonzakura");
+    assert.deepEqual(reset.bioLines, []);
+    assert.equal(typeof reset.views, "number");
+    await db.delete(schema.songs).where(eq(schema.songs.id, link.id));
+    await db.delete(schema.songs).where(eq(schema.songs.id, upload.id));
+  });
+
   await test("Pinned artwork becomes public only while it stays pinned on Kiriya's board", async () => {
     const art = [];
     for (let i = 0; i < 8; i++)

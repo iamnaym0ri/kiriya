@@ -13,6 +13,12 @@ async function totalViews(db) {
   return total;
 }
 
+const presentSong = (row) => {
+  if (!row) return null;
+  const parsed = row.kind === "upload" ? { provider: "audio", embedId: row.url } : parseSongUrl(row.url);
+  return { kind: row.kind, ...parsed, url: row.url, title: row.title, artist: row.artist, thumbnail: row.thumbnail };
+};
+
 async function featuredSong(db) {
   const [featured] = await db
     .select()
@@ -20,9 +26,42 @@ async function featuredSong(db) {
     .where(and(eq(schema.songs.featured, true), eq(schema.songs.isPublic, true)))
     .orderBy(desc(schema.songs.createdAt))
     .limit(1);
-  if (!featured) return null;
-  const parsed = featured.kind === "upload" ? { provider: "audio", embedId: featured.url } : parseSongUrl(featured.url);
-  return { kind: featured.kind, ...parsed, url: featured.url, title: featured.title, artist: featured.artist, thumbnail: featured.thumbnail };
+  return presentSong(featured);
+}
+
+/** Accepts "@name", "name" or a profile link, and keeps just the handle. */
+export function socialHandle(input) {
+  const text = String(input ?? "").trim();
+  const link = text.match(/(?:tiktok\.com\/@|instagram\.com\/)([A-Za-z0-9._]+)/i);
+  return (link ? link[1] : text).replace(/^@+/, "");
+}
+
+/** This person's public bio, socials, loves, intro song and view counter, over the site defaults. */
+export function profileFor(siteProfile, prefs = {}) {
+  const own = prefs.profile ?? {};
+  return {
+    bioLines: own.bioLines ?? siteProfile.bioLines ?? [],
+    socials: {
+      tiktok: own.socials?.tiktok ?? socialHandle(siteProfile.socials?.tiktok?.handle),
+      instagram: own.socials?.instagram ?? socialHandle(siteProfile.socials?.instagram?.handle),
+    },
+    loves: own.loves ?? (siteProfile.interests ?? []).map((interest) => interest.title),
+    // Unset: the featured song from her music shelf. "none": no intro song.
+    introSongId: own.introSongId ?? null,
+    showViews: own.showViews ?? siteProfile.showViews ?? true,
+  };
+}
+
+const socialLinks = ({ tiktok, instagram }) => ({
+  tiktok: tiktok ? { handle: tiktok, url: `https://www.tiktok.com/@${tiktok}` } : null,
+  instagram: instagram ? { handle: instagram, url: `https://www.instagram.com/${instagram}/` } : null,
+});
+
+async function introSong(db, introSongId) {
+  if (introSongId === "none") return null;
+  if (!introSongId) return featuredSong(db);
+  const [row] = await db.select().from(schema.songs).where(eq(schema.songs.id, introSongId));
+  return row ? presentSong(row) : featuredSong(db);
 }
 
 /**
@@ -35,9 +74,9 @@ export async function sharedToday(db, state, day = localDay()) {
   if (!current) return null;
   const items = [];
   if (sharing.address) items.push({ key: "address", label: "pronouns", value: current.address.label });
-  if (sharing.presentation) items.push({ key: "presentation", label: "presenting", value: current.label, face: current.face });
+  if (sharing.presentation) items.push({ key: "presentation", label: "presenting", value: current.label, face: current.face, tone: current.key });
   if (sharing.feeling && current.feeling)
-    items.push({ key: "feeling", label: "mood", value: current.feeling.label, emoji: current.feeling.emoji, note: current.feeling.hint });
+    items.push({ key: "feeling", label: "mood", value: current.feeling.label, emoji: current.feeling.emoji, note: current.feeling.hint, tone: current.feeling.key });
   if (sharing.energy) {
     const level = ENERGY_LEVELS[current.energy];
     items.push({ key: "energy", label: "social battery", value: level.label, level: current.energy, face: level.face, note: level.comment });
@@ -61,16 +100,32 @@ export async function pinnedArtworks(db, state) {
 
 /** Everything a visitor sees. `person` is "kiriya" for the real page, or the admin's test copy in preview. */
 export async function buildPublicProfile(db, person = "kiriya") {
-  const [[override], song, state] = await Promise.all([
+  const [[override], state] = await Promise.all([
     db.select().from(schema.settings).where(eq(schema.settings.key, "public_profile")),
-    featuredSong(db),
     readPersonState(db, person),
   ]);
-  const profile = { ...publicProfileDefaults, ...(override?.value ?? {}) };
-  const [today, pins, views] = await Promise.all([
+  const site = { ...publicProfileDefaults, ...(override?.value ?? {}) };
+  const own = profileFor(site, state.prefs);
+  const [today, pins, views, song] = await Promise.all([
     sharedToday(db, state),
     pinnedArtworks(db, state),
-    profile.showViews ? totalViews(db) : null,
+    own.showViews ? totalViews(db) : null,
+    introSong(db, own.introSongId),
   ]);
-  return { ...profile, views, song, birthday: birthdayInfo(), today, pins };
+  return {
+    name: site.name,
+    displayName: site.displayName,
+    badges: site.badges,
+    avatarUrl: site.avatarUrl,
+    cosplays: site.cosplays,
+    bioLines: own.bioLines,
+    socials: socialLinks(own.socials),
+    loves: own.loves,
+    showViews: own.showViews,
+    views,
+    song,
+    birthday: birthdayInfo(),
+    today,
+    pins,
+  };
 }

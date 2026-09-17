@@ -41,12 +41,18 @@ export function MusicProvider({ children }) {
     </MusicContext.Provider>
   );
 }
-export function MusicObject({ song, compact = false, onPlay }) {
+// `onToggle` and `playing` let a page run its own audio (the public intro song) through the same object.
+export function MusicObject({ song, compact = false, onPlay, onToggle, playing, label = "A LITTLE MUSIC FOR YOUR STAY" }) {
   const music = useMusic();
   return (
     <button
       className={`music-object ${compact ? "music-object--compact" : ""}`}
-      onClick={() => { if (song) { onPlay?.(); music.play(song); } }}
+      onClick={() => {
+        if (!song) return;
+        if (onToggle) return onToggle();
+        onPlay?.();
+        music.play(song);
+      }}
       disabled={!song}
       aria-label={song ? `Play ${song.title}` : "No song selected"}
     >
@@ -57,14 +63,16 @@ export function MusicObject({ song, compact = false, onPlay }) {
         </span>
       </span>
       <span className="music-object__copy">
-        <span className="micro-label">A LITTLE MUSIC FOR YOUR STAY</span>
+        <span className="micro-label">{label}</span>
         <strong>{song?.title ?? "Your music, here"}</strong>
         <small>{song?.artist ?? "Choose a song in your music shelf"}</small>
         <span className="music-object__listen">
-          {song && music.song?.url === song.url
-            ? "Player open"
-            : "Press play, stay awhile"}{" "}
-          <Icon name="play" size={13} />
+          {playing !== undefined
+            ? playing ? "Playing · tap to pause" : "Tap to play"
+            : song && music.song?.url === song.url
+              ? "Player open"
+              : "Press play, stay awhile"}{" "}
+          <Icon name={playing ? "pause" : "play"} size={13} />
         </span>
       </span>
     </button>

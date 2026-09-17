@@ -25,7 +25,18 @@ export async function isPublicMedia(url) {
   if (p.avatarUrl === url || p.cosplays?.some((c) => c.photoUrl === url))
     return true;
   // Artwork Kiriya pinned to her public board, only while it stays pinned.
-  const { pins } = resolvePrefs((await readPersonState(db, "kiriya")).prefs);
+  const kiriyaPrefs = (await readPersonState(db, "kiriya")).prefs;
+  const { pins } = resolvePrefs(kiriyaPrefs);
+  // Her chosen intro song, when it's an upload, plays for visitors.
+  const introSongId = kiriyaPrefs.profile?.introSongId;
+  if (introSongId && introSongId !== "none") {
+    const [intro] = await db
+      .select({ id: schema.songs.id })
+      .from(schema.songs)
+      .where(and(eq(schema.songs.id, introSongId), eq(schema.songs.url, url)))
+      .limit(1);
+    if (intro) return true;
+  }
   if (pins.length) {
     const [art] = await db
       .select({ id: schema.artworks.id })

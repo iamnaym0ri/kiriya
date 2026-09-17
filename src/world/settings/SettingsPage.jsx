@@ -547,121 +547,147 @@ function Address() {
   );
 }
 
+const lines = (text) => text.split("\n").map((line) => line.trim()).filter(Boolean);
+
 function PublicProfile() {
   const queryClient = useQueryClient();
-  const profile = useQuery({
-    queryKey: ["me", "profile"],
-    queryFn: () => api("/me/profile"),
-  });
+  const role = useSession().data?.role;
+  const profile = useQuery({ queryKey: ["me", "profile"], queryFn: () => api("/me/profile") });
+  const songs = useQuery({ queryKey: ["me", "songs"], queryFn: () => api("/me/songs") });
   const [draft, setDraft] = useState(null);
   const save = useMutation({
     mutationFn: (body) => api("/me/profile", { method: "PUT", body }),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(["me", "profile"], data);
+      queryClient.invalidateQueries({ queryKey: ["me", "public-preview"] });
       queryClient.invalidateQueries({ queryKey: ["public-profile"] });
-      queryClient.invalidateQueries({ queryKey: ["me", "profile"] });
     },
   });
 
   useEffect(() => {
     if (profile.data && !draft)
-      setDraft({ ...profile.data, bioText: profile.data.bioLines.join("\n") });
+      setDraft({
+        bio: profile.data.bioLines.join("\n"),
+        tiktok: profile.data.socials.tiktok,
+        instagram: profile.data.socials.instagram,
+        loves: profile.data.loves.join("\n"),
+        introSong: profile.data.introSong,
+        showViews: profile.data.showViews,
+      });
   }, [profile.data, draft]);
 
   if (!draft) return null;
+  const limits = profile.data.limits;
+  const update = (key) => (e) => {
+    setDraft({ ...draft, [key]: e.target.type === "checkbox" ? e.target.checked : e.target.value });
+    save.reset();
+  };
+  const shelf = songs.data?.songs ?? [];
+  const featured = shelf.find((song) => song.featured);
+  const chosen = draft.introSong === "featured" ? featured : shelf.find((song) => song.id === draft.introSong);
 
   function submit(event) {
     event.preventDefault();
     save.mutate({
-      bioLines: draft.bioText
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean),
-      socials: {
-        tiktok: { handle: draft.socials.tiktok.handle },
-        discord: { username: draft.socials.discord.username },
-      },
+      bioLines: lines(draft.bio),
+      socials: { tiktok: draft.tiktok, instagram: draft.instagram },
+      loves: lines(draft.loves),
+      introSong: draft.introSong,
       showViews: draft.showViews,
     });
   }
 
   return (
-    <form
-      className="settings-card"
-      aria-labelledby="profile-title"
-      onSubmit={submit}
-    >
-      <h2 id="profile-title">Your public profile</h2>
+    <form className="settings-card" id="public-profile" aria-labelledby="profile-title" onSubmit={submit}>
+      <h2 id="profile-title">Your public page</h2>
       <p className="settings-card__hint">
-        What everyone sees at kiriya.love, before the passphrase.
+        this is what anyone sees at kiriya.love before the passphrase. change anything here, then tap
+        save ♡{role === "admin" ? " (Admin: these are your test choices, not Kiriya’s.)" : ""}
       </p>
+
       <label className="settings-field">
-        <span>Profile bio (one line each, up to 6)</span>
-        <textarea
-          className="field settings-textarea"
-          rows={5}
-          value={draft.bioText}
-          onChange={(e) => setDraft({ ...draft, bioText: e.target.value })}
-        />
+        <span>Your bio</span>
+        <small className="settings-help">
+          a few little lines about u. they show right under ur name. one line per row, up to{" "}
+          {limits.bioLines}.
+        </small>
+        <textarea className="field settings-textarea" rows={4} value={draft.bio} onChange={update("bio")} placeholder={"maomao’s no. 1 apprentice\ndrawing way past bedtime"} />
       </label>
-      <div className="settings-grid settings-grid--two">
-        <label>
-          <span>TikTok handle</span>
-          <input
-            className="field"
-            placeholder="@yourname"
-            value={draft.socials.tiktok.handle}
-            onChange={(e) =>
-              setDraft({
-                ...draft,
-                socials: {
-                  ...draft.socials,
-                  tiktok: { handle: e.target.value },
-                },
-              })
-            }
-          />
-        </label>
-        <label>
-          <span>Discord username</span>
-          <input
-            className="field"
-            placeholder="username"
-            value={draft.socials.discord.username}
-            onChange={(e) =>
-              setDraft({
-                ...draft,
-                socials: {
-                  ...draft.socials,
-                  discord: { username: e.target.value },
-                },
-              })
-            }
-          />
-        </label>
-      </div>
+
+      <fieldset className="settings-fieldset">
+        <legend>Your socials</legend>
+        <small className="settings-help">
+          add ur socials which will show up on ur public page here, just drop ur handle :) tapping
+          them takes people straight to ur profile on that app.
+        </small>
+        <div className="settings-grid settings-grid--two">
+          <label>
+            <span>TikTok</span>
+            <input className="field" placeholder="@yourname" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={draft.tiktok} onChange={update("tiktok")} />
+          </label>
+          <label>
+            <span>Instagram</span>
+            <input className="field" placeholder="@yourname" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={draft.instagram} onChange={update("instagram")} />
+          </label>
+        </div>
+      </fieldset>
+
+      <label className="settings-field">
+        <span>Things you love</span>
+        <small className="settings-help">
+          these show up in the little box on ur public page. one per row, up to {limits.loves} (like
+          vocaloid, cosplay or drawing).
+        </small>
+        <textarea className="field settings-textarea" rows={4} value={draft.loves} onChange={update("loves")} placeholder={"vocaloid\nthe apothecary diaries\ncosplay"} />
+      </label>
+
+      <label className="settings-field">
+        <span>Your intro song</span>
+        <small className="settings-help">
+          plays when someone taps into ur public page, like guns.lol. pick one from ur music shelf.
+        </small>
+        <select className="field settings-select" value={draft.introSong} onChange={update("introSong")}>
+          <option value="featured">
+            {featured ? `My featured song (${featured.title})` : "My featured song"}
+          </option>
+          {shelf.map((song) => (
+            <option key={song.id} value={song.id}>
+              {song.title}
+              {song.artist ? ` · ${song.artist}` : ""}
+            </option>
+          ))}
+          <option value="none">No intro song</option>
+        </select>
+        <small className="settings-help">
+          {draft.introSong === "none"
+            ? "no music, and no “tap to enter” screen."
+            : !chosen
+              ? "ur music shelf doesn’t have a featured song yet, so there’s no intro song for now."
+              : chosen.provider === "audio"
+                ? "✓ this one starts playing the moment someone taps in."
+                : "this is a link, so it opens its own little player. on iPhones people might need one more tap. songs u upload start right away."}{" "}
+          <Link to="/world/stage">add songs to ur music shelf ↗</Link>
+        </small>
+      </label>
+
       <label className="settings-check">
-        <input
-          type="checkbox"
-          checked={draft.showViews}
-          onChange={(e) => setDraft({ ...draft, showViews: e.target.checked })}
-        />
-        Show the view counter
+        <input type="checkbox" checked={draft.showViews} onChange={update("showViews")} />
+        <span>
+          Show how many people viewed ur page
+          <small className="settings-help">a little eye with the number sits in the top right corner.</small>
+        </span>
       </label>
+
       <div className="settings-card__row">
-        <button
-          type="submit"
-          className="btn btn--primary btn--small"
-          disabled={save.isPending}
-        >
-          {save.isPending ? "Saving…" : "Save profile"}
+        <button type="submit" className="btn btn--primary btn--small" disabled={save.isPending}>
+          {save.isPending ? "Saving…" : "Save"}
         </button>
-        {save.isSuccess && (
-          <span className="status-pill status-pill--on">Saved</span>
-        )}
-        {save.error && (
-          <span className="settings-card__message">{save.error.message}</span>
-        )}
+        <Link className="btn btn--soft btn--small" to="/?view=public">
+          See it like your friends do
+        </Link>
+        {save.isSuccess && <span className="status-pill status-pill--on">Saved ♡</span>}
       </div>
+      {save.error && <p className="settings-card__message" role="alert">{save.error.message}</p>}
     </form>
   );
 }
@@ -678,12 +704,12 @@ export default function SettingsPage() {
   return (
     <div className="settings">
       <h1 className="settings__title">Settings</h1>
+      <PublicProfile />
       <Sharing />
       <Surprises />
       <PhoneWidget />
       <Address />
       <MyFaves />
-      <PublicProfile />
       <Passphrase />
       <section className="settings-card">
         <h2>This device</h2>
