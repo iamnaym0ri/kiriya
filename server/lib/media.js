@@ -1,5 +1,6 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { getDb, schema } from "../db/client.js";
+import { readPersonState, resolvePrefs } from "./personState.js";
 export function isUploadUrl(url) {
   if (typeof url !== "string") return false;
   if (
@@ -23,6 +24,16 @@ export async function isPublicMedia(url) {
   const p = row?.value ?? {};
   if (p.avatarUrl === url || p.cosplays?.some((c) => c.photoUrl === url))
     return true;
+  // Artwork Kiriya pinned to her public board, only while it stays pinned.
+  const { pins } = resolvePrefs((await readPersonState(db, "kiriya")).prefs);
+  if (pins.length) {
+    const [art] = await db
+      .select({ id: schema.artworks.id })
+      .from(schema.artworks)
+      .where(and(inArray(schema.artworks.id, pins.map((pin) => pin.id)), eq(schema.artworks.url, url)))
+      .limit(1);
+    if (art) return true;
+  }
   const [song] = await db
     .select({ id: schema.songs.id })
     .from(schema.songs)

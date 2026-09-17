@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { registerServiceWorker, resyncSurprises } from "../lib/pwa.js";
+import { useNotes } from "../lib/notes.js";
 import { Credits, Icon } from "../shared/WorldPrimitives.jsx";
 import { BirthdayRibbon, MotionToggle } from "../shared/play/PlayfulWorld.jsx";
 import { SketchbookProvider } from "./studio/SketchbookState.jsx";
@@ -17,6 +18,7 @@ export default function WorldShell() {
   const location = useLocation();
   const [menu, setMenu] = useState(false);
   const [credits, setCredits] = useState(false);
+  const unread = useNotes().data?.unread ?? 0;
   useEffect(() => {
     registerServiceWorker()
       .then(() => resyncSurprises())
@@ -62,6 +64,14 @@ export default function WorldShell() {
               <span>Letters</span>
             </NavLink>
             <NavLink
+              to="/world/notes"
+              className="icon-button world-notes-link"
+              aria-label={unread ? `Notes for you, ${unread} new` : "Notes for you"}
+            >
+              <Icon name="heart" size={18} />
+              {unread > 0 && <span className="world-notes-link__count" aria-hidden="true">{unread > 9 ? "9+" : unread}</span>}
+            </NavLink>
+            <NavLink
               to="/world/settings"
               className="icon-button world-settings-link"
               aria-label="Settings"
@@ -101,6 +111,9 @@ export default function WorldShell() {
               Letters & your birthday gift
               <Icon name="mail" size={16} />
             </Link>
+            <Link to="/world/notes">
+              Notes for you{unread ? ` · ${unread} new` : ""} <Icon name="heart" size={16} />
+            </Link>
             <Link to="/world/saves">
               Your saves <Icon name="heart" size={16} />
             </Link>
@@ -115,8 +128,8 @@ export default function WorldShell() {
         </main>
         <footer className="world-footer">
           <span className="handwritten">a little world, entirely yours.</span>
-          <Link to="/">
-            Public profile <Icon name="diagonal" size={12} />
+          <Link to="/?view=public">
+            Your public profile <Icon name="diagonal" size={12} />
           </Link>
           <button onClick={() => setCredits(true)}>Art & credits</button>
           <span>made with love ♡</span>

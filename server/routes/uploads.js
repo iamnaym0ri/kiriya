@@ -43,8 +43,8 @@ uploadRoutes.use("*", async (c, next) => {
   await next();
 });
 
-uploadRoutes.get("/config", (c) => {
-  if (!readSession(c))
+uploadRoutes.get("/config", async (c) => {
+  if (!(await readSession(c)))
     return c.json(
       { error: "locked", message: "Enter the passphrase to open this." },
       401,
@@ -80,7 +80,7 @@ uploadRoutes.post("/blob", async (c) => {
       400,
     );
   }
-  if (body.type !== "blob.upload-completed" && !readSession(c)) {
+  if (body.type !== "blob.upload-completed" && !(await readSession(c))) {
     return c.json(
       { error: "locked", message: "Enter the passphrase to upload." },
       401,
@@ -101,8 +101,8 @@ uploadRoutes.post("/blob", async (c) => {
         507,
       );
   }
-  function authorizePath(pathname) {
-    if (!readSession(c)) throw new Error("Upload session is required");
+  async function authorizePath(pathname) {
+    if (!(await readSession(c))) throw new Error("Upload session is required");
     if (
       !/^(art|avatar|cosplay|songs|photos)\/[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(
         pathname ?? "",
@@ -122,7 +122,7 @@ uploadRoutes.post("/blob", async (c) => {
         request: c.req.raw,
         webhookPublicKey: env.blobWebhookPublicKey,
         getSignedToken: async (pathname) => {
-          authorizePath(pathname);
+          await authorizePath(pathname);
           const constraints = {
             allowedContentTypes: ALLOWED,
             maximumSizeInBytes: MAX_BYTES,
@@ -152,7 +152,7 @@ uploadRoutes.post("/blob", async (c) => {
       body,
       request: c.req.raw,
       onBeforeGenerateToken: async (pathname) => {
-        authorizePath(pathname);
+        await authorizePath(pathname);
         return {
           allowedContentTypes: ALLOWED,
           maximumSizeInBytes: MAX_BYTES,
@@ -181,7 +181,7 @@ uploadRoutes.post("/local", async (c) => {
       { error: "not_found", message: "Nothing lives at this address." },
       404,
     );
-  if (!readSession(c))
+  if (!(await readSession(c)))
     return c.json(
       { error: "locked", message: "Enter the passphrase to upload." },
       401,
@@ -219,7 +219,7 @@ uploadRoutes.get("/file/:name", async (c) => {
     );
   const name = c.req.param("name");
   if (!/^[a-z]+-[0-9a-f]{16}\.[a-z0-9]+$/.test(name)) return c.notFound();
-  if (!readSession(c) && !(await isPublicMedia(`/api/uploads/file/${name}`)))
+  if (!(await readSession(c)) && !(await isPublicMedia(`/api/uploads/file/${name}`)))
     return c.json({ error: "locked" }, 401);
   try {
     const data = await readFile(path.join(LOCAL_DIR, name));
@@ -279,7 +279,7 @@ uploadRoutes.get("/media", async (c) => {
   )
     return c.notFound();
   const canonical = `/api/uploads/media?path=${encodeURIComponent(pathname)}`;
-  if (!readSession(c) && (pathname.startsWith("saves/") || !(await isPublicMedia(canonical))))
+  if (!(await readSession(c)) && (pathname.startsWith("saves/") || !(await isPublicMedia(canonical))))
     return c.json({ error: "locked" }, 401);
   if (!blobReadConfigured()) return c.json({ error: "not_configured" }, 503);
   const range = c.req.header("range");

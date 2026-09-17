@@ -57,3 +57,4 @@
   .feeling-option strong { font-size: 8px; }
   .energy-endpoints > span { font-size: 8px; }
 }
+.mood-save__kept { display: block; margin-top: 3px; font-size: 12px; opacity: 0.8; }

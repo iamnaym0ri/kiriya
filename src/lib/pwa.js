@@ -83,5 +83,5 @@ export async function resyncSurprises() {
   const reg = await registerServiceWorker();
   const subscription = await reg?.pushManager.getSubscription();
   if (subscription) await api("/push/subscribe", { method: "POST", body: subscription.toJSON() }).catch(() => {});
-  if (navigator.clearAppBadge) navigator.clearAppBadge().catch(() => {});
+  // The app badge now follows unread notes (see lib/notes.js) instead of clearing on every open.
 }

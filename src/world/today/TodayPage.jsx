@@ -17,6 +17,7 @@ import { useDailyStyle } from "../../shared/DailyStyle.jsx";
 import WorldWelcome from "../../shared/profile/WorldWelcome.jsx";
 import CosplayPortrait from "../../shared/profile/CosplayPortrait.jsx";
 import NoteJar from "./NoteJar.jsx";
+import HomeNudges from "./HomeNudges.jsx";
 import { EventsStrip, HomeMerch, MemeOfTheDay, NewCount } from "../feeds/FeedPieces.jsx";
 import { useFeed } from "../../lib/feeds.js";
 import "./TodayPage.css";
@@ -38,6 +39,7 @@ export default function TodayPage() {
   const feedsLive = Boolean(useFeed("maomao").data?.revision);
   return (
     <div className="personal-home">
+      <HomeNudges />
       <div className="home-dateline">
         <span>YOUR LITTLE LILAC WORLD</span>
         <span>

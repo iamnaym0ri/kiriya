@@ -1,7 +1,8 @@
 import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { forgetSession, isSessionEnded, sessionKey } from "./lib/session.js";
 import { MotionConfig } from "motion/react";
 import "./styles/fonts.css";
 import "./styles/tokens.css";
@@ -20,7 +21,14 @@ import PageLoader from "./shared/PageLoader.jsx";
 const World = lazy(() => import("./world/World.jsx"));
 const Admin = lazy(() => import("./admin/Admin.jsx"));
 
+// When a session ends mid-visit, go back to the passphrase instead of showing broken pages.
+function onSessionEnded(error) {
+  if (isSessionEnded(error) && queryClient.getQueryData(sessionKey)?.role) forgetSession(queryClient);
+}
+
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({ onError: onSessionEnded }),
+  mutationCache: new MutationCache({ onError: onSessionEnded }),
   defaultOptions: {
     queries: {
       retry: (count, error) => error?.status !== 401 && count < 2,

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api.js";
 import { shrinkImage, uploadFile } from "../../lib/uploads.js";
 import { Modal } from "../../shared/WorldPrimitives.jsx";
+import { usePrefs, useSetPin } from "../../lib/prefs.js";
 import { downloadBlob, groupArtworksByDate } from "../studio/drawingTools.js";
 
 export default function DoodleGallery({ open, onToggle }) {
@@ -11,6 +12,8 @@ export default function DoodleGallery({ open, onToggle }) {
   const [adding, setAdding] = useState(false), [file, setFile] = useState(null), [caption, setCaption] = useState("");
   const [viewId, setViewId] = useState(null), [date, setDate] = useState("all"), [downloadError, setDownloadError] = useState("");
   const artworks = gallery.data?.artworks ?? [];
+  const prefs = usePrefs(), setPin = useSetPin();
+  const pinned = new Set((prefs.data?.pins ?? []).map(pin => pin.id));
   const groups = groupArtworksByDate(artworks);
   const index = artworks.findIndex(art => art.id === viewId), viewing = artworks[index];
   const upload = useMutation({
@@ -52,8 +55,8 @@ export default function DoodleGallery({ open, onToggle }) {
           {groups.length > 1 && <label className="doodle-date-filter">Find a day <select value={date} onChange={event => setDate(event.target.value)}><option value="all">All your days</option>{groups.map(group => <option key={group.key} value={group.key}>{group.label}</option>)}</select></label>}
           {groups.filter(group => date === "all" || date === group.key).map(group => <section key={group.key} className="doodle-gallery__day" aria-label={group.label}>
             <h4><time dateTime={group.key === "undated" ? undefined : group.key}>{group.label}</time><span>{group.artworks.length} {group.artworks.length === 1 ? "page" : "pages"}</span></h4>
-            <ul>{group.artworks.map(art => <li key={art.id}><button onClick={() => { setViewId(art.id); remove.reset(); setDownloadError(""); }} aria-label={`Open ${art.prompt || "saved doodle"}`}>
-              <img src={art.url} loading="lazy" alt={art.prompt || "A saved doodle"} /><span>{art.prompt || "a little untitled thing"}</span>
+            <ul>{group.artworks.map(art => <li key={art.id}><button onClick={() => { setViewId(art.id); remove.reset(); setPin.reset(); setDownloadError(""); }} aria-label={`Open ${art.prompt || "saved doodle"}`}>
+              <img src={art.url} loading="lazy" alt={art.prompt || "A saved doodle"} /><span>{pinned.has(art.id) && <span className="doodle-pinned" title="Pinned to your public profile">📌 </span>}{art.prompt || "a little untitled thing"}</span>
             </button></li>)}</ul>
           </section>)}
         </>}
@@ -72,12 +75,15 @@ export default function DoodleGallery({ open, onToggle }) {
       <img src={viewing.url} alt={viewing.prompt || "A saved doodle"} />
       <p>{groupArtworksByDate([viewing])[0].label}</p>
       <div className="doodle-viewer-actions">
-        <button className="doodle-link" disabled={remove.isPending || artworks.length < 2} onClick={() => { setViewId(artworks[(index + artworks.length - 1) % artworks.length].id); setDownloadError(""); }}>← Previous</button>
+        <button className="doodle-link" disabled={remove.isPending || artworks.length < 2} onClick={() => { setViewId(artworks[(index + artworks.length - 1) % artworks.length].id); setPin.reset(); setDownloadError(""); }}>← Previous</button>
         <button className="doodle-link" onClick={download}>Download image ↗</button>
-        <button className="doodle-link" disabled={remove.isPending || artworks.length < 2} onClick={() => { setViewId(artworks[(index + 1) % artworks.length].id); setDownloadError(""); }}>Next →</button>
+        <button className="doodle-link" disabled={remove.isPending || artworks.length < 2} onClick={() => { setViewId(artworks[(index + 1) % artworks.length].id); setPin.reset(); setDownloadError(""); }}>Next →</button>
       </div>
+      <button className="doodle-link doodle-pin-toggle" aria-pressed={pinned.has(viewing.id)} disabled={setPin.isPending || !prefs.data} onClick={() => setPin.mutate({ id: viewing.id, pinned: !pinned.has(viewing.id) })}>
+        {setPin.isPending ? "Pinning…" : pinned.has(viewing.id) ? "📌 Pinned to your public profile · unpin" : "📌 Pin to your public profile"}
+      </button>
       <button className="doodle-link" disabled={remove.isPending} onClick={() => { if (window.confirm("Delete this saved artwork? This cannot be undone.")) remove.mutate(viewing.id); }}>{remove.isPending ? "Removing…" : "Delete saved artwork"}</button>
-      {(remove.error || downloadError) && <p role="alert">{remove.error?.message || downloadError}</p>}
+      {(remove.error || setPin.error || downloadError) && <p role="alert">{remove.error?.message || setPin.error?.message || downloadError}</p>}
     </Modal>}
   </div>;
 }

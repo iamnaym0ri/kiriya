@@ -1,0 +1,15 @@
+.home-nudges { display: grid; gap: 12px; margin: 4px 0 22px; }
+.home-nudge { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 14px 18px; background: #fff9fd; border: 1px dashed #cfb6d6; box-shadow: 3px 4px 0 #ecdff0; }
+.home-nudge--note { border-style: solid; border-color: #caa6cf; }
+.home-nudge__mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #f2e5f5; font-size: 19px; color: #93749e; }
+.home-nudge p { display: grid; gap: 2px; min-width: 0; }
+.home-nudge strong { font: 400 20px/1.2 var(--font-literary); color: #493653; }
+.home-nudge p span { font-size: 13px; line-height: 1.5; color: #77647f; overflow-wrap: anywhere; }
+.home-nudge__actions { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
+.home-nudge .button-plum { min-height: 44px; padding: 10px 16px; }
+@media (max-width: 720px) {
+  .home-nudge { grid-template-columns: auto minmax(0, 1fr); padding: 14px; }
+  .home-nudge > :last-child { grid-column: 1 / -1; justify-self: stretch; }
+  .home-nudge .button-plum, .home-nudge .button-paper { justify-content: center; }
+  .home-nudge__actions { justify-content: space-between; }
+}

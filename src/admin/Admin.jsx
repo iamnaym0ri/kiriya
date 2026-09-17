@@ -80,12 +80,6 @@ function Daily() {
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["admin", "pushes"] }),
   });
-  const [custom, setCustom] = useState({ title: "", body: "" });
-  const sendCustom = useMutation({
-    mutationFn: () =>
-      api("/admin/pushes/custom", { method: "POST", body: custom }),
-    onSuccess: () => setCustom({ title: "", body: "" }),
-  });
 
   return (
     <section className="admin-card">
@@ -152,44 +146,180 @@ function Daily() {
         ))}
       </ul>
 
-      <h3>Send Kiriya a surprise right now</h3>
+    </section>
+  );
+}
+
+const sgTime = (value) =>
+  new Date(value).toLocaleString("en-SG", { timeZone: "Asia/Singapore", dateStyle: "medium", timeStyle: "short" });
+
+function noteOutcome(note) {
+  if (note.status === "scheduled") return `scheduled for ${sgTime(note.sendAt)}`;
+  if (note.status === "canceled") return "canceled";
+  if (note.status === "sending") return "sending…";
+  const push = note.pushResult ?? {};
+  const phone = push.skipped
+    ? `in their world (${push.skipped})`
+    : push.error
+      ? `in their world; notification failed: ${push.error}`
+      : push.targets === 0
+        ? "in their world; no phone has notifications on"
+        : `notified ${push.sent} of ${push.targets} device(s)`;
+  return `${sgTime(note.sentAt ?? note.sendAt)} · ${phone}${note.openedAt ? ` · read ${sgTime(note.openedAt)} ♡` : " · not read yet"}`;
+}
+
+const EMPTY_NOTE = { recipient: "kiriya", kind: "note", title: "", body: "", mode: "now", at: "" };
+
+function LoveNotes() {
+  const queryClient = useQueryClient();
+  const notes = useQuery({ queryKey: ["admin", "love-notes"], queryFn: () => api("/admin/love-notes") });
+  const [draft, setDraft] = useState(EMPTY_NOTE);
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["admin", "love-notes"] });
+  const send = useMutation({
+    mutationFn: () =>
+      api("/admin/love-notes", {
+        method: "POST",
+        body: {
+          recipient: draft.recipient,
+          kind: draft.kind,
+          title: draft.title,
+          body: draft.body,
+          when:
+            draft.mode === "at"
+              ? { mode: "at", at: new Date(`${draft.at}:00+08:00`).toISOString() }
+              : { mode: draft.mode },
+        },
+      }),
+    onSuccess: () => {
+      setDraft({ ...EMPTY_NOTE, recipient: draft.recipient });
+      refresh();
+    },
+  });
+  const cancel = useMutation({
+    mutationFn: (id) => api(`/admin/love-notes/${id}`, { method: "DELETE" }),
+    onSuccess: refresh,
+  });
+  const data = notes.data;
+  const hour = draft.mode === "at" && draft.at ? Number(draft.at.slice(11, 13)) : null;
+  const outsideWindow = data && hour !== null && (hour < data.window.startHour || hour >= data.window.endHour);
+  const set = (key) => (e) => setDraft({ ...draft, [key]: e.target.value });
+
+  return (
+    <section className="admin-card">
+      <h2>Little notes to her phone</h2>
+      <p className="admin-muted">
+        Each note lands in her world’s “notes for you” page at its time and buzzes every phone where she turned on
+        notifications. Send one to “my test devices” to try it on your own iPhone without touching hers.
+      </p>
+      {data && (
+        <p className="admin-muted">
+          Kiriya’s phones with notifications: {data.devices.kiriya} · your test devices: {data.devices.admin} · her
+          window: {data.window.startHour}:00–{data.window.endHour}:00
+          {!data.push && " · push keys aren’t configured here"}
+          {!data.scheduler && " · no scheduler here: timed notes go out with the daily backstop"}
+        </p>
+      )}
       <form
         className="admin-form"
         onSubmit={(e) => {
           e.preventDefault();
-          sendCustom.mutate();
+          send.mutate();
         }}
       >
-        <input
-          className="field"
-          placeholder="Title (up to 40)"
-          maxLength={40}
-          value={custom.title}
-          onChange={(e) => setCustom({ ...custom, title: e.target.value })}
+        <div className="admin-row">
+          <select className="field" value={draft.recipient} onChange={set("recipient")} aria-label="Send to">
+            <option value="kiriya">To Kiriya</option>
+            <option value="admin">To my test devices</option>
+          </select>
+          <select className="field" value={draft.kind} onChange={set("kind")} aria-label="Kind of note">
+            <option value="note">💌 A little note</option>
+            <option value="surprise">🎁 A surprise</option>
+            <option value="update">✦ An update</option>
+          </select>
+        </div>
+        <input className="field" placeholder="Title (shows on her lock screen)" maxLength={60} value={draft.title} onChange={set("title")} />
+        <textarea
+          className="field admin-textarea admin-textarea--short"
+          rows={4}
+          maxLength={1000}
+          placeholder="The note. The first line or two shows in the notification; all of it waits in her world."
+          value={draft.body}
+          onChange={set("body")}
         />
-        <input
-          className="field"
-          placeholder="Message (up to 110)"
-          maxLength={110}
-          value={custom.body}
-          onChange={(e) => setCustom({ ...custom, body: e.target.value })}
-        />
-        <button
-          type="submit"
-          className="btn btn--primary btn--small"
-          disabled={!custom.title || !custom.body || sendCustom.isPending}
-        >
-          Send
-        </button>
-        {sendCustom.isSuccess && (
-          <p className="admin-muted">
-            Sent to {sendCustom.data.sent} device(s).
-          </p>
-        )}
-        {sendCustom.error && (
-          <p className="admin-error">{sendCustom.error.message}</p>
-        )}
+        <div className="admin-row">
+          <select className="field" value={draft.mode} onChange={set("mode")} aria-label="When">
+            <option value="now">Send now</option>
+            <option value="at">At a time (Singapore)</option>
+            <option value="surprise">Surprise me: a random time in her window</option>
+          </select>
+          {draft.mode === "at" && (
+            <input className="field" type="datetime-local" value={draft.at} onChange={set("at")} aria-label="Send at, Singapore time" required />
+          )}
+          <button type="submit" className="btn btn--primary btn--small" disabled={!draft.title.trim() || !draft.body.trim() || send.isPending}>
+            {send.isPending ? "Sending…" : draft.mode === "now" ? "Send" : "Schedule"}
+          </button>
+        </div>
+        {outsideWindow && <p className="admin-error">That’s outside her notification hours; it will still arrive then.</p>}
+        {send.isSuccess && <p className="admin-muted">{noteOutcome(send.data.note)}{send.data.schedule?.error ? ` · ${send.data.schedule.error}` : ""}</p>}
+        {send.error && <p className="admin-error">{send.error.message}</p>}
       </form>
+      <ul className="admin-list">
+        {(data?.notes ?? []).map((note) => (
+          <li key={note.id}>
+            <div>
+              <strong>
+                {note.recipient === "admin" ? "[test] " : ""}
+                {note.title}
+              </strong>
+              <p>{note.body}</p>
+              <p className="admin-muted">{noteOutcome(note)}</p>
+            </div>
+            {note.status === "scheduled" && (
+              <button type="button" className="btn btn--ghost btn--small" onClick={() => cancel.mutate(note.id)}>
+                Cancel
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {cancel.error && <p className="admin-error">{cancel.error.message}</p>}
+    </section>
+  );
+}
+
+function Passphrases() {
+  const queryClient = useQueryClient();
+  const credentials = useQuery({ queryKey: ["admin", "credentials"], queryFn: () => api("/admin/credentials") });
+  const reset = useMutation({
+    mutationFn: () => api("/admin/credentials/kiriya/reset", { method: "POST", body: {} }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin", "credentials"] }),
+  });
+  const kiriya = credentials.data?.kiriya;
+  return (
+    <section className="admin-card">
+      <h2>Passphrases</h2>
+      <p className="admin-muted">
+        Kiriya can change her passphrase in Settings, and you can change yours there too.{" "}
+        {kiriya?.custom
+          ? `She chose her own on ${sgTime(kiriya.changedAt)}.`
+          : "She is using the passphrase configured in Vercel."}
+      </p>
+      {kiriya?.custom && (
+        <div className="admin-row">
+          <button
+            type="button"
+            className="btn btn--ghost btn--small"
+            disabled={reset.isPending}
+            onClick={() => {
+              if (window.confirm("Reset Kiriya to the passphrase configured in Vercel? Her devices will be signed out.")) reset.mutate();
+            }}
+          >
+            {reset.isPending ? "Resetting…" : "She forgot it: reset to the Vercel passphrase"}
+          </button>
+        </div>
+      )}
+      {reset.isSuccess && <p className="admin-muted">Reset. Her devices will ask for the original passphrase.</p>}
+      {reset.error && <p className="admin-error">{reset.error.message}</p>}
     </section>
   );
 }
@@ -200,6 +330,7 @@ const EMPTY_LETTER = {
   body: "",
   openWhen: "",
   unlockAt: "",
+  notify: true,
 };
 
 function Letters() {
@@ -222,6 +353,7 @@ function Letters() {
         unlockAt: draft.unlockAt
           ? new Date(`${draft.unlockAt}T00:00:00+08:00`).toISOString()
           : null,
+        ...(editing ? {} : { notify: draft.notify }),
       };
       return editing
         ? api(`/admin/letters/${editing}`, { method: "PUT", body })
@@ -291,6 +423,16 @@ function Letters() {
           value={draft.body}
           onChange={(e) => setDraft({ ...draft, body: e.target.value })}
         />
+        {!editing && (
+          <label className="admin-row">
+            <input
+              type="checkbox"
+              checked={draft.notify}
+              onChange={(e) => setDraft({ ...draft, notify: e.target.checked })}
+            />
+            Tell her phone{draft.unlockAt ? " when it unlocks" : ""}
+          </label>
+        )}
         <div className="admin-row">
           <button
             type="submit"
@@ -336,6 +478,7 @@ function Letters() {
                 onClick={() => {
                   setEditing(letter.id);
                   setDraft({
+                    notify: false,
                     kind: letter.kind,
                     title: letter.title,
                     body: letter.body,
@@ -598,10 +741,12 @@ export default function Admin() {
       </header>
       <h1 className="admin__title">Admin desk</h1>
       <Status />
+      <LoveNotes />
       <FeedPanel />
       <Letters />
       <Notes />
       <ProfileMedia />
+      <Passphrases />
       <Daily />
     </div>
   );

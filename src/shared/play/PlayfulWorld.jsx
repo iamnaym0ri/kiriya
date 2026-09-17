@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePrefs, useSetPrefs } from "../../lib/prefs.js";
 import { celebrate } from "../effects.js";
 import MaomaoMascot from "../../world/mascot/MaomaoMascot.jsx";
 import { useMusic } from "../music/MusicRoom.jsx";
@@ -26,6 +27,14 @@ export function PlayfulProvider({ children }) {
     () => matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
   const [visible, setVisible] = useState(!document.hidden);
+  // Once she has chosen while unlocked, the choice follows her to every device and the Home
+  // Screen app; visitors (and devices before that choice) keep this browser's own setting.
+  const prefs = usePrefs();
+  const setPrefs = useSetPrefs();
+  const savedMotion = prefs.data?.motion;
+  useEffect(() => {
+    if (savedMotion) setPaused(savedMotion === "quiet");
+  }, [savedMotion]);
   const [ribbonTime, setRibbonTime] = useState(() => ribbonMoment());
   const location = useLocation();
   const moving = !paused && !reduced && visible;
@@ -105,7 +114,11 @@ export function PlayfulProvider({ children }) {
   }, [location.pathname]);
   return (
     <PlayContext.Provider
-      value={{ moving, paused, reduced, day: ribbonTime.day, ribbonSlot: ribbonTime.slot, toggle: () => setPaused((p) => !p) }}
+      value={{ moving, paused, reduced, day: ribbonTime.day, ribbonSlot: ribbonTime.slot, toggle: () => {
+        const next = !paused;
+        setPaused(next);
+        if (prefs.data) setPrefs.mutate({ motion: next ? "quiet" : "lively" });
+      } }}
     >
       {children}
       <div className="ambient-charms" aria-hidden="true">

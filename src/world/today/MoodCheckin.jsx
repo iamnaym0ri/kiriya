@@ -49,7 +49,7 @@ export default function MoodCheckin({ data, onDone }) {
       </section>
     </fieldset>
     <footer className="mood-save">
-      <p>{emotion?.response ?? "a little colour shift. still your lilac world. ♡"}</p>
+      <p>{emotion?.response ?? "a little colour shift. still your lilac world. ♡"}{data.labels.kept && <small className="mood-save__kept">{data.labels.kept}</small>}</p>
       {save.error && <p className="mood-error" role="alert">{save.error.message} Your previous choice is still kept.</p>}
       <button type="submit" className="button-plum" disabled={!choice || save.isPending}>{save.isPending ? "Keeping today’s feeling…" : "Keep today’s feeling ♡"}</button>
     </footer>

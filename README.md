@@ -4,6 +4,7 @@ Kiriya’s little lilac world: a floral public profile and a private, illustrate
 
 - [Redesign report](docs/redesign/IMPLEMENTATION.md)
 - [Asset and source register](docs/redesign/ASSETS.md)
+- [Remembered choices, public profile, phone notes and widget](docs/PERSONAL-WORLD.md)
 - [Production setup](docs/SETUP.md)
 - [Current production preparation and publishing steps](docs/PRODUCTION-SETUP.md)
 - [Execution brief](docs/execute.md) and [original handoff](docs/HANDOFF-REPORT.md)
@@ -32,6 +33,8 @@ Local storage uses PGlite in `.data/` and files in `.data/uploads/`. Development
 | Hono API and authenticated media | `server/routes/` |
 | Finite sourced selection and existing daily job | `server/content/collection.js`, `server/engine/` |
 | Optional notification planning and delivery | `server/push/` |
+| Remembered choices, sharing, pins, passphrase changes | `server/lib/personState.js`, `server/lib/publicProfile.js`, `server/routes/passphrase.js` |
+| Notes to her phone and the widget API | `server/lib/loveNotes.js`, `server/routes/widget.js`, `src/world/notes/` |
 
 Retired source modules remain in the repository as history; they are not part of active routes or the daily content path. No AI service, broad news feed, training dashboard or additional scheduler is required.
 

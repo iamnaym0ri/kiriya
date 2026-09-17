@@ -8,6 +8,8 @@ import { jobRoutes } from "./routes/jobs.js";
 import { pushRoutes } from "./routes/push.js";
 import { uploadRoutes } from "./routes/uploads.js";
 import { feedRoutes, feedAdminRoutes, feedJobRoutes } from "./routes/feeds.js";
+import { adminLoveNoteRoutes } from "./routes/loveNotes.js";
+import { widgetRoutes } from "./routes/widget.js";
 
 const app = new Hono().basePath("/api");
 
@@ -16,9 +18,10 @@ const app = new Hono().basePath("/api");
 app.use("*", async (c, next) => {
   if (/^\/api\/(?:me\/(?:feed|faves)|admin\/feeds|jobs\/feeds)(?:\/|$)/.test(c.req.path)) c.header("Cache-Control", "private, no-store");
   const method = c.req.method;
-  // Exempt: signed job callbacks, and Blob's upload handshake (its client library can't add headers;
-  // that route checks the session cookie itself, and SameSite=Lax keeps other sites out).
-  const exempt = c.req.path.startsWith("/api/jobs/") || c.req.path === "/api/uploads/blob";
+  // Exempt: signed job callbacks, Blob's upload handshake (its client library can't add headers;
+  // that route checks the session cookie itself, and SameSite=Lax keeps other sites out), and the
+  // phone widget API, which never reads cookies and requires its own device key header.
+  const exempt = c.req.path.startsWith("/api/jobs/") || c.req.path === "/api/uploads/blob" || c.req.path === "/api/widget" || c.req.path.startsWith("/api/widget/");
   if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS" && !exempt) {
     if (c.req.header("x-kw") !== "1") return c.json({ error: "bad_request", message: "Missing request header." }, 400);
   }
@@ -38,11 +41,13 @@ app.route("/push", pushRoutes);
 
 app.use("/admin/*", requireRole("admin"));
 app.route("/admin/feeds", feedAdminRoutes);
+app.route("/admin/love-notes", adminLoveNoteRoutes);
 app.route("/admin", adminRoutes);
 
 app.route("/jobs/feeds", feedJobRoutes);
 app.route("/jobs", jobRoutes);
 app.route("/uploads", uploadRoutes);
+app.route("/widget", widgetRoutes);
 
 app.notFound((c) => c.json({ error: "not_found", message: "Nothing lives at this address." }, 404));
 app.onError((error, c) => {

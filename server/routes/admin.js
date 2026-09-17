@@ -7,6 +7,7 @@ import { getDb, schema } from "../db/client.js";
 import { env } from "../env.js";
 import { blobUploadMode } from "../lib/blob.js";
 import { isPassphraseHash } from "../auth/passphrase.js";
+import { newSessionKey, readCredential, writeCredential } from "../auth/credentials.js";
 import { localDay } from "../lib/time.js";
 import { runDailyAndPlan } from "./jobs.js";
 import { claimPush, qstashConfigured } from "../push/planner.js";
@@ -14,6 +15,7 @@ import { pushConfigured, sendToSubscribers } from "../push/webpush.js";
 import { COLLECTION_VERSION } from "../content/collection.js";
 import { kiriya } from "../content/kiriya.js";
 import { publicProfileDefaults } from "../content/publicProfile.js";
+import { sendOrSchedule } from "./loveNotes.js";
 
 export const adminRoutes = new Hono();
 
@@ -72,6 +74,22 @@ adminRoutes.get("/status", async (c) => {
         }
       : null,
   });
+});
+
+// ---------- passphrase recovery ----------
+
+adminRoutes.get("/credentials", async (c) => {
+  const db = await getDb();
+  const [kiriyaRow, adminRow] = await Promise.all([readCredential("kiriya", db), readCredential("admin", db)]);
+  const describe = (row) => ({ custom: Boolean(row?.hash), changedAt: row?.changedAt ?? null });
+  return c.json({ kiriya: describe(kiriyaRow), admin: describe(adminRow) });
+});
+
+// If Kiriya forgets a phrase she chose, the one configured in Vercel opens her world again.
+// Her devices are signed out so the reset can't leave a forgotten session behind.
+adminRoutes.post("/credentials/kiriya/reset", async (c) => {
+  await writeCredential(await getDb(), "kiriya", { hash: null, sessionKey: newSessionKey() });
+  return c.json({ ok: true });
 });
 
 // ---------- daily job and pushes ----------
@@ -184,6 +202,8 @@ const letterBody = z.object({
   body: z.string().trim().min(1).max(20_000),
   openWhen: z.string().trim().max(120).nullable().optional(),
   unlockAt: z.string().datetime({ offset: true }).nullable().optional(),
+  // New letters only: let Kiriya's phone know, when it's written or when it unlocks.
+  notify: z.boolean().optional(),
 });
 
 adminRoutes.get("/letters", async (c) => {
@@ -207,7 +227,7 @@ adminRoutes.post("/letters", async (c) => {
       400,
     );
   const db = await getDb();
-  const { unlockAt, ...rest } = parsed.data;
+  const { unlockAt, notify, ...rest } = parsed.data;
   const [row] = await db
     .insert(schema.letters)
     .values({
@@ -216,7 +236,17 @@ adminRoutes.post("/letters", async (c) => {
       unlockAt: unlockAt ? new Date(unlockAt) : null,
     })
     .returning();
-  return c.json(row);
+  const announcement = notify
+    ? await sendOrSchedule(db, {
+        recipient: "kiriya",
+        kind: "update",
+        title: "a new letter for you ✉",
+        body: `“${row.title}” is waiting in your letters ♡`,
+        link: "/world/letters",
+        sendAt: row.unlockAt && row.unlockAt.getTime() > Date.now() ? row.unlockAt : new Date(),
+      })
+    : null;
+  return c.json({ ...row, announcement });
 });
 
 adminRoutes.put("/letters/:id", async (c) => {
@@ -230,7 +260,7 @@ adminRoutes.put("/letters/:id", async (c) => {
       400,
     );
   const db = await getDb();
-  const { unlockAt, ...rest } = parsed.data;
+  const { unlockAt, notify: _notify, ...rest } = parsed.data;
   const [row] = await db
     .update(schema.letters)
     .set({

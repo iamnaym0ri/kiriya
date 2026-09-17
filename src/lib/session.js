@@ -8,8 +8,23 @@ export function useSession() {
     queryKey: sessionKey,
     queryFn: () => api("/session"),
     staleTime: 60_000,
+    // Sessions last two days; coming back to the app is when that's most likely to have happened.
+    refetchOnWindowFocus: true,
   });
 }
+
+/** Forgets everything private on this device and shows the passphrase again. */
+export async function forgetSession(queryClient) {
+  window.dispatchEvent(new Event("kiriya:locked"));
+  await queryClient.cancelQueries();
+  // Keep the session query so mounted providers receive the locked state.
+  // Removing it first leaves their observers attached to the old record.
+  queryClient.setQueryData(sessionKey, { role: null });
+  queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== sessionKey[0] });
+}
+
+/** A request the server turned away because the session ended (two days passed, or signed out elsewhere). */
+export const isSessionEnded = (error) => error?.status === 401 && error.code === "locked";
 
 export function useUnlock() {
   const queryClient = useQueryClient();
@@ -26,13 +41,6 @@ export function useLock() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => api("/session/lock", { method: "POST", body: {} }),
-    onSuccess: async () => {
-      window.dispatchEvent(new Event("kiriya:locked"));
-      await queryClient.cancelQueries();
-      // Keep the session query so mounted providers receive the locked state.
-      // Removing it first leaves their observers attached to the old record.
-      queryClient.setQueryData(sessionKey, { role: null });
-      queryClient.removeQueries({ predicate: query => query.queryKey[0] !== sessionKey[0] });
-    },
+    onSuccess: () => forgetSession(queryClient),
   });
 }

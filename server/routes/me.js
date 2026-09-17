@@ -1,14 +1,16 @@
 import { isUploadUrl } from "../lib/media.js";
 import { Hono } from "hono";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, schema } from "../db/client.js";
 import { env } from "../env.js";
 import { localDay, zonedParts } from "../lib/time.js";
 import { birthdayInfo } from "../lib/birthday.js";
 import { getOrCreateDay } from "../engine/day.js";
-import { ADDRESS_OPTIONS, MOODS, moodByKey, feelingByKey } from "../content/moods.js";
+import { ADDRESS_OPTIONS, moodByKey, feelingByKey } from "../content/moods.js";
 import { readCheckin, saveCheckin, saveAddressPreference } from "../lib/checkin.js";
+import { HINT_KEYS, MAX_PINS, SHARING_KEYS, readPersonState, resolvePrefs, updatePersonState } from "../lib/personState.js";
+import { buildPublicProfile } from "../lib/publicProfile.js";
 import { publicProfileDefaults } from "../content/publicProfile.js";
 import { kiriya } from "../content/kiriya.js";
 import { maomaoBirthdayLetter } from "../content/birthday.js";
@@ -21,10 +23,16 @@ import { atelierRoutes } from "./atelier.js";
 import { apothecaryRoutes } from "./apothecary.js";
 import { noteJarRoutes } from "./noteJar.js";
 import { maomaoRoutes } from "./maomao.js";
+import { passphraseRoutes } from "./passphrase.js";
+import { meLoveNoteRoutes } from "./loveNotes.js";
+import { MAX_ACTIVE_KEYS, createDeviceKey, listDeviceKeys, revokeDeviceKey } from "../lib/deviceKeys.js";
+import { scriptableWidget } from "../content/widgetScript.js";
 
 export const meRoutes = new Hono();
 meRoutes.route("/note-jar", noteJarRoutes);
 meRoutes.route("/maomao", maomaoRoutes);
+meRoutes.route("/passphrase", passphraseRoutes);
+meRoutes.route("/notes", meLoveNoteRoutes);
 
 function segmentOf(hour) {
   if (hour >= 5 && hour < 11) return "morning";
@@ -52,6 +60,7 @@ meRoutes.post("/dev/reset-today", async (c) => {
     );
   const db = await getDb();
   const day = localDay();
+  await updatePersonState(db, c.get("session").role, () => ({ status: null }));
   await db.delete(schema.moods).where(eq(schema.moods.day, day));
   await db.delete(schema.settings).where(eq(schema.settings.key, `daily_feeling:${day}`));
   await db.delete(schema.drawers).where(eq(schema.drawers.day, day));
@@ -101,7 +110,7 @@ meRoutes.get("/today", async (c) => {
   });
 });
 
-meRoutes.get("/mood", async (c) => c.json(await readCheckin(await getDb(), localDay())));
+meRoutes.get("/mood", async (c) => c.json(await readCheckin(await getDb(), localDay(), c.get("session").role)));
 
 const checkinBody = z.object({
   mood: z.enum(Object.keys(moodByKey)),
@@ -112,35 +121,103 @@ const checkinBody = z.object({
 meRoutes.put("/mood", async (c) => {
   const parsed = checkinBody.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: "bad_choice", message: "Choose one of today’s options and try again." }, 400);
-  return c.json(await saveCheckin(await getDb(), localDay(), parsed.data));
+  return c.json(await saveCheckin(await getDb(), localDay(), parsed.data, c.get("session").role));
 });
 
 meRoutes.get("/address", async (c) => {
-  const db = await getDb();
-  const overrides = (await getSetting(db, "address_overrides", null)) ?? {};
+  const { choices, addressOptions } = await readCheckin(await getDb(), localDay(), c.get("session").role);
   return c.json({
-    options: Object.keys(ADDRESS_OPTIONS),
-    moods: MOODS.map((m) => ({
-      key: m.key,
-      label: m.label,
-      current: (overrides[m.key] ?? m.address).label,
-    })),
+    options: addressOptions,
+    moods: choices.map((m) => ({ key: m.key, label: m.label, current: m.address.label })),
   });
 });
 
 meRoutes.put("/address", async (c) => {
   const body = await c.req.json().catch(() => ({}));
-  const moodKey = body.mood;
-  const option = ADDRESS_OPTIONS[body.address];
-  if (!Object.hasOwn(moodByKey, moodKey) || !Object.hasOwn(ADDRESS_OPTIONS, body.address))
+  if (!Object.hasOwn(moodByKey, body.mood) || !Object.hasOwn(ADDRESS_OPTIONS, body.address))
     return c.json(
       { error: "bad_choice", message: "Pick one of the options on the list." },
       400,
     );
-  const db = await getDb();
-  await saveAddressPreference(db, moodKey, option);
-  return c.json({ ok: true, mood: moodKey, address: option.label });
+  await saveAddressPreference(await getDb(), body.mood, body.address, c.get("session").role);
+  return c.json({ ok: true, mood: body.mood, address: body.address });
 });
+
+// ---------- remembered preferences, sharing and the public pin board ----------
+
+// Settings wording for each shareable part of the check-in. Kept on the server with the rest of
+// the identity wording, so no client bundle carries it.
+const SHARING_LABELS = [
+  { key: "address", label: "Your pronouns", hint: "the ones you picked for how you’re presenting" },
+  { key: "presentation", label: "How you’re presenting", hint: "femme, fluid, masc or just you" },
+  { key: "feeling", label: "Your mood", hint: "happy, sad, playful… with its little emoji" },
+  { key: "energy", label: "Your social battery", hint: "from “kindly fuck off” to full yap" },
+];
+
+async function prefsResponse(db, person) {
+  const state = await readPersonState(db, person);
+  return { ...resolvePrefs(state.prefs), revision: state.revision, maxPins: MAX_PINS, sharingLabels: SHARING_LABELS };
+}
+
+meRoutes.get("/prefs", async (c) => c.json(await prefsResponse(await getDb(), c.get("session").role)));
+
+const prefsPatch = z
+  .object({
+    motion: z.enum(["lively", "quiet"]),
+    cornerSmall: z.boolean(),
+    sharing: z.object(Object.fromEntries(SHARING_KEYS.map((key) => [key, z.boolean()]))).partial().strict(),
+    hints: z.partialRecord(z.enum(HINT_KEYS), z.boolean()),
+  })
+  .partial()
+  .strict();
+
+meRoutes.patch("/prefs", async (c) => {
+  const parsed = prefsPatch.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_prefs", message: "That setting couldn’t be saved." }, 400);
+  const { sharing, hints, ...rest } = parsed.data;
+  const db = await getDb();
+  const person = c.get("session").role;
+  await updatePersonState(db, person, (state) => ({
+    prefs: {
+      ...state.prefs,
+      ...rest,
+      ...(sharing ? { sharing: { ...state.prefs.sharing, ...sharing } } : {}),
+      ...(hints ? { hints: { ...state.prefs.hints, ...hints } } : {}),
+    },
+  }));
+  return c.json(await prefsResponse(db, person));
+});
+
+meRoutes.put("/pins/:id", async (c) => {
+  const id = c.req.param("id");
+  const body = z.object({ pinned: z.boolean() }).strict().safeParse(await c.req.json().catch(() => null));
+  if (!body.success || !z.string().uuid().safeParse(id).success)
+    return c.json({ error: "bad_pin", message: "That artwork couldn’t be pinned." }, 400);
+  const db = await getDb();
+  const [art] = await db.select({ id: schema.artworks.id }).from(schema.artworks).where(eq(schema.artworks.id, id));
+  if (!art && body.data.pinned) return c.json({ error: "not_found", message: "That artwork isn’t in your gallery anymore." }, 404);
+  const person = c.get("session").role;
+  let full = false;
+  await updatePersonState(db, person, async (state) => {
+    const pins = state.prefs.pins ?? [];
+    const alive = pins.length
+      ? new Set((await db.select({ id: schema.artworks.id }).from(schema.artworks).where(inArray(schema.artworks.id, pins.map((pin) => pin.id)))).map((row) => row.id))
+      : new Set();
+    const kept = pins.filter((pin) => pin.id !== id && alive.has(pin.id));
+    full = body.data.pinned && !pins.some((pin) => pin.id === id) && kept.length >= MAX_PINS;
+    if (full) return {};
+    const existing = pins.find((pin) => pin.id === id);
+    const next = body.data.pinned ? [existing ?? { id, at: new Date().toISOString() }, ...kept] : kept;
+    return { prefs: { ...state.prefs, pins: next } };
+  });
+  if (full)
+    return c.json({ error: "board_full", message: `Your board holds ${MAX_PINS} pieces. Unpin one to make room.` }, 409);
+  return c.json(await prefsResponse(db, person));
+});
+
+// Exactly what a visitor would see, fresh rather than from the public cache. The admin sees the
+// public page built from their own test choices.
+meRoutes.get("/public-preview", async (c) => c.json(await buildPublicProfile(await getDb(), c.get("session").role)));
 
 const profileBody = z.object({
   bioLines: z.array(z.string().trim().min(1).max(80)).min(1).max(6),
@@ -196,6 +273,29 @@ meRoutes.put("/profile", async (c) => {
     });
   return c.json({ ok: true });
 });
+
+// ---------- phone widget and Shortcuts keys ----------
+
+meRoutes.get("/device-keys", async (c) =>
+  c.json({ keys: await listDeviceKeys(await getDb(), c.get("session").role), max: MAX_ACTIVE_KEYS, site: env.siteUrl }),
+);
+
+meRoutes.post("/device-keys", async (c) => {
+  const parsed = z.object({ label: z.string().trim().min(1).max(40) }).strict().safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_label", message: "Give this key a short name, like “my iPhone”." }, 400);
+  const made = await createDeviceKey(await getDb(), c.get("session").role, parsed.data.label);
+  if (!made) return c.json({ error: "too_many", message: `You can have ${MAX_ACTIVE_KEYS} keys at once. Turn off one you don’t use.` }, 409);
+  return c.json(made);
+});
+
+meRoutes.delete("/device-keys/:id", async (c) => {
+  const id = c.req.param("id");
+  if (!z.string().uuid().safeParse(id).success) return c.json({ error: "not_found", message: "That key doesn’t exist." }, 404);
+  const revoked = await revokeDeviceKey(await getDb(), c.get("session").role, id);
+  return revoked ? c.json({ ok: true }) : c.json({ error: "not_found", message: "That key doesn’t exist." }, 404);
+});
+
+meRoutes.get("/widget-script", (c) => c.json({ script: scriptableWidget(env.siteUrl), placeholder: "__KIRIYA_WIDGET_KEY__" }));
 
 // ---------- studio gallery ----------
 

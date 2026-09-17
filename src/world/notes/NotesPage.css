@@ -1,0 +1,27 @@
+.notes-page { width: min(860px, 100%); margin: 0 auto; padding: 24px 0 64px; }
+.notes-page__head { align-items: center; }
+.notes-page__empty p { font-size: 18px; }
+.notes-page__list { display: grid; gap: 16px; }
+.notes-page__list li { rotate: var(--tilt); }
+.notes-card { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; width: 100%; padding: 18px 20px; text-align: left; background: #fff9fd; border: 1px solid #e1d3e8; box-shadow: 0 5px 18px #4936530d; transition: transform .18s; }
+.notes-card:hover, .notes-card:focus-visible { transform: translateY(-2px); }
+.notes-card[data-unread="true"] { border-color: #caa6cf; box-shadow: 4px 5px 0 #e8d4ec; }
+.notes-card__mark { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #f2e5f5; font-size: 21px; color: #93749e; }
+.notes-card__text { display: grid; gap: 4px; min-width: 0; }
+.notes-card .micro-label { color: #93749e; font-size: 9px; }
+.notes-card strong { font: 400 22px/1.2 var(--font-literary); color: #493653; overflow-wrap: anywhere; }
+.notes-card__preview { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 14px; line-height: 1.55; color: #77647f; }
+.notes-card__new { position: absolute; top: 12px; right: 14px; padding: 3px 8px; border-radius: 999px; background: #493653; color: #fff9fd; font-size: 10px; letter-spacing: .08em; }
+.notes-dialog__paper { display: grid; gap: 14px; }
+.notes-dialog__paper .micro-label { color: #93749e; }
+.notes-dialog__paper p:not(.micro-label) { font: 19px/1.6 var(--font-literary); color: #5e4868; white-space: pre-line; }
+.notes-dialog__paper .notes-dialog__signoff { font-style: italic; text-align: right; }
+.notes-dialog__actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+[data-little-motion="off"] .notes-card { transition: none; }
+@media (max-width: 720px) {
+  .notes-page { padding-top: 8px; }
+  .notes-page__head .mascot { display: none; }
+  .notes-card { padding: 16px; gap: 12px; }
+  .notes-card__mark { width: 38px; height: 38px; font-size: 18px; }
+  .notes-card strong { font-size: 19px; padding-right: 36px; }
+}

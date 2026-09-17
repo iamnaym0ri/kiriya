@@ -175,3 +175,22 @@
     color: #94749f;
   }
 }
+
+.world-notes-link {
+  position: relative;
+}
+
+.world-notes-link__count {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #b77ea6;
+  color: #fff9fd;
+  font-size: 10px;
+  line-height: 17px;
+  text-align: center;
+}

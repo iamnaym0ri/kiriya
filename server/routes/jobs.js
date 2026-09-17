@@ -11,6 +11,7 @@ import {
   planDay,
 } from "../push/planner.js";
 import { sendToSubscribers } from "../push/webpush.js";
+import { deliverLoveNote, sweepLoveNotes } from "../lib/loveNotes.js";
 
 export const jobRoutes = new Hono();
 
@@ -63,6 +64,8 @@ async function runDaily(c) {
     );
   const db = await getDb();
   const result = await runDailyAndPlan(db, localDay());
+  // Notes whose scheduled callback never arrived still reach her world.
+  result.loveNotes = await sweepLoveNotes(db).catch((error) => ({ error: error.name }));
   console.log(
     "[jobs] daily",
     caller.via,
@@ -76,6 +79,27 @@ async function runDaily(c) {
 
 jobRoutes.get("/backstop", runDaily);
 jobRoutes.post("/daily", runDaily);
+
+// QStash calls this at a note's chosen time. Claiming is idempotent, so retries can't double-send.
+jobRoutes.post("/love-note", async (c) => {
+  const caller = await authorize(c);
+  if (!caller)
+    return c.json(
+      { error: "unauthorized", message: "This job needs a valid signature." },
+      401,
+    );
+  let id = null;
+  try {
+    id = JSON.parse(caller.body ?? (await c.req.text()) ?? "{}").id ?? null;
+  } catch {
+    id = null;
+  }
+  if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id))
+    return c.json({ error: "bad_request", message: "Missing note id." }, 400);
+  // QStash's notBefore is whole seconds, so allow the callback to land a moment early.
+  const note = await deliverLoveNote(await getDb(), id, { now: new Date(Date.now() + 60_000) });
+  return c.json({ ok: true, delivered: Boolean(note) });
+});
 
 jobRoutes.post("/send-push", async (c) => {
   const caller = await authorize(c);

@@ -71,7 +71,7 @@ The `kiriya-blob` connection currently permits Production and Preview, not Devel
 
 Login, admin, sketch saving and image uploads do not require QStash, VAPID, OpenAI or TextAlive. Do not fill optional fields with placeholder tokens. Existing values are preserved by this preparation pass.
 
-For notifications later, configure the existing QStash integration and VAPID public/private keys with a real contact. Reuse the existing scheduler and inspect schedules before running `npm run setup:qstash`. On iPhone, install the site from Safari and enable notifications through its Settings page. Notification permission and actual delivery need a real device check.
+Production has the QStash integration and VAPID keys configured. Notes to her phone, her notes page, the widget API and passphrase changes are described, with an iPhone test plan, in [PERSONAL-WORLD.md](PERSONAL-WORLD.md). Inspect existing schedules before running `npm run setup:qstash`. Notification permission and actual delivery need a real device check.
 
 ## Checks after the owner deploys
 

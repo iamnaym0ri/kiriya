@@ -26,6 +26,15 @@ export const settings = pgTable("settings", {
   updatedAt: updatedAt(),
 });
 
+// A passphrase changed from settings. `hash` null means the Vercel-configured phrase still applies;
+// `session_key` is stamped into that role's sessions, so replacing it signs out other devices.
+export const credentials = pgTable("credentials", {
+  role: text("role").primaryKey(),
+  hash: text("hash"),
+  sessionKey: text("session_key").notNull(),
+  changedAt: timestamp("changed_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Profile views per Singapore calendar day.
 export const views = pgTable("views", {
   day: date("day").primaryKey(),
@@ -44,7 +53,19 @@ export const unlockAttempts = pgTable(
   (t) => [index("unlock_attempts_ip_at").on(t.ipHash, t.at)],
 );
 
-// Her daily check-in. `mood` is an opaque key; its labels live in server content.
+// What each person has chosen, kept until they change it: the current check-in, address
+// preferences, what the public profile may show, pinned artwork and small interface choices.
+// `person` is the session role, so testing as admin never changes Kiriya's own choices.
+export const personState = pgTable("person_state", {
+  person: text("person").primaryKey(),
+  status: jsonb("status"),
+  prefs: jsonb("prefs").notNull().default({}),
+  revision: integer("revision").notNull().default(0),
+  updatedAt: updatedAt(),
+});
+
+// Her check-ins from before person_state, one per day. Read only as a fallback for her status.
+// `mood` is an opaque key; its labels live in server content.
 export const moods = pgTable("moods", {
   day: date("day").primaryKey(),
   mood: text("mood").notNull(),
@@ -166,6 +187,39 @@ export const plannedPushes = pgTable(
   },
   (t) => [uniqueIndex("planned_pushes_day_slot").on(t.day, t.slot)],
 );
+
+// Notes sent to someone's phone. Each lands in their private world at `send_at`, whether or not a
+// notification could be delivered. `recipient` is a role, so the admin's test notes stay apart.
+export const loveNotes = pgTable(
+  "love_notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    recipient: text("recipient").notNull(),
+    kind: text("kind").notNull().default("note"), // note | update | surprise
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    link: text("link"), // where tapping goes instead of the note itself, e.g. /world/letters
+    sendAt: timestamp("send_at", { withTimezone: true }).notNull(),
+    status: text("status").notNull().default("scheduled"), // scheduled | sending | sent | failed | canceled
+    pushResult: jsonb("push_result"),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    openedAt: timestamp("opened_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("love_notes_recipient_send_at").on(t.recipient, t.sendAt), index("love_notes_status_send_at").on(t.status, t.sendAt)],
+);
+
+// Revocable keys for the phone widget and Shortcuts, which can't carry the site's cookie.
+// Only a hash is stored; the key itself is shown once when it's made.
+export const deviceKeys = pgTable("device_keys", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  person: text("person").notNull(),
+  label: text("label").notNull(),
+  keyHash: text("key_hash").notNull().unique(),
+  createdAt: createdAt(),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+});
 
 export const artworks = pgTable("artworks", {
   id: uuid("id").primaryKey().defaultRandom(),

@@ -21,11 +21,11 @@ function configure() {
  * Declarative Web Push (iOS 18.4+ shows it without running any code); other browsers hand the same
  * JSON to the service worker. `navigate` must be an absolute URL.
  */
-export function buildPayload({ title, body, navigate = "/world" }) {
+export function buildPayload({ title, body, navigate = "/world", badge = 1 }) {
   const url = new URL(navigate, env.siteUrl).toString();
   return JSON.stringify({
     web_push: 8030,
-    notification: { title: title.slice(0, 60), body: body.slice(0, 160), navigate: url, app_badge: "1" },
+    notification: { title: title.slice(0, 60), body: body.slice(0, 160), navigate: url, app_badge: String(Math.max(1, badge)) },
   });
 }
 

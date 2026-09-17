@@ -52,7 +52,8 @@ export async function readNoteJar(db, day = localDay()) {
 // One compare-and-swap SQL statement advances state and stores the delivery together on Neon HTTP.
 export async function pullNote(db, requestId, { day = localDay(), now = new Date(), preview = false, random = Math.random } = {}) {
   const key = PREFIX + requestId;
-  const { current } = await readCheckin(db, day);
+  // A preview follows the admin's own test check-in; real pulls follow Kiriya's.
+  const { current } = await readCheckin(db, day, preview ? "admin" : "kiriya");
   const context = { feeling: current?.feeling?.key, energy: current?.energy ?? 2, random };
   if (preview) {
     const { note } = chooseNote(empty(), context);
