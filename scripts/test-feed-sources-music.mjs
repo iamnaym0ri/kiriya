@@ -592,6 +592,56 @@ describe("youtube-memes", () => {
   });
 });
 
+describe("youtube-lives", () => {
+  const UKI = "UChJ5FTsHOu72_5OVx0rvsvQ";
+  const routes = [
+    { match: (url) => url.includes("/youtube/v3/search?") && param(url, "eventType") === "upcoming", source: "youtube", file: "search-lives.json" },
+    { match: /\/youtube\/v3\/videos\?/, source: "youtube", file: "videos-lives.json" },
+    { match: /\/youtube\/v3\/channels\?/, source: "youtube", file: "channels-lives.json" },
+  ];
+
+  test("a scheduled stream becomes an event with a real start time; finished and far-off ones are dropped", async () => {
+    const plan = Y.youtubeLivesPlan(DAY);
+    assert.equal(plan.length, Y.LIVES_PER_DAY);
+    const index = plan.findIndex((step) => step.channel.id === UKI);
+    assert.ok(index >= 0, "her own VTuber is in today's rotation");
+    const calls = [];
+    const { items, page } = await runAdapterPage(Y.youtubeLives, {
+      routes,
+      credentials,
+      calls,
+      cursor: pageCursor.encode({ v: 1, d: DAY, i: index }),
+    });
+    const search = googleCalls(calls).find((c) => c.url.includes("/youtube/v3/search?"));
+    assert.equal(param(search.url, "channelId"), UKI);
+    assert.equal(param(search.url, "eventType"), "upcoming");
+    assert.equal(param(search.url, "safeSearch"), "strict");
+    assert.deepEqual(items.map((i) => i.nativeId), ["LiveUki0001"]);
+    const [stream] = items;
+    assert.equal(stream.kind, "event");
+    assert.deepEqual(stream.sections, ["music"]);
+    assert.equal(stream.facts.eventAt, "2026-09-16T12:00:00.000Z");
+    assert.deepEqual(stream.tags.formats, ["upcoming"]);
+    assert.deepEqual(stream.tags.voicebanks, ["hatsune miku"], "the setlist is tagged like any other music item");
+    assert.equal(stream.facts.playback.provenance, "official_channel");
+    assert.equal(stream.credit.name, "Uki Violeta 【NIJISANJI EN】");
+    assert.equal(stream.media[0].type, "youtube");
+    assert.ok(stream.media[0].poster);
+    assert.ok(page.done === false || page.done === true);
+    noKey(items);
+  });
+
+  test("every VTuber channel carries the title that grants provenance", () => {
+    assert.equal(Y.VTUBER_CHANNELS.length, 13);
+    for (const channel of Y.VTUBER_CHANNELS) {
+      assert.match(channel.id, /^UC[\w-]{22}$/, channel.name);
+      assert.ok(channel.titles?.length, `${channel.name} has expected titles`);
+      assert.match(channel.evidence, /channels\.list/, `${channel.name} records how its ID was confirmed`);
+      assert.ok(Y.channelTitleMatches(channel, `${channel.name} 【NIJISANJI EN】`), channel.name);
+    }
+  });
+});
+
 describe("youtube-apothecary", () => {
   const routes = [
     { match: (url) => url.includes("/youtube/v3/channels?") && param(url, "forHandle") === "@TOHOanimation", source: "youtube", file: "channel-toho.json" },

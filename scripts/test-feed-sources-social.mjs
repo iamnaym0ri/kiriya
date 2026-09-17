@@ -20,6 +20,7 @@ const { defineSource } = await import("../server/feeds/sources/registry.js");
 const bsky = await import("../server/feeds/sources/bluesky.js");
 const tumblr = await import("../server/feeds/sources/tumblr.js");
 const lemmy = await import("../server/feeds/sources/lemmy.js");
+const reddit = await import("../server/feeds/sources/reddit.js");
 
 bsky.BLUESKY_PACING.keylessSearchGapMs = 0;
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -804,8 +805,70 @@ test("entry declarations validate with exact hosts, policies and deletion rechec
   assert.ok(!lemmy.LEMMY_COMMUNITIES.some((c) => c.name === "lemmyshitpost" || c.host === "lemmy.blahaj.zone"));
 });
 
+test("reddit-fandom: one page of hot per subreddit, each post placed by what its subreddit is for", async () => {
+  reddit.clearRedditToken();
+  const CLIENT = { REDDIT_CLIENT_ID: "mock-client-id", REDDIT_CLIENT_SECRET: "mock-client-secret-never-in-output" };
+  const routes = inFamily("reddit", [
+    { match: (url) => url.includes("/api/v1/access_token"), file: "token.json" },
+    { match: (url) => url.includes("/r/Kusuriya/hot"), file: "hot-kusuriya.json" },
+    { match: (url) => url.includes("/r/cosplay/hot"), file: "hot-cosplay.json" },
+    { match: (url) => url.includes("/r/Animemes/hot"), file: "hot-animemes.json" },
+    { match: (url) => url.includes("/r/AnimeFigures/hot"), file: "hot-figures.json" },
+    { match: (url) => url.includes("/r/Nijisanji/hot"), file: "hot-nijisanji.json" },
+    { match: (url) => url.includes("/hot?"), file: "hot-empty.json" },
+  ]);
+  const { items, calls, pages } = await runAdapterAll(reddit.redditFandom, { routes, credentials: CLIENT });
+  assert.equal(pages, reddit.SUBREDDITS.length, "one page per subreddit");
+  assert.equal(calls.filter((c) => c.url.includes("/api/v1/access_token")).length, 1, "the token is fetched once and reused");
+  assert.equal(calls.filter((c) => c.method === "POST").length, 1);
+  for (const call of calls.filter((c) => c.url.includes("oauth.reddit.com")))
+    assert.match(call.headers.authorization, /^bearer /, "reads go to oauth.reddit.com with the bearer token");
+
+  assert.deepEqual(items.map((i) => i.nativeId).sort(), ["cos01", "fig01", "kusu01", "kusu03", "mem01", "nij01"]);
+  const by = (id) => items.find((i) => i.nativeId === id);
+  assert.equal(by("kusu01").kind, "image");
+  assert.deepEqual(by("kusu01").sections, ["maomao"]);
+  assert.deepEqual(by("kusu01").tags.fandoms, ["the apothecary diaries"]);
+  assert.equal(by("kusu01").media[0].url, "https://i.redd.it/mockmaomao01.jpg");
+  assert.equal(by("kusu01").credit.name, "u/someone");
+  assert.equal(by("kusu01").credit.platform, "Reddit · r/Kusuriya");
+  assert.equal(by("kusu01").credit.license, "Reddit post; rights stay with the poster");
+  assert.equal(by("kusu01").url, "https://www.reddit.com/r/Kusuriya/comments/abc123/a_post/", "the permalink is used as Reddit gave it");
+  assert.equal(by("kusu03").kind, "news", "a text post with no picture is a note");
+  assert.equal(by("cos01").kind, "cosplay");
+  assert.deepEqual(by("cos01").sections, ["dressup"]);
+  assert.equal(by("mem01").kind, "meme");
+  assert.equal(by("fig01").kind, "merch", "only product news reaches the shelf");
+  assert.deepEqual(by("nij01").sections, ["music"]);
+  assert.equal(by("nij01").kind, "news");
+  // What must never reach her.
+  for (const dropped of ["kusu02", "kusu04", "kusu05", "cos02", "mem02", "fig02"])
+    assert.ok(!by(dropped), `${dropped} is dropped`);
+  assert.ok(!JSON.stringify(items).includes(CLIENT.REDDIT_CLIENT_SECRET), "the secret leaked into adapter output");
+
+  // Deletions are honoured within a day.
+  const info = (file) => inFamily("reddit", [
+    { match: (url) => url.includes("/api/v1/access_token"), file: "token.json" },
+    { match: (url) => url.includes("/api/info"), file },
+  ]);
+  const http = (routes) => sourceHttp({ ...defineSource(reddit.redditFandom), paceMs: 0 }, { deadline: Date.now() + 60_000, stats: {}, send: fixtureTransport("reddit", routes), lookup: publicLookup });
+  const check = (file) => reddit.recheckReddit({ nativeId: "kusu01" }, { http: http(info(file)), credentials: CLIENT });
+  assert.deepEqual(await check("info-post.json"), { state: "present", scope: "post" });
+  assert.deepEqual(await check("info-removed.json"), { state: "removed", scope: "moderator_removed" });
+  assert.deepEqual(await check("hot-empty.json"), { state: "removed", scope: "post_not_found" });
+
+  const entry = defineSource(reddit.redditFandom);
+  assert.deepEqual(entry.requiredCredentials, ["REDDIT_CLIENT_ID", "REDDIT_CLIENT_SECRET"]);
+  assert.deepEqual(entry.optionalCredentials, ["REDDIT_USERNAME"]);
+  assert.equal(entry.copyPolicy, "link_only");
+  assert.equal(entry.mediaPolicy, "still_only", "reddit videos and GIFs are not collected");
+  assert.equal(entry.deletionPolicy, "honor_deletions");
+  assert.equal(entry.deletionDeadlineHours, 24);
+  assert.ok(entry.mediaHosts.every((host) => /\.redd\.it$|\.redditmedia\.com$/.test(host)));
+});
+
 test("fixtures are bounded (≤ 200 KB) and contain no credentials", async () => {
-  for (const family of ["bluesky", "tumblr", "lemmy"]) {
+  for (const family of ["bluesky", "tumblr", "lemmy", "reddit"]) {
     const dir = path.join(root, "fixtures/feeds", family);
     const names = await readdir(dir);
     assert.ok(names.length >= 5);

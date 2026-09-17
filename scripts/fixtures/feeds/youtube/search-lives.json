@@ -1,0 +1,65 @@
+{
+  "kind": "youtube#searchListResponse",
+  "etag": "mock-etag-lives",
+  "regionCode": "SG",
+  "pageInfo": {
+    "totalResults": 3,
+    "resultsPerPage": 5
+  },
+  "items": [
+    {
+      "kind": "youtube#searchResult",
+      "etag": "mock-LiveUki0001",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "LiveUki0001"
+      },
+      "snippet": {
+        "publishedAt": "2026-09-14T09:00:00Z",
+        "channelId": "UChJ5FTsHOu72_5OVx0rvsvQ",
+        "title": "【KARAOKE】vocaloid songs until my throat gives up",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "Uki Violeta 【NIJISANJI EN】",
+        "liveBroadcastContent": "upcoming",
+        "publishTime": "2026-09-14T09:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "mock-LiveUki0002",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "LiveUki0002"
+      },
+      "snippet": {
+        "publishedAt": "2026-09-08T09:00:00Z",
+        "channelId": "UChJ5FTsHOu72_5OVx0rvsvQ",
+        "title": "【DONE】last week's karaoke archive",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "Uki Violeta 【NIJISANJI EN】",
+        "liveBroadcastContent": "upcoming",
+        "publishTime": "2026-09-08T09:00:00Z"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "mock-LiveUki0003",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "LiveUki0003"
+      },
+      "snippet": {
+        "publishedAt": "2026-09-14T10:00:00Z",
+        "channelId": "UChJ5FTsHOu72_5OVx0rvsvQ",
+        "title": "【ANNIVERSARY】a month from now",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "Uki Violeta 【NIJISANJI EN】",
+        "liveBroadcastContent": "upcoming",
+        "publishTime": "2026-09-14T10:00:00Z"
+      }
+    }
+  ]
+}

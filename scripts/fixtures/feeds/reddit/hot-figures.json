@@ -1,0 +1,45 @@
+{
+  "kind": "Listing",
+  "data": {
+    "after": null,
+    "dist": 2,
+    "children": [
+      {
+        "kind": "t3",
+        "data": {
+          "id": "fig01",
+          "subreddit": "AnimeFigures",
+          "author": "someone",
+          "title": "Maomao 1/7 scale figure up for preorder",
+          "permalink": "/r/Kusuriya/comments/abc123/a_post/",
+          "score": 420,
+          "created_utc": 1789600000,
+          "over_18": false,
+          "stickied": false,
+          "selftext": "",
+          "link_flair_text": "Information",
+          "post_hint": "image",
+          "url": "https://i.redd.it/mockfig01.jpg"
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "id": "fig02",
+          "subreddit": "AnimeFigures",
+          "author": "someone",
+          "title": "My shelf so far",
+          "permalink": "/r/Kusuriya/comments/abc123/a_post/",
+          "score": 420,
+          "created_utc": 1789600000,
+          "over_18": false,
+          "stickied": false,
+          "selftext": "",
+          "link_flair_text": null,
+          "post_hint": "image",
+          "url": "https://i.redd.it/mockshelf01.jpg"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "mock-etag-videos-lives",
+  "pageInfo": {
+    "totalResults": 3,
+    "resultsPerPage": 3
+  },
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-LiveUki0001",
+      "id": "LiveUki0001",
+      "snippet": {
+        "publishedAt": "2026-09-14T09:00:00Z",
+        "channelId": "UChJ5FTsHOu72_5OVx0rvsvQ",
+        "title": "【KARAOKE】vocaloid songs until my throat gives up",
+        "description": "Vocaloid setlist. 初音ミク requests welcome.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/LiveUki0001/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Uki Violeta 【NIJISANJI EN】",
+        "categoryId": "24",
+        "liveBroadcastContent": "upcoming",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "P0D",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": false,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "uploaded",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "0"
+      },
+      "liveStreamingDetails": {
+        "scheduledStartTime": "2026-09-16T12:00:00Z",
+        "concurrentViewers": "0"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/LiveUki0001\"></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-LiveUki0002",
+      "id": "LiveUki0002",
+      "snippet": {
+        "publishedAt": "2026-09-14T09:00:00Z",
+        "channelId": "UChJ5FTsHOu72_5OVx0rvsvQ",
+        "title": "【DONE】last week's karaoke archive",
+        "description": "Vocaloid setlist. 初音ミク requests welcome.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/LiveUki0002/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Uki Violeta 【NIJISANJI EN】",
+        "categoryId": "24",
+        "liveBroadcastContent": "none",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "P0D",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": false,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "uploaded",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "0"
+      },
+      "liveStreamingDetails": {
+        "scheduledStartTime": "2026-09-08T12:00:00Z",
+        "actualStartTime": "2026-09-08T12:01:00Z",
+        "actualEndTime": "2026-09-08T14:00:00Z"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/LiveUki0002\"></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "mock-etag-LiveUki0003",
+      "id": "LiveUki0003",
+      "snippet": {
+        "publishedAt": "2026-09-14T09:00:00Z",
+        "channelId": "UChJ5FTsHOu72_5OVx0rvsvQ",
+        "title": "【ANNIVERSARY】a month from now",
+        "description": "Vocaloid setlist. 初音ミク requests welcome.",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/LiveUki0003/default.jpg",
+            "width": 120,
+            "height": 90
+          }
+        },
+        "channelTitle": "Uki Violeta 【NIJISANJI EN】",
+        "categoryId": "24",
+        "liveBroadcastContent": "upcoming",
+        "defaultAudioLanguage": "en"
+      },
+      "contentDetails": {
+        "duration": "P0D",
+        "dimension": "2d",
+        "definition": "hd",
+        "caption": "false",
+        "licensedContent": false,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "uploaded",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "0"
+      },
+      "liveStreamingDetails": {
+        "scheduledStartTime": "2026-10-15T12:00:00Z"
+      },
+      "player": {
+        "embedHtml": "<iframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/LiveUki0003\"></iframe>",
+        "embedWidth": "480",
+        "embedHeight": "270"
+      }
+    }
+  ]
+}

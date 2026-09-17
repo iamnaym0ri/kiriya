@@ -140,7 +140,7 @@ export const TUTORIAL_QUERIES = [
   "hatsune miku cosplay transformation",
   "project sekai cosplay",
 ];
-export const SEARCH_CALLS_PER_DAY = 4;
+export const SEARCH_CALLS_PER_DAY = 5;
 
 /**
  * Meme channels, resolved by @handle at runtime like the Apothecary channel. Empty until the
@@ -159,7 +159,7 @@ export const MEME_QUERIES = [
   "anime memes",
   "apothecary diaries edit",
 ];
-export const MEME_SEARCHES_PER_DAY = 4;
+export const MEME_SEARCHES_PER_DAY = 6;
 export const MEME_WINDOW_MS = 21 * DAY_MS;
 /** Something that reads as a joke, an edit or a clip — not a lecture about the show. */
 const MEME_TEXT = /\bmemes?\b|\bshitpost|\bfunny\b|\bhumou?r\b|\bedit\b|\bcursed\b|out of context|\bcompilation\b|面白|ミーム|コラ/i;
@@ -192,7 +192,7 @@ export const APOTHECARY_QUERIES = [
  * 2026-09-17) nothing downstream would catch these, so they are dropped by title here.
  */
 const SLOP_TEXT = /release date|everything we know|all we know|explained|\bexplain(?:ing|er)\b|\bleaks?\b|\btop \d+\b|ranking|tier list|you (?:missed|didn.t know)|coming out|what to expect|\brecap\b/i;
-export const APOTHECARY_SEARCHES_PER_DAY = 3;
+export const APOTHECARY_SEARCHES_PER_DAY = 4;
 
 export function youtubeMusicPlan(day) {
   const n = dayIndex(day);
@@ -214,6 +214,40 @@ export function dayPlan(day, { channels = [], channelsPerDay = 0, queries = [], 
 
 export function youtubeTutorialPlan(day) {
   return dayPlan(day, { channels: TUTORIAL_CHANNELS, channelsPerDay: 3, queries: TUTORIAL_QUERIES, searchesPerDay: SEARCH_CALLS_PER_DAY });
+}
+
+/**
+ * Her VTubers. She named "ukimama" — the fandom's nickname for Uki Violeta of NIJISANJI EN — so this
+ * is Uki, his own wave (NOCTYX) and the branch's singers, who cover Vocaloid constantly.
+ * Every ID below was resolved from its @handle with channels.list on 2026-09-17 and carries the
+ * returned title, which is what grants official_channel provenance at runtime.
+ */
+export const VTUBER_CHANNELS = [
+  { id: "UChJ5FTsHOu72_5OVx0rvsvQ", name: "Uki Violeta", titles: ["uki violeta"], evidence: "channels.list?forHandle=@UkiVioleta (2026-09-17)" },
+  { id: "UCR6qhsLpn62WVxCBK1dkLow", name: "Enna Alouette", titles: ["enna alouette"], evidence: "channels.list?forHandle=@EnnaAlouette (2026-09-17)" },
+  { id: "UCwaS8_S7kMiKA3izlTWHbQg", name: "Maria Marionette", titles: ["maria marionette"], evidence: "channels.list?forHandle=@MariaMarionette (2026-09-17)" },
+  { id: "UCckdfYDGrjojJM28n5SHYrA", name: "Vox Akuma", titles: ["vox akuma"], evidence: "channels.list?forHandle=@VoxAkuma (2026-09-17)" },
+  { id: "UC4yNIKGvy-YUrwYupVdLDXA", name: "Ike Eveland", titles: ["ike eveland"], evidence: "channels.list?forHandle=@IkeEveland (2026-09-17)" },
+  { id: "UCggO2c1unS-oLwTLT0ICywg", name: "Kotoka Torahime", titles: ["kotoka torahime"], evidence: "channels.list?forHandle=@KotokaTorahime (2026-09-17)" },
+  { id: "UCIeSUTOTkF9Hs7q3SGcO-Ow", name: "Elira Pendora", titles: ["elira pendora"], evidence: "channels.list?forHandle=@EliraPendora (2026-09-17)" },
+  { id: "UCGhqxhovNfaPBpxfCruy9EA", name: "Fulgur Ovid", titles: ["fulgur ovid"], evidence: "channels.list?forHandle=@FulgurOvid (2026-09-17)" },
+  { id: "UCuuAb_72QzK0M1USPMEl1yw", name: "Sonny Brisko", titles: ["sonny brisko"], evidence: "channels.list?forHandle=@SonnyBrisko (2026-09-17)" },
+  { id: "UCQ1zGxHrfEmmW4CPpBx9-qw", name: "Alban Knox", titles: ["alban knox"], evidence: "channels.list?forHandle=@AlbanKnox (2026-09-17)" },
+  { id: "UC47rNmkDcNgbOcM-2BwzJTQ", name: "Millie Parfait", titles: ["millie parfait"], evidence: "channels.list?forHandle=@MillieParfait (2026-09-17)" },
+  { id: "UCBURM8S4LH7cRZ0Clea9RDA", name: "Reimu Endou", titles: ["reimu endou"], evidence: "channels.list?forHandle=@ReimuEndou (2026-09-17)" },
+  { id: "UCN68LoM3khS4gdBMiWJO8WA", name: "Aia Amare", titles: ["aia amare"], evidence: "channels.list?forHandle=@AiaAmare (2026-09-17)" },
+];
+/** Channels checked per day. The site builds once a day, so this is a schedule, not a live ticker. */
+export const LIVES_PER_DAY = 6;
+/** How far ahead a scheduled stream is still worth telling her about. */
+export const LIVES_WINDOW_MS = 7 * DAY_MS;
+
+export function youtubeLivesPlan(day) {
+  const n = dayIndex(day);
+  return Array.from({ length: Math.min(LIVES_PER_DAY, VTUBER_CHANNELS.length) }, (_, k) => ({
+    type: "channel",
+    channel: VTUBER_CHANNELS[(n * LIVES_PER_DAY + k) % VTUBER_CHANNELS.length],
+  }));
 }
 
 export function youtubeMemePlan(day) {
@@ -321,7 +355,7 @@ function firstParagraph(description) {
   return text ? clip(text, 300) : "";
 }
 
-function videoItem(entry, video, { kind, sections, provenance, checkedAt, now, fandoms = [], match = null, characters = [], formats = [], extraLinks = [] }) {
+function videoItem(entry, video, { kind, sections, provenance, checkedAt, now, fandoms = [], match = null, characters = [], formats = [], extraLinks = [], live = false }) {
   const id = video.id;
   const snippet = video.snippet ?? {};
   const title = clip(stripHtml(snippet.title) || id, 200);
@@ -329,7 +363,7 @@ function videoItem(entry, video, { kind, sections, provenance, checkedAt, now, f
   // Voicebank, unit and producer tags only describe music items.
   const music = sections.includes("music");
   const channelId = CHANNEL_ID.test(snippet.channelId ?? "") ? snippet.channelId : "";
-  const playback = playbackFrom(video, { provenance, checkedAt });
+  const playback = playbackFrom(video, { provenance, checkedAt, live });
   const seconds = isoDurationSeconds(video.contentDetails?.duration);
   const width = Number(video.player?.embedWidth);
   const height = Number(video.player?.embedHeight);
@@ -648,6 +682,90 @@ const fetchYoutubeMemes = (ctx) =>
   });
 
 // ---------------------------------------------------------------------------------------------
+// youtube-lives
+// ---------------------------------------------------------------------------------------------
+
+/**
+ * A scheduled or running stream → an event with a real start time, so the countdown and the music
+ * section's live slot can use it. The site builds once a day, so what she gets is "streaming tonight
+ * at nine", not a live ticker.
+ */
+function liveItem(video, { channel, provenance, checkedAt, now }) {
+  const details = video.liveStreamingDetails ?? {};
+  const startsAt = toIso(details.scheduledStartTime ?? details.actualStartTime ?? null);
+  const when = Date.parse(startsAt ?? "");
+  if (!Number.isFinite(when) || when > now + LIVES_WINDOW_MS) return null;
+  // Already finished: the recording is not an alert.
+  if (details.actualEndTime) return null;
+  const text = `${video.snippet?.title ?? ""}\n${firstParagraph(video.snippet?.description)}`;
+  const running = Boolean(details.actualStartTime);
+  const item = videoItem(youtubeLives, video, {
+    kind: "event",
+    sections: ["music"],
+    provenance,
+    checkedAt,
+    now,
+    characters: mentions(text, CHARACTER_ALIASES),
+    formats: [running ? "live" : "upcoming"],
+    live: true,
+  });
+  item.facts.eventAt = startsAt;
+  item.facts.names = unique([channel.name, ...item.facts.names]).slice(0, 40);
+  return item;
+}
+
+async function fetchYoutubeLives(ctx) {
+  const key = requireKey(ctx);
+  const plan = youtubeLivesPlan(ctx.day);
+  let state = readState(ctx);
+  if (state.i >= plan.length) return { items: [], cursor: null, done: true };
+  const step = plan[state.i];
+  const limit = Math.max(0, Math.min(8, ctx.limits.items));
+  const now = Date.now();
+  const checkedAt = new Date(now).toISOString();
+  if (!limit) return nextPage(ctx, state, plan.length, []);
+  // search.list is the documented way to find a channel's upcoming broadcasts (100 quota units).
+  const data = await ctx.http.json(
+    youtubeUrl(
+      "search",
+      {
+        part: "snippet",
+        type: "video",
+        channelId: step.channel.id,
+        eventType: "upcoming",
+        safeSearch: "strict",
+        order: "date",
+        maxResults: 5,
+      },
+      key,
+    ),
+  );
+  const ids = unique(
+    listItems(data, "youtube#searchListResponse")
+      .map((result) => result?.id?.videoId)
+      .filter((id) => VIDEO_ID.test(id ?? "")),
+  );
+  if (!ids.length) return nextPage(ctx, state, plan.length, []);
+  const videos = await youtubeVideos(ctx.http, key, ids, [...VIDEO_PARTS, "liveStreamingDetails"], { maxWidth: 480 });
+  // The channel is on the verified list, so its own scheduled stream is an official upload; a result
+  // from anywhere else (search can drift) is ignored rather than trusted.
+  const channels = await channelsById(ctx.http, key, [step.channel.id]);
+  const resolved = channels.get(step.channel.id);
+  const provenance = resolved && channelTitleMatches(step.channel, resolved.title) ? "official_channel" : "unknown";
+  const items = [];
+  for (const id of ids) {
+    if (items.length >= limit) break;
+    const video = videos.get(id);
+    if (!video || !liveOrUpcoming(video)) continue;
+    if (video.snippet?.channelId !== step.channel.id) continue;
+    if (!playable(playbackFrom(video, { provenance, checkedAt, live: true }))) continue;
+    const item = liveItem(video, { channel: step.channel, provenance, checkedAt, now });
+    if (item) items.push(item);
+  }
+  return nextPage(ctx, state, plan.length, items);
+}
+
+// ---------------------------------------------------------------------------------------------
 // youtube-apothecary
 // ---------------------------------------------------------------------------------------------
 
@@ -800,6 +918,31 @@ export const youtubeTutorials = {
     "creator_upload provenance. Search results are search_result provenance, which this source is allowed to publish " +
     "(owner decision 2026-09-17: vetted channels plus searches). About 7 shared units + 400 search units/day. Live " +
     "verification pending a readable YOUTUBE_API_KEY.",
+};
+
+export const youtubeLives = {
+  ...YOUTUBE_POLICY,
+  id: "youtube-lives",
+  stage: "fetch-b",
+  status: "enabled",
+  enabled: true,
+  sections: ["music"],
+  hosts: ["www.googleapis.com", "www.youtube.com"],
+  linkHosts: ["www.youtube.com"],
+  // 6 channels x (search + videos.list + channels.list), plus retries.
+  maxRequests: 24,
+  paceMs: 250,
+  fetch: fetchYoutubeLives,
+  recheck: recheckVideo("official_channel"),
+  notes:
+    "Upcoming streams from her VTubers, as events with a real start time (facts.eventAt), for the music section's " +
+    "live slot and the countdown. She named \"ukimama\", the fandom's nickname for Uki Violeta of NIJISANJI EN, so " +
+    "the list is Uki, his NOCTYX wave and the branch's singers — 13 channels, every ID resolved from its @handle " +
+    "with channels.list on 2026-09-17. Six channels a day in rotation: search.list with eventType=upcoming " +
+    "(100 quota units each, safeSearch=strict), then videos.list with liveStreamingDetails, then channels.list to " +
+    "confirm the title for official_channel provenance. Streams more than 7 days out, already finished ones, and " +
+    "results from any other channel are dropped. The site builds once a day, so this is a schedule, not a live " +
+    "ticker. About 600 search units + 12 list units/day.",
 };
 
 export const youtubeMemes = {

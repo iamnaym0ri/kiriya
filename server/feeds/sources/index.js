@@ -18,7 +18,8 @@ import { lemmyMemes } from "./lemmy.js";
 import { sekaiGlobal, sekaiNewsGlobal } from "./sekai.js";
 import { piaproNews, piaproGoods } from "./piapro.js";
 import { annPressVocaloid, siliconeraMiku } from "./musicnews.js";
-import { youtubeMusic, youtubeTutorials, youtubeApothecary, youtubeMemes } from "./youtube.js";
+import { youtubeMusic, youtubeTutorials, youtubeApothecary, youtubeMemes, youtubeLives } from "./youtube.js";
+import { redditFandom } from "./reddit.js";
 
 export const LIVE_ADAPTERS = [
   // The foundation's VocaDB entry keeps its position (and its contract test) but no longer collects:
@@ -69,6 +70,9 @@ export const LIVE_ADAPTERS = [
   youtubeMusic,
   youtubeTutorials,
   youtubeApothecary,
-  // Appended 2026-09-17 (never reordered): most of the feed now comes from YouTube.
+  // Appended 2026-09-17 (never reordered): most of the feed now comes from YouTube, Reddit covers
+  // the fandoms' own talk, and her VTubers' scheduled streams become events.
   youtubeMemes,
+  redditFandom,
+  youtubeLives,
 ];

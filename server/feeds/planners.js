@@ -5,7 +5,8 @@
 //          companion note (lore|news|event); 2 meme; 1 merch; 1 note (episode/exhibition/news).
 //          Episode-day: airing today → episode note leads slot 0; day after → episode-related
 //          visuals/notes lead. Reserve 20 in the same proportions.
-// music    13 slots: 5 song (2 new originals, 1 classic, 1 rin & len story, 1 modern/SEKAI), 2 sekai
+// music    13 slots + 1 when a stream is scheduled: 5 song (2 new originals, 1 classic, 1 rin & len
+//          story, 1 modern/SEKAI), 2 sekai
 //          (released Global news/events), 2 note (news/lore), 2 visual (art/GIF), 1 meme, 1 merch.
 //          7-day producer exclusion is hard; no producer twice in an edition; a non-Miku voicebank at
 //          least every other day. Reserve 20.
@@ -27,7 +28,9 @@ export const QUOTAS = {
   // video: long-form YouTube inside the 8 visual slots. Raised from 1 on 2026-09-17, when the owner
   // asked for a mostly-YouTube feed; pictures and Shorts still come first (see takeVisual).
   maomao: { visual: 8, video: 3, meme: 2, merch: 1, note: 1, reserve: 20 },
-  music: { song: 5, sekai: 2, note: 2, visual: 2, meme: 1, merch: 1, reserve: 20 },
+  // live: one scheduled VTuber stream when there is one (owner decision 2026-09-17). It gets its own
+  // slot rather than competing with the news notes, and the section is one card shorter without it.
+  music: { song: 5, sekai: 2, live: 1, note: 2, visual: 2, meme: 1, merch: 1, reserve: 20 },
   dressup: { three: 3, process: 2, dare: 1, event: 2, extra: 1, meme: 1, merch: 1, news: 1, reserve: 20 },
   // Owner decision (2026-09-16, second pass): memes are a browsable carousel, not one a day, so the
   // reserve is deep enough to keep scrolling. Supply, not the quota, is the practical limit.
@@ -287,7 +290,15 @@ export function planMusic(items, ctx) {
     const s = pick(sekai);
     if (s) entries.push({ type: "sekai", primary: s, companions: [] });
   }
-  const notes = pool.filter((i) => ["news", "lore", "event"].includes(i.kind));
+  // Her VTubers: a stream she can still catch, soonest first (facts.eventAt is a real API time).
+  const streams = pool
+    .filter((i) => i.kind === "event" && hasAny(i.tags.formats, ["live", "upcoming"]) && i.facts?.eventAt)
+    .sort((a, b) => Date.parse(a.facts.eventAt) - Date.parse(b.facts.eventAt));
+  for (let k = 0; k < (q.live ?? 0); k++) {
+    const live = pick(streams);
+    if (live) entries.push({ type: "live", primary: live, companions: [], hook: "stream_soon" });
+  }
+  const notes = pool.filter((i) => ["news", "lore", "event"].includes(i.kind) && !streams.includes(i));
   for (let k = 0; k < q.note; k++) {
     const s = pick(notes);
     if (s) entries.push({ type: "note", primary: s, companions: [] });

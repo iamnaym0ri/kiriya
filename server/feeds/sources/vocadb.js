@@ -467,7 +467,12 @@ export async function youtubeVideos(http, key, ids, parts = ["status", "contentD
  *   list, blocks it; "blocked" containing SG blocks it; no restriction object allows it);
  * - ageRestricted: contentDetails.contentRating.ytRating === "ytAgeRestricted".
  */
-export function playbackFrom(video, { provenance, checkedAt, region = PLAYBACK_REGION }) {
+/**
+ * `live`: a scheduled or running broadcast reports `uploadStatus: "uploaded"` rather than
+ * "processed" (there is no finished file yet), so that value only counts as playable for a live
+ * item. For an ordinary upload it still means "not ready".
+ */
+export function playbackFrom(video, { provenance, checkedAt, region = PLAYBACK_REGION, live = false }) {
   const status = video?.status ?? {};
   const restriction = video?.contentDetails?.regionRestriction;
   const codes = (list) => asArray(list).map((code) => String(code).toUpperCase());
@@ -478,7 +483,9 @@ export function playbackFrom(video, { provenance, checkedAt, region = PLAYBACK_R
     embeddable:
       status.embeddable === true &&
       status.privacyStatus !== "private" &&
-      (status.uploadStatus === undefined || status.uploadStatus === "processed"),
+      (status.uploadStatus === undefined ||
+        status.uploadStatus === "processed" ||
+        (live && status.uploadStatus === "uploaded")),
     regionOk,
     ageRestricted: video?.contentDetails?.contentRating?.ytRating === "ytAgeRestricted",
     checkedAt,

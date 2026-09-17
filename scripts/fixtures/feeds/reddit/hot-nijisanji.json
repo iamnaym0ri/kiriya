@@ -1,0 +1,25 @@
+{
+  "kind": "Listing",
+  "data": {
+    "after": null,
+    "dist": 1,
+    "children": [
+      {
+        "kind": "t3",
+        "data": {
+          "id": "nij01",
+          "subreddit": "Nijisanji",
+          "author": "someone",
+          "title": "Uki Violeta announces a karaoke stream",
+          "permalink": "/r/Kusuriya/comments/abc123/a_post/",
+          "score": 420,
+          "created_utc": 1789600000,
+          "over_18": false,
+          "stickied": false,
+          "selftext": "Uki posted the schedule: karaoke on Friday, Vocaloid setlist.",
+          "link_flair_text": null
+        }
+      }
+    ]
+  }
+}
