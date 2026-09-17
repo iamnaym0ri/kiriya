@@ -26,7 +26,7 @@ when she opens the site
 - **Every section serves a "meal":** about 10–15 items a day, plus a reserve that fills later visits. An item she's seen never comes back in a feed.
 - **Everything is credited** to its creator and links to the original post.
 - **Blurbs are AI-written** in one bestie voice (lowercase texting, deadpan loving roast) and signed **✦ kiriya.love**.
-- **Safety runs in layers** before anything goes live: source ratings, labels, free OpenAI moderation, a vision check and rule filters. The owner can still hide anything from /admin afterwards.
+- **Safety runs in layers** before anything goes live: source ratings, labels, free OpenAI moderation, a vision check and rule filters. YouTube is the exception (owner decision, 2026-09-17): its own checks — strict SafeSearch on every search, age restriction, made-for-kids, and its policy enforcement — stand in for the paid vision read, so the budget goes to the sources that have no checks of their own, and a YouTube item's tags decide which sections it may fill. The owner can still hide anything from /admin afterwards.
 - **Hard no's:** explicit or suggestive content, AI-generated art, gore/horror images, drama.
 - **Expected running cost:** about **$1–2/month** of OpenAI usage. Every other service stays on a free tier.
 

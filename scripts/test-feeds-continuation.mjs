@@ -670,6 +670,44 @@ try {
     assert.equal(mediaGate(searched, { ...embed, searchProvenance: true }, now), null);
     assert.deepEqual(mediaGate(yt({ ...fresh, provenance: "unknown" }), { ...embed, searchProvenance: true }, now), ["pending", "provenance_unverified"]);
 
+    // Owner decision (2026-09-17): YouTube runs its own checks, so its thumbnails are not classified
+    // here and the paid budget stays with the sources that have none. The playback gate and the free
+    // text moderation still run, and the adapter's tags decide which sections the item may fill.
+    const okText = {
+      flagged: false,
+      categories: Object.fromEntries(Object.keys(THRESHOLDS).map((k) => [k, false])),
+      category_scores: Object.fromEntries(Object.keys(THRESHOLDS).map((k) => [k, 0.001])),
+    };
+    const trusted = { ...embed, visionPolicy: "platform" };
+    const refuse = {
+      views: async () => assert.fail("a trusted platform's picture is never downloaded"),
+      moderate: async () => okText,
+      vision: async () => assert.fail("a trusted platform's picture is never classified"),
+    };
+    const ytMeme = (sections, tags) => ({
+      ...yt(fresh),
+      kind: "meme",
+      sections,
+      tags: { characters: [], fandoms: [], voicebanks: [], producers: [], units: [], formats: [], topics: [], ...tags },
+    });
+    const home = await checkItem(ytMeme(["meme"], {}), refuse, { source: trusted });
+    assert.equal(home.status, "approved");
+    assert.equal(home.evidence.scope, "embed-provenance+platform-checks");
+    assert.deepEqual(home.evidence.views, []);
+    assert.equal(home.evidence.vision, undefined);
+    assert.ok(home.evidence.moderation.length, "the text is still moderated");
+    const hers = await checkItem(ytMeme(["meme", "maomao"], { characters: ["maomao"] }), refuse, { source: trusted });
+    assert.deepEqual(hers.evidence.eligibleSections, ["meme", "maomao"]);
+    const notHers = await checkItem(ytMeme(["meme", "maomao"], { fandoms: ["frieren"] }), refuse, { source: trusted });
+    assert.deepEqual(notHers.evidence.eligibleSections, ["meme"], "a section still needs its own subject named");
+    const music = await checkItem(ytMeme(["meme", "music"], { voicebanks: ["hatsune miku"] }), refuse, { source: trusted });
+    assert.deepEqual(music.evidence.eligibleSections, ["meme", "music"]);
+    assert.equal(
+      (await checkItem(ytMeme(["meme"], {}), { ...refuse, moderate: async () => ({ ...okText, flagged: true }) }, { source: trusted })).status,
+      "rejected",
+      "a flagged title is still turned away",
+    );
+
     const gif = row({
       kind: "clip",
       media: [{ ...still("g"), type: "gif", url: "https://img.example.test/g.gif" }],

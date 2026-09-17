@@ -35,6 +35,10 @@ export const BASE_POLICY = {
   // keyword search, where the uploader is not known to be the creator. Off unless stated, because
   // the safety check only ever sees the thumbnail.
   searchProvenance: false,
+  // inspect: this site classifies the picture itself (paid). platform: the platform already runs its
+  // own safety checks and mediaGate records them, so the paid read is skipped and the item's own
+  // tags decide which sections it may fill. Owner decision (2026-09-17), for YouTube only.
+  visionPolicy: "inspect",
   copyPolicy: "link_only",
   copyPermission: null, // {basis, sourceUrl, verifiedAt} when copyPolicy is private_copy
   deletionPolicy: "none", // none | recheck_before_publish | honor_deletions

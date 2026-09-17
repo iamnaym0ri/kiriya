@@ -712,6 +712,8 @@ export const vocadbSongs = {
   copyPolicy: "link_only",
   deletionPolicy: "recheck_before_publish",
   attributionRequired: true,
+  // Its media is a YouTube embed, so YouTube's own checks apply (owner decision 2026-09-17).
+  visionPolicy: "platform",
   termsUrl: "https://wiki.vocadb.net/docs/license",
   docsUrl: "https://wiki.vocadb.net/docs/public-api",
   notes:

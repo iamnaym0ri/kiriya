@@ -148,17 +148,25 @@ export async function checkItem(
       return "flagged";
     return "ok";
   };
+  // Owner decision (2026-09-17): a platform that runs its own safety checks is trusted with the
+  // picture, so nothing is downloaded or classified here and the paid budget goes to the sources
+  // that have no checks of their own. The playback gate above still applies, the text is still
+  // moderated, and the item's tags decide which sections it may fill.
+  const platformChecked = source?.visionPolicy === "platform";
   try {
     // Legacy providers (tests) have no `views`: every image media entry is one still view.
-    const views = provider.views
-      ? await provider.views(item)
-      : item.media
-          .map((m, mediaIndex) => ({ kind: "still", mediaIndex, type: m.type }))
-          .filter((v) => v.type === "image");
+    const views = platformChecked
+      ? []
+      : provider.views
+        ? await provider.views(item)
+        : item.media
+            .map((m, mediaIndex) => ({ kind: "still", mediaIndex, type: m.type }))
+            .filter((v) => v.type === "image");
     evidence.views = views.map(({ url, ...v }) => v);
-    if (views.some((v) => v.kind === "frames")) evidence.scope = "sampled-frames";
+    if (platformChecked) evidence.scope = "embed-provenance+platform-checks";
+    else if (views.some((v) => v.kind === "frames")) evidence.scope = "sampled-frames";
     else if (views.some((v) => v.kind === "poster")) evidence.scope = "embed-provenance+thumbnail";
-    if (item.media.length && views.length === 0) return verdict("pending", "no_inspectable_view");
+    if (!platformChecked && item.media.length && views.length === 0) return verdict("pending", "no_inspectable_view");
 
     // Text is always moderated (alone when there are no views, otherwise with each image).
     const checks = views.length ? views.map((_, i) => i) : [null];
@@ -219,7 +227,7 @@ export async function checkItem(
         if (bad) return verdict(...bad);
         results.push(v);
       }
-    } else if (item.kind === "meme") {
+    } else if (item.kind === "meme" && !item.media.some((m) => m.type === "image" || m.poster)) {
       // Owner decision (2026-09-16, second pass): a meme has to be something you can look at.
       // Text-only posts are dropped here, before spending a classification request on them.
       return verdict("rejected", "meme_needs_media");
@@ -233,14 +241,23 @@ export async function checkItem(
     // Section eligibility: a visual slide must show its section's subject. Non-visual kinds
     // (news, lore, merch, songs…) stay eligible as text even when their thumbnail doesn't.
     const seen = new Set(results.flatMap(visionCharacters));
+    // Without a vision read, what the adapter tagged from the title and description decides.
+    const tagged = new Set([...(item.tags?.characters ?? []), ...(item.tags?.voicebanks ?? [])].map((v) => String(v).toLowerCase()));
+    const fandoms = (item.tags?.fandoms ?? []).map((v) => String(v).toLowerCase());
+    const named = (section) =>
+      section === "maomao"
+        ? tagged.has("maomao") || fandoms.some((f) => /apothecary|kusuriya|薬屋/.test(f))
+        : VOICEBANKS.some((c) => tagged.has(c)) || fandoms.some((f) => /vocaloid|project sekai/.test(f));
     const eligible = item.sections.filter((section) => {
-      if (!views.length || !VISUAL_KINDS.has(item.kind)) return true;
+      if (!VISUAL_KINDS.has(item.kind)) return true;
+      if (platformChecked) return ["maomao", "music"].includes(section) ? named(section) : true;
+      if (!views.length) return true;
       if (section === "maomao") return seen.has("maomao");
       if (section === "music") return VOICEBANKS.some((c) => seen.has(c));
       return true;
     });
     evidence.eligibleSections = eligible;
-    evidence.characters = [...seen];
+    evidence.characters = platformChecked ? [...tagged] : [...seen];
     if (!eligible.length) return verdict("rejected", "required_character_missing");
     return verdict("approved", null);
   } catch (error) {

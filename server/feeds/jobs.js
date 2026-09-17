@@ -222,8 +222,12 @@ async function collect(ctx) {
   }
   return true;
 }
-// Items whose check needs paid vision/classification (moderation alone is free).
-const paidCheck = (item) => item.media.length > 0 || item.kind === "meme";
+// Items whose check needs paid vision/classification (moderation alone is free). A source the
+// platform already checks (YouTube) costs nothing, so it never competes for a section's quota.
+const platformChecked = async (fixtures = false) =>
+  new Set((await sourceRegistry({ fixtures })).filter((e) => e.visionPolicy === "platform").map((e) => e.id));
+const paidCheck = (item, trusted = platformChecked()) =>
+  (item.media.length > 0 || item.kind === "meme") && !trusted.has(item.source);
 // Reasons worth re-deciding after a rules bump. `cosplay_required` and `required_character_missing`
 // are included because they depend on the same vision read that the bump re-runs.
 const RECHECKABLE = [
@@ -258,7 +262,8 @@ export async function checkQueue(db, build, config = feedConfig()) {
     )
     .orderBy(desc(s.feedItems.fetchedAt), asc(s.feedItems.id))
     .limit(2000);
-  const free = pending.filter((i) => !paidCheck(i)).map((i) => i.id);
+  const trusted = await platformChecked(build.mode === "fixture");
+  const free = pending.filter((i) => !paidCheck(i, trusted)).map((i) => i.id);
   // Items an earlier build held back as uncertain, or rejected by vision/moderation under an older
   // rules version, are re-evaluated first under the current rules (once: the new verdict records it).
   const reconsider = await db
@@ -274,7 +279,7 @@ export async function checkQueue(db, build, config = feedConfig()) {
     )
     .limit(100);
   const uncertain = [
-    ...pending.filter((i) => paidCheck(i) && i.reason === "vision_uncertain").map((i) => i.id),
+    ...pending.filter((i) => paidCheck(i, trusted) && i.reason === "vision_uncertain").map((i) => i.id),
     ...reconsider.map((r) => r.id),
   ];
   // Fandom memes are checked through their own sections' quotas; the meme quota is for home memes.
@@ -283,7 +288,7 @@ export async function checkQueue(db, build, config = feedConfig()) {
     (section !== "meme" || (!i.sections.includes("maomao") && !i.sections.includes("music")));
   const lists = SECTIONS.map((section) =>
     pending
-      .filter((i) => paidCheck(i) && inQuota(i, section))
+      .filter((i) => paidCheck(i, trusted) && inQuota(i, section))
       .map((i) => ({ id: i.id, score: scoreItem(i, build.taste, { day: build.day, section }).score }))
       .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
       .slice(0, config.checkQuotas?.[section] ?? 30)
@@ -301,6 +306,7 @@ export async function checkQueue(db, build, config = feedConfig()) {
 }
 
 async function check(ctx) {
+  const trusted = await platformChecked(ctx.build.mode === "fixture");
   let queue = ctx.run.checkpoint.queue ?? (await checkQueue(ctx.db, ctx.build, ctx.config));
   let position = ctx.run.checkpoint.position ?? 0;
   let retried = ctx.run.checkpoint.retried ?? false;
@@ -332,7 +338,7 @@ async function check(ctx) {
       // uses what is approved.
       if (
         (item?.safetyStatus === "pending" || (item && staleRejection(item))) &&
-        paidCheck(item) &&
+        paidCheck(item, trusted) &&
         ctx.config.dailyLimitMicros &&
         (budgetStopped ||
           (await spentToday(ctx.db)) >= ctx.config.dailyLimitMicros * (ctx.config.checkDailyShare ?? 0.7))

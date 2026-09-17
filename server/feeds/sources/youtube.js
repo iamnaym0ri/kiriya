@@ -728,6 +728,10 @@ const YOUTUBE_POLICY = {
   copyPolicy: "link_only",
   deletionPolicy: "recheck_before_publish",
   attributionRequired: true,
+  // Owner decision (2026-09-17): YouTube's own checks stand in for the paid thumbnail read — strict
+  // SafeSearch on every search, age restriction and made-for-kids recorded by mediaGate, and
+  // YouTube's own policy enforcement — so the paid budget goes to the sources that have none.
+  visionPolicy: "platform",
   termsUrl: TERMS_URL,
   docsUrl: DOCS_URL,
 };
