@@ -105,8 +105,8 @@ try {
     assert.match(await page.locator('.daily-style-button .sr-only').innerText(),/he\/they/);
     const actual=await paints(); emotionColors[feeling.key]=actual;
     const [r,g,b]=rgba(actual.accent).map(v=>v/255), tint=oklch({mode:'rgb',r,g,b});
-    assert(rgba(actual.accent).some((v,i)=>Math.abs(v-rgba(baseline.accent)[i])>=3),'Each feeling tints the lilac a little');
-    assert(rgba(actual.accent).every((v,i)=>Math.abs(v-rgba(baseline.accent)[i])<=40),'The tint stays nuanced');
+    assert(rgba(actual.accent).some((v,i)=>Math.abs(v-rgba(baseline.accent)[i])>=2),'Each feeling tints the lilac a little');
+    assert(rgba(actual.accent).every((v,i)=>Math.abs(v-rgba(baseline.accent)[i])<=12),'The tint stays nuanced: noticeable only if you look for it');
     assert(tint.h>=290 && tint.h<=355 && tint.c>=.03,`${feeling.key} keeps the accent lilac (hue ${tint.h?.toFixed(0)})`);
     assert(rgba(actual.paper).every(v=>v>=235),'Paper stays light enough to read on');
   }

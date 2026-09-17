@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { oklch, parse, wcagContrast } from "culori";
+import { formatHex, interpolate, oklch, parse, wcagContrast } from "culori";
 import { FEELINGS } from "../server/content/moods.js";
 
-// Moods tint the lilac; they never replace it. This reads the real stylesheet and repeats the
-// browser's `color-mix(in srgb, feeling 85%, mood)` for every mood and feeling combination.
+// Moods tint the look she's on; they never replace it. This reads the real stylesheet and repeats
+// the browser's `color-mix(in oklch, look, tint amount)` for every look and mood combination.
 const css = await readFile(new URL("../src/styles/daily-style.css", import.meta.url), "utf8");
 const block = (selector) => {
   const found = css.match(new RegExp(`${selector.replace(/[[\]"=()]/g, "\\$&")}\\s*\\{([^}]*)\\}`));
@@ -15,23 +15,39 @@ const block = (selector) => {
 const TOKENS = ["accent", "accent-hover", "ink", "muted", "hand", "page", "paper", "notebook", "soft", "line", "deep", "wash"];
 const lilac = block(":root");
 const moods = { lilac, ...Object.fromEntries(["rose", "iris", "night", "cloud"].map((key) => [key, { ...lilac, ...block(`:root[data-mood="${key}"]`) }])) };
-const mix = (top, bottom, amount = 0.85) => {
-  const [a, b] = [parse(top), parse(bottom)];
-  return { mode: "rgb", r: a.r * amount + b.r * (1 - amount), g: a.g * amount + b.g * (1 - amount), b: a.b * amount + b.b * (1 - amount) };
-};
-const theme = (mood, feeling) => Object.fromEntries(TOKENS.map((token) => [token, feeling ? mix(feeling[`f-${token}`], mood[`base-${token}`]) : parse(mood[`base-${token}`])]));
+// The papers take the pale tint; everything else takes the strong one.
+const PALE = new Set(["page", "paper", "notebook", "soft", "line", "wash"]);
+// What the browser computes for color-mix(in oklch, base, tint amount%), rounded to a real colour.
+const mix = (base, tint, amount) => parse(formatHex(interpolate([parse(base), parse(tint)], "oklch")(amount)));
+const theme = (mood, feeling) =>
+  Object.fromEntries(TOKENS.map((token) => {
+    const base = mood[`base-${token}`];
+    if (!feeling) return [token, parse(base)];
+    // The notebook's cream paper keeps its own colour; see daily-style.css.
+    if (token === "notebook") return [token, parse(base)];
+    const tint = feeling[PALE.has(token) ? "f-tint-pale" : "f-tint"];
+    return [token, mix(base, tint, Number.parseFloat(feeling["f-amount"]) / 100)];
+  }));
 // Violet through pink. Near-white papers have too little colour for a meaningful hue.
 const inLilacBand = (colour) => { const { c, h } = oklch(colour); return c < 0.015 || (h >= 290 && h <= 355); };
+const channelShift = (a, b) => Math.max(...["r", "g", "b"].map((key) => Math.abs(Math.round(a[key] * 255) - Math.round(b[key] * 255))));
 
 test("Every mood and feeling keeps the world lilac: violet-to-pink, tinted rather than recoloured", () => {
   for (const { key } of FEELINGS) {
     const feeling = block(`:root[data-feeling="${key}"]`);
     assert.ok(inLilacBand(parse(feeling["charm-color"])), `${key} charms stay lilac`);
-    assert.ok(Math.abs(Number.parseFloat(feeling["feeling-hue"])) <= 25, `${key} turns the blossom photo only slightly`);
+    assert.ok(Math.abs(Number.parseFloat(feeling["feeling-hue"])) <= 10, `${key} turns the blossom photo only slightly`);
     for (const [moodKey, mood] of Object.entries(moods)) {
       const colours = theme(mood, feeling);
       for (const token of TOKENS) assert.ok(inLilacBand(colours[token]), `${moodKey} + ${key}: --theme-${token} leaves the lilac band (hue ${oklch(colours[token]).h?.toFixed(0)})`);
       assert.ok(oklch(colours.accent).c >= 0.03, `${moodKey} + ${key}: the accent still reads as a colour, not grey`);
+      // The whole point of the tint: you notice it if you look for it, and never mistake it for
+      // another colour. Measured against the same mood with no feeling chosen.
+      for (const token of ["accent", "ink", "page", "paper", "soft", "line"]) {
+        const shift = channelShift(colours[token], theme(mood)[token]);
+        assert.ok(shift <= 13, `${moodKey} + ${key}: --theme-${token} moves ${shift}/255, too much for a tint`);
+      }
+      assert.ok(channelShift(colours.accent, theme(mood).accent) >= 2, `${moodKey} + ${key}: the accent doesn't move at all`);
     }
   }
   for (const [moodKey, mood] of Object.entries(moods)) for (const token of TOKENS) assert.ok(inLilacBand(theme(mood)[token]), `${moodKey}: --base-${token}`);

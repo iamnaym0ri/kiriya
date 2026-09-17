@@ -36,36 +36,39 @@
   --base-wash: #ebe9f4;
 }
 :root[data-mood="cloud"] {
-  --base-accent: #776d81; --base-accent-hover: #887e92;
+  --base-accent: #7a6b86; --base-accent-hover: #8b7b98;
   --base-ink: #574d5c; --base-muted: #7e727f; --base-hand: #987d92;
   --base-page: #f1eff4; --base-paper: #fefafc; --base-notebook: #fcfaf7;
   --base-soft: #e7dfe7; --base-line: #dcc9d9; --base-deep: #5a4c5d;
   --base-wash: #f1edf3;
 }
 /*
-  Every mood stays lilac. Each one turns the lilac a few degrees toward its own colour and makes it a
-  little richer or quieter (angles are OKLCH hue, measured from the lilac base above), so the world
-  is always purple-pink and the mood is a tint, not a new colour. The blossom photo and the drifting
-  charms lean the same small way. scripts/test-lilac-palette.mjs keeps every mood inside the lilac
-  hue band and readable.
+  Every look stays lilac; a mood only tints the look she's on. A little colour is mixed into her own
+  palette — the same small amount whichever look she picked — so the world is always purple-pink and
+  the mood is a shift you notice when you look for it. `--f-tint` colours the ink, accents and
+  handwriting; the papers get `--f-tint-pale`, because they hold so little colour that the strong
+  tint would recolour them instead of tinting them. The blossom photo and the drifting charms
+  (PlayfulWorld.css) lean the same small way. scripts/test-lilac-palette.mjs keeps every look-and-mood
+  pair inside the lilac band, readable, and within a few steps of the look it started from.
 */
 :root {
   --feeling-hue: 0deg;
   --feeling-richness: 1;
 }
 :root[data-feeling] {
-  --theme-accent: color-mix(in srgb, var(--f-accent) 85%, var(--base-accent));
-  --theme-accent-hover: color-mix(in srgb, var(--f-accent-hover) 85%, var(--base-accent-hover));
-  --theme-ink: color-mix(in srgb, var(--f-ink) 85%, var(--base-ink));
-  --theme-muted: color-mix(in srgb, var(--f-muted) 85%, var(--base-muted));
-  --theme-hand: color-mix(in srgb, var(--f-hand) 85%, var(--base-hand));
-  --theme-page: color-mix(in srgb, var(--f-page) 85%, var(--base-page));
-  --theme-paper: color-mix(in srgb, var(--f-paper) 85%, var(--base-paper));
-  --theme-notebook: color-mix(in srgb, var(--f-notebook) 85%, var(--base-notebook));
-  --theme-soft: color-mix(in srgb, var(--f-soft) 85%, var(--base-soft));
-  --theme-line: color-mix(in srgb, var(--f-line) 85%, var(--base-line));
-  --theme-deep: color-mix(in srgb, var(--f-deep) 85%, var(--base-deep));
-  --scene-wash: color-mix(in srgb, var(--f-wash) 85%, var(--base-wash));
+  --theme-accent: color-mix(in oklch, var(--base-accent), var(--f-tint) var(--f-amount));
+  --theme-accent-hover: color-mix(in oklch, var(--base-accent-hover), var(--f-tint) var(--f-amount));
+  --theme-ink: color-mix(in oklch, var(--base-ink), var(--f-tint) var(--f-amount));
+  --theme-muted: color-mix(in oklch, var(--base-muted), var(--f-tint) var(--f-amount));
+  --theme-hand: color-mix(in oklch, var(--base-hand), var(--f-tint) var(--f-amount));
+  --theme-deep: color-mix(in oklch, var(--base-deep), var(--f-tint) var(--f-amount));
+  --theme-page: color-mix(in oklch, var(--base-page), var(--f-tint-pale) var(--f-amount));
+  --theme-paper: color-mix(in oklch, var(--base-paper), var(--f-tint-pale) var(--f-amount));
+  /* The notebook's paper is cream, not lilac: a tint would turn it orange, so it keeps its own stock. */
+  --theme-notebook: var(--base-notebook);
+  --theme-soft: color-mix(in oklch, var(--base-soft), var(--f-tint-pale) var(--f-amount));
+  --theme-line: color-mix(in oklch, var(--base-line), var(--f-tint-pale) var(--f-amount));
+  --scene-wash: color-mix(in oklch, var(--base-wash), var(--f-tint-pale) var(--f-amount));
 }
 :root:not([data-feeling]) {
   --theme-accent: var(--base-accent);
@@ -81,61 +84,53 @@
   --theme-deep: var(--base-deep);
   --scene-wash: var(--base-wash);
 }
-/* happy: orchid-pink lilac, petals drifting down (12° toward pink, a little richer) */
+/* happy: the lilac leans pink, petals drifting down (+6°, saturate 1.05) */
 :root[data-feeling="happy"] {
-  --f-accent: #844b7f; --f-accent-hover: #945e8d; --f-ink: #5e325d; --f-muted: #826181; --f-hand: #a06795;
-  --f-page: #f6eaf7; --f-paper: #fff8fc; --f-notebook: #fffaf4; --f-soft: #ebd2eb; --f-line: #dfbadd; --f-deep: #5e3b61; --f-wash: #f4e6f4;
-  --feeling-hue: 8deg; --feeling-richness: 1.06;
-  --charm-color: #b578ad; --charm-1: "✿"; --charm-2: "☼"; --charm-3: "✧"; --charm-4: "♡";
+  --f-tint: #a2316d; --f-tint-pale: #ffd3ed; --f-amount: 13%;
+  --feeling-hue: 3deg; --feeling-richness: 1.05;
+  --charm-color: #a478aa; --charm-1: "✿"; --charm-2: "☼"; --charm-3: "✧"; --charm-4: "♡";
 }
-/* content: a calmer, softer lilac, leaves floating slowly (5° toward blue, quieter) */
+/* content: the lilac goes a touch calmer, leaves floating slowly (−2°, saturate 0.96) */
 :root[data-feeling="content"] {
-  --f-accent: #70597d; --f-accent-hover: #806a8b; --f-ink: #4e3d5a; --f-muted: #75687f; --f-hand: #8c7394;
-  --f-page: #f0ecf5; --f-paper: #fefafd; --f-notebook: #fefaf8; --f-soft: #e0d7e8; --f-line: #cfc1da; --f-deep: #50445d; --f-wash: #eee9f3;
-  --feeling-hue: -4deg; --feeling-richness: .8;
-  --charm-color: #9c86ac; --charm-1: "❦"; --charm-2: "✿"; --charm-3: "❧"; --charm-4: "❀";
+  --f-tint: #5f6274; --f-tint-pale: #e6e7ef; --f-amount: 13%;
+  --feeling-hue: -1deg; --feeling-richness: 0.96;
+  --charm-color: #9c7da7; --charm-1: "❦"; --charm-2: "✿"; --charm-3: "❧"; --charm-4: "❀";
 }
-/* excited: warm pink lilac, confetti stars spinning down (20° toward pink, a little richer) */
+/* excited: the lilac warms up, confetti stars spinning down (+8°, saturate 1.07) */
 :root[data-feeling="excited"] {
-  --f-accent: #884b77; --f-accent-hover: #975e86; --f-ink: #613156; --f-muted: #85607c; --f-hand: #a3678c;
-  --f-page: #f7e9f5; --f-paper: #fff8fb; --f-notebook: #fefbf4; --f-soft: #edd2e7; --f-line: #e2b9d7; --f-deep: #613b5b; --f-wash: #f5e6f2;
-  --feeling-hue: 14deg; --feeling-richness: 1.08;
-  --charm-color: #b977a3; --charm-1: "★"; --charm-2: "✦"; --charm-3: "✶"; --charm-4: "✧";
+  --f-tint: #ab285c; --f-tint-pale: #ffd1e3; --f-amount: 14%;
+  --feeling-hue: 4deg; --feeling-richness: 1.07;
+  --charm-color: #a576a9; --charm-1: "★"; --charm-2: "✦"; --charm-3: "✶"; --charm-4: "✧";
 }
-/* sad: lilac with a little blue, gentle rain (15° toward blue, a little quieter) */
+/* sad: the lilac leans blue, gentle rain (−6°, saturate 0.98) */
 :root[data-feeling="sad"] {
-  --f-accent: #6c5985; --f-accent-hover: #7c6a93; --f-ink: #4a3d60; --f-muted: #726884; --f-hand: #88739c;
-  --f-page: #efecf7; --f-paper: #fdfafe; --f-notebook: #fffaf7; --f-soft: #ded8ed; --f-line: #ccc2e0; --f-deep: #4d4463; --f-wash: #ece9f5;
-  --feeling-hue: -12deg; --feeling-richness: .88;
-  --charm-color: #9786b6; --charm-1: ""; --charm-2: "♡"; --charm-3: ""; --charm-4: "";
+  --f-tint: #5b5f8b; --f-tint-pale: #e3e6ff; --f-amount: 14%;
+  --feeling-hue: -3deg; --feeling-richness: 0.98;
+  --charm-color: #9a7cac; --charm-1: ""; --charm-2: "♡"; --charm-3: ""; --charm-4: "";
 }
-/* angry: rosy lilac, embers rising (26° toward pink, a little richer) */
+/* angry: the lilac goes rosier, embers rising (+10°, saturate 1.06) */
 :root[data-feeling="angry"] {
-  --f-accent: #8a4a71; --f-accent-hover: #9a5e80; --f-ink: #633151; --f-muted: #876078; --f-hand: #a66787;
-  --f-page: #f8e9f3; --f-paper: #fff9fa; --f-notebook: #fdfbf5; --f-soft: #efd2e4; --f-line: #e4b9d3; --f-deep: #633a57; --f-wash: #f6e6f1;
-  --feeling-hue: 18deg; --feeling-richness: 1.05;
-  --charm-color: #bc779b; --charm-1: "✦"; --charm-2: "•"; --charm-3: "✹"; --charm-4: "•";
+  --f-tint: #b4144e; --f-tint-pale: #ffcfdc; --f-amount: 14%;
+  --feeling-hue: 5deg; --feeling-richness: 1.06;
+  --charm-color: #a775a9; --charm-1: "✦"; --charm-2: "•"; --charm-3: "✹"; --charm-4: "•";
 }
-/* anxious: periwinkle lilac, slow breathing bubbles (21° toward blue, a little quieter) */
+/* anxious: the lilac cools, slow breathing bubbles (−8°, saturate 0.97) */
 :root[data-feeling="anxious"] {
-  --f-accent: #685a88; --f-accent-hover: #796c96; --f-ink: #473e62; --f-muted: #6f6985; --f-hand: #84759f;
-  --f-page: #eeedf8; --f-paper: #fdfafe; --f-notebook: #fffaf8; --f-soft: #dcd8ee; --f-line: #c9c3e2; --f-deep: #4a4564; --f-wash: #ebeaf6;
-  --feeling-hue: -16deg; --feeling-richness: .86;
-  --charm-color: #9188b8; --charm-1: "○"; --charm-2: "◦"; --charm-3: "○"; --charm-4: "°";
+  --f-tint: #535f96; --f-tint-pale: #dee6ff; --f-amount: 14%;
+  --feeling-hue: -4deg; --feeling-richness: 0.97;
+  --charm-color: #997cae; --charm-1: "○"; --charm-2: "◦"; --charm-3: "○"; --charm-4: "°";
 }
-/* overwhelmed: hushed grey lilac, only a few soft lights (no turn, half as rich) */
+/* overwhelmed: the lilac turned down a whisper, a few soft lights (no turn, saturate 0.9) */
 :root[data-feeling="overwhelmed"] {
-  --f-accent: #6e5c73; --f-accent-hover: #7e6d83; --f-ink: #4d3f52; --f-muted: #746a79; --f-hand: #89768b;
-  --f-page: #f0ecf2; --f-paper: #fdfafc; --f-notebook: #fdfaf8; --f-soft: #e0d8e4; --f-line: #cec3d3; --f-deep: #4f4556; --f-wash: #eeeaf0;
-  --feeling-hue: 0deg; --feeling-richness: .55;
-  --charm-color: #9d87a5; --charm-1: "●"; --charm-2: "●"; --charm-3: "●"; --charm-4: "●";
+  --f-tint: #656265; --f-tint-pale: #e8e7e8; --f-amount: 16%;
+  --feeling-hue: 0deg; --feeling-richness: 0.9;
+  --charm-color: #997ca4; --charm-1: "●"; --charm-2: "●"; --charm-3: "●"; --charm-4: "●";
 }
-/* playful: candy-pink lilac, hearts bouncing about (32° toward pink, richer) */
+/* playful: the lilac at its pinkest, hearts bouncing about (+8°, saturate 1.08) */
 :root[data-feeling="playful"] {
-  --f-accent: #91466c; --f-accent-hover: #a05a7b; --f-ink: #682d4e; --f-muted: #8c5e75; --f-hand: #ac6381;
-  --f-page: #fae8f2; --f-paper: #fff8f9; --f-notebook: #fdfbf4; --f-soft: #f3d0e2; --f-line: #eab7d0; --f-deep: #673754; --f-wash: #f9e5ef;
-  --feeling-hue: 22deg; --feeling-richness: 1.12;
-  --charm-color: #c47294; --charm-1: "♡"; --charm-2: "\2665\FE0E"; --charm-3: "✦"; --charm-4: "☆";
+  --f-tint: #b40069; --f-tint-pale: #ffcfeb; --f-amount: 15%;
+  --feeling-hue: 4deg; --feeling-richness: 1.08;
+  --charm-color: #a673ab; --charm-1: "♡"; --charm-2: "\2665\FE0E"; --charm-3: "✦"; --charm-4: "☆";
 }
 :root, :root[data-mood] {
   --page: var(--theme-page); --surface: var(--theme-paper); --paper: var(--theme-paper);
