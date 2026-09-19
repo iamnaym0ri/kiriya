@@ -108,8 +108,30 @@ const sleevePose = [
   "even half-hidden behind a sleeve, ur charm wins",
 ];
 
+// The character portrait speaks for itself: Maomao addressing Kiriya, never praise for the drawing.
+const floralPortrait = [
+  "Your Maomao costume suited you. I don't say such things lightly.",
+  "You draw, dance and style wigs. Hm. That is real patience.",
+  "Your smile is pleasant. There. An observation, freely given.",
+  "You made a place for the things you love. Sensible girl.",
+  "Curiosity like yours is useful. Never apologise for it.",
+  "They say you are kind. The evidence agrees with them.",
+  "You notice small details. So do I. We would get along.",
+  "A difficult sketch is still evidence of work. Keep it.",
+  "Pretty, and interesting the moment she speaks. An unusual pair.",
+  "You wear the braids better than the flowers suit me.",
+  "Your enthusiasm is loud. I find it rather agreeable.",
+  "You look after everyone. Put yourself on that list.",
+  "Talent and patience, carried quietly. I notice both.",
+  "You tend this little world of yours well. It shows.",
+  "Rest when you need to. Even capable girls require it.",
+  "Yes, you are worth the compliment. Don't make me repeat it.",
+];
+
 export const COSPLAY_PRAISE = [
   ...everyday.map(text => ({ text })),
   ...cheekPose.map(text => ({ text, photo: "img-5446" })),
+  ...floralPortrait.map(text => ({ text, photo: "maomao-floral" })),
+  // Kept with the retired IMG_5445: out of rotation, so this set stays unseen until that photo returns.
   ...sleevePose.map(text => ({ text, photo: "img-5445" })),
 ].map((item, index) => ({ id: `cosplay-praise-${String(index + 1).padStart(3, "0")}`, ...item }));

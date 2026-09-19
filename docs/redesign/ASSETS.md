@@ -2,14 +2,14 @@
 
 ## Latest owner-supplied display album
 
-Josh explicitly requested both photos for the main public/private portrait, with IMG_5446 first. Originals remain in `docs/display/`; WebP derivatives only compress and apply image orientation, retain the full composition, and carry no source metadata.
+Josh requested IMG_5446 first, alternating with the earlier `maomao-floral` character portrait; IMG_5445 is kept on disk but no longer displayed. Originals remain in `docs/display/`; WebP derivatives only compress and apply image orientation, retain the full composition, and carry no source metadata.
 
 | Served asset | Original | Size | Display |
 | --- | --- | --- | --- |
 | `public/images/display/img-5446.webp` | `docs/display/IMG_5446.jpg` | 828 × 848; 42,704 bytes | Maomao cosplay, smiling with a hand beside the cheek; first September 16–17, 2026 in Singapore |
-| `public/images/display/img-5445.webp` | `docs/display/IMG_5445.jpg` | 810 × 1084; 107,902 bytes | Maomao cosplay, peeking over a pink sleeve; next September 18–19 |
+| `public/images/maomao-floral.webp` | Supplied R2 reference | 735 × 763; 80,362 bytes | Maomao among pale flowers; alternates in September 18–19 |
 
-The shared portrait preserves each image's natural aspect ratio with no crop. Images alternate every 48 hours; captions change every two hours. An explicit admin avatar override remains supported. These personal images replace the old character illustration in the main portrait; character artwork elsewhere is unchanged.
+The shared portrait preserves each image's natural aspect ratio with no crop. Images alternate every 48 hours; captions change every two hours. An explicit admin avatar override remains supported. The album pairs one personal photo with the character illustration that preceded it; character artwork elsewhere is unchanged.
 
 
 Reviewed September 14–15, 2026, with the requested birthday image follow-up recorded below. Originals and research screenshots remain in `docs/assets`; selected WebP derivatives are served. References are not presented as Kiriya’s work. The saved heart was replaced using built-in imagegen during the follow-up. Rora was inspected for composition, typography, spacing and responsive care; no Rora code or assets were copied.
