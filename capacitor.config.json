@@ -4,8 +4,7 @@
   "webDir": "dist-app",
   "ios": {
     "contentInset": "never",
-    "backgroundColor": "#efe5f6",
-    "scheme": "kiriya"
+    "backgroundColor": "#efe5f6"
   },
   "plugins": {
     "SplashScreen": {

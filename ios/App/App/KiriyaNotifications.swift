@@ -45,7 +45,7 @@ enum KiriyaNotificationCategories {
 }
 
 /// Keeps the app alive in the background while a notification button's request finishes.
-private final class BackgroundWork {
+private final class BackgroundWork: @unchecked Sendable {  // only touched on the main thread
     private var id: UIBackgroundTaskIdentifier = .invalid
 
     init(_ name: String) {

@@ -25,9 +25,10 @@ The previous session's memory lives on the other machine and is not available on
 
 ## 2. State of the code
 
-- **Nothing from phases 1–4b is committed.** It was all built in the WSL working copy on `main`. It reaches the Mac through git: the plan is a commit on a branch, pushed, then checked out on the Mac. Run `git log -1` and `git status` to see what you have.
+- **Branch `connection-refactor`.** Phases 1–4b are commit cd17fd4. The iMac session added the Xcode targets on top. Deploying means merging into `main` and pushing: Vercel builds `main` to production (config check → migrations → build).
 - **Last full run on Linux:** `npm test` gave 282 tests with 281 passing. The one failure, "Media gates require recorded YouTube playback…", **was failing before this work and is unrelated**. `npm run build` passes, including the leak check.
-- **`docs/note.md`** is an untracked note about Instagram/Meta APIs that the previous session did not write. Leave it alone unless Josh says.
+- **On the iMac** (2026-11-25), 4 more tests in `scripts/test-feed-sources-shop.mjs` are *cancelled* ("Promise resolution is still pending…"). `main` behaves the same on this Mac, so it's an environment quirk in old feed code, not a regression.
+- `docs/note.md` stayed on the WSL machine; ignore it.
 
 ### Stack (quick map)
 

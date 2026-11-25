@@ -4,6 +4,15 @@ Written 2026-11-24 on a Linux machine, where none of this could be compiled. Eve
 
 Anything marked **UNVERIFIED** is a best reading of Apple's or Capacitor's documentation and source that only a real build or a real phone can confirm. Check those first.
 
+> **Done on the iMac, 2026-11-25.** Steps §1–§5 are scripted, so nothing needs clicking:
+> `ruby ios/scripts/add-native-targets.rb` (needs the `xcodeproj` gem; it is safe to re-run) adds the App files, the
+> `KiriyaShared` group and both extension targets, and embeds them. The project is committed in that state. The App scheme
+> built with **no Swift errors** on the first compile (Xcode 26.3). The signed build carries the App Group on all three
+> targets and `aps-environment` on the app. Xcode must be signed in to the team's Apple ID (Settings → Accounts) for
+> `-allowProvisioningUpdates` to register the App Group and push. The steps below stay as a reference for doing it by hand.
+>
+> On this iMac Node isn't on `PATH`: use `~/.cache/rora-audit-toolchain/node-v22.23.3-darwin-x64/bin`.
+
 ## What's already in the repo
 
 | Where | What | Target |

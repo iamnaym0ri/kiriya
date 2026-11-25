@@ -187,6 +187,16 @@ Everything that can be built and tested on Linux is done. The Swift half is writ
 - **Everywhere:** the query cache is kept in IndexedDB (`src/lib/persist.js`; never the session; wiped on lock); "save to our memories" on letters, little notes and jar notes.
 - Tests: `scripts/test-app-bridge.mjs` (8) plus additions to the chat, jar and app tests; browser checks of the bundled flow cross-origin (token only, no cookies; signed wallpaper and photo load).
 
+### 4b. Progress on the iMac (2026-11-25)
+
+- **Xcode, done.** `ios/scripts/add-native-targets.rb` wires MAC-BUILD.md §1–§5 without clicking. Everything compiled with no Swift errors on the first try. The signed debug build has the App Group on the app and both extensions, and push (development) on the app. It installed and opened on Josh's iPhone 11 (iOS 27).
+- **Fixes.**
+  - `capacitor.config.json` had `ios.scheme: "kiriya"`. That's the Xcode scheme name for `npx cap run`, not the web view's URL scheme, so it was removed. The app's origin stays `capacitor://localhost`.
+  - Silenced one Sendable warning in `KiriyaNotifications.swift`.
+- **Reviewed, not yet proven on the phone:** the notification-delegate takeover. Capacitor registers plugins, and with them the push handler, inside the bridge's init, before `capacitorDidLoad`, so taps queued on a cold start are handed over with their handler in place.
+- **Seen on the phone:** the site's top bar sits under the status bar (clock, battery). It needs a safe-area top inset inside the app.
+- **Next:** deploy (Josh approved "now"), then the MAC-BUILD.md §6 checklist on his phone, then TestFlight.
+
 ### 5. Quizzes + game library
 
 - **Quizzes for each other.**

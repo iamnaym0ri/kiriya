@@ -7,19 +7,86 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0819098C9313443947659274 /* WidgetsMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E021572ED933EF392FE9D /* WidgetsMain.swift */; };
+		26517060198AEA3285097B4D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C6DBA107C073F6F5F1C2B13 /* Foundation.framework */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		346A800B85FADF73666B224A /* KiriyaAppShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C4C92274FB1E4BD43FDC49 /* KiriyaAppShortcuts.swift */; };
+		3AD60108C8F3896C60B35F68 /* envelope.png in Resources */ = {isa = PBXBuildFile; fileRef = 84EDA973C1C6C1037650D19F /* envelope.png */; };
+		4280DF43BD5DC8A8F2B2227E /* jar.png in Resources */ = {isa = PBXBuildFile; fileRef = 459D56B7CE29023D3BCD98E5 /* jar.png */; };
+		483BA755B269B210EA122065 /* KiriyaIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C2423D7B42F3AE492FDF8 /* KiriyaIntents.swift */; };
+		4A9529AE15A55EBF70B69FF7 /* tap.caf in Resources */ = {isa = PBXBuildFile; fileRef = AD80B842ABE9D873B6BFDA45 /* tap.caf */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
+		501BCF53A2453B127FA9887F /* KiriyaIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C2423D7B42F3AE492FDF8 /* KiriyaIntents.swift */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		51E953548DE74E047774F81F /* KiriyaNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD6A56BF896B491F2B1A239 /* KiriyaNotificationService.swift */; };
+		53F573E3FC906A4B71E58826 /* jar.caf in Resources */ = {isa = PBXBuildFile; fileRef = C3CC8E2FA759CA413E4AC891 /* jar.caf */; };
+		5D2D2DB40E200F2F274B7E9E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2B5022FC7FA2136B6AAB72D5 /* PrivacyInfo.xcprivacy */; };
+		6A2660BF6D02AC2E570DA3C9 /* letter.caf in Resources */ = {isa = PBXBuildFile; fileRef = 5B38EE03F7D5B52312ABDC60 /* letter.caf */; };
+		78A6C318853F8A1C0B4DD0D7 /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B800F823CCC12556D5A712A /* WidgetViews.swift */; };
+		8AB009972F0F1135DBA91189 /* chat.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4D9D205D3F8372FC0B091A9E /* chat.caf */; };
+		8E56798D24756698CF9F514D /* KiriyaShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A9A2F965A4141C6202F129 /* KiriyaShared.swift */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
+		9C5FABD02C7DEE539333EF25 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C6DBA107C073F6F5F1C2B13 /* Foundation.framework */; };
+		A50E3380A547E4D852B2632A /* KiriyaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3911AC88462B730DAFF3F67 /* KiriyaNotifications.swift */; };
+		B583D937712C6B543BDFDFBC /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E4FB398ADD7A068D92DD4E5 /* MainViewController.swift */; };
+		B9466A2D70ACC6D813CF61AF /* KiriyaShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A9A2F965A4141C6202F129 /* KiriyaShared.swift */; };
+		CE23389B4F818A425A34CFBC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BD8112B0B32D177878788D42 /* PrivacyInfo.xcprivacy */; };
+		F741B51FE90FCFB06C5E7ED6 /* KiriyaWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 010CD9CC0E2CA74BD9D71D6C /* KiriyaWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F777CF95D7574E130DCD74D1 /* WidgetTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8E5F10FA29C8FE64AB70FBD /* WidgetTheme.swift */; };
+		F9E5D12242FF36C794E058C5 /* WidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D554833FB6DE52D8287E50 /* WidgetProvider.swift */; };
+		FC541EF492C940A02CC903CC /* KiriyaNotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E99B4501297E25D204F5A31C /* KiriyaNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		41985895282857E47BBB57B5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 288124B90A0F9B608CB634AE;
+			remoteInfo = KiriyaWidgets;
+		};
+		899CAA4ADF2BD91F8DFD0281 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9007A571ACF70974893B52F2;
+			remoteInfo = KiriyaNotificationService;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E4A7BAB7E6E80BB9A7E6BFFC /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F741B51FE90FCFB06C5E7ED6 /* KiriyaWidgets.appex in Embed Foundation Extensions */,
+				FC541EF492C940A02CC903CC /* KiriyaNotificationService.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		010CD9CC0E2CA74BD9D71D6C /* KiriyaWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KiriyaWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		03A9A2F965A4141C6202F129 /* KiriyaShared.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KiriyaShared.swift; sourceTree = "<group>"; };
+		0A5EF8BF37B55DA886F1E02D /* App.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		119E021572ED933EF392FE9D /* WidgetsMain.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetsMain.swift; sourceTree = "<group>"; };
+		1D86143A7CEC5A2B6008A286 /* KiriyaNotificationService.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = KiriyaNotificationService.entitlements; sourceTree = "<group>"; };
+		2B5022FC7FA2136B6AAB72D5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		3B800F823CCC12556D5A712A /* WidgetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetViews.swift; sourceTree = "<group>"; };
+		459D56B7CE29023D3BCD98E5 /* jar.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = jar.png; sourceTree = "<group>"; };
+		48C4C92274FB1E4BD43FDC49 /* KiriyaAppShortcuts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KiriyaAppShortcuts.swift; sourceTree = "<group>"; };
+		4D9D205D3F8372FC0B091A9E /* chat.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = chat.caf; sourceTree = "<group>"; };
+		4E4FB398ADD7A068D92DD4E5 /* MainViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -28,11 +95,42 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		5B38EE03F7D5B52312ABDC60 /* letter.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = letter.caf; sourceTree = "<group>"; };
+		74659FFB742F966DCCCCA7A9 /* KiriyaWidgets.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = KiriyaWidgets.entitlements; sourceTree = "<group>"; };
+		761C2423D7B42F3AE492FDF8 /* KiriyaIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KiriyaIntents.swift; sourceTree = "<group>"; };
+		84EDA973C1C6C1037650D19F /* envelope.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = envelope.png; sourceTree = "<group>"; };
+		8AD6A56BF896B491F2B1A239 /* KiriyaNotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KiriyaNotificationService.swift; sourceTree = "<group>"; };
+		8C6DBA107C073F6F5F1C2B13 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		A1D554833FB6DE52D8287E50 /* WidgetProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetProvider.swift; sourceTree = "<group>"; };
+		AD80B842ABE9D873B6BFDA45 /* tap.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = tap.caf; sourceTree = "<group>"; };
+		B8E5F10FA29C8FE64AB70FBD /* WidgetTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetTheme.swift; sourceTree = "<group>"; };
+		BD8112B0B32D177878788D42 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C3CC8E2FA759CA413E4AC891 /* jar.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = jar.caf; sourceTree = "<group>"; };
+		CD020707AB7EDFA3F21849A1 /* KiriyaNotificationService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "KiriyaNotificationService-Info.plist"; sourceTree = "<group>"; };
+		E3911AC88462B730DAFF3F67 /* KiriyaNotifications.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KiriyaNotifications.swift; sourceTree = "<group>"; };
+		E754A69DC37EDE599D564AD2 /* KiriyaWidgets-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "KiriyaWidgets-Info.plist"; sourceTree = "<group>"; };
+		E99B4501297E25D204F5A31C /* KiriyaNotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KiriyaNotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		31D409AC9EB063C7780C7594 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9C5FABD02C7DEE539333EF25 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		35B2BDB952226B93655DEADD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				26517060198AEA3285097B4D /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3011FED79650016851F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -44,12 +142,54 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1A561A61015732426B7E9EF2 /* KiriyaShared */ = {
+			isa = PBXGroup;
+			children = (
+				03A9A2F965A4141C6202F129 /* KiriyaShared.swift */,
+				761C2423D7B42F3AE492FDF8 /* KiriyaIntents.swift */,
+			);
+			name = KiriyaShared;
+			path = KiriyaShared;
+			sourceTree = "<group>";
+		};
+		26AD5F9CF52DF7E1F92FF3E5 /* KiriyaWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				119E021572ED933EF392FE9D /* WidgetsMain.swift */,
+				A1D554833FB6DE52D8287E50 /* WidgetProvider.swift */,
+				3B800F823CCC12556D5A712A /* WidgetViews.swift */,
+				B8E5F10FA29C8FE64AB70FBD /* WidgetTheme.swift */,
+				2B5022FC7FA2136B6AAB72D5 /* PrivacyInfo.xcprivacy */,
+				E754A69DC37EDE599D564AD2 /* KiriyaWidgets-Info.plist */,
+				74659FFB742F966DCCCCA7A9 /* KiriyaWidgets.entitlements */,
+			);
+			name = KiriyaWidgets;
+			path = KiriyaWidgets;
+			sourceTree = "<group>";
+		};
+		2E0928996476D7CCEAA34AB2 /* KiriyaNotificationService */ = {
+			isa = PBXGroup;
+			children = (
+				8AD6A56BF896B491F2B1A239 /* KiriyaNotificationService.swift */,
+				84EDA973C1C6C1037650D19F /* envelope.png */,
+				459D56B7CE29023D3BCD98E5 /* jar.png */,
+				CD020707AB7EDFA3F21849A1 /* KiriyaNotificationService-Info.plist */,
+				1D86143A7CEC5A2B6008A286 /* KiriyaNotificationService.entitlements */,
+			);
+			name = KiriyaNotificationService;
+			path = KiriyaNotificationService;
+			sourceTree = "<group>";
+		};
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
+				1A561A61015732426B7E9EF2 /* KiriyaShared */,
+				773176455929EF2B217BD5F5 /* Frameworks */,
+				26AD5F9CF52DF7E1F92FF3E5 /* KiriyaWidgets */,
+				2E0928996476D7CCEAA34AB2 /* KiriyaNotificationService */,
 			);
 			sourceTree = "<group>";
 		};
@@ -57,6 +197,8 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				010CD9CC0E2CA74BD9D71D6C /* KiriyaWidgets.appex */,
+				E99B4501297E25D204F5A31C /* KiriyaNotificationService.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -73,13 +215,64 @@
 				504EC3131FED79650016851F /* Info.plist */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
+				4E4FB398ADD7A068D92DD4E5 /* MainViewController.swift */,
+				E3911AC88462B730DAFF3F67 /* KiriyaNotifications.swift */,
+				48C4C92274FB1E4BD43FDC49 /* KiriyaAppShortcuts.swift */,
+				BD8112B0B32D177878788D42 /* PrivacyInfo.xcprivacy */,
+				0A5EF8BF37B55DA886F1E02D /* App.entitlements */,
+				5ECD0CC05C4C0E47C2EF8FD8 /* Sounds */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		5ECD0CC05C4C0E47C2EF8FD8 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				4D9D205D3F8372FC0B091A9E /* chat.caf */,
+				AD80B842ABE9D873B6BFDA45 /* tap.caf */,
+				5B38EE03F7D5B52312ABDC60 /* letter.caf */,
+				C3CC8E2FA759CA413E4AC891 /* jar.caf */,
+			);
+			name = Sounds;
+			path = Sounds;
+			sourceTree = "<group>";
+		};
+		773176455929EF2B217BD5F5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D8E18A7E3E697A9E83E8F70A /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D8E18A7E3E697A9E83E8F70A /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				8C6DBA107C073F6F5F1C2B13 /* Foundation.framework */,
+			);
+			name = iOS;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		288124B90A0F9B608CB634AE /* KiriyaWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 407480D524C6D7F9940D43E4 /* Build configuration list for PBXNativeTarget "KiriyaWidgets" */;
+			buildPhases = (
+				882E7D761EDD674CE6B989E2 /* Sources */,
+				31D409AC9EB063C7780C7594 /* Frameworks */,
+				9745DFADAFF56F5BF5B066D0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KiriyaWidgets;
+			productName = KiriyaWidgets;
+			productReference = 010CD9CC0E2CA74BD9D71D6C /* KiriyaWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		504EC3031FED79650016851F /* App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 504EC3161FED79650016851F /* Build configuration list for PBXNativeTarget "App" */;
@@ -87,10 +280,13 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				E4A7BAB7E6E80BB9A7E6BFFC /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				F9C61ACE38D19C4CA2F68DCE /* PBXTargetDependency */,
+				922F159F5060B6E2DCDBAF34 /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -99,6 +295,23 @@
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* App.app */;
 			productType = "com.apple.product-type.application";
+		};
+		9007A571ACF70974893B52F2 /* KiriyaNotificationService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DF7CDA8FCAFB9E6EFEB082A1 /* Build configuration list for PBXNativeTarget "KiriyaNotificationService" */;
+			buildPhases = (
+				0F1FE31BD49F4A13761C028E /* Sources */,
+				35B2BDB952226B93655DEADD /* Frameworks */,
+				E0175870F93FA588948C4EF5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KiriyaNotificationService;
+			productName = KiriyaNotificationService;
+			productReference = E99B4501297E25D204F5A31C /* KiriyaNotificationService.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -133,6 +346,8 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				288124B90A0F9B608CB634AE /* KiriyaWidgets */,
+				9007A571ACF70974893B52F2 /* KiriyaNotificationService */,
 			);
 		};
 /* End PBXProject section */
@@ -148,22 +363,85 @@
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
+				CE23389B4F818A425A34CFBC /* PrivacyInfo.xcprivacy in Resources */,
+				8AB009972F0F1135DBA91189 /* chat.caf in Resources */,
+				4A9529AE15A55EBF70B69FF7 /* tap.caf in Resources */,
+				6A2660BF6D02AC2E570DA3C9 /* letter.caf in Resources */,
+				53F573E3FC906A4B71E58826 /* jar.caf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9745DFADAFF56F5BF5B066D0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5D2D2DB40E200F2F274B7E9E /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0175870F93FA588948C4EF5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3AD60108C8F3896C60B35F68 /* envelope.png in Resources */,
+				4280DF43BD5DC8A8F2B2227E /* jar.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0F1FE31BD49F4A13761C028E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				51E953548DE74E047774F81F /* KiriyaNotificationService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3001FED79650016851F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
+				B583D937712C6B543BDFDFBC /* MainViewController.swift in Sources */,
+				A50E3380A547E4D852B2632A /* KiriyaNotifications.swift in Sources */,
+				346A800B85FADF73666B224A /* KiriyaAppShortcuts.swift in Sources */,
+				B9466A2D70ACC6D813CF61AF /* KiriyaShared.swift in Sources */,
+				483BA755B269B210EA122065 /* KiriyaIntents.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		882E7D761EDD674CE6B989E2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0819098C9313443947659274 /* WidgetsMain.swift in Sources */,
+				F9E5D12242FF36C794E058C5 /* WidgetProvider.swift in Sources */,
+				78A6C318853F8A1C0B4DD0D7 /* WidgetViews.swift in Sources */,
+				F777CF95D7574E130DCD74D1 /* WidgetTheme.swift in Sources */,
+				8E56798D24756698CF9F514D /* KiriyaShared.swift in Sources */,
+				501BCF53A2453B127FA9887F /* KiriyaIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		922F159F5060B6E2DCDBAF34 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = KiriyaNotificationService;
+			target = 9007A571ACF70974893B52F2 /* KiriyaNotificationService */;
+			targetProxy = 899CAA4ADF2BD91F8DFD0281 /* PBXContainerItemProxy */;
+		};
+		F9C61ACE38D19C4CA2F68DCE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = KiriyaWidgets;
+			target = 288124B90A0F9B608CB634AE /* KiriyaWidgets */;
+			targetProxy = 41985895282857E47BBB57B5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
@@ -185,6 +463,35 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		22D0E3EB4DDAFFA190906837 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = KiriyaNotificationService/KiriyaNotificationService.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9W8CN9V8NR;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "KiriyaNotificationService/KiriyaNotificationService-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = love.kiriya.app.notifications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		504EC3141FED79650016851F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 958DCC722DB07C7200EA8C5F /* debug.xcconfig */;
@@ -302,8 +609,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 9W8CN9V8NR;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9W8CN9V8NR;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -327,8 +634,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 9W8CN9V8NR;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9W8CN9V8NR;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -344,9 +651,103 @@
 			};
 			name = Release;
 		};
+		CD6D7EAA01AA717D8838CEA8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = KiriyaWidgets/KiriyaWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9W8CN9V8NR;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "KiriyaWidgets/KiriyaWidgets-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = love.kiriya.app.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		F4AAD7DD61CFFFB1A515271A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = KiriyaWidgets/KiriyaWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9W8CN9V8NR;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "KiriyaWidgets/KiriyaWidgets-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = love.kiriya.app.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F6BC53287CC991E25A89FE06 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = KiriyaNotificationService/KiriyaNotificationService.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9W8CN9V8NR;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "KiriyaNotificationService/KiriyaNotificationService-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = love.kiriya.app.notifications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		407480D524C6D7F9940D43E4 /* Build configuration list for PBXNativeTarget "KiriyaWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4AAD7DD61CFFFB1A515271A /* Release */,
+				CD6D7EAA01AA717D8838CEA8 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		504EC2FF1FED79650016851F /* Build configuration list for PBXProject "App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -361,6 +762,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DF7CDA8FCAFB9E6EFEB082A1 /* Build configuration list for PBXNativeTarget "KiriyaNotificationService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				22D0E3EB4DDAFFA190906837 /* Release */,
+				F6BC53287CC991E25A89FE06 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
