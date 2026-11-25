@@ -16,6 +16,7 @@ import { DailyStyleProvider } from "./shared/DailyStyle.jsx";
 import "./styles/strawpage.css";
 import "./styles/daily-style.css";
 import "./styles/feeling-corner.css";
+import "./styles/in-app.css";
 import ProfilePage from "./public/ProfilePage.jsx";
 import PageLoader from "./shared/PageLoader.jsx";
 import { isNativeApp } from "./lib/native.js";
@@ -25,6 +26,8 @@ const World = lazy(() => import("./world/World.jsx"));
 const Admin = lazy(() => import("./admin/Admin.jsx"));
 // Only inside the kiriya.love iPhone app: Face ID, native notifications. Browsers never load it.
 const NativeApp = isNativeApp() ? lazy(() => import("./shared/NativeApp.jsx")) : null;
+// Lets the app-only styles (styles/in-app.css) apply before the first paint.
+if (NativeApp) document.documentElement.classList.add("in-app");
 
 // When a session ends mid-visit, go back to the passphrase instead of showing broken pages.
 function onSessionEnded(error) {

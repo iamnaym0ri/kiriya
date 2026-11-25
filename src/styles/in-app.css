@@ -1,0 +1,32 @@
+/* Inside the kiriya.love iPhone app only (main.jsx adds html.in-app). The web view runs edge to edge
+   (viewport-fit=cover, Capacitor contentInset "never"), so without this the site's top bar sits under
+   the clock and battery. The page moves down by the status bar's height, a strip of the site's paper
+   sits behind the status bar, and the things pinned to the top keep clear of it. Browsers never match. */
+html.in-app body {
+  padding-top: env(safe-area-inset-top);
+}
+
+html.in-app body::before {
+  content: "";
+  position: fixed;
+  z-index: 2147482000;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top);
+  background: color-mix(in srgb, var(--theme-paper, #fff9fd) 94%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+html.in-app .world-mast {
+  top: env(safe-area-inset-top);
+}
+
+html.in-app .world-mobile-menu {
+  margin-top: env(safe-area-inset-top);
+}
+
+/* The admin desk already pads itself for the status bar on phones; the body does it here. */
+html.in-app .admin {
+  padding-top: var(--s-4);
+}

@@ -8,6 +8,7 @@ import { isUploadUrl } from "./media.js";
 import { notificationPreview } from "./loveNotes.js";
 import { publish } from "./realtime.js";
 import { sendToSubscribers } from "../push/webpush.js";
+import { interceptTestSend } from "./appTestMode.js";
 
 // The private chat between Kiriya ("kiriya") and Josh ("admin"), docs/refactor/PLAN.md phase 4.
 
@@ -188,6 +189,9 @@ export async function sendMessage(db, role, input, { after = (task) => task(), n
     const [target] = await db.select({ id: schema.chatMessages.id }).from(schema.chatMessages).where(eq(schema.chatMessages.id, data.replyTo));
     if (!target) data.replyTo = null;
   }
+  // Josh trying the app's buttons in test mode: checked like a real send, but never saved or sent to her.
+  const test = await interceptTestSend(db, role, data, { after, now });
+  if (test) return test;
   const [inserted] = await db
     .insert(schema.chatMessages)
     .values({ clientId: data.clientId, sender: role, kind: data.kind, body: data.kind === "text" ? data.body.trim() : data.body, media: data.media ?? null, replyTo: data.replyTo ?? null, createdAt: now })

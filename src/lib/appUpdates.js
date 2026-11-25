@@ -6,6 +6,7 @@
 // start, the updater rolls back by itself (notifyAppReady never came).
 import { Capacitor } from "@capacitor/core";
 import { API_ORIGIN, isBundledApp } from "./api.js";
+import { isNewerVersion } from "../../shared/appVersion.js";
 
 /* global __APP_BUNDLE_VERSION__ */
 export const BUNDLE_VERSION = typeof __APP_BUNDLE_VERSION__ === "string" ? __APP_BUNDLE_VERSION__ : "dev";
@@ -36,7 +37,7 @@ export function checkForUpdate({ force = false } = {}) {
 async function update() {
   const url = `${API_ORIGIN}/app-bundle/latest.json`;
   const latest = await fetch(url, { cache: "no-store" }).then((response) => (response.ok ? response.json() : null));
-  if (!latest?.version || !Array.isArray(latest.manifest) || latest.version === BUNDLE_VERSION) return null;
+  if (!latest?.version || !Array.isArray(latest.manifest) || !isNewerVersion(latest.version, BUNDLE_VERSION)) return null;
   // A version that needs newer native code waits for the next TestFlight build.
   const { App } = await import("@capacitor/app");
   const { build } = await App.getInfo();

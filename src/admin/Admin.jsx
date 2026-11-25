@@ -350,6 +350,86 @@ function LoveNotes() {
   );
 }
 
+const TRY_LABELS = {
+  chat: "💬 chat message",
+  tap: "♡ thinking of you",
+  letter: "✉ letter",
+  note: "✉︎ little note",
+  jar: "🫙 jar morning",
+  reminder: "⏰ jar reminder",
+};
+
+/**
+ * Try the app on Josh's own phone without anything reaching Kiriya (server/lib/appTestMode.js):
+ * sample notifications go to his test devices only, and while test mode is on the phone's
+ * "♡ back", Reply, widget, Siri and quick-action sends come back to him as "✓ that worked".
+ */
+function AppTest() {
+  const queryClient = useQueryClient();
+  const state = useQuery({ queryKey: ["admin", "app-test"], queryFn: () => api("/admin/app-test") });
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["admin", "app-test"] });
+  const mode = useMutation({
+    mutationFn: (on) => api("/admin/app-test/mode", { method: "POST", body: { on } }),
+    onSuccess: refresh,
+  });
+  const tryOne = useMutation({
+    mutationFn: (kind) => api("/admin/app-test/try", { method: "POST", body: { kind } }),
+    onSuccess: refresh,
+  });
+  const data = state.data;
+  const on = Boolean(data?.mode?.on);
+  return (
+    <section className="admin-card">
+      <h2>Try the app on my phone</h2>
+      <p className="admin-muted">
+        Sends a sample of each notification to your test devices only. While test mode is on, anything your phone sends
+        from a notification button, a widget, Siri or the icon&rsquo;s &ldquo;Send a ♡&rdquo; is checked and answered with
+        &ldquo;✓ that worked&rdquo; instead of reaching Kiriya. It switches itself off after {data?.hours ?? 12} hours.
+      </p>
+      {data && (
+        <p className="admin-muted">
+          Test mode: <strong>{on ? `on until ${sgTime(data.mode.until)}` : "off"}</strong> · your app phones with
+          notifications: {data.phones}
+        </p>
+      )}
+      <div className="admin-row">
+        <button type="button" className="btn btn--ghost btn--small" disabled={mode.isPending} onClick={() => mode.mutate(!on)}>
+          {on ? "Turn test mode off" : "Turn test mode on"}
+        </button>
+      </div>
+      <div className="admin-row">
+        {(data?.kinds ?? Object.keys(TRY_LABELS)).map((kind) => (
+          <button key={kind} type="button" className="btn btn--small" disabled={tryOne.isPending} onClick={() => tryOne.mutate(kind)}>
+            {TRY_LABELS[kind] ?? kind}
+          </button>
+        ))}
+      </div>
+      {tryOne.data && (
+        <p className="admin-muted" role="status">
+          Sent to {tryOne.data.push?.app?.sent ?? 0} of {tryOne.data.push?.app?.targets ?? 0} app phones
+          {tryOne.data.push?.app?.error ? ` · ${tryOne.data.push.app.error}` : ""}.
+        </p>
+      )}
+      {(tryOne.error || mode.error) && <p className="admin-error">{(tryOne.error || mode.error).message}</p>}
+      {data?.log?.length > 0 && (
+        <ul className="admin-list">
+          {data.log.map((entry) => (
+            <li key={entry.at}>
+              <div>
+                <strong>✓ {entry.what}</strong>
+                <p className="admin-muted">
+                  from {entry.channel} · {sgTime(entry.at)}
+                  {entry.replyTo ? " · as a reply" : ""}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 const JAR_STATUS = { waiting: "waiting for the morning", in_jar: "new in the jar ♥", read: "she’s read it" };
 const sgDayTime = (value) =>
   new Date(value).toLocaleString("en-SG", { timeZone: "Asia/Singapore", weekday: "short", hour: "numeric", minute: "2-digit" });
@@ -1107,6 +1187,7 @@ export default function Admin() {
       <Status />
       <NoteJarAdmin />
       <LoveNotes />
+      <AppTest />
       <FeedPanel />
       <Letters />
       <Doodles />

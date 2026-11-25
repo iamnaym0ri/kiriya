@@ -202,7 +202,7 @@ async function sendFromPhone(c, schemaFor, toMessage) {
   if (!parsed.success) return c.json({ error: "bad_request", message: "That couldn’t be sent." }, 400);
   try {
     const message = await sendMessage(await getDb(), c.get("person"), { clientId: parsed.data.clientId ?? `w-${randomUUID()}`, ...toMessage(parsed.data) }, { after: background });
-    return c.json({ ok: true, id: message.id });
+    return c.json({ ok: true, id: message.id, ...(message.test ? { test: true } : {}) });
   } catch (error) {
     return c.json({ error: error.status === 429 ? "slow_down" : "bad_request", message: error.status ? error.message : "That couldn’t be sent." }, error.status ?? 400);
   }

@@ -18,6 +18,8 @@ import { publicProfileDefaults } from "../content/publicProfile.js";
 import { reactionBody, sendOrSchedule } from "./loveNotes.js";
 import { ARTWORK_NOTE_MAX, addArtworkNote, artworkLink, artworksWithNotes, deleteArtworkNote, reactToArtwork } from "../lib/artworkNotes.js";
 import { notificationPreview } from "../lib/loveNotes.js";
+import { SAMPLE_KINDS, TEST_MODE_HOURS, setTestMode, testLog, testMode, tryNotification } from "../lib/appTestMode.js";
+import { names as chatNames } from "../lib/chat.js";
 
 export const adminRoutes = new Hono();
 
@@ -450,4 +452,33 @@ adminRoutes.put("/profile/media", async (c) => {
   const next = { ...current, ...parsed.data };
   await putSetting(db, "public_profile", next);
   return c.json({ ok: true });
+});
+
+// ---------- Try the app on my phone (server/lib/appTestMode.js) ----------
+
+adminRoutes.get("/app-test", async (c) => {
+  const db = await getDb();
+  const phones = await db.select({ role: schema.appDevices.role, push: schema.appDevices.apnsToken, revokedAt: schema.appDevices.revokedAt }).from(schema.appDevices);
+  return c.json({
+    mode: await testMode(db),
+    hours: TEST_MODE_HOURS,
+    kinds: SAMPLE_KINDS,
+    phones: phones.filter((phone) => phone.role === "admin" && phone.push && !phone.revokedAt).length,
+    log: await testLog(db),
+  });
+});
+
+adminRoutes.post("/app-test/mode", async (c) => {
+  const parsed = z.object({ on: z.boolean() }).strict().safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_request", message: "Choose on or off." }, 400);
+  return c.json({ mode: await setTestMode(await getDb(), parsed.data.on) });
+});
+
+adminRoutes.post("/app-test/try", async (c) => {
+  const parsed = z.object({ kind: z.enum(SAMPLE_KINDS) }).strict().safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_request", message: "Pick one of the notification kinds." }, 400);
+  if (!pushConfigured()) return c.json({ error: "not_configured", message: "Notifications aren’t set up on the server yet." }, 503);
+  const db = await getDb();
+  const result = await tryNotification(db, parsed.data.kind, await chatNames(db));
+  return c.json(result);
 });

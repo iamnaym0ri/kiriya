@@ -178,3 +178,75 @@ await test("App notifications carry their sound, badge, category and the message
   assert.equal(totals.notes, 0);
   assert.equal(totals.total, totals.chat);
 });
+
+await test("Test mode: Josh's phone buttons are checked but nothing reaches Kiriya", async () => {
+  const device = await json(await request("app/devices", { method: "POST", token: josh, body: { label: "his iPhone" } }), 201);
+  const key = device.widgetKey;
+  const herUnread = async () => (await json(await request("me/chat/summary", { token: her }))).unread;
+  const before = await herUnread();
+
+  // Only the admin can see or switch it, and it starts off.
+  assert.equal((await request("admin/app-test", { token: her })).status, 401);
+  const start = await json(await request("admin/app-test", { token: josh }));
+  assert.equal(start.mode.on, false);
+  assert.deepEqual(start.kinds, ["chat", "tap", "letter", "note", "jar", "reminder"]);
+  assert.equal(start.phones, 0, "no push token yet");
+
+  const on = await json(await request("admin/app-test/mode", { method: "POST", token: josh, body: { on: true } }));
+  assert.equal(on.mode.on, true);
+  assert.ok(new Date(on.mode.until) - Date.now() > 11 * 3600_000);
+
+  // ♡ back, a widget or Siri, Reply, and the icon's quick action: all answered, none saved or sent to her.
+  const heart = await json(await request("widget/tap", { method: "POST", token: key, body: { kind: "thinking", clientId: "n-test1234-heart" } }));
+  assert.deepEqual([heart.ok, heart.id, heart.test], [true, null, true]);
+  const hug = await json(await request("widget/tap", { method: "POST", token: key, body: { kind: "hug", clientId: "w-test1234-hug" } }));
+  assert.equal(hug.test, true);
+  const reply = await json(await request("widget/reply", { method: "POST", token: key, body: { text: "surprise!", clientId: "n-test1234-reply" } }));
+  assert.equal(reply.test, true);
+  const quick = await json(await request("me/chat/messages", { method: "POST", token: josh, body: { clientId: "q-test1234-heart", kind: "tap", body: "thinking" } }), 201);
+  assert.equal(quick.test, true);
+  // Still validated like a real send.
+  assert.equal((await request("widget/tap", { method: "POST", token: key, body: { kind: "slap", clientId: "n-test1234-slap" } })).status, 400);
+
+  assert.equal(await herUnread(), before, "nothing new in her chat");
+  const page = await json(await request("me/chat/messages", { token: her }));
+  assert.ok(!page.messages.some((m) => ["surprise!"].includes(m.body) || String(m.clientId ?? "").includes("test1234")));
+  const log = (await json(await request("admin/app-test", { token: josh }))).log;
+  assert.equal(log.length, 4);
+  assert.match(log[0].what, /♡ thinking of you/);
+  assert.equal(log[0].channel, "the icon’s quick action");
+  assert.equal(log[1].what, "“surprise!”");
+
+  // The chat screen itself, and Kiriya's own buttons, are never held back.
+  const typed = await json(await request("me/chat/messages", { method: "POST", token: josh, body: { clientId: randomUUID(), kind: "text", body: "typed in the chat" } }), 201);
+  assert.ok(typed.id);
+  assert.equal(await herUnread(), before + 1);
+  const herDevice = await json(await request("app/devices", { method: "POST", token: her, body: { label: "her iPhone" } }), 201);
+  assert.ok((await json(await request("widget/tap", { method: "POST", token: herDevice.widgetKey, body: { kind: "thinking", clientId: "n-hers1234-heart" } }))).id);
+
+  // Off again: his buttons send for real.
+  assert.equal((await json(await request("admin/app-test/mode", { method: "POST", token: josh, body: { on: false } }))).mode.on, false);
+  const real = await json(await request("widget/tap", { method: "POST", token: key, body: { kind: "thinking", clientId: "n-real1234-heart" } }));
+  assert.ok(real.id);
+  assert.equal(real.test, undefined);
+
+  // Trying a notification needs push configured; with it, test mode switches itself on.
+  assert.equal((await request("admin/app-test/try", { method: "POST", token: josh, body: { kind: "chat" } })).status, 503);
+  assert.equal((await request("admin/app-test/try", { method: "POST", token: josh, body: { kind: "nope" } })).status, 400);
+  const { tryNotification } = await import("../server/lib/appTestMode.js");
+  const sent = [];
+  const tried = await tryNotification(db, "jar", { kiriya: "Kiriya", admin: "Josh" }, { send: async (_db, message, options) => (sent.push({ message, options }), { sent: 1, targets: 1 }) });
+  assert.equal(tried.mode.on, true);
+  assert.equal(sent[0].options.role, "admin");
+  assert.equal(sent[0].message.kind, "jar");
+  await json(await request("admin/app-test/mode", { method: "POST", token: josh, body: { on: false } }));
+});
+
+await test("The app only takes newer over-the-air versions", async () => {
+  const { isNewerVersion } = await import("../shared/appVersion.js");
+  assert.equal(isNewerVersion("1.20261126.080000", "1.20261125.231608"), true);
+  assert.equal(isNewerVersion("1.20261125.230433", "1.20261125.231608"), false, "an older live copy never replaces a newer build");
+  assert.equal(isNewerVersion("1.20261125.231608", "1.20261125.231608"), false);
+  assert.equal(isNewerVersion("1.20261125.231608", "dev"), true);
+  assert.equal(isNewerVersion("garbage", "1.20261125.231608"), false);
+});
