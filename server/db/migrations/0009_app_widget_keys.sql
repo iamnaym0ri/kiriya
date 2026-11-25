@@ -1,0 +1,1 @@
+ALTER TABLE "app_devices" ADD COLUMN "widget_key_id" uuid;

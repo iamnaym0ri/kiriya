@@ -6,6 +6,8 @@ import { test } from "node:test";
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+// These tests cover the whole feed machinery, including the sections retired on 2026-11-24.
+process.env.FEED_RETIRED_SECTIONS ??= "";
 
 const originalFetch = globalThis.fetch;
 globalThis.fetch = () => {

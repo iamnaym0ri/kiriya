@@ -1,4 +1,4 @@
-import { api, ApiError } from "./api.js";
+import { api, ApiError, apiUrl, authHeaders, isBundledApp } from "./api.js";
 
 let configPromise;
 function uploadConfig() {
@@ -47,27 +47,31 @@ export async function uploadFile(file, { folder = "art", onProgress } = {}) {
     const { upload, uploadPresigned } = await import("@vercel/blob/client");
     const uploadToBlob = config.uploadType === "presigned" ? uploadPresigned : upload;
     const extension = file.name.split(".").pop()?.toLowerCase() || "bin";
-    const result = await uploadToBlob(`${folder}/${Date.now()}.${extension}`, file, {
+    // Unique and never reused, so chat media can be cached on the phone for good.
+    const name = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+    const result = await uploadToBlob(`${folder}/${name}.${extension}`, file, {
       access: "private",
-      handleUploadUrl: "/api/uploads/blob",
+      handleUploadUrl: apiUrl("/uploads/blob"),
+      // Inside the iPhone app the handshake carries the bearer token (there's no cookie there).
+      headers: authHeaders(),
       contentType: file.type,
       onUploadProgress: onProgress
         ? ({ percentage }) => onProgress(percentage)
         : undefined,
     });
-    return {
-      url: `/api/uploads/media?path=${encodeURIComponent(result.pathname)}`,
-      pathname: result.pathname,
-    };
+    const url = `/api/uploads/media?path=${encodeURIComponent(result.pathname)}`;
+    // The app shows private files through signed links, which only the server can make.
+    if (isBundledApp) return { url: (await api(`/uploads/resolve?path=${encodeURIComponent(result.pathname)}`)).url, pathname: result.pathname };
+    return { url, pathname: result.pathname };
   }
 
   if (config.mode === "local") {
     const response = await fetch(
-      `/api/uploads/local?folder=${encodeURIComponent(folder)}`,
+      apiUrl(`/uploads/local?folder=${encodeURIComponent(folder)}`),
       {
         method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": file.type, "x-kw": "1" },
+        credentials: isBundledApp ? "omit" : "same-origin",
+        headers: { "Content-Type": file.type, "x-kw": "1", ...authHeaders() },
         body: file,
       },
     );

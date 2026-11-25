@@ -83,6 +83,14 @@ export const STAGES = ["fetch-a", "fetch-b", "check", "plan-write", "publish"];
 // Independent stages keyed to the day's build but outside the daily dependency chain.
 export const INDEPENDENT_STAGES = ["events", "maintenance", "diagnostics", "admin-tools"];
 export const SECTIONS = ["maomao", "music", "dressup", "meme", "merch"];
+// Retired 2026-11-24 by the connection refactor (docs/refactor/PLAN.md): these sections are no
+// longer shown, so their collectors stop and nothing is planned for them. SECTIONS stays whole so
+// stored items keep validating. Set FEED_RETIRED_SECTIONS="" to bring them back.
+export function retiredSections() {
+  const raw = process.env.FEED_RETIRED_SECTIONS ?? "maomao,music,dressup,meme";
+  return raw.split(",").map((s) => s.trim()).filter((s) => SECTIONS.includes(s));
+}
+export const activeSections = () => SECTIONS.filter((s) => !retiredSections().includes(s));
 export const SIGNATURE = "✦ kiriya.love";
 export const FOUNDATION_VERSION = "feeds-v1";
 

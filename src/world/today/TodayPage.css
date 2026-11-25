@@ -361,3 +361,195 @@
     margin-top: 28px;
   }
 }
+
+/* Letters & notes: the first stop after the opening, so it reads as the heart of the page. */
+.letters-hub {
+  margin: 8px 0 34px;
+  padding: 30px 34px 32px;
+  border: 1px solid #d5bfdf;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 94% 4%, #ffe5efd9 0, #ffe5ef00 210px),
+    linear-gradient(160deg, #fbf2fb 0%, #efe3f3 60%, #e7d6ee 100%);
+  box-shadow: var(--shadow-2);
+}
+.letters-hub__heading .micro-label {
+  color: #94709b;
+  font-size: 8px;
+}
+.letters-hub__heading h2 {
+  font: 400 30px var(--font-literary);
+  letter-spacing: -0.03em;
+  margin-top: 8px;
+}
+.letters-hub__heading h2 em {
+  color: #8b6c92;
+}
+.letters-hub__heading p {
+  font-size: 12px;
+  color: #806e88;
+  margin-top: 6px;
+}
+.letters-hub__doors {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+.letters-hub__door {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 132px;
+  padding: 18px 18px 16px;
+  border: 1px solid #dcc8e4;
+  border-radius: 14px;
+  background: #fffaffe6;
+  color: #5c4f70;
+  text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.letters-hub__door > svg,
+.letters-hub__glyph {
+  color: #a07aa8;
+  font-size: 24px;
+  line-height: 1;
+}
+.letters-hub__door strong {
+  font: 400 19px var(--font-literary);
+  color: var(--text);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+.letters-hub__door > span:last-child {
+  font-size: 11px;
+  color: #806e88;
+}
+.letters-hub__door:hover,
+.letters-hub__door:focus-visible {
+  transform: translateY(-2px) rotate(-0.4deg);
+  box-shadow: var(--shadow-1);
+}
+.letters-hub__door[data-unread] {
+  border-color: #e6a9c8;
+  background: #fff5fa;
+}
+.letters-hub__count {
+  font: 600 9px var(--font-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #d85a95;
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .letters-hub__door {
+    transition: none;
+  }
+  .letters-hub__door:hover,
+  .letters-hub__door:focus-visible {
+    transform: none;
+  }
+}
+@media (max-width: 650px) {
+  .letters-hub {
+    padding: 24px 18px;
+    border-radius: 14px;
+  }
+  .letters-hub__doors {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .letters-hub__door {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 2px;
+  }
+  .letters-hub__door > svg,
+  .letters-hub__glyph {
+    grid-row: span 2;
+  }
+  .letters-hub__door strong {
+    margin-top: 0;
+  }
+}
+
+/* The Messages door: the chat is the first thing in the letters hub. */
+.letters-hub__chat {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 22px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: linear-gradient(120deg, #8f63ad, #b07cc4 60%, #d48fb8);
+  color: #fffaff;
+  text-decoration: none;
+  box-shadow: 0 10px 26px -14px #6e4a85;
+  transition: transform 0.18s ease;
+}
+.letters-hub__chat:hover,
+.letters-hub__chat:focus-visible {
+  transform: translateY(-2px);
+}
+.letters-hub__chat-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: #ffffff2e;
+}
+.letters-hub__chat-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.letters-hub__chat-text strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font: 400 21px var(--font-literary);
+}
+.letters-hub__chat-text > span {
+  font-size: 12px;
+  opacity: 0.9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.letters-hub__chat .letters-hub__count {
+  background: #fff;
+  color: #c2417d;
+}
+.letters-hub__chat-go {
+  font-size: 22px;
+}
+.letters-hub__chat[data-unread] .letters-hub__chat-icon {
+  animation: hub-chat-nudge 2.6s ease-in-out infinite;
+}
+@keyframes hub-chat-nudge {
+  0%, 80%, 100% { rotate: 0deg; }
+  85% { rotate: -8deg; }
+  90% { rotate: 8deg; }
+  95% { rotate: -4deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .letters-hub__chat,
+  .letters-hub__chat[data-unread] .letters-hub__chat-icon {
+    transition: none;
+    animation: none;
+  }
+}
+[data-little-motion="off"] .letters-hub__chat[data-unread] .letters-hub__chat-icon {
+  animation: none;
+}

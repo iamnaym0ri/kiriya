@@ -2,7 +2,7 @@
 // building, or unavailable, callers render exactly what they rendered before.
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "./api.js";
+import { api, apiUrl, authHeaders, isBundledApp } from "./api.js";
 import { useSession } from "./session.js";
 
 export const FEED_SECTIONS = ["maomao", "music", "dressup", "meme", "merch"];
@@ -125,14 +125,15 @@ let flushTimer = null;
 
 function postSeen(section, revision, ids, keepalive) {
   const forget = () => ids.forEach((id) => sent.delete(`${revision}\n${id}`));
-  return fetch("/api/me/feed/seen", {
+  return fetch(apiUrl("/me/feed/seen"), {
     method: "POST",
     keepalive,
-    credentials: "same-origin",
+    credentials: isBundledApp ? "omit" : "same-origin",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
       "x-kw": "1",
+      ...authHeaders(),
     },
     body: JSON.stringify({ revision, ids }),
   })

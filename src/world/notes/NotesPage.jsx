@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import SaveMemory from "../chat/SaveMemory.jsx";
 import { Link, useSearchParams } from "react-router";
 import { useNotes, useOpenNote, useReactToNote } from "../../lib/notes.js";
 import { useSession } from "../../lib/session.js";
@@ -101,6 +102,7 @@ export default function NotesPage() {
               error={react.isError && react.variables?.id === note.id ? "That reaction didn’t save. Try again?" : null}
               note={session.data?.role === "admin" ? "Your test note: reacting here tries it out." : null}
             />
+            <SaveMemory kind="note" sourceId={note.id} />
             <div className="notes-dialog__actions">
               {note.link && (
                 <Link className="button-plum" to={note.link} onClick={() => setReading(null)}>

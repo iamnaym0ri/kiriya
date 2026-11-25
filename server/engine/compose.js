@@ -65,15 +65,15 @@ export function composeDay(
   const pushes = [
     {
       category: "maomao",
-      title: "A little apothecary note",
-      body: "Come spend a little time in your Maomao corner.",
-      navigate: "/world/apothecary",
+      title: "Maomao’s out wandering",
+      body: "She’s been poking around your little world all day. Come say hi.",
+      navigate: "/world",
     },
     {
-      category: "vocaloid",
-      title: "A little music for your day",
-      body: "A little time for your music shelf, whenever you feel like it.",
-      navigate: "/world/stage",
+      category: "play",
+      title: "A little game for your break",
+      body: "Something to play for a minute, whenever you need a breather.",
+      navigate: "/world",
     },
     note
       ? {

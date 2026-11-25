@@ -1,0 +1,4 @@
+{
+  "//": "The lowest iPhone app build number (CFBundleVersion) that today's web bundle works with. Raise it when web code starts relying on native code that older TestFlight builds don't have; those phones then keep their current version until they install the new build. See docs/refactor/PLAN.md 4b.",
+  "minBuild": 1
+}

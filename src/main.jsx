@@ -1,7 +1,9 @@
 import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router";
-import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { PERSIST_MAX_AGE, persistOptions } from "./lib/persist.js";
 import { forgetSession, isSessionEnded, sessionKey } from "./lib/session.js";
 import { MotionConfig } from "motion/react";
 import "./styles/fonts.css";
@@ -16,10 +18,13 @@ import "./styles/daily-style.css";
 import "./styles/feeling-corner.css";
 import ProfilePage from "./public/ProfilePage.jsx";
 import PageLoader from "./shared/PageLoader.jsx";
+import { isNativeApp } from "./lib/native.js";
 
 // The private world and the admin desk are separate chunks: a visitor's phone never downloads them.
 const World = lazy(() => import("./world/World.jsx"));
 const Admin = lazy(() => import("./admin/Admin.jsx"));
+// Only inside the kiriya.love iPhone app: Face ID, native notifications. Browsers never load it.
+const NativeApp = isNativeApp() ? lazy(() => import("./shared/NativeApp.jsx")) : null;
 
 // When a session ends mid-visit, go back to the passphrase instead of showing broken pages.
 function onSessionEnded(error) {
@@ -33,18 +38,25 @@ const queryClient = new QueryClient({
     queries: {
       retry: (count, error) => error?.status !== 401 && count < 2,
       refetchOnWindowFocus: false,
+      // Kept as long as the device copy (lib/persist.js), so restored pages aren't dropped unseen.
+      gcTime: PERSIST_MAX_AGE,
     },
   },
 });
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <MotionConfig reducedMotion="user">
         <BrowserRouter>
           <PlayfulProvider>
             <DailyStyleProvider>
             <MusicProvider>
+              {NativeApp && (
+                <Suspense fallback={null}>
+                  <NativeApp />
+                </Suspense>
+              )}
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/" element={<ProfilePage />} />
@@ -58,6 +70,6 @@ createRoot(document.getElementById("root")).render(
           </PlayfulProvider>
         </BrowserRouter>
       </MotionConfig>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   </StrictMode>,
 );

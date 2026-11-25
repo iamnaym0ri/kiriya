@@ -3,11 +3,20 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api.js";
 import { useSession } from "./session.js";
 import { currentSurpriseState, disableSurprises, enableSurprises, isIos, isStandalone, pushSupported } from "./pwa.js";
+import { isNativeApp, nativePushState, registerForPush, turnOffNativePush } from "./native.js";
+
+// Inside the iPhone app, notifications are native: the same switch, backed by the app's permission.
+const nativeSurprises = {
+  current: () => nativePushState(),
+  enable: async () => ({ state: await registerForPush({ ask: true }) }),
+  disable: async () => ({ state: await turnOffNativePush() }),
+};
 
 export const pushStatusKey = ["push", "status"];
 
 /** Whether this device can get notifications, and if not, why. */
 export function surpriseSupport() {
+  if (isNativeApp()) return "ok";
   if (isIos() && !isStandalone()) return "install";
   if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window))
     return isIos() ? "update-ios" : "unsupported";
@@ -34,7 +43,7 @@ export function useSurprises() {
   useEffect(() => {
     if (support !== "ok") return;
     let live = true;
-    currentSurpriseState()
+    (isNativeApp() ? nativeSurprises.current() : currentSurpriseState())
       .then((next) => live && setState(next))
       .catch(() => live && setState("off"));
     return () => {
@@ -51,7 +60,7 @@ export function useSurprises() {
     setMessage(null);
     setBusy(true);
     try {
-      const result = await enableSurprises();
+      const result = await (isNativeApp() ? nativeSurprises.enable() : enableSurprises());
       setState(result.state === "error" ? "off" : result.state);
       if (result.state === "on" && ownsSettings && settings && !settings.enabled)
         await saveSettings.mutateAsync({ ...settings, enabled: true });
@@ -71,7 +80,7 @@ export function useSurprises() {
     setBusy(true);
     try {
       if (ownsSettings && settings) await saveSettings.mutateAsync({ ...settings, enabled: false });
-      setState((await disableSurprises()).state);
+      setState((await (isNativeApp() ? nativeSurprises.disable() : disableSurprises())).state);
       queryClient.invalidateQueries({ queryKey: pushStatusKey });
     } catch (error) {
       setMessage(error.message);

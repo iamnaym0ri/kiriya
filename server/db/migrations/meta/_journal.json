@@ -43,6 +43,34 @@
       "when": 1789663051863,
       "tag": "0005_doodle_reactions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795564792096,
+      "tag": "0006_note_jar_from_admin",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795565375534,
+      "tag": "0007_iphone_app_devices",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795569136426,
+      "tag": "0008_chat",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795580593183,
+      "tag": "0009_app_widget_keys",
+      "breakpoints": true
     }
   ]
 }

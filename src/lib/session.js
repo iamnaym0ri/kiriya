@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "./api.js";
+import { api, setAppToken } from "./api.js";
+import { clearPersistedCache } from "./persist.js";
+import { forgetThisPhone, isNativeApp } from "./native.js";
 
 export const sessionKey = ["session"];
 
@@ -21,6 +23,9 @@ export async function forgetSession(queryClient) {
   // Removing it first leaves their observers attached to the old record.
   queryClient.setQueryData(sessionKey, { role: null });
   queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== sessionKey[0] });
+  // The app's bearer token and the copy kept on the device go too.
+  setAppToken(null);
+  await clearPersistedCache();
 }
 
 /** A request the server turned away because the session ended (two days passed, or signed out elsewhere). */
@@ -40,7 +45,11 @@ export function useUnlock() {
 export function useLock() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => api("/session/lock", { method: "POST", body: {} }),
+    mutationFn: async () => {
+      // In the iPhone app, locking also forgets this phone, so Face ID can't reopen it.
+      if (isNativeApp()) await forgetThisPhone();
+      return api("/session/lock", { method: "POST", body: {} });
+    },
     onSuccess: () => forgetSession(queryClient),
   });
 }

@@ -5,20 +5,54 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 300,
-      "includeFiles": "node_modules/@ffmpeg-installer/linux-x64/**"
+      "includeFiles": "{node_modules/@ffmpeg-installer/linux-x64/**,server/assets/**}"
     }
   },
   "rewrites": [
+    {
+      "source": "/install",
+      "destination": "/install/index.html"
+    },
+    {
+      "source": "/install/",
+      "destination": "/install/index.html"
+    },
     {
       "source": "/api/:route*",
       "destination": "/api?__route=:route*"
     },
     {
-      "source": "/((?!api(?:/|$)).*)",
+      "source": "/((?!api(?:/|$)|install(?:/|$)).*)",
       "destination": "/index.html"
     }
   ],
   "headers": [
+    {
+      "source": "/app-bundle/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/stickers/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, stale-while-revalidate=2592000"
+        }
+      ]
+    },
     {
       "source": "/sw.js",
       "headers": [
@@ -38,6 +72,19 @@
         {
           "key": "Content-Type",
           "value": "application/manifest+json"
+        }
+      ]
+    },
+    {
+      "source": "/install/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     },
@@ -72,6 +119,10 @@
     {
       "path": "/api/jobs/backstop",
       "schedule": "20 16 * * *"
+    },
+    {
+      "path": "/api/jobs/note-jar",
+      "schedule": "0 0 * * *"
     },
     {
       "path": "/api/jobs/feeds/fetch-a",

@@ -9,7 +9,8 @@ precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
 // Pages open instantly from the cache; the API is always live.
-registerRoute(new NavigationRoute(createHandlerBoundToURL("/index.html"), { denylist: [/^\/api(\/|$)/] }));
+// The iPhone app's install page (/install/) is a plain static page, never the app shell.
+registerRoute(new NavigationRoute(createHandlerBoundToURL("/index.html"), { denylist: [/^\/api(\/|$)/, /^\/install(\/|$)/] }));
 
 // iOS 18.4+ shows declarative pushes by itself. Everything else lands here, and every push must
 // show a notification (iOS revokes permission from web apps that stay silent).

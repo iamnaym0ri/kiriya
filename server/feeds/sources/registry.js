@@ -1,4 +1,4 @@
-import { feedConfig, FeedError } from "../config.js";
+import { feedConfig, FeedError, retiredSections } from "../config.js";
 import { allowedUrl } from "../http.js";
 import { normalizeItem } from "../normalize.js";
 import { z } from "zod";
@@ -110,7 +110,14 @@ export async function sourceRegistry({
       },
     ];
   }
-  return LIVE_ADAPTERS.map((entry) => defineSource(entry));
+  const retired = retiredSections();
+  return LIVE_ADAPTERS.map((entry) => {
+    const source = defineSource(entry);
+    // A collector that only feeds retired sections stops; one that also feeds merch keeps running.
+    if (source.enabled && source.sections.every((s) => retired.includes(s)))
+      return { ...source, enabled: false, retired: true };
+    return source;
+  });
 }
 
 export function validateAdapterItem(raw, entry) {

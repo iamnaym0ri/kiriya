@@ -22,6 +22,7 @@ import { songRoutes } from "./songs.js";
 import { atelierRoutes } from "./atelier.js";
 import { apothecaryRoutes } from "./apothecary.js";
 import { noteJarRoutes } from "./noteJar.js";
+import { chatRoutes, memoryRoutes } from "./chat.js";
 import { maomaoRoutes } from "./maomao.js";
 import { passphraseRoutes } from "./passphrase.js";
 import { meLoveNoteRoutes, reactionBody } from "./loveNotes.js";
@@ -34,6 +35,8 @@ meRoutes.route("/note-jar", noteJarRoutes);
 meRoutes.route("/maomao", maomaoRoutes);
 meRoutes.route("/passphrase", passphraseRoutes);
 meRoutes.route("/notes", meLoveNoteRoutes);
+meRoutes.route("/chat", chatRoutes);
+meRoutes.route("/memories", memoryRoutes);
 
 function segmentOf(hour) {
   if (hour >= 5 && hour < 11) return "morning";

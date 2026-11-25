@@ -7,12 +7,14 @@ import { BirthdayRibbon, MotionToggle } from "../shared/play/PlayfulWorld.jsx";
 import { SketchbookProvider } from "./studio/SketchbookState.jsx";
 import { DailyStyleButton } from "../shared/DailyStyle.jsx";
 import MaomaoCompanion from "./mascot/MaomaoCompanion.jsx";
+import AppTabBar from "../shared/AppTabBar.jsx";
+import PullToRefresh from "../shared/PullToRefresh.jsx";
+import { isNativeApp } from "../lib/native.js";
 import "./WorldShell.css";
 const TABS = [
+  { to: "/world#letters-hub", label: "letters & notes" },
   { to: "/world#play-desk", label: "doodle & play" },
-  { to: "/world#maomao", label: "maomao" },
-  { to: "/world#music", label: "music" },
-  { to: "/world#cosplay", label: "dress-up" },
+  { to: "/world#events", label: "events & merch" },
 ];
 export default function WorldShell() {
   const location = useLocation();
@@ -139,6 +141,12 @@ export default function WorldShell() {
         {/* She lives here rather than on one page: mounted by the shell so she keeps her place,
             her mood and her train of thought while the route underneath her changes. */}
         <MaomaoCompanion />
+        {isNativeApp() && (
+          <>
+            <AppTabBar />
+            <PullToRefresh />
+          </>
+        )}
       </div>
     </SketchbookProvider>
   );

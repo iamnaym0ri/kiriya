@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getDb, schema } from "../db/client.js";
 import { notificationSettings, qstashConfigured } from "../push/planner.js";
 import { pushConfigured } from "../push/webpush.js";
+import { listDevices, revokeDevice } from "../lib/appDevices.js";
 import { isReaction } from "../../shared/reactions.js";
 import {
   NOTE_BODY_MAX,
@@ -58,10 +59,11 @@ const composeBody = z.object({
 
 adminLoveNoteRoutes.get("/", async (c) => {
   const db = await getDb();
-  const [notes, settings, devices] = await Promise.all([
+  const [notes, settings, devices, apps] = await Promise.all([
     recentLoveNotes(db),
     notificationSettings(db),
     db.select().from(schema.pushSubscriptions),
+    listDevices(db),
   ]);
   return c.json({
     notes,
@@ -76,6 +78,8 @@ adminLoveNoteRoutes.get("/", async (c) => {
       lastSuccessAt: d.lastSuccessAt,
       lastError: d.lastError,
     })),
+    // Installs of the kiriya.love iPhone app (native notifications).
+    apps,
     push: pushConfigured(),
     scheduler: qstashConfigured(),
   });
@@ -106,6 +110,13 @@ adminLoveNoteRoutes.delete("/:id", async (c) => {
 });
 
 adminLoveNoteRoutes.post("/sweep", async (c) => c.json(await sweepLoveNotes(await getDb())));
+
+// Forget an install of the iPhone app (a lost phone): no more notifications, and Face ID can't open it.
+adminLoveNoteRoutes.delete("/apps/:id", async (c) => {
+  const id = c.req.param("id");
+  if (!z.string().uuid().safeParse(id).success) return c.json({ error: "not_found", message: "That phone isn’t set up." }, 404);
+  return (await revokeDevice(await getDb(), id)) ? c.json({ ok: true }) : c.json({ error: "not_found", message: "That phone isn’t set up." }, 404);
+});
 
 // ---------- the recipient's own notes ----------
 

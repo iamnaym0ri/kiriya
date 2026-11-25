@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from "react";
+import AppIconPicker from "./AppIconPicker.jsx";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api.js";
@@ -7,6 +8,7 @@ import { usePrefs, useSetPrefs } from "../../lib/prefs.js";
 import { todayKey } from "../../lib/world.js";
 import { useSurprises } from "../../lib/surprises.js";
 import MaomaoMascot from "../mascot/MaomaoMascot.jsx";
+import SongShelf from "../stage/SongShelf.jsx";
 import MyFaves from "./MyFaves.jsx";
 import "./SettingsPage.css";
 
@@ -644,7 +646,8 @@ function PublicProfile() {
       <label className="settings-field">
         <span>Your intro song</span>
         <small className="settings-help">
-          plays when someone taps into ur public page, like guns.lol. pick one from ur music shelf.
+          plays when someone taps into ur public page, like guns.lol. pick one from{" "}
+          <a href="#songs">ur songs</a> below.
         </small>
         <select className="field settings-select" value={draft.introSong} onChange={update("introSong")}>
           <option value="featured">
@@ -662,11 +665,10 @@ function PublicProfile() {
           {draft.introSong === "none"
             ? "no music, and no “tap to enter” screen."
             : !chosen
-              ? "ur music shelf doesn’t have a featured song yet, so there’s no intro song for now."
+              ? "ur songs don’t have a starred one yet, so there’s no intro song for now."
               : chosen.provider === "audio"
                 ? "✓ this one starts playing the moment someone taps in."
-                : "this is a link, so it opens its own little player. on iPhones people might need one more tap. songs u upload start right away."}{" "}
-          <Link to="/world/stage">add songs to ur music shelf ↗</Link>
+                : "this is a link, so it opens its own little player. on iPhones people might need one more tap. songs u upload start right away."}
         </small>
       </label>
 
@@ -705,7 +707,13 @@ export default function SettingsPage() {
     <div className="settings">
       <h1 className="settings__title">Settings</h1>
       <PublicProfile />
+      {/* The song shelf moved here when the music page was retired (2026-11-24): the starred song
+          plays on her public page and on the home collage. */}
+      <div className="music-page settings-songs" id="songs">
+        <SongShelf />
+      </div>
       <Sharing />
+      <AppIconPicker />
       <Surprises />
       <PhoneWidget />
       <Address />

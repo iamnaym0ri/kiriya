@@ -178,6 +178,28 @@ export function Credits({ onClose }) {
           . Images resized and framed.
         </p>
       ))}
+      <h3>Chat backgrounds and stickers</h3>
+      <p>
+        Miku background: Crypton’s official Hatsune Miku V6 art, used non-commercially under the{" "}
+        <a href="https://piapro.jp/license/character_guideline" target="_blank" rel="noreferrer">
+          character usage guideline
+        </a>
+        . 「初音ミク」はクリプトン・フューチャー・メディア株式会社の著作物です。 © Crypton Future Media, INC. www.piapro.net
+      </p>
+      <p>
+        Maomao background: official “Halloween Art 2025” wallpaper from{" "}
+        <a href="https://kusuriyanohitorigoto.jp/season2/gallery/eventvisual_251031.php" target="_blank" rel="noreferrer">
+          the Apothecary Diaries anime site
+        </a>
+        , kept private to this site. ©日向夏・イマジカインフォス／「薬屋のひとりごと」製作委員会
+      </p>
+      <p>
+        Animated stickers:{" "}
+        <a href="https://github.com/microsoft/fluentui-emoji-animated" target="_blank" rel="noreferrer">
+          Fluent Emoji Animated
+        </a>{" "}
+        © Microsoft, MIT licence. GIF search powered by GIPHY.
+      </p>
       <h3>Reference collection</h3>
       <p>
         Maomao portraits and botanical images are from the supplied reference

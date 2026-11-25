@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SaveMemory from "../chat/SaveMemory.jsx";
 import { AnimatePresence, motion } from "motion/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api.js";
@@ -59,6 +60,7 @@ function LetterSheet({ letter, onClose, reactions }) {
         </div>
         {letter.signoff && <p className="letter__signoff">{letter.signoff}</p>}
         {reactions}
+        {letter.id && <SaveMemory kind="letter" sourceId={letter.id} />}
         <button className="button-paper" onClick={onClose}>
           Fold it back up
         </button>

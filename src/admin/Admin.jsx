@@ -205,6 +205,10 @@ function LoveNotes() {
     mutationFn: (id) => api(`/admin/love-notes/${id}`, { method: "DELETE" }),
     onSuccess: refresh,
   });
+  const forgetApp = useMutation({
+    mutationFn: (id) => api(`/admin/love-notes/apps/${id}`, { method: "DELETE" }),
+    onSuccess: refresh,
+  });
   const data = notes.data;
   const hour = draft.mode === "at" && draft.at ? Number(draft.at.slice(11, 13)) : null;
   const outsideWindow = data && hour !== null && (hour < data.window.startHour || hour >= data.window.endHour);
@@ -242,6 +246,36 @@ function LoveNotes() {
             </li>
           ))}
         </ul>
+      )}
+      {data?.apps?.length > 0 && (
+        <>
+          <h3>The kiriya.love app</h3>
+          <ul className="admin-list">
+            {data.apps.map((app) => (
+              <li key={app.id}>
+                <div>
+                  <strong>
+                    {app.label} · {app.role === "kiriya" ? "Kiriya’s app" : "your app"}
+                    {app.push ? " · notifications on" : " · notifications off"}
+                  </strong>
+                  <p className="admin-muted">
+                    last opened {sgTime(app.lastSeenAt)}
+                    {app.lastSuccessAt ? ` · last delivered ${sgTime(app.lastSuccessAt)}` : ""}
+                    {app.lastError ? ` · last error: ${app.lastError}` : ""}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--small"
+                  disabled={forgetApp.isPending}
+                  onClick={() => window.confirm("Forget this phone? Its notifications stop and Face ID won’t open the app until the passphrase does.") && forgetApp.mutate(app.id)}
+                >
+                  Forget this phone
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
       <p className="admin-muted">
         A phone follows the passphrase that last opened the app on it: Kiriya’s phrase makes it one of
@@ -312,6 +346,159 @@ function LoveNotes() {
         ))}
       </ul>
       {cancel.error && <p className="admin-error">{cancel.error.message}</p>}
+    </section>
+  );
+}
+
+const JAR_STATUS = { waiting: "waiting for the morning", in_jar: "new in the jar ♥", read: "she’s read it" };
+const sgDayTime = (value) =>
+  new Date(value).toLocaleString("en-SG", { timeZone: "Asia/Singapore", weekday: "short", hour: "numeric", minute: "2-digit" });
+
+/** The note jar: write a note, save, write the next one. Notes join the jar at 08:00 Singapore time. */
+function NoteJarAdmin() {
+  const queryClient = useQueryClient();
+  const jar = useQuery({ queryKey: ["admin", "note-jar"], queryFn: () => api("/admin/note-jar") });
+  const [text, setText] = useState("");
+  const [feelings, setFeelings] = useState([]);
+  const [editing, setEditing] = useState(null);
+  const [last, setLast] = useState(null);
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["admin", "note-jar"] });
+  const add = useMutation({
+    mutationFn: () => api("/admin/note-jar", { method: "POST", body: { text, feelings } }),
+    onSuccess: (saved) => {
+      setText("");
+      setFeelings([]);
+      setLast(saved);
+      refresh();
+      document.getElementById("jar-note-text")?.focus();
+    },
+  });
+  const save = useMutation({
+    mutationFn: (note) => api(`/admin/note-jar/${note.id}`, { method: "PATCH", body: { text: note.text, feelings: note.feelings } }),
+    onSuccess: () => {
+      setEditing(null);
+      refresh();
+    },
+  });
+  const remove = useMutation({
+    mutationFn: (id) => api(`/admin/note-jar/${id}`, { method: "DELETE" }),
+    onSuccess: refresh,
+  });
+  const now = useMutation({
+    mutationFn: (id) => api(`/admin/note-jar/${id}`, { method: "PATCH", body: { releaseNow: true } }),
+    onSuccess: refresh,
+  });
+  const data = jar.data;
+  const max = 800;
+  const toggle = (list, key) => (list.includes(key) ? list.filter((k) => k !== key) : [...list, key]);
+  const Chips = ({ value, onChange }) => (
+    <div className="jar-chips" role="group" aria-label="Which days is this note for?">
+      <button type="button" className="jar-chip" aria-pressed={!value.length} onClick={() => onChange([])}>
+        ✿ any day
+      </button>
+      {(data?.feelings ?? []).map((f) => (
+        <button key={f.key} type="button" className="jar-chip" aria-pressed={value.includes(f.key)} onClick={() => onChange(toggle(value, f.key))}>
+          {f.emoji} {f.label.toLowerCase()}
+        </button>
+      ))}
+    </div>
+  );
+
+  return (
+    <section className="admin-card jar-admin" id="note-jar">
+      <h2>The note jar ♡</h2>
+      <p className="admin-muted">
+        Write as many as you like, whenever you like. New notes join her jar at 08:00 Singapore time, come out first
+        when she pulls, and light a little red heart on the jar until she does.
+        {data && ` She gets one notification that morning${data.herStartHour > 8 ? ` at ${data.herStartHour}:00, her own “not before” hour` : " at 08:00"}.`}
+        {data && !data.push && " (Push keys aren’t configured here.)"}
+      </p>
+      {data && (
+        <p className="jar-admin__counts">
+          <span><strong>{data.counts.waiting}</strong> waiting for {sgDayTime(data.nextRelease)}</span>
+          <span><strong>{data.counts.inJar}</strong> new in her jar</span>
+          <span><strong>{data.counts.read}</strong> read</span>
+          {data.lastAnnounce && <span className="admin-muted">last morning push: {sgTime(data.lastAnnounce.at)} · {data.lastAnnounce.unread} new</span>}
+        </p>
+      )}
+      <form
+        className="admin-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (text.trim()) add.mutate();
+        }}
+      >
+        <textarea
+          id="jar-note-text"
+          className="field admin-textarea admin-textarea--short jar-admin__text"
+          rows={4}
+          maxLength={max}
+          placeholder="a little note for her jar…"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && text.trim()) {
+              e.preventDefault();
+              add.mutate();
+            }
+          }}
+          aria-label="A note for her jar"
+        />
+        <Chips value={feelings} onChange={setFeelings} />
+        <div className="admin-row">
+          <span className="admin-muted">{text.length}/{max} · ⌘/Ctrl + Enter saves</span>
+          <button type="submit" className="btn btn--primary btn--small" disabled={!text.trim() || add.isPending}>
+            {add.isPending ? "Putting it in…" : "Put it in the jar ♡"}
+          </button>
+        </div>
+        {add.isSuccess && last && <p className="admin-muted" role="status">In the jar. It joins at {sgDayTime(last.releaseAt)}.{last.schedule?.error ? ` ${last.schedule.error}` : ""}</p>}
+        {add.error && <p className="admin-error">{add.error.message}</p>}
+      </form>
+      {data?.notes.length === 0 && <p className="admin-muted">The jar is empty. Your first note starts it.</p>}
+      <ul className="admin-list jar-admin__list">
+        {(data?.notes ?? []).map((note) =>
+          editing?.id === note.id ? (
+            <li key={note.id} className="jar-admin__editing">
+              <div>
+                <textarea className="field admin-textarea admin-textarea--short" maxLength={max} value={editing.text} onChange={(e) => setEditing({ ...editing, text: e.target.value })} aria-label="Edit this note" />
+                <Chips value={editing.feelings} onChange={(value) => setEditing({ ...editing, feelings: value })} />
+                <div className="admin-row">
+                  <button type="button" className="btn btn--primary btn--small" disabled={!editing.text.trim() || save.isPending} onClick={() => save.mutate(editing)}>Save</button>
+                  <button type="button" className="btn btn--ghost btn--small" onClick={() => setEditing(null)}>Cancel</button>
+                </div>
+              </div>
+            </li>
+          ) : (
+            <li key={note.id} data-status={note.status}>
+              <div>
+                <p>{note.text}</p>
+                <p className="admin-muted">
+                  <span className="jar-admin__status">{JAR_STATUS[note.status]}</span>
+                  {note.status === "read" ? ` · ${sgTime(note.firstPulledAt)}` : note.status === "waiting" ? ` · joins ${sgDayTime(note.releaseAt)}` : ""}
+                  {note.feelings.length ? ` · ${note.label}` : ""}
+                </p>
+              </div>
+              <div className="admin-row">
+                {note.status === "waiting" && (
+                  <button type="button" className="btn btn--ghost btn--small" disabled={now.isPending} title="Put it in her jar now instead of at 08:00" onClick={() => now.mutate(note.id)}>
+                    Skip the wait
+                  </button>
+                )}
+                <button type="button" className="btn btn--ghost btn--small" onClick={() => setEditing({ id: note.id, text: note.text, feelings: note.feelings })}>Edit</button>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--small"
+                  disabled={remove.isPending}
+                  onClick={() => window.confirm("Take this note out of the jar? If she already pulled it, she keeps her copy.") && remove.mutate(note.id)}
+                >
+                  Remove
+                </button>
+              </div>
+            </li>
+          ),
+        )}
+      </ul>
+      {(save.error || remove.error || now.error) && <p className="admin-error">{(save.error ?? remove.error ?? now.error).message}</p>}
     </section>
   );
 }
@@ -918,6 +1105,7 @@ export default function Admin() {
       </header>
       <h1 className="admin__title">Admin desk</h1>
       <Status />
+      <NoteJarAdmin />
       <LoveNotes />
       <FeedPanel />
       <Letters />

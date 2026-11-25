@@ -7,6 +7,8 @@ import { get, issueSignedToken } from "@vercel/blob";
 import { env } from "../env.js";
 import { readSession } from "../auth/session.js";
 import { isPublicMedia } from "../lib/media.js";
+import { mediaSignatureOk } from "../lib/mediaLinks.js";
+import { IMMUTABLE_FOLDERS, UPLOAD_FOLDERS } from "../../shared/uploadFolders.js";
 import {
   blobOptions,
   blobReadConfigured,
@@ -17,18 +19,28 @@ const ALLOWED = [
   "image/png",
   "image/jpeg",
   "image/webp",
+  "image/gif",
   "audio/mpeg",
   "audio/mp4",
   "audio/x-m4a",
   "audio/aac",
   "audio/wav",
+  // Voice notes: Safari records audio/mp4, Chrome records audio/webm.
+  "audio/webm",
 ];
+const FOLDER_PATH = new RegExp(`^(${UPLOAD_FOLDERS.join("|")})\\/[a-zA-Z0-9][a-zA-Z0-9._-]*$`);
+const cacheFor = (pathname) =>
+  IMMUTABLE_FOLDERS.some((folder) => pathname.startsWith(`${folder}/`) || pathname.startsWith(`${folder}-`))
+    ? "private, max-age=31536000, immutable"
+    : "private, no-store";
 const MAX_BYTES = 15 * 1024 * 1024;
 const LOCAL_DIR = path.resolve(".data/uploads");
 const EXT = {
   "image/png": "png",
   "image/jpeg": "jpg",
   "image/webp": "webp",
+  "image/gif": "gif",
+  "audio/webm": "webm",
   "audio/mpeg": "mp3",
   "audio/mp4": "m4a",
   "audio/x-m4a": "m4a",
@@ -103,11 +115,7 @@ uploadRoutes.post("/blob", async (c) => {
   }
   async function authorizePath(pathname) {
     if (!(await readSession(c))) throw new Error("Upload session is required");
-    if (
-      !/^(art|avatar|cosplay|songs|photos)\/[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(
-        pathname ?? "",
-      )
-    ) {
+    if (!FOLDER_PATH.test(pathname ?? "")) {
       throw new Error("Unexpected upload path");
     }
   }
@@ -199,7 +207,7 @@ uploadRoutes.post("/local", async (c) => {
       413,
     );
   const folder = (c.req.query("folder") ?? "art").replace(/[^a-z]/g, "");
-  if (!["art", "avatar", "cosplay", "songs", "photos"].includes(folder))
+  if (!UPLOAD_FOLDERS.includes(folder))
     return c.json({ error: "bad_folder" }, 400);
   const name = `${folder}-${randomBytes(8).toString("hex")}.${EXT[type]}`;
   await mkdir(LOCAL_DIR, { recursive: true });
@@ -218,8 +226,8 @@ uploadRoutes.get("/file/:name", async (c) => {
       404,
     );
   const name = c.req.param("name");
-  if (!/^[a-z]+-[0-9a-f]{16}\.[a-z0-9]+$/.test(name)) return c.notFound();
-  if (!(await readSession(c)) && !(await isPublicMedia(`/api/uploads/file/${name}`)))
+  if (!/^[a-z]+-[0-9a-f]{16}\.[a-z0-9]+$/.test(name) || !UPLOAD_FOLDERS.includes(name.split("-")[0])) return c.notFound();
+  if (!mediaSignatureOk.file(name, c.req.query("s")) && !(await readSession(c)) && !(await isPublicMedia(`/api/uploads/file/${name}`)))
     return c.json({ error: "locked" }, 401);
   try {
     const data = await readFile(path.join(LOCAL_DIR, name));
@@ -229,7 +237,7 @@ uploadRoutes.get("/file/:name", async (c) => {
       "application/octet-stream";
     const headers = {
       "Content-Type": type,
-      "Cache-Control": "private, no-store",
+      "Cache-Control": cacheFor(name),
       "X-Content-Type-Options": "nosniff",
       "Accept-Ranges": "bytes",
     };
@@ -274,12 +282,12 @@ uploadRoutes.get("/file/:name", async (c) => {
 // explicitly allowlisted from saved public settings; all other bytes require a session.
 uploadRoutes.get("/media", async (c) => {
   const pathname = c.req.query("path");
-  if (
-    !/^(art|avatar|cosplay|songs|photos|saves)\/[a-zA-Z0-9._-]+$/.test(pathname ?? "")
-  )
+  if (!(FOLDER_PATH.test(pathname ?? "") || /^saves\/[a-zA-Z0-9._-]+$/.test(pathname ?? "")))
     return c.notFound();
   const canonical = `/api/uploads/media?path=${encodeURIComponent(pathname)}`;
-  if (!(await readSession(c)) && (pathname.startsWith("saves/") || !(await isPublicMedia(canonical))))
+  // A signed link (the iPhone app's <img> tags can't send its token) or a session; otherwise only
+  // media the public profile shows.
+  if (!mediaSignatureOk.media(pathname, c.req.query("s")) && !(await readSession(c)) && (pathname.startsWith("saves/") || !(await isPublicMedia(canonical))))
     return c.json({ error: "locked" }, 401);
   if (!blobReadConfigured()) return c.json({ error: "not_configured" }, 503);
   const range = c.req.header("range");
@@ -294,7 +302,7 @@ uploadRoutes.get("/media", async (c) => {
   if (!result) return c.notFound();
   const headers = new Headers({
     "Content-Type": result.blob.contentType ?? "application/octet-stream",
-    "Cache-Control": "private, no-store",
+    "Cache-Control": cacheFor(pathname),
     "X-Content-Type-Options": "nosniff",
     "Accept-Ranges": "bytes",
   });
@@ -304,4 +312,34 @@ uploadRoutes.get("/media", async (c) => {
     status: headers.has("Content-Range") ? 206 : result.statusCode,
     headers,
   });
+});
+
+// A just-uploaded file's link in the form this client can show: plain for the website, absolute and
+// signed for the iPhone app (the bearer middleware in app.js signs it on the way out).
+uploadRoutes.get("/resolve", async (c) => {
+  c.header("Cache-Control", "private, no-store");
+  if (!(await readSession(c))) return c.json({ error: "locked" }, 401);
+  const pathname = c.req.query("path") ?? "";
+  if (!FOLDER_PATH.test(pathname)) return c.json({ error: "not_found", message: "That file isn’t one of ours." }, 404);
+  return c.json({ url: `/api/uploads/media?path=${encodeURIComponent(pathname)}` });
+});
+
+// ---------- official wallpapers (chat backgrounds), only ever served after login ----------
+// Miku: Crypton's official V6 art, used under its character guideline §E(3) (non-commercial,
+// credit shown, never distributed publicly). Maomao: the anime's official phone wallpaper (Halloween
+// 2025), resized only, © line kept. See docs/refactor/WALLPAPERS.md. Literal URLs let Vercel bundle them.
+const WALLPAPER_FILES = {
+  miku: new URL("../assets/wallpapers/miku.webp", import.meta.url),
+  maomao: new URL("../assets/wallpapers/maomao.webp", import.meta.url),
+};
+uploadRoutes.get("/wallpapers/:key", async (c) => {
+  const key = c.req.param("key");
+  const file = WALLPAPER_FILES[key];
+  if (!file) return c.json({ error: "not_found", message: "That background isn’t here." }, 404);
+  if (!mediaSignatureOk.wallpaper(key, c.req.query("s")) && !(await readSession(c))) return c.json({ error: "locked" }, 401);
+  const body = await readFile(file);
+  c.header("Content-Type", "image/webp");
+  c.header("Cache-Control", "private, max-age=31536000, immutable");
+  c.header("X-Content-Type-Options", "nosniff");
+  return c.body(body);
 });

@@ -235,3 +235,59 @@
     max-height: 260px;
   }
 }
+
+/* The note jar desk (2026-11-24). */
+.jar-admin__text {
+  min-height: 120px;
+  font-size: var(--t-md);
+}
+.jar-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.jar-chip {
+  min-height: 34px;
+  padding: 4px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-soft);
+  font-size: var(--t-sm);
+  cursor: pointer;
+}
+.jar-chip[aria-pressed="true"] {
+  border-color: var(--purple-500);
+  background: var(--purple-100);
+  color: var(--purple-800);
+}
+.jar-admin__counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: var(--t-sm);
+}
+.jar-admin__counts strong {
+  color: var(--purple-700);
+}
+.jar-admin__list li {
+  align-items: flex-start;
+}
+.jar-admin__list li > div:first-child {
+  flex: 1;
+  display: grid;
+  gap: 6px;
+}
+.jar-admin__list li[data-status="in_jar"] {
+  box-shadow: inset 3px 0 0 #e0476f;
+}
+.jar-admin__list li[data-status="waiting"] {
+  box-shadow: inset 3px 0 0 var(--purple-300);
+}
+.jar-admin__status {
+  font-weight: 600;
+}
+.jar-admin__editing > div {
+  display: grid;
+  gap: var(--s-2);
+}

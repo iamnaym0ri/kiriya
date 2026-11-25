@@ -89,10 +89,7 @@ try {
     await page.setViewportSize({ width, height });
     for (const [route, label] of [
       ["/world", "home"],
-      ["/world/atelier", "cosplay"],
       ["/world/art", "art"],
-      ["/world/apothecary", "maomao"],
-      ["/world/stage", "music"],
       ["/world/letters", "letters"],
       ["/world/settings", "settings"],
       ["/world/studio", "canvas"],
@@ -179,87 +176,14 @@ try {
   await page.keyboard.press("Escape");
   assert.equal(await page.locator("dialog[open]").count(), 0);
   checks.push("Saved artwork enlarges; Escape dismisses the native dialog.");
-  // Upload a private cosplay image through the actual form, then enlarge it.
-  const cosplaysBefore = (await (await request("/me/atelier/cosplay")).json())
-    .projects;
-  await page.goto(BASE + "/world/atelier");
-  await page.getByRole("button", { name: "Add a cosplay photo" }).click();
-  await page
-    .getByLabel("Character", { exact: true })
-    .fill("Verification costume");
-  await page
-    .getByLabel("A caption", { exact: true })
-    .fill("Temporary upload check");
-  await page.getByLabel("Photograph", { exact: true }).setInputFiles({
-    name: "check.png",
-    mimeType: "image/png",
-    buffer: Buffer.from(await media.body()),
-  });
-  await page
-    .getByRole("button", { name: "Save photograph", exact: true })
-    .click();
-  await page
-    .getByRole("button")
-    .filter({ hasText: "Verification costume" })
-    .waitFor();
-  const cosplaysAfter = (await (await request("/me/atelier/cosplay")).json())
-    .projects;
-  const costume = cosplaysAfter.find(
-    (p) => !cosplaysBefore.some((q) => q.id === p.id),
-  );
-  assert(costume);
-  cleanup.push(() => request("/me/atelier/cosplay/" + costume.id, "DELETE"));
-  assert.equal((await fetch(BASE + costume.coverUrl)).status, 401);
-  await page
-    .getByRole("button")
-    .filter({ hasText: "Verification costume" })
-    .click();
-  await page.getByRole("dialog").waitFor();
-  await page.keyboard.press("Escape");
-  checks.push(
-    "Cosplay photograph upload, private access and full-size viewing work.",
-  );
-  // Gallery references and spoilers.
-  await page.goto(BASE + "/world/apothecary");
-  await page
-    .getByRole("button", { name: "Enlarge Maomao illustration" })
-    .click();
-  await page.getByRole("button", { name: "Next", exact: true }).click();
-  await page.keyboard.press("Escape");
-  let sealed = false;
-  for (let i = 0; i < 13; i++) {
-    if (
-      await page.getByRole("button", { name: "Reveal manga spoiler" }).count()
-    ) {
-      sealed = true;
-      break;
-    }
-    await page.getByRole("button", { name: "Another little find" }).click();
+  // The dress-up page, the Maomao club and the music page were retired on 2026-11-24
+  // (docs/refactor/PLAN.md); their routes now land on home.
+  for (const route of ["/world/atelier", "/world/apothecary", "/world/stage"]) {
+    await page.goto(BASE + route);
+    await page.waitForURL(BASE + "/world");
+    await page.locator("#letters-hub").waitFor();
   }
-  assert(sealed);
-  await page.getByRole("button", { name: "Reveal manga spoiler" }).click();
-  assert.equal(
-    await page.getByRole("button", { name: "Reveal manga spoiler" }).count(),
-    0,
-  );
-  checks.push("Maomao image switching and explicit manga-spoiler reveal work.");
-  // Visible single player, persistence across SPA navigation, close stops playback.
-  await page.goto(BASE + "/world/stage");
-  await page.locator(".record-sleeve").nth(1).click();
-  await page.locator(".listening-room iframe").waitFor();
-  assert.equal(await page.locator("iframe").count(), 1);
-  const frame = await page.locator("iframe").boundingBox();
-  assert(frame.width >= 200 && frame.height >= 200);
-  const src = await page.locator("iframe").getAttribute("src");
-  await page.getByRole("link", { name: "Kiriya’s home", exact: true }).click();
-  assert.equal(await page.locator("iframe").getAttribute("src"), src);
-  await page
-    .getByRole("button", { name: "Close music player and stop playback" })
-    .click();
-  assert.equal(await page.locator("iframe").count(), 0);
-  checks.push(
-    "Exactly one visible provider player, at least 200 × 200; SPA navigation preserves it, close removes it.",
-  );
+  checks.push("Retired dress-up, Maomao club and music routes land on home with the letters hub.");
   // Birthday dates change the flourish, never access.
   for (const date of ["2026-09-15", "2026-09-22", "2026-11-04"]) {
     await page.route("**/api/me/today", async (route) => {
@@ -329,7 +253,7 @@ try {
     cleanup.push(() =>
       request("/me/songs/" + previousFeatured.id, "PATCH", { featured: true }),
     );
-  await page.goto(BASE + "/world/stage");
+  await page.goto(BASE + "/world/settings#songs");
   await page
     .locator(".shelf__song")
     .filter({ hasText: "Verification recording" })

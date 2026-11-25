@@ -9,6 +9,8 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { and, eq, sql } from "drizzle-orm";
 import { hashPassphrase } from "../server/auth/passphrase.js";
+// These tests cover the whole feed machinery, including the sections retired on 2026-11-24.
+process.env.FEED_RETIRED_SECTIONS ??= "";
 
 // No dotenv, no real database URL, no real API credential, no shared .data/pglite directory.
 for (const name of [

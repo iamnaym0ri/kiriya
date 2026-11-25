@@ -23,6 +23,21 @@ function devApi() {
   };
 }
 
+// Every build gets a version the iPhone app compares against /app-bundle/latest.json
+// (src/lib/appUpdates.js, scripts/build-app-bundle.mjs). Semver-shaped: 1.YYYYMMDD.HHMMSS (UTC).
+function appBundleVersion() {
+  const stamp = new Date().toISOString().replace(/\D/g, "");
+  const version = process.env.KW_BUNDLE_VERSION || `1.${stamp.slice(0, 8)}.${Number(stamp.slice(8, 14))}`;
+  return {
+    name: "kiriya-app-bundle-version",
+    apply: "build",
+    config: () => ({ define: { __APP_BUNDLE_VERSION__: JSON.stringify(version) } }),
+    generateBundle() {
+      this.emitFile({ type: "asset", fileName: "app-version.json", source: JSON.stringify({ version }) });
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   // Server code reads process.env; give it .env / .env.local values in development too.
   Object.assign(process.env, {
@@ -34,6 +49,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       devApi(),
+      appBundleVersion(),
       VitePWA({
         strategies: "injectManifest",
         srcDir: "src",
@@ -66,7 +82,7 @@ export default defineConfig(({ mode }) => {
         injectManifest: {
           globPatterns: ["**/*.{js,css,html,svg,png,webp,woff2,webmanifest}"],
           // The Japanese font slices load on demand; precaching hundreds of them would bloat the install.
-          globIgnores: ["**/m-plus-rounded-1c-[0-9]*", "**/*.woff"],
+          globIgnores: ["**/m-plus-rounded-1c-[0-9]*", "**/*.woff", "install/**", "stickers/**", "app-icons/**", "app-version.json"],
           maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         },
         devOptions: { enabled: false },

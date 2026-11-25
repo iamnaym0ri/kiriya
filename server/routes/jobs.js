@@ -12,6 +12,7 @@ import {
 } from "../push/planner.js";
 import { sendToSubscribers } from "../push/webpush.js";
 import { deliverLoveNote, sweepLoveNotes } from "../lib/loveNotes.js";
+import { announceJar, remindJar } from "../lib/noteJar.js";
 
 export const jobRoutes = new Hono();
 
@@ -99,6 +100,32 @@ jobRoutes.post("/love-note", async (c) => {
   // QStash's notBefore is whole seconds, so allow the callback to land a moment early.
   const note = await deliverLoveNote(await getDb(), id, { now: new Date(Date.now() + 60_000) });
   return c.json({ ok: true, delivered: Boolean(note) });
+});
+
+// The note jar's morning announcement: the 08:00 cron, and QStash when her "not before" hour is
+// later. Claiming is idempotent, so the two can't both buzz her phone.
+async function runJarAnnouncement(c) {
+  const caller = await authorize(c);
+  if (!caller)
+    return c.json(
+      { error: "unauthorized", message: "This job needs a valid signature." },
+      401,
+    );
+  // QStash's notBefore is whole seconds, so allow the callback to land a moment early.
+  const result = await announceJar(await getDb(), { now: new Date(Date.now() + 60_000) });
+  console.log("[jobs] note-jar", caller.via, JSON.stringify(result));
+  return c.json({ ok: true, via: caller.via, result });
+}
+jobRoutes.get("/note-jar", runJarAnnouncement);
+jobRoutes.post("/note-jar", runJarAnnouncement);
+
+// The evening nudge when the morning's new notes are still in the jar (QStash only).
+jobRoutes.post("/note-jar-reminder", async (c) => {
+  const caller = await authorize(c);
+  if (!caller) return c.json({ error: "unauthorized", message: "This job needs a valid signature." }, 401);
+  const result = await remindJar(await getDb(), { now: new Date(Date.now() + 60_000) });
+  console.log("[jobs] note-jar-reminder", caller.via, JSON.stringify(result));
+  return c.json({ ok: true, result });
 });
 
 jobRoutes.post("/send-push", async (c) => {

@@ -149,7 +149,7 @@ export const collectionCards = {
 };
 export const isApprovedPush = (p) =>
   p?.collectionVersion === COLLECTION_VERSION &&
-  ["maomao", "vocaloid", "art", "cosplay", "note"].includes(p.category) &&
+  ["maomao", "vocaloid", "art", "cosplay", "note", "play"].includes(p.category) &&
   /^\/world(?:\/(?:apothecary|stage|art|atelier|letters))?$/.test(
     p.navigate ?? "",
   );

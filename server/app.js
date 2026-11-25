@@ -1,5 +1,8 @@
 import { Hono } from "hono";
-import { requireRole } from "./auth/session.js";
+import { cors } from "hono/cors";
+import { bearerToken, requireRole } from "./auth/session.js";
+import { env } from "./env.js";
+import { signMediaLinks, unsignMediaLinks } from "./lib/mediaLinks.js";
 import { sessionRoutes } from "./routes/session.js";
 import { publicRoutes } from "./routes/public.js";
 import { meRoutes } from "./routes/me.js";
@@ -9,9 +12,47 @@ import { pushRoutes } from "./routes/push.js";
 import { uploadRoutes } from "./routes/uploads.js";
 import { feedRoutes, feedAdminRoutes, feedJobRoutes } from "./routes/feeds.js";
 import { adminLoveNoteRoutes } from "./routes/loveNotes.js";
+import { adminNoteJarRoutes } from "./routes/noteJarAdmin.js";
 import { widgetRoutes } from "./routes/widget.js";
+import { appRoutes, appSessionRoutes } from "./routes/app.js";
 
 const app = new Hono().basePath("/api");
+
+// The bundled iPhone app (capacitor://localhost) calls this API cross-origin with a bearer token and
+// no cookies. Registered first so preflights are answered before the header check below.
+app.use(
+  "*",
+  cors({
+    origin: (origin) => (env.appOrigins.includes(origin) ? origin : null),
+    allowHeaders: ["Authorization", "Content-Type", "x-kw", "x-kw-token", "Range"],
+    allowMethods: ["GET", "HEAD", "PUT", "POST", "PATCH", "DELETE"],
+    maxAge: 86400,
+    credentials: false,
+  }),
+);
+
+// For the app only (bearer requests): private media links go out absolute and signed, because its
+// <img> tags can't send the token, and come back in their plain stored form. See lib/mediaLinks.js.
+app.use("*", async (c, next) => {
+  if (!bearerToken(c)) return next();
+  const origin = new URL(c.req.url).origin;
+  if (c.req.method !== "GET" && c.req.method !== "HEAD" && (c.req.header("content-type") ?? "").includes("application/json")) {
+    const text = await c.req.raw.clone().text();
+    const plain = unsignMediaLinks(text, origin);
+    if (plain !== text) c.req.raw = new Request(c.req.raw, { body: plain });
+  }
+  await next();
+  if (!(c.res.headers.get("content-type") ?? "").includes("application/json")) return;
+  const text = await c.res.clone().text();
+  const signed = signMediaLinks(text, origin);
+  if (signed === text) return;
+  const { status, headers: original } = c.res;
+  const headers = new Headers(original);
+  headers.delete("content-length");
+  // Cleared first so Hono doesn't copy the old response's headers (and length) back over these.
+  c.res = undefined;
+  c.res = new Response(signed, { status, headers });
+});
 
 // Every state-changing request must come from this site's own scripts: a JSON body plus a custom
 // header that a cross-site form can't send. SameSite=Lax cookies cover the rest.
@@ -29,6 +70,7 @@ app.use("*", async (c, next) => {
 });
 
 app.get("/health", (c) => c.json({ ok: true }));
+app.route("/session/app", appSessionRoutes);
 app.route("/session", sessionRoutes);
 app.route("/public", publicRoutes);
 
@@ -36,12 +78,16 @@ app.use("/me/*", requireRole("kiriya", "admin"));
 app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
 
+app.use("/app/*", requireRole("kiriya", "admin"));
+app.route("/app", appRoutes);
+
 app.use("/push/*", requireRole("kiriya", "admin"));
 app.route("/push", pushRoutes);
 
 app.use("/admin/*", requireRole("admin"));
 app.route("/admin/feeds", feedAdminRoutes);
 app.route("/admin/love-notes", adminLoveNoteRoutes);
+app.route("/admin/note-jar", adminNoteJarRoutes);
 app.route("/admin", adminRoutes);
 
 app.route("/jobs/feeds", feedJobRoutes);

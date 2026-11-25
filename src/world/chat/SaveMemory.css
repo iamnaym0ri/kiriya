@@ -1,0 +1,11 @@
+.save-memory {
+  display: block;
+  margin: 12px auto 4px;
+  font-size: 13px;
+}
+.note-jar__memory {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: right;
+  font-size: 12px;
+}

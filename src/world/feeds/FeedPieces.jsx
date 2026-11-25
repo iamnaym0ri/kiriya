@@ -654,10 +654,8 @@ export function MerchLine({ entry, onSeen }) {
 
 export function HomeMerch() {
   const merch = useSectionFeed("merch");
-  const maomao = useSectionFeed("maomao");
-  const music = useSectionFeed("music");
-  const dress = useSectionFeed("dressup");
-  const sources = [merch, maomao, music, dress];
+  // The maomao, music and dress-up feeds were retired on 2026-11-24; merch comes only from its own feed.
+  const sources = [merch];
   const picks = sources.flatMap((source) => source.entries
     .filter((entry) => entry.type === "merch" || entry.primary.kind === "merch")
     .map((entry) => ({ entry, markSeen: source.markSeen })))
@@ -714,6 +712,8 @@ export function EventsStrip({ limit = 6, standalone = false }) {
     staleTime: 10 * 60_000,
   });
   const list = (events.data?.events ?? [])
+    // Singapore only (owner decision, 2026-11-24); overseas descriptors stop when the new crawler lands.
+    .filter((e) => e.tier === "sg")
     .filter((e) => !e.endsOn || daysUntil(e.endsOn) >= 0)
     .sort(
       (a, b) =>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Push Notifications capability. Xcode builds use "development"; the TestFlight export
+	     re-signs it with the distribution profile, which sets "production". -->
+	<key>aps-environment</key>
+	<string>development</string>
+	<!-- Shared with the Home Screen widgets and the notification extension: the widget key, the
+	     last snapshot and the "sent ♡" moment (ios/App/KiriyaShared/KiriyaShared.swift). -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.love.kiriya.app</string>
+	</array>
+</dict>
+</plist>

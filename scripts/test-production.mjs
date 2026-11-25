@@ -190,11 +190,14 @@ await test("Secure production login, admin separation, expired/changed sessions 
       "image/png",
       "image/jpeg",
       "image/webp",
+      // GIFs and voice notes for the chat (2026-11-24).
+      "image/gif",
       "audio/mpeg",
       "audio/mp4",
       "audio/x-m4a",
       "audio/aac",
       "audio/wav",
+      "audio/webm",
     ],
   });
   assert.equal(

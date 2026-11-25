@@ -1,3 +1,5 @@
+> **2026-11-24:** the bundled note library this document describes was erased at the owner's request. The jar now holds only notes Josh writes in admin (see docs/refactor/PLAN.md, phase 2). This file is kept as history.
+
 # Note jar: praise, encouragement and a little sass
 
 Implemented September 16, 2026. This replaces the original jar writing. The library contains **340 original notes**, including **15 for each of the eight feelings**, **20 affectionate tough-love notes**, and **20 clearly labelled Maomao-inspired notes**.

@@ -34,6 +34,16 @@ export const env = {
   vapidPrivateKey: optional("VAPID_PRIVATE_KEY"),
   vapidSubject: optional("VAPID_SUBJECT"),
 
+  // Native push for the kiriya.love iPhone app (Apple Push Notification service, token auth).
+  // APNS_KEY is the .p8 file's contents; "\n" sequences are accepted for one-line env values.
+  apnsKey: optional("APNS_KEY"),
+  apnsKeyId: optional("APNS_KEY_ID"),
+  apnsTeamId: optional("APNS_TEAM_ID", "9W8CN9V8NR"),
+  apnsBundleId: optional("APNS_BUNDLE_ID", "love.kiriya.app"),
+  // Origins allowed to call the API with a bearer token: the bundled iPhone app, plus any extra
+  // listed (comma-separated) for local testing of the bundle from another port.
+  appOrigins: ["capacitor://localhost", ...(process.env.APP_ORIGINS ?? "").split(",").map((o) => o.trim()).filter(Boolean)],
+
   blobToken: optional("BLOB_READ_WRITE_TOKEN"),
   blobStoreId: optional("BLOB_STORE_ID"),
   blobWebhookPublicKey: optional("BLOB_WEBHOOK_PUBLIC_KEY"),

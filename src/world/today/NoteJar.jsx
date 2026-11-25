@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import SaveMemory from "../chat/SaveMemory.jsx";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useInView } from "motion/react";
 import { api } from "../../lib/api.js";
@@ -11,7 +12,7 @@ import "./NoteJar.css";
 const queryKey = ["me", "note-jar"];
 const dateLabel = day => new Intl.DateTimeFormat("en-SG", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Singapore" }).format(new Date(`${day}T12:00:00+08:00`));
 
-function JarArtwork({ drawing, revision }) {
+function JarArtwork({ drawing, revision, fresh = 0 }) {
   const id = useId();
   return <svg className="note-jar__art" viewBox="0 0 360 390" aria-hidden="true">
     <defs>
@@ -41,6 +42,12 @@ function JarArtwork({ drawing, revision }) {
       {drawing && <g className="jar-flying-note"><rect x="153" y="135" width="58" height="43" rx="4" fill="#fffaf3" stroke="#ba94c4" strokeWidth="2"/><path d="m156 140 26 17 26-17" fill="none" stroke="#c9a3c5" strokeWidth="1.5"/><path d="M182 151q-7-8-10-2-3 5 10 13 13-8 10-13-3-6-10 2" fill="#bb80ad"/></g>}
     </g>
     {["♡","✧","✿","✦"].map((charm,i)=><text key={i} className="jar-charm" x={[57,298,278,81][i]} y={[180,153,79,79][i]} style={{"--charm":i}}>{charm}</text>)}
+    {/* New notes from Josh: a little red heart on the lid until she draws them. */}
+    {fresh>0&&<g className="jar-fresh" transform="translate(262 92)">
+      <g className="jar-fresh__heart"><path d="M0 14C-22-2-24-20-12-25-5-28 0-22 0-18 0-22 5-28 12-25 24-20 22-2 0 14Z" fill="#e0476f" stroke="#a8244d" strokeWidth="2.5" strokeLinejoin="round"/><path d="M-13-17q3-5 8-4" fill="none" stroke="#ffd3df" strokeWidth="3" strokeLinecap="round"/>
+        <text className="jar-fresh__count" y="-2" textAnchor="middle">{fresh>9?"9+":fresh}</text></g>
+      <text className="jar-fresh__spark" x="24" y="-22">✦</text><text className="jar-fresh__spark" x="-30" y="-24" style={{"--spark":1}}>✧</text>
+    </g>}
   </svg>;
 }
 
@@ -90,22 +97,27 @@ export default function NoteJar({ birthday = {}, signature, day }) {
       reveal.current=true;
       setChosen(item);setAnnouncement(item.note.text);keep.reset();
       queryClient.invalidateQueries({queryKey});
-    }catch{
-      if(alive.current){setError("the ribbon got a little tangled. try that pull again?");setAnnouncement("");}
+    }catch(failure){
+      if(alive.current){
+        setError(failure?.status===404?"the jar’s still waiting for its first little notes ♡":"the ribbon got a little tangled. try that pull again?");setAnnouncement("");
+        if(failure?.status===404)queryClient.invalidateQueries({queryKey});
+      }
     }finally{
       busy.current=false;if(alive.current)setDrawing(false);
     }
   }
   const todayWaiting=!query.data?.daily;
-  return <section ref={ref} id="note-jar" className={`note-jar${birthday.isBirthday?" note-jar--birthday":""}`} data-motion-region data-jar-motion={moving&&inView?"on":"off"} aria-labelledby="note-jar-title">
+  const fresh=query.data?.fresh??0, emptyJar=query.isSuccess&&!query.data?.total;
+  const from=String(signature??"Josh").replace(/\s*<3$/,"");
+  return <section ref={ref} id="note-jar" className={`note-jar${birthday.isBirthday?" note-jar--birthday":""}`} data-motion-region data-jar-motion={moving&&inView?"on":"off"} data-fresh={fresh>0||undefined} aria-labelledby="note-jar-title">
     {birthday.isBirthday&&<BirthdayTakeover birthday={birthday} signature={signature}/>}
     <header className="note-jar__heading"><span className="micro-label">{birthday.isBirthday?"A BIRTHDAY JAR FULL OF LOVE":"LITTLE LOVE NOTES, ALL YEAR ROUND"}</span><h2 id="note-jar-title">{birthday.isBirthday?"a birthday wish,":"a little jar,"} <em>just for u <span aria-hidden="true">♡</span></em></h2><p>for the bright days, the “ugh” days, & everything in between.</p></header>
     <div className="note-jar__layout">
       <div className="note-jar__shelf">
-        <div className="note-jar__day"><span aria-hidden="true">✧</span> {query.isPending?"a little love is waiting…":todayWaiting?"today’s little note is waiting":"a little love, picked up today"}</div>
-        <JarArtwork drawing={drawing} revision={revision}/>
-        <button className="note-jar__pull button-plum" onClick={pull} disabled={drawing} aria-controls="note-jar-paper"><Icon name="mail" size={18}/>{drawing?"a little note, coming right up…":error?"try that little pull again":record?"pull another little note":"pull a little note"}<span aria-hidden="true">♡</span></button>
-        <p className="note-jar__unlimited">take another. there’s no daily limit.</p>
+        <div className="note-jar__day" data-fresh={fresh>0||undefined}><span aria-hidden="true">{fresh>0?"♥":"✧"}</span> {query.isPending?"a little love is waiting…":fresh>0?`${fresh===1?"a new little note":`${fresh} new little notes`} from ${from}!`:emptyJar?"new little notes are on their way":todayWaiting?"today’s little note is waiting":"a little love, picked up today"}</div>
+        <JarArtwork drawing={drawing} revision={revision} fresh={fresh}/>
+        <button className="note-jar__pull button-plum" onClick={pull} disabled={drawing||emptyJar} aria-controls="note-jar-paper"><Icon name="mail" size={18}/>{drawing?"a little note, coming right up…":emptyJar?"the jar is filling up…":fresh>0?(fresh===1?"pull ur new little note":"pull a new little note"):error?"try that little pull again":record?"pull another little note":"pull a little note"}<span aria-hidden="true">♡</span></button>
+        <p className="note-jar__unlimited">{emptyJar?"one little note at a time, written just for u.":"take another. there’s no daily limit."}</p>
       </div>
       <div className="note-jar__reading">
         <div className="note-jar__tape" aria-hidden="true"/>
@@ -114,7 +126,7 @@ export default function NoteJar({ birthday = {}, signature, day }) {
           <p className="note-jar__salutation">{record?"hey, u.":"there’s something nice in here."}</p>
           <p className="note-jar__message">{record?.note.text??"a little encouragement. a caring reminder. a tiny reason to smile. all picked for ur lovely, interesting, very-much-u self."}</p>
           <p className="note-jar__byline">{record?.note.byline??"one small note at a time ♡"}</p>
-          {record&&<div className="note-jar__paper-footer"><small>{dateLabel(record.day)}{record.revisited?" · a little favourite, revisited":""}</small><button className="note-jar__keep" disabled={drawing||keep.isPending||record.preview} aria-pressed={record.saved} onClick={()=>{setChosen(record);keep.mutate(record);}}><Icon name="heart" size={18}/>{record.saved?"kept close":"keep this"}</button></div>}
+          {record&&<div className="note-jar__paper-footer"><small>{dateLabel(record.day)}{record.revisited?" · a little favourite, revisited":""}</small><button className="note-jar__keep" disabled={drawing||keep.isPending||record.preview} aria-pressed={record.saved} onClick={()=>{setChosen(record);keep.mutate(record);}}><Icon name="heart" size={18}/>{record.saved?"kept close":"keep this"}</button>{!record.preview&&<SaveMemory key={record.id} kind="jar" sourceId={record.id} className="text-link note-jar__memory"/>}</div>}
         </article>
         <div className="note-jar__feedback">{error&&<p role="alert">{error}</p>}{keep.isError&&<p role="alert">That note couldn’t be kept. Tap the heart to try again.</p>}{query.isError&&!record&&<p role="alert">Your collection couldn’t load. You can still try pulling a note.</p>}{record?.preview&&<p>Admin preview · your pulls won’t change Kiriya’s history.</p>}</div>
         <div className="note-jar__underpaper"><span aria-hidden="true">(˘ ᵕ ˘) ♡</span><p>no perfect-day requirement.</p></div>

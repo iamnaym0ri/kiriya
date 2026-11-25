@@ -10,6 +10,8 @@ import { migrate } from "drizzle-orm/pglite/migrator";
 import { eq, sql } from "drizzle-orm";
 import sharp from "sharp";
 import { hashPassphrase } from "../server/auth/passphrase.js";
+// These tests cover the whole feed machinery, including the sections retired on 2026-11-24.
+process.env.FEED_RETIRED_SECTIONS ??= "";
 
 for (const name of [
   "DATABASE_URL",

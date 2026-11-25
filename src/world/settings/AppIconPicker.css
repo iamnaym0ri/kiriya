@@ -1,0 +1,32 @@
+.app-icon-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 14px 10px;
+  margin-top: 14px;
+}
+.app-icon-picker__choice {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  color: var(--theme-ink);
+  font-size: 12px;
+  cursor: pointer;
+}
+.app-icon-picker__choice img {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  box-shadow: 0 3px 10px #49365326;
+  transition: transform 150ms ease;
+}
+.app-icon-picker__choice:active img {
+  transform: scale(0.92);
+}
+.app-icon-picker__choice[aria-checked="true"] img {
+  outline: 3px solid var(--theme-accent, #7d4f9c);
+  outline-offset: 3px;
+}

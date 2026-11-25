@@ -41,7 +41,7 @@ export function configuredKeyVersion(role) {
   return createHash("sha256").update(configured).digest("base64url").slice(0, 10);
 }
 
-async function keyVersion(role) {
+export async function keyVersion(role) {
   return (await readCredential(role))?.sessionKey ?? configuredKeyVersion(role);
 }
 
@@ -64,7 +64,16 @@ export async function issueSession(c, role) {
   });
   const session = { role, issuedAt: now, expiresAt: now + SESSION_SECONDS };
   c.set("kwSession", session);
-  return { role, expiresAt: new Date(session.expiresAt * 1000).toISOString() };
+  // The bundled iPhone app runs on its own origin (capacitor://localhost), where a kiriya.love cookie
+  // never travels, so it asks for the same signed token in the body and sends it back as a bearer.
+  const wantsToken = c.req.header("x-kw-token") === "1";
+  return { role, expiresAt: new Date(session.expiresAt * 1000).toISOString(), ...(wantsToken ? { token } : {}) };
+}
+
+/** The session token the bundled app sent as `Authorization: Bearer v1.…`, if any. */
+export function bearerToken(c) {
+  const header = c.req.header("authorization") ?? "";
+  return header.startsWith("Bearer v1.") ? header.slice(7).trim() : null;
 }
 
 export function clearSession(c) {
@@ -73,7 +82,8 @@ export function clearSession(c) {
 }
 
 async function verifySession(c) {
-  const token = getCookie(c, COOKIE_NAME);
+  // The cookie (website) wins; the bundled app has no cookie and sends the token as a bearer.
+  const token = getCookie(c, COOKIE_NAME) ?? bearerToken(c);
   if (!token || !env.sessionSecret) return null;
   const [version, payload, signature] = token.split(".");
   if (version !== "v1" || !payload || !signature) return null;

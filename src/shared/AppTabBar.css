@@ -1,0 +1,123 @@
+/* The iPhone app's tab bar: frosted lilac paper under her thumb, hidden while typing and in the chat. */
+:root {
+  --app-tabs-h: calc(58px + env(safe-area-inset-bottom));
+}
+.app-tabs {
+  position: fixed;
+  z-index: 120;
+  inset: auto 0 0 0;
+  height: var(--app-tabs-h);
+  padding: 4px max(10px, env(safe-area-inset-left)) env(safe-area-inset-bottom) max(10px, env(safe-area-inset-right));
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: color-mix(in srgb, var(--theme-paper, #fbf6fd) 84%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(18px);
+  backdrop-filter: saturate(1.4) blur(18px);
+  border-top: 1px solid color-mix(in srgb, var(--theme-line, #d9c8e4) 80%, transparent);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 220ms ease;
+}
+.app-tabs__tab {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  color: color-mix(in srgb, var(--theme-ink, #4e2f63) 55%, transparent);
+  text-decoration: none;
+  font: 500 10.5px/1.2 -apple-system, system-ui, sans-serif;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.app-tabs__tab[aria-current="page"] {
+  color: var(--theme-accent, #7d4f9c);
+}
+.app-tabs__tab[aria-current="page"] .app-tabs__icon svg {
+  stroke-width: 2.1;
+}
+.app-tabs__tab:active .app-tabs__icon {
+  transform: scale(0.88);
+}
+.app-tabs__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  transition: transform 120ms ease;
+}
+.app-tabs__count {
+  position: absolute;
+  top: -4px;
+  right: -9px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #e5484d;
+  color: #fff;
+  font: 600 10.5px/17px system-ui, sans-serif;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--theme-paper, #fbf6fd);
+}
+body.keyboard-open .app-tabs,
+body[data-page="chat"] .app-tabs {
+  transform: translateY(110%);
+}
+/* Room for the bar under everything that sits at the bottom of the screen. */
+body[data-app-tabs] .world-content {
+  padding-bottom: calc(var(--app-tabs-h) + 12px);
+}
+body[data-app-tabs] .world-footer {
+  padding-bottom: calc(var(--app-tabs-h) + 8px);
+}
+body[data-app-tabs] .daily-style-corner {
+  bottom: calc(14px + var(--app-tabs-h));
+}
+body[data-app-tabs] .listening-room {
+  bottom: calc(14px + var(--app-tabs-h));
+}
+/* The tab bar stands in for the bookmarks in the top bar (the menu keeps its extra links). */
+body[data-app-tabs] .world-bookmarks {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-tabs {
+    transition: none;
+  }
+}
+
+/* Pull to refresh (PullToRefresh.jsx): a little ✦ that turns as she pulls, then spins. */
+.pull-refresh {
+  position: fixed;
+  z-index: 130;
+  top: calc(env(safe-area-inset-top) + 6px);
+  left: 50%;
+  transform: translate(-50%, calc(var(--pull) * 0.6 - 30px));
+  pointer-events: none;
+}
+.pull-refresh__dot {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--theme-paper, #fbf6fd);
+  color: var(--theme-accent, #7d4f9c);
+  box-shadow: 0 4px 14px #49365333;
+  font-size: 17px;
+  transform: rotate(var(--turn, 0deg));
+}
+.pull-refresh__dot--spin {
+  animation: pull-refresh-spin 800ms linear infinite;
+}
+@keyframes pull-refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pull-refresh__dot--spin {
+    animation-duration: 2.4s;
+  }
+}

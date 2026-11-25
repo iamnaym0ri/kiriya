@@ -15,6 +15,8 @@ import * as S from "../server/feeds/sources/sekai.js";
 import * as P from "../server/feeds/sources/piapro.js";
 import * as N from "../server/feeds/sources/musicnews.js";
 import { fixture, fixtureTransport, publicLookup, runAdapterAll, runAdapterPage } from "./lib/feed-source-harness.mjs";
+// These tests cover the whole feed machinery, including the sections retired on 2026-11-24.
+process.env.FEED_RETIRED_SECTIONS ??= "";
 
 const DAY = "2026-09-15";
 const NOW = Date.parse("2026-09-15T15:00:00Z"); // 23:00 in Singapore

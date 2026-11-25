@@ -12,6 +12,10 @@ const {PGlite}=await import("@electric-sql/pglite"),{drizzle}=await import("driz
 const schema=await import("../server/db/schema.js"),client=new PGlite(),db=drizzle({client,schema});
 await migrate(db,{migrationsFolder:new URL("../server/db/migrations",import.meta.url).pathname});
 globalThis.__kiriyaDb=Promise.resolve({db,driver:"pglite"});
+// The bundled library was erased (2026-11-24): the jar holds only notes written in admin. Seed some
+// that already came out of the jar once, so the rotation has something to pull.
+const past=new Date(Date.now()-86_400_000);
+await db.insert(schema.jarNotes).values(Array.from({length:14},(_,i)=>({text:`verification jar note ${i+1}: a little something kind, written just for u.`,feelings:i%5===0?["sad"]:[],releaseAt:past,firstPulledAt:past})));
 const {createServer}=await import("vite"),{birthdayInfo}=await import("../server/lib/birthday.js");
 const OUT=new URL("../.data/redesign/note-jar/",import.meta.url);await mkdir(OUT,{recursive:true});
 let server,browser;const checks=[],errors=[];
@@ -73,6 +77,13 @@ try{
   await jar.getByRole('button',{name:'Light the candle again',exact:true}).click();
   await jar.screenshot({path:new URL('birthday-jar.png',OUT).pathname,style:'.world-mast,.daily-style-corner{visibility:hidden!important}'});
   checks.push('Birthday cake/candle returns on September 15 in successive years, daily jar returns September 16, and notes remain available on the birthday.');
+  await db.insert(schema.jarNotes).values({text:'a brand new note from this morning',feelings:[],releaseAt:new Date(Date.now()-60_000)});
+  date='2027-09-16';await page.reload();await jar.waitFor();await jar.locator('.jar-fresh__heart').waitFor();
+  assert.match(await jar.locator('.note-jar__day').innerText(),/a new little note from/);
+  await jar.getByRole('button',{name:'pull ur new little note',exact:false}).click();
+  await jar.locator('.note-jar__message',{hasText:'a brand new note from this morning'}).waitFor();
+  await page.waitForFunction(()=>!document.querySelector('.jar-fresh__heart'));
+  checks.push('A new note from admin lights the red heart, comes out first, and the heart goes once she draws it.');
   const admin=await browser.newContext();await admin.request.post(base+'/api/session/unlock',{headers:{'x-kw':'1'},data:{passphrase:adminPhrase}});
   const ownerBefore=await(await ctx.request.get(base+'/api/me/note-jar')).json();const preview=await(await admin.request.post(base+'/api/me/note-jar/pull',{headers:{'x-kw':'1'},data:{requestId:crypto.randomUUID()}})).json();assert(preview.preview);assert.equal((await(await ctx.request.get(base+'/api/me/note-jar')).json()).pulled,ownerBefore.pulled);
   await ctx.request.post(base+'/api/session/lock',{headers:{'x-kw':'1'},data:{}});assert.equal((await ctx.request.get(base+'/api/me/note-jar/history')).status(),401);

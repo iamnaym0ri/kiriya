@@ -1,0 +1,44 @@
+/* The kiriya.love app's Face ID screen: the same lilac and cursive wordmark as the app icon. */
+.native-lock {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: grid;
+  place-items: center;
+  padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom);
+  background:
+    radial-gradient(circle at 80% 16%, #ffe6f1d9 0, #ffe6f100 45%),
+    linear-gradient(160deg, #f3e9fa 0%, #e2cff0 55%, #cfb2e4 100%);
+  color: #4e2f63;
+  text-align: center;
+}
+.native-lock__card {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  max-width: 320px;
+}
+.native-lock__word {
+  font: 400 76px/1 "Parisienne", cursive;
+  margin: 0;
+}
+.native-lock__word span {
+  font: 400 26px/1 Georgia, serif;
+  color: #9a6fb4;
+  vertical-align: super;
+  margin-left: 4px;
+}
+.native-lock__line {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #6b5279;
+}
+.native-lock__face {
+  min-height: 50px;
+  min-width: 220px;
+  justify-content: center;
+}
+.native-lock__other {
+  min-height: 44px;
+  font-size: 13px;
+}

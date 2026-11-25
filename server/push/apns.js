@@ -1,0 +1,119 @@
+import apn from "@parse/node-apn";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
+import { schema } from "../db/client.js";
+import { env } from "../env.js";
+
+// Native notifications for the kiriya.love iPhone app, through Apple's push service with a
+// token-based .p8 key (no certificates to renew). Ad hoc builds use the production gateway; a build
+// run straight from Xcode uses the sandbox, which we learn the first time production rejects a token.
+
+export function apnsConfigured() {
+  return Boolean(env.apnsKey && env.apnsKeyId && env.apnsTeamId && env.apnsBundleId);
+}
+
+const keyData = () => Buffer.from(env.apnsKey.replace(/\\n/g, "\n"));
+function provider(production) {
+  return new apn.Provider({ token: { key: keyData(), keyId: env.apnsKeyId, teamId: env.apnsTeamId }, production });
+}
+
+// Each kind of notification looks and behaves a little differently on her phone. The category
+// picks the action buttons the app registers (chat: Reply and ♡; letters and notes: Open and ♡),
+// and the thread groups a conversation together in Notification Center.
+// Sounds are short original chimes bundled in the app (ios/App/App/Sounds); a missing file plays
+// the default sound.
+const KINDS = {
+  chat: { category: "CHAT", thread: "chat", sound: "chat.caf" },
+  tap: { category: "TAP", thread: "chat", sound: "tap.caf" },
+  letter: { category: "LETTER", thread: "letters", sound: "letter.caf", special: true },
+  note: { category: "NOTE", thread: "notes", sound: "letter.caf", special: true },
+  jar: { category: "JAR", thread: "jar", sound: "jar.caf", special: true },
+  reminder: { category: "REMINDER", thread: "reminders", sound: "jar.caf" },
+  event: { category: "EVENT", thread: "events", sound: "default" },
+};
+
+/** The same message the web push carries, as an APNs alert. `navigate` rides along for the tap. */
+export function apnsNotification({ title, body, navigate = "/world", kind = null, threadId = null, messageId = null }, { ttlSeconds = 6 * 60 * 60, now = Date.now(), badge = null } = {}) {
+  const style = KINDS[kind] ?? {};
+  const note = new apn.Notification();
+  note.topic = env.apnsBundleId;
+  note.alert = { title: title.slice(0, 60), body: body.slice(0, 160) };
+  note.sound = style.sound ?? "default";
+  if (Number.isInteger(badge)) note.badge = badge;
+  note.pushType = "alert";
+  note.priority = 10;
+  note.expiry = Math.floor(now / 1000) + ttlSeconds;
+  if (style.category) note.category = style.category;
+  if (threadId ?? style.thread) note.threadId = threadId ?? style.thread;
+  // Letters, little notes and the jar get dressed up on the phone (an envelope or jar picture) by
+  // the app's notification service extension, which needs permission to edit the notification.
+  if (style.special) note.mutableContent = 1;
+  // messageId lets the "Reply" button on a chat notification quote the message it answers.
+  note.payload = { navigate, ...(kind ? { kind } : {}), ...(messageId ? { messageId } : {}) };
+  return note;
+}
+
+/** Sends to every app install of a role. Tokens Apple says are dead are removed. */
+export async function sendNative(db, message, { role = null, ttlSeconds } = {}) {
+  if (!apnsConfigured()) return { sent: 0, failed: 0, targets: 0, skipped: "apns_not_configured" };
+  const filters = [isNotNull(schema.appDevices.apnsToken), isNull(schema.appDevices.revokedAt)];
+  if (role) filters.push(eq(schema.appDevices.role, role));
+  const devices = await db.select().from(schema.appDevices).where(and(...filters));
+  if (!devices.length) return { sent: 0, failed: 0, targets: 0 };
+  // Each role's phones get that person's own unread total as the icon badge.
+  const { unreadTotals } = await import("../lib/appBadge.js");
+  const notes = {};
+  for (const who of new Set(devices.map((d) => d.role))) {
+    const badge = await unreadTotals(db, who).then((totals) => totals.total, () => null);
+    notes[who] = apnsNotification(message, { ttlSeconds, badge });
+  }
+  const results = new Map();
+  for (const [environment, who] of ["production", "development"].flatMap((e) => Object.keys(notes).map((r) => [e, r]))) {
+    const targets = devices.filter((d) => d.apnsEnv === environment && d.role === who && !results.has(d.id));
+    if (!targets.length) continue;
+    const note = notes[who];
+    const gateway = provider(environment === "production");
+    try {
+      const { sent, failed } = await gateway.send(note, targets.map((d) => d.apnsToken));
+      const byToken = new Map(targets.map((d) => [d.apnsToken, d]));
+      for (const { device } of sent) results.set(byToken.get(device).id, { ok: true });
+      for (const failure of failed) {
+        const device = byToken.get(failure.device);
+        results.set(device.id, { ok: false, status: failure.status ?? null, reason: failure.response?.reason ?? failure.error?.message ?? "error" });
+      }
+    } finally {
+      gateway.shutdown();
+    }
+  }
+  // A token from an Xcode (sandbox) build is "BadDeviceToken" in production: try the sandbox once.
+  const sandbox = devices.filter((d) => d.apnsEnv === "production" && results.get(d.id)?.reason === "BadDeviceToken");
+  if (sandbox.length) {
+    const gateway = provider(false);
+    try {
+      const sent = [];
+      for (const who of new Set(sandbox.map((d) => d.role)))
+        sent.push(...(await gateway.send(notes[who], sandbox.filter((d) => d.role === who).map((d) => d.apnsToken))).sent);
+      for (const { device } of sent) {
+        const row = sandbox.find((d) => d.apnsToken === device);
+        results.set(row.id, { ok: true });
+        await db.update(schema.appDevices).set({ apnsEnv: "development" }).where(eq(schema.appDevices.id, row.id));
+      }
+    } finally {
+      gateway.shutdown();
+    }
+  }
+  let sentCount = 0;
+  for (const device of devices) {
+    const result = results.get(device.id);
+    if (result?.ok) {
+      sentCount++;
+      await db.update(schema.appDevices).set({ lastSuccessAt: new Date(), lastError: null }).where(eq(schema.appDevices.id, device.id));
+    } else if (result) {
+      const dead = result.status === 410 || ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"].includes(result.reason);
+      await db
+        .update(schema.appDevices)
+        .set({ lastError: `${result.status ?? "error"}: ${String(result.reason).slice(0, 180)}`, ...(dead ? { apnsToken: null } : {}) })
+        .where(eq(schema.appDevices.id, device.id));
+    }
+  }
+  return { sent: sentCount, failed: devices.length - sentCount, targets: devices.length };
+}

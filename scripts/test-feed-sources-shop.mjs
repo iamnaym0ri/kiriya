@@ -12,6 +12,8 @@ import * as merch from "../server/feeds/sources/merch.js";
 import * as fx from "../server/feeds/sources/fx.js";
 import * as news from "../server/feeds/sources/cosplaynews.js";
 import * as fashion from "../server/feeds/sources/fashion.js";
+// These tests cover the whole feed machinery, including the sections retired on 2026-11-24.
+process.env.FEED_RETIRED_SECTIONS ??= "";
 
 const NOW = Date.parse("2026-09-15T15:00:00Z"); // 23:00 in Singapore
 const DAY = "2026-09-15";

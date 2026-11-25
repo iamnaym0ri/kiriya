@@ -1,0 +1,42 @@
+{
+  "appId": "love.kiriya.app",
+  "appName": "kiriya.love",
+  "webDir": "dist-app",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#efe5f6",
+    "scheme": "kiriya"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 500,
+      "launchAutoHide": true,
+      "backgroundColor": "#e3d2f0",
+      "showSpinner": false
+    },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "banner", "list"]
+    },
+    "CapacitorUpdater": {
+      "autoUpdate": false,
+      "statsUrl": "",
+      "updateUrl": "",
+      "channelUrl": "",
+      "appReadyTimeout": 10000,
+      "autoDeleteFailed": true,
+      "autoDeletePrevious": true,
+      "resetWhenUpdate": true,
+      "keepUrlPathAfterReload": true,
+      "directUpdate": false,
+      "shakeMenu": false
+    },
+    "Badge": {
+      "persist": false,
+      "autoClear": false
+    },
+    "Keyboard": {
+      "resize": "native",
+      "style": "DEFAULT"
+    }
+  }
+}

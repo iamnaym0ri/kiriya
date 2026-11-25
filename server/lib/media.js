@@ -1,19 +1,20 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { getDb, schema } from "../db/client.js";
 import { readPersonState, resolvePrefs } from "./personState.js";
-export function isUploadUrl(url) {
+import { UPLOAD_FOLDERS } from "../../shared/uploadFolders.js";
+const FOLDERS = UPLOAD_FOLDERS.join("|");
+const LOCAL_FILE = new RegExp(`^\\/api\\/uploads\\/file\\/(${FOLDERS})-[a-f0-9]{16}\\.(png|jpg|webp|gif|mp3|m4a|aac|wav|webm)$`);
+const BLOB_PATH = new RegExp(`^(${FOLDERS})\\/[a-zA-Z0-9._-]+$`);
+/** A private upload URL this site issued, optionally limited to some folders. */
+export function isUploadUrl(url, folders = UPLOAD_FOLDERS) {
   if (typeof url !== "string") return false;
-  if (
-    /^\/api\/uploads\/file\/(art|avatar|cosplay|songs|photos)-[a-f0-9]{16}\.(png|jpg|webp|mp3|m4a|aac|wav)$/.test(
-      url,
-    )
-  )
-    return true;
-  if (url.startsWith("/api/uploads/media?path=")) {
+  let folder = null;
+  if (LOCAL_FILE.test(url)) folder = url.slice("/api/uploads/file/".length).split("-")[0];
+  else if (url.startsWith("/api/uploads/media?path=")) {
     const p = new URL(url, "http://local").searchParams.get("path");
-    return /^(art|avatar|cosplay|songs|photos)\/[a-zA-Z0-9._-]+$/.test(p ?? "");
+    if (BLOB_PATH.test(p ?? "")) folder = p.split("/")[0];
   }
-  return false;
+  return Boolean(folder && folders.includes(folder));
 }
 export async function isPublicMedia(url) {
   const db = await getDb();

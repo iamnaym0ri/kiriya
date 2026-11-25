@@ -5,6 +5,8 @@ import { test } from "node:test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+// These tests cover the whole feed machinery, including the sections retired on 2026-11-24.
+process.env.FEED_RETIRED_SECTIONS ??= "";
 
 globalThis.fetch = () => {
   throw new Error("global fetch is not allowed in adapter tests");

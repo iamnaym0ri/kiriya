@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { cosplayCollection, filterCosplays, selectCosplayPicks } from "../src/lib/feedPresentation.js";
+// These tests cover the whole feed machinery, including the sections retired on 2026-11-24.
+process.env.FEED_RETIRED_SECTIONS ??= "";
 
 const entry = (id, characters, kind = "cosplay", fandoms = []) => ({ key: id, type: "three", primary: { id, kind, tags: { characters, fandoms }, media: [{ type: "image", url: `/${id}.jpg` }] } });
 const mao = entry("mao", ["maomao"]), mao2 = entry("mao2", ["maomao"]), miku = entry("miku", ["hatsune miku"]);

@@ -1,4 +1,5 @@
 import { api } from "./api.js";
+import { isNativeApp } from "./native.js";
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 let registrationPromise = null;
@@ -10,6 +11,8 @@ export function isIos() {
 }
 
 export function isStandalone() {
+  // The kiriya.love iPhone app is already "on the Home Screen": no install nudges inside it.
+  if (isNativeApp()) return true;
   return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 }
 

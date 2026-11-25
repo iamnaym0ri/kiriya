@@ -1,6 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { Hono } from "hono";
 import { z } from "zod";
-import { getDb } from "../db/client.js";
+import { and, asc, eq, gte, ne } from "drizzle-orm";
+import { getDb, schema } from "../db/client.js";
+import { TAPS, tapByKey } from "../../shared/taps.js";
+import { unreadTotals } from "../lib/appBadge.js";
+import { background } from "../lib/background.js";
+import { chatSummary, names, sendMessage } from "../lib/chat.js";
 import { env } from "../env.js";
 import { ADDRESS_OPTIONS, ENERGY_LEVELS, FEELINGS, MOODS } from "../content/moods.js";
 import { readCheckin, saveCheckin } from "../lib/checkin.js";
@@ -138,3 +144,72 @@ widgetRoutes.put("/status", async (c) => {
     : `pronouns: ${now.address.label} ✓`;
   return c.json({ message, ...(await snapshot(db, person)) });
 });
+
+// ---------- the iPhone app's widgets, notification buttons and Siri (phase 4b) ----------
+// The app stores one of these device keys in its App Group when it's set up (lib/appDevices.js), so
+// its Home Screen widgets can refresh, and "♡ back" / Reply on a notification can send, without Face ID.
+
+const deep = (path) => `kiriyalove://open${path}`;
+const KIND_PREVIEW = { image: "📷 a photo", gif: "a GIF", sticker: "a sticker", voice: "🎙️ a voice note", deleted: "unsent a message" };
+const dayNumber = (day) => Date.parse(`${day}T00:00:00Z`) / 86_400_000;
+
+function chatPreview(last, who, person) {
+  if (!last) return null;
+  const tap = last.kind === "tap" ? tapByKey[last.body] : null;
+  const preview = last.kind === "text" ? notificationPreview(last.body, 120) : tap ? `${tap.emoji} ${tap.label}` : KIND_PREVIEW[last.kind] ?? "a message";
+  return { from: who[last.sender], mine: last.sender === person, preview, at: last.createdAt };
+}
+
+export async function appSnapshot(db, person) {
+  const day = localDay();
+  const [who, unread, chat, notes, [event]] = await Promise.all([
+    names(db),
+    unreadTotals(db, person),
+    chatSummary(db, person),
+    inbox(db, person, { limit: 1 }),
+    db
+      .select()
+      .from(schema.events)
+      .where(and(eq(schema.events.status, "upcoming"), eq(schema.events.tier, "sg"), ne(schema.events.confidence, "unconfirmed"), gte(schema.events.startsOn, day)))
+      .orderBy(asc(schema.events.startsOn))
+      .limit(1),
+  ]);
+  const latest = notes.notes[0];
+  const other = person === "kiriya" ? "admin" : "kiriya";
+  return {
+    role: person,
+    me: who[person],
+    other: who[other],
+    unread,
+    latestNote: latest ? { title: latest.title, preview: notificationPreview(latest.body, 180), at: latest.at, opened: Boolean(latest.openedAt) } : null,
+    jar: { fresh: unread.jar },
+    chat: { last: chatPreview(chat.last, who, person) },
+    nextEvent: event ? { title: event.name, startsOn: event.startsOn, daysAway: Math.round(dayNumber(event.startsOn) - dayNumber(day)), venue: event.venue ?? null } : null,
+    taps: TAPS.map(({ key, emoji, label }) => ({ key, emoji, label })),
+    links: { world: deep("/world"), chat: deep("/world/chat"), notes: deep("/world/notes"), jar: deep("/world#note-jar"), events: deep("/world#events") },
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+widgetRoutes.get("/app", async (c) => c.json(await appSnapshot(await getDb(), c.get("person"))));
+
+const clientId = z.string().regex(/^[\w-]{8,80}$/);
+const tapBody = z.object({ kind: z.enum(TAPS.map((tap) => tap.key)), clientId: clientId.optional() }).strict();
+const replyBody = z.object({ text: z.string().trim().min(1).max(2000), replyTo: z.string().uuid().nullable().optional(), clientId: clientId.optional() }).strict();
+
+async function sendFromPhone(c, schemaFor, toMessage) {
+  const parsed = schemaFor.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_request", message: "That couldn’t be sent." }, 400);
+  try {
+    const message = await sendMessage(await getDb(), c.get("person"), { clientId: parsed.data.clientId ?? `w-${randomUUID()}`, ...toMessage(parsed.data) }, { after: background });
+    return c.json({ ok: true, id: message.id });
+  } catch (error) {
+    return c.json({ error: error.status === 429 ? "slow_down" : "bad_request", message: error.status ? error.message : "That couldn’t be sent." }, error.status ?? 400);
+  }
+}
+
+/** A widget button, "♡ back" on a notification, or Siri: one of the little taps. */
+widgetRoutes.post("/tap", (c) => sendFromPhone(c, tapBody, (data) => ({ kind: "tap", body: data.kind })));
+
+/** Reply typed straight into a chat notification. */
+widgetRoutes.post("/reply", (c) => sendFromPhone(c, replyBody, (data) => ({ kind: "text", body: data.text, replyTo: data.replyTo ?? null })));

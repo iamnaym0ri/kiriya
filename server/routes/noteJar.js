@@ -16,6 +16,7 @@ noteJarRoutes.post("/pull", async c => {
     return c.json(await pullNote(await getDb(), parsed.data.requestId, { preview: c.get("session").role === "admin" }));
   } catch (error) {
     if (error.status === 409) return c.json({ error: "jar_busy", message: "The jar got a little tangled. Try again." }, 409);
+    if (error.code === "jar_empty") return c.json({ error: "jar_empty", message: "The jar is waiting for its first notes." }, 404);
     throw error;
   }
 });

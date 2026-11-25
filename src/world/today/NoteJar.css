@@ -24,3 +24,12 @@
 @media(max-width:850px){.note-jar{padding:34px 30px 19px}.note-jar__layout{gap:25px}.note-jar__paper{padding:29px 22px 17px}.note-jar__paper-footer{flex-wrap:wrap}.note-jar__heading h2{font-size:39px}}
 @media(max-width:650px){.note-jar{padding:29px 22px 15px;margin-bottom:45px;border-radius:22px 7px 22px 7px}.note-jar:after{right:20px;top:21px;font-size:25px}.note-jar__heading h2{font-size:36px;max-width:300px;margin:12px auto}.note-jar__heading h2 em{display:block}.note-jar__heading>p{font-size:12px;max-width:265px;margin:auto}.note-jar__layout{grid-template-columns:minmax(0,1fr);gap:18px;margin-top:25px}.note-jar__day{font-size:18px}.note-jar__art{max-width:275px}.note-jar__paper{min-height:295px;padding:28px 21px 19px}.note-jar__message{font-size:28px}.note-jar__footer{justify-content:center;gap:0 18px}.note-jar__footer .text-link{font-size:11px}.note-jar__underpaper{font-size:18px;gap:7px}.note-jar-history__pages{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){.note-jar *,.note-jar:after{animation:none!important;transition:none!important}}
+/* New notes from Josh (2026-11-24): a red heart on the lid and a little wiggle until she draws them. */
+.jar-fresh__heart{transform-box:fill-box;transform-origin:center;animation:jar-fresh-beat 1.6s ease-in-out infinite}
+.jar-fresh__count{font:700 15px var(--font-ui,system-ui);fill:#fff}
+.jar-fresh__spark{font:15px Georgia;fill:#e0476f;opacity:.75;animation:jar-charm-float 2.4s ease-in-out infinite;animation-delay:calc(var(--spark,0)*-1.1s)}
+.note-jar[data-fresh] .jar-vessel,.note-jar[data-fresh] .jar-lid{animation:jar-fresh-wiggle 4.5s ease-in-out infinite}
+.note-jar__day[data-fresh]{border-color:#e0476f;background:#ffe5ef;color:#a8244d}
+.note-jar__day[data-fresh]>span{color:#e0476f}
+@keyframes jar-fresh-beat{0%,100%{scale:1}12%{scale:1.16}24%{scale:.98}36%{scale:1.1}50%{scale:1}}
+@keyframes jar-fresh-wiggle{0%,70%,100%{rotate:0deg}75%{rotate:-2.5deg}80%{rotate:2.5deg}85%{rotate:-1.5deg}90%{rotate:1deg}}

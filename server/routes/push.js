@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, schema } from "../db/client.js";
-import { pushConfigured, sendToSubscribers } from "../push/webpush.js";
+import { pushConfigured, sendToSubscribers, webPushConfigured } from "../push/webpush.js";
 import { DEFAULT_NOTIFICATION_SETTINGS, planDay } from "../push/planner.js";
 import { getOrCreateDay } from "../engine/day.js";
 import { localDay } from "../lib/time.js";
@@ -22,7 +22,8 @@ pushRoutes.get("/status", async (c) => {
     .where(eq(schema.settings.key, "notifications"));
   const subs = await db.select().from(schema.pushSubscriptions);
   return c.json({
-    configured: pushConfigured(),
+    // Browser push only: the iPhone app registers through /api/app instead.
+    configured: webPushConfigured(),
     settings: {
       ...DEFAULT_NOTIFICATION_SETTINGS,
       ...(settingsRow?.value ?? {}),

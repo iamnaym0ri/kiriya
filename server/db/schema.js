@@ -281,3 +281,121 @@ export const kv = pgTable("kv", {
   value: jsonb("value").notNull(),
   updatedAt: updatedAt(),
 });
+
+// The note jar's notes, written one at a time in admin (2026-11-24: the bundled library was erased
+// so the jar holds only Josh's own notes). A note joins the jar at `releaseAt` (the next 08:00 in
+// Singapore), so new notes arrive together in the morning; `announcedAt` records the push that told
+// her, and `firstPulledAt` the moment she first drew it, which is what retires its red heart.
+// Pulls keep their own immutable snapshot in `kv`, so editing or deleting a note never changes
+// her history.
+export const jarNotes = pgTable(
+  "jar_notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    text: text("text").notNull(),
+    // Check-in feeling keys this note is for (server/content/moods.js). Empty means any day.
+    feelings: jsonb("feelings").notNull().default([]),
+    releaseAt: timestamp("release_at", { withTimezone: true }).notNull(),
+    announcedAt: timestamp("announced_at", { withTimezone: true }),
+    firstPulledAt: timestamp("first_pulled_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("jar_notes_release_at").on(t.releaseAt)],
+);
+
+// One row per install of the kiriya.love iPhone app (2026-11-24). After the passphrase opens the
+// app once, the app keeps a random device secret in the iPhone Keychain behind Face ID; only its
+// hash is stored here. The secret signs the app back in, until the device is revoked or the role's
+// passphrase changes (`keyVersion`). `apnsToken` is where native notifications go.
+export const appDevices = pgTable(
+  "app_devices",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    role: text("role").notNull(), // kiriya | admin
+    label: text("label").notNull().default("iPhone"),
+    secretHash: text("secret_hash").notNull(),
+    keyVersion: text("key_version").notNull(),
+    apnsToken: text("apns_token"),
+    apnsEnv: text("apns_env").notNull().default("production"), // production | development
+    // The widget/notification key (device_keys) made for this install: its Home Screen widgets, the
+    // "♡ back" and reply buttons on notifications and Siri use it, since they can't do Face ID.
+    widgetKeyId: uuid("widget_key_id"),
+    lastError: text("last_error"),
+    lastSuccessAt: timestamp("last_success_at", { withTimezone: true }),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("app_devices_role").on(t.role), uniqueIndex("app_devices_apns_token").on(t.apnsToken)],
+);
+
+// ---------- Chat (2026-11-24, docs/refactor/PLAN.md phase 4) ----------
+// One private conversation between Kiriya ("kiriya") and Josh ("admin"). `clientId` makes sends
+// idempotent, so a retry after a dropped connection never posts twice.
+export const chatMessages = pgTable(
+  "chat_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    clientId: text("client_id").notNull(),
+    sender: text("sender").notNull(), // kiriya | admin
+    kind: text("kind").notNull().default("text"), // text | image | gif | sticker | voice | tap
+    body: text("body").notNull().default(""),
+    media: jsonb("media"), // { url, width, height, duration, peaks, mime, alt }
+    replyTo: uuid("reply_to"),
+    createdAt: createdAt(),
+    editedAt: timestamp("edited_at", { withTimezone: true }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (t) => [uniqueIndex("chat_messages_client_id").on(t.clientId), index("chat_messages_created_at").on(t.createdAt)],
+);
+
+// One reaction per person per message (tap another emoji to change it).
+export const chatReactions = pgTable(
+  "chat_reactions",
+  {
+    messageId: uuid("message_id").notNull(),
+    role: text("role").notNull(),
+    emoji: text("emoji").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.messageId, t.role] })],
+);
+
+// How far each person has read: drives "seen ♡" and the unread badge.
+export const chatReads = pgTable("chat_reads", {
+  role: text("role").primaryKey(),
+  readAt: timestamp("read_at", { withTimezone: true }).notNull(),
+});
+
+// Each person's own look for the chat: bubble theme, background, typing indicator.
+export const chatPrefs = pgTable("chat_prefs", {
+  role: text("role").primaryKey(),
+  prefs: jsonb("prefs").notNull().default({}),
+  updatedAt: updatedAt(),
+});
+
+// Stickers either of them uploads (the built-in packs ship with the site).
+export const chatStickers = pgTable("chat_stickers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  url: text("url").notNull(),
+  label: text("label").notNull().default(""),
+  createdBy: text("created_by").notNull(),
+  createdAt: createdAt(),
+});
+
+// "Our memories": anything saved from the chat, notes, letters or the jar, as a frozen snapshot
+// (so deleting or editing the original never changes the scrapbook).
+export const memories = pgTable(
+  "memories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    savedBy: text("saved_by").notNull(),
+    kind: text("kind").notNull(), // message | note | letter | jar
+    sourceId: text("source_id").notNull(),
+    snapshot: jsonb("snapshot").notNull(),
+    caption: text("caption").notNull().default(""),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("memories_source").on(t.kind, t.sourceId), index("memories_created_at").on(t.createdAt)],
+);

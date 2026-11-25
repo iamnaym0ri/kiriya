@@ -9,6 +9,7 @@ import {
   feedConfig,
   INDEPENDENT_STAGES,
   SECTIONS,
+  activeSections,
   STAGES,
 } from "./config.js";
 import {
@@ -286,7 +287,7 @@ export async function checkQueue(db, build, config = feedConfig()) {
   const inQuota = (i, section) =>
     i.sections.includes(section) &&
     (section !== "meme" || (!i.sections.includes("maomao") && !i.sections.includes("music")));
-  const lists = SECTIONS.map((section) =>
+  const lists = activeSections().map((section) =>
     pending
       .filter((i) => paidCheck(i, trusted) && inQuota(i, section))
       .map((i) => ({ id: i.id, score: scoreItem(i, build.taste, { day: build.day, section }).score }))
@@ -438,10 +439,12 @@ async function planContext(ctx, section) {
 async function planWrite(ctx) {
   let index = ctx.run.checkpoint.sectionIndex ?? 0;
   let processed = 0;
-  while (index < SECTIONS.length) {
+  // Retired sections (config.js) are not planned; their last edition simply stays as it was.
+  const sections = activeSections();
+  while (index < sections.length) {
     if (processed >= ctx.workLimit || Date.now() + 60000 > ctx.deadline)
       return false;
-    const section = SECTIONS[index],
+    const section = sections[index],
       items = await eligibleItems(ctx.db, {
         fixture: ctx.build.mode === "fixture",
         // The merch shelf is a catalogue: items already seen stay listed.

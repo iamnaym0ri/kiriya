@@ -2,16 +2,22 @@ import webpush from "web-push";
 import { eq } from "drizzle-orm";
 import { schema } from "../db/client.js";
 import { env } from "../env.js";
+import { apnsConfigured, sendNative } from "./apns.js";
 
 let configured = false;
 
-export function pushConfigured() {
+export function webPushConfigured() {
   return Boolean(env.vapidPublicKey && env.vapidPrivateKey);
+}
+
+/** Either kind of notification can reach her: web push (browsers, home-screen web app) or the iPhone app. */
+export function pushConfigured() {
+  return webPushConfigured() || apnsConfigured();
 }
 
 function configure() {
   if (configured) return;
-  if (!pushConfigured()) throw new Error("VAPID keys are not configured");
+  if (!webPushConfigured()) throw new Error("VAPID keys are not configured");
   // Apple rejects localhost-style subjects, so use the real site (or a real mailto: in VAPID_SUBJECT).
   webpush.setVapidDetails(env.vapidSubject || env.siteUrl, env.vapidPublicKey, env.vapidPrivateKey);
   configured = true;
@@ -29,8 +35,24 @@ export function buildPayload({ title, body, navigate = "/world", badge = 1 }) {
   });
 }
 
-/** Sends to every stored subscription (optionally one role). Removes subscriptions the browser dropped. */
+/**
+ * Sends to every stored subscription (optionally one role), and to every install of the iPhone app
+ * for that role. Removes subscriptions the browser dropped and tokens Apple says are gone.
+ */
 export async function sendToSubscribers(db, message, { role = null, ttlSeconds = 6 * 60 * 60 } = {}) {
+  const [web, native] = await Promise.all([
+    webPushConfigured() ? sendWebPush(db, message, { role, ttlSeconds }) : { sent: 0, failed: 0, targets: 0 },
+    sendNative(db, message, { role, ttlSeconds }).catch((error) => ({ sent: 0, failed: 0, targets: 0, error: String(error.message).slice(0, 200) })),
+  ]);
+  return {
+    sent: web.sent + native.sent,
+    failed: web.failed + native.failed,
+    targets: web.targets + native.targets,
+    ...(native.targets || native.error ? { app: { sent: native.sent, targets: native.targets, ...(native.error ? { error: native.error } : {}) } } : {}),
+  };
+}
+
+async function sendWebPush(db, message, { role = null, ttlSeconds = 6 * 60 * 60 } = {}) {
   configure();
   const subs = await db.select().from(schema.pushSubscriptions);
   const targets = role ? subs.filter((s) => s.role === role) : subs;

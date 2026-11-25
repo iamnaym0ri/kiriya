@@ -86,7 +86,8 @@ export async function deliverLoveNote(db, id, { now = new Date(), quiet = false 
     try {
       pushResult = await sendToSubscribers(
         db,
-        { title: note.title, body: notificationPreview(note.body), navigate: noteLink(note), badge: await unreadCount(db, note.recipient, now) },
+        // Letters (a note linking to /world/letters) and little notes get their own special look in the app.
+        { title: note.title, body: notificationPreview(note.body), navigate: noteLink(note), badge: await unreadCount(db, note.recipient, now), kind: note.link?.startsWith("/world/letters") ? "letter" : "note" },
         { role: note.recipient, ttlSeconds: 12 * 60 * 60 },
       );
     } catch (error) {

@@ -170,7 +170,7 @@ export default function SavesPage() {
           <span className="micro-label">NOTHING KEPT YET</span>
           <p>tap keep on anything in ur feeds and it lands here, credit and all.</p>
           <div className="note-slip__source">
-            <Link to="/world#maomao">back to the club →</Link>
+            <Link to="/world#events">back to events & merch →</Link>
           </div>
         </aside>
       )}
