@@ -86,14 +86,18 @@ export async function forgetThisPhone() {
 
 // ---------- notifications ----------
 
-const pushPlugin = async () => (await import("@capacitor/push-notifications")).PushNotifications;
+// A Capacitor plugin object answers *every* property as a native method, `then` included, so it must
+// never be the result of an async function or an `await`: the promise machinery would call
+// `plugin.then()` and fail with "….then() is not implemented on ios". These return the module, and
+// each caller takes the plugin off it.
+const pushModule = () => import("@capacitor/push-notifications");
 let listening = false;
 
 /** Taps on a notification open the page it was about. Registered once, as early as possible. */
 export async function listenForNotifications(open) {
   if (!isNativeApp() || listening) return;
   listening = true;
-  const PushNotifications = await pushPlugin();
+  const { PushNotifications } = await pushModule();
   await PushNotifications.addListener("registration", ({ value }) => {
     const id = enrolledDevice();
     if (id && value) api(`/app/devices/${id}/push`, { method: "PUT", body: { token: value } }).catch(() => {});
@@ -101,7 +105,8 @@ export async function listenForNotifications(open) {
   await PushNotifications.addListener("pushNotificationActionPerformed", ({ actionId, notification }) => {
     // "♡ back" and Reply are sent by the app's Swift code in the background (AppDelegate), so the
     // app never has to open for them; only a tap on the notification or "Open" lands here.
-    if (actionId === "HEART" || actionId === "REPLY") return;
+    // "Open ✉" and "Pull one" happen inside the notification itself (ios/App/KiriyaNotificationContent).
+    if (["HEART", "REPLY", "OPEN_HERE", "PULL"].includes(actionId)) return;
     const to = notification?.data?.navigate;
     if (typeof to === "string" && to.startsWith("/")) open(to);
   });
@@ -109,7 +114,7 @@ export async function listenForNotifications(open) {
 
 /** "on" | "off" | "denied" for this install. */
 export async function nativePushState() {
-  const PushNotifications = await pushPlugin();
+  const { PushNotifications } = await pushModule();
   const { receive } = await PushNotifications.checkPermissions();
   if (receive === "denied") return "denied";
   if (receive !== "granted" || read(PUSH_OFF) || !enrolledDevice()) return "off";
@@ -120,7 +125,7 @@ export async function nativePushState() {
 export async function registerForPush({ ask = true } = {}) {
   if (!enrolledDevice()) return "off";
   if (!ask && read(PUSH_OFF)) return "off";
-  const PushNotifications = await pushPlugin();
+  const { PushNotifications } = await pushModule();
   let { receive } = await PushNotifications.checkPermissions();
   if (receive.startsWith("prompt") && ask) ({ receive } = await PushNotifications.requestPermissions());
   if (receive !== "granted") return receive === "denied" ? "denied" : "off";
@@ -133,7 +138,7 @@ export async function turnOffNativePush() {
   write(PUSH_OFF, "1");
   const id = enrolledDevice();
   if (id) await api(`/app/devices/${id}/push`, { method: "DELETE" }).catch(() => {});
-  const PushNotifications = await pushPlugin();
+  const { PushNotifications } = await pushModule();
   await PushNotifications.unregister().catch(() => {});
   return "off";
 }
@@ -160,12 +165,12 @@ const has = (plugin) => isNativeApp() && Capacitor.isPluginAvailable(plugin);
 // ---------- widgets, notification buttons, Siri (the App Group the Swift side reads) ----------
 
 export const APP_GROUP = "group.love.kiriya.app";
-const bridge = async () => (await import("capacitor-widget-bridge")).WidgetBridgePlugin;
+const bridgeModule = () => import("capacitor-widget-bridge"); // see the note above pushModule
 
 /** The widget key goes where the widgets and the notification extension can read it. */
 export async function saveWidgetKey(key, role = null) {
   if (!has("WidgetBridgePlugin")) return;
-  const widgets = await bridge();
+  const { WidgetBridgePlugin: widgets } = await bridgeModule();
   const group = APP_GROUP;
   if (key) {
     await widgets.setItem({ group, key: "widgetKey", value: key });
@@ -181,7 +186,7 @@ export async function saveWidgetKey(key, role = null) {
 export async function ensureWidgetKey(role) {
   const id = enrolledDevice();
   if (!id || !has("WidgetBridgePlugin")) return;
-  const widgets = await bridge();
+  const { WidgetBridgePlugin: widgets } = await bridgeModule();
   const { results } = await widgets.getItem({ group: APP_GROUP, key: "widgetKey" }).catch(() => ({ results: null }));
   if (results) return;
   const { widgetKey } = await api(`/app/devices/${id}/widget-key`, { method: "POST", body: {} });
@@ -193,7 +198,8 @@ let lastWidgetReload = 0;
 export async function refreshWidgets({ force = false } = {}) {
   if (!has("WidgetBridgePlugin") || (!force && Date.now() - lastWidgetReload < 20_000)) return;
   lastWidgetReload = Date.now();
-  await (await bridge()).reloadAllTimelines().catch(() => {});
+  const { WidgetBridgePlugin: widgets } = await bridgeModule();
+  await widgets.reloadAllTimelines().catch(() => {});
 }
 
 // ---------- the icon: badge, quick actions, alternate icons ----------

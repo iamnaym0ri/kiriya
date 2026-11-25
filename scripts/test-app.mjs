@@ -144,12 +144,13 @@ try {
     assert.match(delegate, /capacitorDidFailToRegisterForRemoteNotifications/);
     const project = await file("ios/App/App.xcodeproj/project.pbxproj");
     assert.equal(project.match(/CODE_SIGN_ENTITLEMENTS = App\/App\.entitlements;/g)?.length, 2);
-    // The app plus its two extensions (widgets, notification pictures), Debug and Release each.
-    assert.equal(project.match(/DEVELOPMENT_TEAM = 9W8CN9V8NR;/g)?.length, 6);
-    for (const id of ["love.kiriya.app.widgets", "love.kiriya.app.notifications"])
+    // The app plus its three extensions (widgets, notification pictures, the in-place note card), Debug and Release each.
+    assert.equal(project.match(/DEVELOPMENT_TEAM = 9W8CN9V8NR;/g)?.length, 8);
+    for (const id of ["love.kiriya.app.widgets", "love.kiriya.app.notifications", "love.kiriya.app.notecard"])
       assert.equal(project.match(new RegExp(`PRODUCT_BUNDLE_IDENTIFIER = ${id.replaceAll(".", "\\.")};`, "g"))?.length, 2, id);
     assert.match(project, /KiriyaWidgets\.appex in Embed Foundation Extensions/);
     assert.match(project, /KiriyaNotificationService\.appex in Embed Foundation Extensions/);
+    assert.match(project, /KiriyaNotificationContent\.appex in Embed Foundation Extensions/);
     const { default: sharp } = await import("sharp");
     const icon = await sharp(new URL("../ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png", import.meta.url).pathname).metadata();
     assert.deepEqual([icon.width, icon.height, icon.hasAlpha], [1024, 1024, false], "Apple rejects icons with transparency");

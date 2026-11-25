@@ -14,13 +14,15 @@ const CHECK_EVERY_MS = 10 * 60 * 1000;
 let lastCheck = 0;
 let running = null;
 
-const updater = async () => (await import("@capgo/capacitor-updater")).CapacitorUpdater;
+// Never return or await the plugin object itself (see src/lib/native.js, the note above pushModule).
+const updaterModule = () => import("@capgo/capacitor-updater");
 const available = () => isBundledApp && Capacitor.isNativePlatform() && Capacitor.isPluginAvailable("CapacitorUpdater");
 
 /** Call once, as early as possible on every launch: this version started fine. */
 export async function markAppReady() {
   if (!available()) return;
-  await (await updater()).notifyAppReady().catch(() => {});
+  const { CapacitorUpdater } = await updaterModule();
+  await CapacitorUpdater.notifyAppReady().catch(() => {});
 }
 
 export function checkForUpdate({ force = false } = {}) {
@@ -42,7 +44,7 @@ async function update() {
   const { App } = await import("@capacitor/app");
   const { build } = await App.getInfo();
   if (Number(build) < Number(latest.minBuild ?? 0)) return null;
-  const CapacitorUpdater = await updater();
+  const { CapacitorUpdater } = await updaterModule();
   const { bundles } = await CapacitorUpdater.list();
   let bundle = bundles.find((item) => item.version === latest.version && item.status !== "error");
   if (!bundle) bundle = await CapacitorUpdater.download({ url, version: latest.version, manifest: latest.manifest });

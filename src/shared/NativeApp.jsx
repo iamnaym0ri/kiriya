@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { api, appToken, isBundledApp } from "../lib/api.js";
 import { checkForUpdate, markAppReady } from "../lib/appUpdates.js";
@@ -36,6 +36,7 @@ const WATCHED = new Set(["chat", "notes", "note-jar", "letters"]);
  */
 export default function NativeApp() {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const session = useSession();
   const role = session.data?.role ?? null;
@@ -149,8 +150,12 @@ export default function NativeApp() {
   }, [open, queryClient]);
 
   // Follow the notification, widget or shortcut once the app is open.
+  // On a cold start the app begins on the front page, which sends a signed-in visitor to /world in
+  // the same moment Face ID opens the app; wait for that, or it would win over the notification's page.
+  // (Admin previewing the public page stays there, so that case goes ahead.)
+  const onFrontPage = location.pathname === "/" && new URLSearchParams(location.search).get("view") !== "public";
   useEffect(() => {
-    if (!open || !pending) return;
+    if (!open || !pending || onFrontPage) return;
     const next = pending;
     setPending(null);
     if (next.to) {
@@ -169,7 +174,7 @@ export default function NativeApp() {
         .catch(() => haptic("warning"));
       navigate("/world/chat");
     }
-  }, [open, pending, navigate, queryClient]);
+  }, [open, pending, onFrontPage, navigate, queryClient]);
 
   async function usePassphrase() {
     passphraseChosen.current = true;

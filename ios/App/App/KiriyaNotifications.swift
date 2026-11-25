@@ -15,11 +15,22 @@ enum KiriyaNotificationCategories {
     static let heart = "HEART"
     static let reply = "REPLY"
     static let open = "OPEN"
+    // Handled inside the notification by the content extension (ios/App/KiriyaNotificationContent).
+    static let openHere = "OPEN_HERE"
+    static let pull = "PULL"
+    static let openApp = "OPEN_APP"
 
     /// At launch, before any notification can be answered.
     static func register() {
-        let heart = UNNotificationAction(identifier: Self.heart, title: "♡ back", options: [],
+        let heart = UNNotificationAction(identifier: Self.heart, title: "send one back", options: [],
                                          icon: UNNotificationActionIcon(systemImageName: "heart.fill"))
+        // A little note opens right inside its notification, and the jar gives one up there too.
+        let openHere = UNNotificationAction(identifier: Self.openHere, title: "Open ✉", options: [],
+                                            icon: UNNotificationActionIcon(systemImageName: "envelope.open"))
+        let pull = UNNotificationAction(identifier: Self.pull, title: "Pull one", options: [],
+                                        icon: UNNotificationActionIcon(systemImageName: "sparkles"))
+        let openApp = UNNotificationAction(identifier: Self.openApp, title: "Open in app", options: [.foreground],
+                                           icon: UNNotificationActionIcon(systemImageName: "arrow.up.forward.app"))
         let open = UNNotificationAction(identifier: Self.open, title: "Open", options: [.foreground],
                                         icon: UNNotificationActionIcon(systemImageName: "envelope.open"))
         // A reply sends as her, so it asks for Face ID / the passcode first when the phone is locked.
@@ -36,10 +47,10 @@ enum KiriyaNotificationCategories {
             category("CHAT", [reply, heart], hidden: "a new message ♡"),
             category("TAP", [heart], hidden: "a little tap ♡"),
             category("LETTER", [open, heart], hidden: "a letter for you ✉︎"),
-            category("NOTE", [open, heart], hidden: "a little note for you ✉︎"),
-            category("JAR", [open], hidden: "new notes in your jar ♡"),
+            category("NOTE", [openHere, heart, openApp], hidden: "a little note for you ✉︎"),
+            category("JAR", [pull, openApp], hidden: "new notes in your jar ♡"),
             category("EVENT", [open], hidden: "news about an event"),
-            category("REMINDER", [open], hidden: "a little reminder ♡"),
+            category("REMINDER", [pull, openApp], hidden: "a little reminder ♡"),
         ])
     }
 }
@@ -121,6 +132,10 @@ final class KiriyaNotificationDelegate: NSObject, UNUserNotificationCenterDelega
                 // Like Messages: answering clears the conversation's other banners.
                 await Self.clearDelivered(thread: "chat")
             }
+
+        case KiriyaNotificationCategories.openHere, KiriyaNotificationCategories.pull:
+            // Only meaningful inside the notification (the content extension handles them there).
+            completionHandler()
 
         default:
             onMain {

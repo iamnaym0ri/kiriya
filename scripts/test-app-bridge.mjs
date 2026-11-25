@@ -250,3 +250,35 @@ await test("The app only takes newer over-the-air versions", async () => {
   assert.equal(isNewerVersion("1.20261125.231608", "dev"), true);
   assert.equal(isNewerVersion("garbage", "1.20261125.231608"), false);
 });
+
+await test("Little notes carry their whole text for the notification; jar pulls work from it", async () => {
+  const { apnsNotification, notePayload } = await import("../server/push/apns.js");
+  const full = apnsNotification({ title: "a little note", body: "short", kind: "note", note: { id: "n1", title: "a little note", text: "the whole note ♡", from: "Josh" } });
+  assert.deepEqual(full.payload.note, { id: "n1", title: "a little note", text: "the whole note ♡", from: "Josh" });
+  assert.equal(apnsNotification({ title: "a letter", body: "…", kind: "letter", note: { text: "x" } }).payload.note, undefined, "letters still open the app");
+  const long = notePayload({ id: "n2", title: "long", text: "💜 ".repeat(4000), from: "Josh" });
+  assert.equal(long.truncated, true);
+  assert.ok(Buffer.byteLength(JSON.stringify(long)) <= 3000);
+  assert.ok(Buffer.byteLength(JSON.stringify(apnsNotification({ title: "t", body: "b", kind: "note", note: long }).toJSON?.() ?? long)) < 4096);
+
+  // Opening in place counts as opened, for her own notes only.
+  const { createLoveNote, deliverLoveNote, inbox } = await import("../server/lib/loveNotes.js");
+  const created = await createLoveNote(db, { recipient: "kiriya", title: "in place", body: "open me right here", sendAt: new Date(Date.now() - 1000) });
+  await deliverLoveNote(db, created.id);
+  const hers = await json(await request("app/devices", { method: "POST", token: her, body: { label: "her iPhone" } }), 201);
+  const his = await json(await request("app/devices", { method: "POST", token: josh, body: { label: "his iPhone" } }), 201);
+  assert.equal((await request(`widget/notes/${created.id}/open`, { method: "POST", token: his.widgetKey, body: {} })).status, 404, "not his note");
+  assert.equal((await json(await request(`widget/notes/${created.id}/open`, { method: "POST", token: hers.widgetKey, body: {} }))).ok, true);
+  assert.ok((await inbox(db, "kiriya")).notes.find((n) => n.id === created.id).openedAt);
+
+  // The jar: her pull is real (new notes first); his is a preview that changes nothing.
+  const { addJarNote } = await import("../server/lib/noteJar.js");
+  await addJarNote(db, { text: "a jar note for the notification" }, { now: new Date(Date.now() - 86400_000) });
+  const preview = await json(await request("widget/jar/pull", { method: "POST", token: his.widgetKey, body: { requestId: randomUUID() } }));
+  assert.equal(preview.preview, true);
+  assert.ok(preview.note.text);
+  const real = await json(await request("widget/jar/pull", { method: "POST", token: hers.widgetKey, body: { requestId: randomUUID() } }));
+  assert.equal(real.preview, false);
+  assert.ok(real.note.text && real.note.byline);
+  assert.equal((await request("widget/jar/pull", { method: "POST", token: hers.widgetKey, body: { requestId: "nope" } })).status, 400);
+});

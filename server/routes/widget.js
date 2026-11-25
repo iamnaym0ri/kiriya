@@ -11,7 +11,8 @@ import { env } from "../env.js";
 import { ADDRESS_OPTIONS, ENERGY_LEVELS, FEELINGS, MOODS } from "../content/moods.js";
 import { readCheckin, saveCheckin } from "../lib/checkin.js";
 import { personForKey } from "../lib/deviceKeys.js";
-import { inbox, notificationPreview } from "../lib/loveNotes.js";
+import { inbox, notificationPreview, openLoveNote } from "../lib/loveNotes.js";
+import { pullNote } from "../lib/noteJar.js";
 import { localDay } from "../lib/time.js";
 
 // For the phone widget and Shortcuts, which can't use the site's cookie. A revocable device key
@@ -213,3 +214,30 @@ widgetRoutes.post("/tap", (c) => sendFromPhone(c, tapBody, (data) => ({ kind: "t
 
 /** Reply typed straight into a chat notification. */
 widgetRoutes.post("/reply", (c) => sendFromPhone(c, replyBody, (data) => ({ kind: "text", body: data.text, replyTo: data.replyTo ?? null })));
+
+// ---------- Inside a notification (ios/App/KiriyaNotificationContent) ----------
+
+/** A little note opened right inside its notification: it counts as opened, as in the app. */
+widgetRoutes.post("/notes/:id/open", async (c) => {
+  const id = c.req.param("id");
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return c.json({ error: "not_found", message: "That note couldn’t be found." }, 404);
+  const note = await openLoveNote(await getDb(), c.get("person"), id);
+  return note ? c.json({ ok: true }) : c.json({ error: "not_found", message: "That note couldn’t be found." }, 404);
+});
+
+/**
+ * "Pull one" on the jar's morning notification: the same draw as the jar in the app (new notes
+ * first). On Josh's phone it's a preview, so testing never uses up her notes.
+ */
+widgetRoutes.post("/jar/pull", async (c) => {
+  const parsed = z.object({ requestId: z.string().uuid() }).strict().safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_pull", message: "Try pulling that note again." }, 400);
+  try {
+    const pull = await pullNote(await getDb(), parsed.data.requestId, { preview: c.get("person") === "admin" });
+    return c.json({ note: { text: pull.note.text, byline: pull.note.byline, label: pull.note.label }, fresh: Boolean(pull.fresh), preview: Boolean(pull.preview) });
+  } catch (error) {
+    if (error.status === 409) return c.json({ error: "jar_busy", message: "The jar got a little tangled. Try again." }, 409);
+    if (error.code === "jar_empty") return c.json({ error: "jar_empty", message: "The jar is waiting for its first notes." }, 404);
+    throw error;
+  }
+});

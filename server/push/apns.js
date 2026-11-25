@@ -32,7 +32,20 @@ const KINDS = {
 };
 
 /** The same message the web push carries, as an APNs alert. `navigate` rides along for the tap. */
-export function apnsNotification({ title, body, navigate = "/world", kind = null, threadId = null, messageId = null }, { ttlSeconds = 6 * 60 * 60, now = Date.now(), badge = null } = {}) {
+// APNs refuses payloads over 4 KB; the whole note rides along only up to this much (UTF-8 bytes).
+const NOTE_BYTES = 3000;
+
+/** A little note's full text for the app's notification content extension, trimmed to fit a push. */
+export function notePayload(note) {
+  if (!note?.text) return null;
+  const out = { id: note.id ?? null, title: String(note.title ?? "").slice(0, 120), text: String(note.text), from: note.from ?? null };
+  if (Buffer.byteLength(JSON.stringify(out)) <= NOTE_BYTES) return out;
+  let text = out.text;
+  while (text && Buffer.byteLength(JSON.stringify({ ...out, text })) > NOTE_BYTES - 20) text = text.slice(0, Math.floor(text.length * 0.9));
+  return { ...out, text: `${text.trimEnd()}…`, truncated: true };
+}
+
+export function apnsNotification({ title, body, navigate = "/world", kind = null, threadId = null, messageId = null, note: fullNote = null }, { ttlSeconds = 6 * 60 * 60, now = Date.now(), badge = null } = {}) {
   const style = KINDS[kind] ?? {};
   const note = new apn.Notification();
   note.topic = env.apnsBundleId;
@@ -48,7 +61,9 @@ export function apnsNotification({ title, body, navigate = "/world", kind = null
   // the app's notification service extension, which needs permission to edit the notification.
   if (style.special) note.mutableContent = 1;
   // messageId lets the "Reply" button on a chat notification quote the message it answers.
-  note.payload = { navigate, ...(kind ? { kind } : {}), ...(messageId ? { messageId } : {}) };
+  // A little note opens right inside the notification (ios/App/KiriyaNotificationContent), so it carries the whole note.
+  const inPlace = kind === "note" ? notePayload(fullNote) : null;
+  note.payload = { navigate, ...(kind ? { kind } : {}), ...(messageId ? { messageId } : {}), ...(inPlace ? { note: inPlace } : {}) };
   return note;
 }
 

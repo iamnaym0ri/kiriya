@@ -98,7 +98,18 @@ function sample(kind, names) {
     case "letter":
       return { title: "a new letter for you ✉", body: "“a test letter” is waiting in your letters ♡", navigate: "/world/letters", kind: "letter" };
     case "note":
-      return { title: "a little note for you ✉︎", body: `test: ${him} is thinking of you ♡`, navigate: "/world/notes", kind: "note" };
+      return {
+        title: "a little note for you ✉︎",
+        body: `test: ${him} is thinking of you ♡`,
+        navigate: "/world/notes",
+        kind: "note",
+        note: {
+          id: null,
+          title: "a little note for you",
+          text: "this is a test note, so only your phone sees it.\n\nwhen it's real, the whole note opens right here, without the app: a quick bit of love in the middle of her day ♡",
+          from: him,
+        },
+      };
     case "jar":
       return { title: "2 new little notes in your jar ♡", body: `${him} slipped some new notes in for you. Pull them whenever you like.`, navigate: "/world#note-jar", kind: "jar" };
     case "reminder":

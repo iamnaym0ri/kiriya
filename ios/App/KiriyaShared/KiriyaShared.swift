@@ -150,13 +150,35 @@ enum KiriyaAPI {
         return urlRequest
     }
 
-    private static func post(_ path: String, _ body: [String: Any]) async throws {
+    @discardableResult
+    private static func post(_ path: String, _ body: [String: Any]) async throws -> Data {
         var urlRequest = try makeRequest(path, method: "POST")
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.httpBody = try JSONSerialization.data(withJSONObject: body)
-        let (_, response) = try await URLSession.shared.data(for: urlRequest)
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard (200..<300).contains(status) else { throw KiriyaAPIError.badResponse(status) }
+        return data
+    }
+
+    /// POST /api/widget/notes/:id/open: a little note read inside its notification counts as opened.
+    static func openNote(_ id: String) async throws {
+        guard UUID(uuidString: id) != nil else { return }
+        try await post("api/widget/notes/\(id)/open", [:])
+    }
+
+    /// A note pulled from the jar (POST /api/widget/jar/pull).
+    struct PulledNote: Decodable {
+        struct Note: Decodable { var text: String; var byline: String?; var label: String? }
+        var note: Note
+        var fresh: Bool?
+        var preview: Bool?
+    }
+
+    /// "Pull one" on the jar's notification: the same draw as the jar in the app (a preview on Josh's phone).
+    static func pullJar(requestId: String = UUID().uuidString) async throws -> PulledNote {
+        let data = try await post("api/widget/jar/pull", ["requestId": requestId])
+        return try JSONDecoder().decode(PulledNote.self, from: data)
     }
 
     /// POST /api/widget/tap { kind, clientId? }

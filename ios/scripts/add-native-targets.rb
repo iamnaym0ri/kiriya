@@ -10,7 +10,8 @@
 #   KiriyaShared    group; both files compile into App and KiriyaWidgets
 #   KiriyaWidgets   widget extension (love.kiriya.app.widgets)
 #   KiriyaNotificationService   notification service extension (love.kiriya.app.notifications)
-#   App target      embeds both .appex files and depends on them
+#   KiriyaNotificationContent   notification content extension (love.kiriya.app.notecard)
+#   App target      embeds the .appex files and depends on them
 require "xcodeproj"
 
 TEAM = "9W8CN9V8NR"
@@ -94,13 +95,25 @@ add_source(service, file_in(service_group, "KiriyaNotificationService.swift"))
 file_in(service_group, "KiriyaNotificationService-Info.plist")
 file_in(service_group, "KiriyaNotificationService.entitlements")
 
-# --- Embed both extensions in the app ---------------------------------------------------------
+# The note card: little notes open, and the jar gives one up, right inside the notification.
+content = extension_target(project, "KiriyaNotificationContent", "love.kiriya.app.notecard")
+content_group = main_group.children.find { |g| g.display_name == "KiriyaNotificationContent" } ||
+                main_group.new_group("KiriyaNotificationContent", "KiriyaNotificationContent")
+%w[NotificationViewController.swift NoteCardView.swift].each { |name| add_source(content, file_in(content_group, name)) }
+add_resource(content, file_in(content_group, "PrivacyInfo.xcprivacy"))
+file_in(content_group, "KiriyaNotificationContent-Info.plist")
+file_in(content_group, "KiriyaNotificationContent.entitlements")
+add_source(content, shared_refs.find { |ref| ref.path == "KiriyaShared.swift" })
+# The same envelope and jar pictures the service extension attaches.
+%w[envelope.png jar.png].each { |name| add_resource(content, file_in(service_group, name)) }
+
+# --- Embed the extensions in the app ----------------------------------------------------------
 embed = app.copy_files_build_phases.find { |p| p.name == "Embed Foundation Extensions" } ||
         app.new_copy_files_build_phase("Embed Foundation Extensions").tap do |phase|
           phase.symbol_dst_subfolder_spec = :plug_ins
           phase.dst_path = ""
         end
-[widgets, service].each do |ext|
+[widgets, service, content].each do |ext|
   app.add_dependency(ext) unless app.dependencies.any? { |d| d.target == ext }
   next if embed.files_references.include?(ext.product_reference)
   build_file = embed.add_file_reference(ext.product_reference, true)
