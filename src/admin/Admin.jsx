@@ -668,7 +668,10 @@ function Letters() {
   // Sends only the notification to the admin's phone; no letter is saved, so she sees nothing.
   const tryNotification = useMutation({
     mutationFn: () =>
-      api("/admin/letters/test-announcement", { method: "POST", body: { title: draft.title } }),
+      api("/admin/letters/test-announcement", {
+        method: "POST",
+        body: { title: draft.title, body: draft.body, openWhen: draft.openWhen || null, kind: draft.kind },
+      }),
   });
 
   return (

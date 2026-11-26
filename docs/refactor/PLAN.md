@@ -231,6 +231,25 @@ New:
 - **The jar "got stuck" on Josh's phone because the live jar was empty** (0 notes).
   - An admin preview pull of an empty jar now returns a marked sample note (`pullNote`, label "a sample note", `sample: true`, nothing saved). The site's jar shows the same sample to the admin.
   - Her real pulls still answer `jar_empty`, and the card says "the jar is waiting for new notes ❤️" instead of "stuck".
+- **Letters open inside their notification too (2026-11-26, Josh's request; uncommitted).**
+  - Before this, "Open letter" opened the app.
+  - **Josh wants a letter card of its own,** "more special … more formal but cute formal" than the note. A dedicated agent designed it: `KiriyaNotificationContent/FormalLetter/` (`FormalLetterCard`), lab in `ios/CardLab/FormalLetter/` (see its `PROGRESS.md`).
+    - Sealed: a blush envelope (Maomao's is night plum) with a double gold edge, claret wax pressed with a script K, a lavender sprig, the address in script. A locked letter gets a gold date seal and "opens on …".
+    - Opening (3.2 s): the seal breaks, the flap swings over, the letter rises out folded in thirds and unfolds. Reduce Motion: a 0.35 s crossfade.
+    - Open: ivory deckled paper with a gilt edge, a K crest, title, date, "my dearest Kiriya," (unless the letter greets her itself), Cormorant body, "yours, always —" and the signature in Allura. Long letters scroll inside the paper.
+    - Fonts: Cormorant and Allura (OFL), bundled as `FormalLetter-*`. `add-native-targets.rb` now adds `FormalLetter/` too.
+    - Wired into `NoteCardView.letterCard`; built and installed on Josh's phone. Not yet seen in a real notification (needs the server deploy for the letter payload).
+  - **Server (`server/lib/letterCard.js`):**
+    - A letter's announcement links to `/world/letters?open=<id>`.
+    - The push carries the letter (`apns.js letterPayload`). It's trimmed to 3000 bytes, and a locked letter carries no words.
+    - `GET /api/widget/letters/:id` gives the whole letter; the card fetches it while sealed.
+    - `POST /api/widget/letters/:id/open` marks it opened, for Kiriya only.
+  - **Admin:** "Try this notification on my phone first" sends the draft along, so Josh sees the letter itself. It no longer saves a love note addressed to the admin.
+  - **Letters page:** `?open=<id>` opens that letter.
+  - **App:**
+    - LETTER now has "Open letter 💌" (in place), "Send one back ❤️" and "Open in app".
+    - The content extension takes the LETTER category.
+    - `NoteCardModel` has `.letter`.
 
 Still to check on the phone: Siri, widgets on the Home Screen, quick actions, swipe-back, the alternate icons, the badge, and the over-the-air update cycle with a real deploy. Then TestFlight.
 

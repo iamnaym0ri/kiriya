@@ -128,8 +128,8 @@ The previous session's memory lives on the other machine and is not available on
 
 > **Status, 2026-11-25 (iMac session).** Steps 1–2 are done, step 3 builds, and step 4 is in progress. See PLAN.md "Phone testing on Josh's iPhone 11" for what works and what was fixed.
 >
-> **Notification cards.** Little notes and the jar open inside their notification (KiriyaNotificationContent).
-> - The polished SwiftUI cards live in `Letter/` and `Jar/`. Re-render them with the labs in `ios/CardLab/` (see each `PROGRESS.md`).
+> **Notification cards.** Little notes, letters and the jar open inside their notification (KiriyaNotificationContent).
+> - The polished SwiftUI cards live in `Letter/` (notes), `FormalLetter/` (letters) and `Jar/`. Re-render them with the labs in `ios/CardLab/` (see each `PROGRESS.md`).
 > - Josh signed off the letter. The jar was re-tested after the empty-jar sample fix.
 >
 > **iMac practicalities**

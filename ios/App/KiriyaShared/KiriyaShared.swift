@@ -167,6 +167,34 @@ enum KiriyaAPI {
         try await post("api/widget/notes/\(id)/open", [:])
     }
 
+    /// A letter as its notification card shows it (server/lib/letterCard.js letterForCard).
+    struct FullLetter: Decodable {
+        var id: String
+        var title: String
+        var text: String?
+        var from: String?
+        var kind: String?
+        var openWhen: String?
+        var date: String?
+        var lockedUntil: String?
+    }
+    private struct LetterAnswer: Decodable { var letter: FullLetter }
+
+    /// GET /api/widget/letters/:id: the whole letter, when its push only carried the start of it.
+    static func letter(_ id: String) async throws -> FullLetter {
+        guard UUID(uuidString: id) != nil else { throw KiriyaAPIError.badResponse(404) }
+        let (data, response) = try await URLSession.shared.data(for: try makeRequest("api/widget/letters/\(id)", method: "GET"))
+        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+        guard (200..<300).contains(status) else { throw KiriyaAPIError.badResponse(status) }
+        return try JSONDecoder().decode(LetterAnswer.self, from: data).letter
+    }
+
+    /// POST /api/widget/letters/:id/open: a letter read inside its notification counts as opened.
+    static func openLetter(_ id: String) async throws {
+        guard UUID(uuidString: id) != nil else { return }
+        try await post("api/widget/letters/\(id)/open", [:])
+    }
+
     /// A note pulled from the jar (POST /api/widget/jar/pull).
     struct PulledNote: Decodable {
         struct Note: Decodable { var text: String; var byline: String?; var label: String? }

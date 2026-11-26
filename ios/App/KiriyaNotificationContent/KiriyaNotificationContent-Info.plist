@@ -28,6 +28,7 @@
 			<key>UNNotificationExtensionCategory</key>
 			<array>
 				<string>NOTE</string>
+				<string>LETTER</string>
 				<string>JAR</string>
 				<string>REMINDER</string>
 			</array>

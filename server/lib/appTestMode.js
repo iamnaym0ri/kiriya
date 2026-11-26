@@ -96,7 +96,28 @@ function sample(kind, names) {
     case "tap":
       return { title: (tapByKey.thinking?.push ?? "{from} is thinking of you ♡").replace("{from}", her), body: "tap to send one back ♡", navigate: "/world/chat", kind: "tap", threadId: "chat" };
     case "letter":
-      return { title: "a new letter for you ✉", body: "“a test letter” is waiting in your letters ♡", navigate: "/world/letters", kind: "letter" };
+      return {
+        title: "a new letter for you ✉",
+        body: "“a test letter” is waiting in your letters ♡",
+        navigate: "/world/letters",
+        kind: "letter",
+        // What "Open letter" shows in place; id null, so nothing is fetched or marked opened.
+        letter: {
+          id: null,
+          title: "a test letter",
+          text: [
+            `my dearest ${her},`,
+            "this is only a test letter, so these words are just for practice. but if it were a real one, it would say that every ordinary day gets a little brighter because you're in it.",
+            "it would say thank you: for your patience, for laughing at my terrible jokes, and for making home feel like a person.",
+            "and it would end the way they all do. i love you, more than this little envelope can hold ❤️",
+          ].join("\n\n"),
+          from: him,
+          kind: "note",
+          openWhen: null,
+          date: new Date().toISOString(),
+          lockedUntil: null,
+        },
+      };
     case "note":
       return {
         title: "a little note for you ✉︎",

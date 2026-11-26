@@ -18,6 +18,7 @@ import { publicProfileDefaults } from "../content/publicProfile.js";
 import { reactionBody, sendOrSchedule } from "./loveNotes.js";
 import { ARTWORK_NOTE_MAX, addArtworkNote, artworkLink, artworksWithNotes, deleteArtworkNote, reactToArtwork } from "../lib/artworkNotes.js";
 import { notificationPreview } from "../lib/loveNotes.js";
+import { letterLink, signatureName } from "../lib/letterCard.js";
 import { SAMPLE_KINDS, TEST_MODE_HOURS, setTestMode, testLog, testMode, tryNotification } from "../lib/appTestMode.js";
 import { names as chatNames } from "../lib/chat.js";
 
@@ -200,19 +201,45 @@ adminRoutes.post("/pushes/custom", async (c) => {
 
 // ---------- letters ----------
 
-// What her phone shows for a new letter. The test route sends the same thing to the admin's phone.
-const letterAnnouncement = (title) => ({
+// What her phone shows for a new letter; it opens that letter (right inside the notification on
+// her iPhone, or on the Letters page). The test route sends the same thing to the admin's phone.
+const letterAnnouncement = (title, id = null) => ({
   kind: "update",
   title: "a new letter for you ✉",
   body: `“${title}” is waiting in your letters ♡`,
-  link: "/world/letters",
+  link: letterLink(id),
 });
 
 // Try a letter's notification on the admin's own phone without saving a letter she would see.
+// The draft rides along, so "Open letter" on the phone shows it as she'll see it.
 adminRoutes.post("/letters/test-announcement", async (c) => {
-  const parsed = z.object({ title: z.string().trim().min(1).max(120) }).safeParse(await c.req.json().catch(() => null));
+  const parsed = z
+    .object({
+      title: z.string().trim().min(1).max(120),
+      body: z.string().trim().max(20_000).optional(),
+      openWhen: z.string().trim().max(120).nullable().optional(),
+      kind: z.enum(["birthday", "open_when", "note"]).optional(),
+    })
+    .safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: "bad_letter", message: "Give the letter a title first." }, 400);
-  return c.json(await sendOrSchedule(await getDb(), { ...letterAnnouncement(parsed.data.title), recipient: "admin", sendAt: new Date() }));
+  const db = await getDb();
+  const { title, body, openWhen, kind } = parsed.data;
+  const announcement = letterAnnouncement(title);
+  const now = new Date();
+  const letter = {
+    id: null,
+    title,
+    text: body || "this is where your letter goes. write it in admin, then try this again to see it here first ❤️",
+    from: await signatureName(db),
+    kind: kind ?? "note",
+    openWhen: openWhen || null,
+    date: now.toISOString(),
+    lockedUntil: null,
+  };
+  const pushResult = pushConfigured()
+    ? await sendToSubscribers(db, { title: announcement.title, body: announcement.body, navigate: announcement.link, kind: "letter", letter }, { role: "admin" })
+    : { skipped: "notifications aren't configured" };
+  return c.json({ note: { status: "sent", sendAt: now, sentAt: now, pushResult } });
 });
 
 const letterBody = z.object({
@@ -257,7 +284,7 @@ adminRoutes.post("/letters", async (c) => {
     .returning();
   const announcement = notify
     ? await sendOrSchedule(db, {
-        ...letterAnnouncement(row.title),
+        ...letterAnnouncement(row.title, row.id),
         recipient: "kiriya",
         sendAt: row.unlockAt && row.unlockAt.getTime() > Date.now() ? row.unlockAt : new Date(),
       })

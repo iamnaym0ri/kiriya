@@ -35,17 +35,39 @@ const KINDS = {
 // APNs refuses payloads over 4 KB; the whole note rides along only up to this much (UTF-8 bytes).
 const NOTE_BYTES = 3000;
 
-/** A little note's full text for the app's notification content extension, trimmed to fit a push. */
-export function notePayload(note) {
-  if (!note?.text) return null;
-  const out = { id: note.id ?? null, title: String(note.title ?? "").slice(0, 120), text: String(note.text), from: note.from ?? null };
-  if (Buffer.byteLength(JSON.stringify(out)) <= NOTE_BYTES) return out;
-  let text = out.text;
-  while (text && Buffer.byteLength(JSON.stringify({ ...out, text })) > NOTE_BYTES - 20) text = text.slice(0, Math.floor(text.length * 0.9));
+/** Trims `out.text` until the whole object fits in `bytes` (UTF-8 JSON), marking it truncated. */
+function fitText(out, bytes = NOTE_BYTES) {
+  if (Buffer.byteLength(JSON.stringify(out)) <= bytes) return out;
+  let text = out.text ?? "";
+  while (text && Buffer.byteLength(JSON.stringify({ ...out, text })) > bytes - 20) text = text.slice(0, Math.floor(text.length * 0.9));
   return { ...out, text: `${text.trimEnd()}…`, truncated: true };
 }
 
-export function apnsNotification({ title, body, navigate = "/world", kind = null, threadId = null, messageId = null, note: fullNote = null }, { ttlSeconds = 6 * 60 * 60, now = Date.now(), badge = null } = {}) {
+/** A little note's full text for the app's notification content extension, trimmed to fit a push. */
+export function notePayload(note) {
+  if (!note?.text) return null;
+  return fitText({ id: note.id ?? null, title: String(note.title ?? "").slice(0, 120), text: String(note.text), from: note.from ?? null });
+}
+
+/**
+ * A letter for the same extension (server/lib/letterCard.js). A long one is trimmed here and the
+ * card fetches the rest when it opens; a letter that isn't ready yet carries no words at all.
+ */
+export function letterPayload(letter) {
+  if (!letter?.title) return null;
+  const out = {
+    id: letter.id ?? null,
+    title: String(letter.title).slice(0, 120),
+    from: letter.from ?? null,
+    kind: letter.kind ?? null,
+    openWhen: letter.openWhen ?? null,
+    date: letter.date ?? null,
+    lockedUntil: letter.lockedUntil ?? null,
+  };
+  return letter.lockedUntil || !letter.text ? out : fitText({ ...out, text: String(letter.text) });
+}
+
+export function apnsNotification({ title, body, navigate = "/world", kind = null, threadId = null, messageId = null, note: fullNote = null, letter = null }, { ttlSeconds = 6 * 60 * 60, now = Date.now(), badge = null } = {}) {
   const style = KINDS[kind] ?? {};
   const note = new apn.Notification();
   note.topic = env.apnsBundleId;
@@ -61,9 +83,17 @@ export function apnsNotification({ title, body, navigate = "/world", kind = null
   // the app's notification service extension, which needs permission to edit the notification.
   if (style.special) note.mutableContent = 1;
   // messageId lets the "Reply" button on a chat notification quote the message it answers.
-  // A little note opens right inside the notification (ios/App/KiriyaNotificationContent), so it carries the whole note.
+  // Little notes and letters open right inside the notification (ios/App/KiriyaNotificationContent),
+  // so they carry their words.
   const inPlace = kind === "note" ? notePayload(fullNote) : null;
-  note.payload = { navigate, ...(kind ? { kind } : {}), ...(messageId ? { messageId } : {}), ...(inPlace ? { note: inPlace } : {}) };
+  const letterInPlace = kind === "letter" ? letterPayload(letter) : null;
+  note.payload = {
+    navigate,
+    ...(kind ? { kind } : {}),
+    ...(messageId ? { messageId } : {}),
+    ...(inPlace ? { note: inPlace } : {}),
+    ...(letterInPlace ? { letter: letterInPlace } : {}),
+  };
   return note;
 }
 

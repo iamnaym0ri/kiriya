@@ -13,6 +13,7 @@ import { readCheckin, saveCheckin } from "../lib/checkin.js";
 import { personForKey } from "../lib/deviceKeys.js";
 import { inbox, notificationPreview, openLoveNote } from "../lib/loveNotes.js";
 import { pullNote } from "../lib/noteJar.js";
+import { letterForCard, openLetterInPlace } from "../lib/letterCard.js";
 import { localDay } from "../lib/time.js";
 
 // For the phone widget and Shortcuts, which can't use the site's cookie. A revocable device key
@@ -223,6 +224,24 @@ widgetRoutes.post("/notes/:id/open", async (c) => {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return c.json({ error: "not_found", message: "That note couldn’t be found." }, 404);
   const note = await openLoveNote(await getDb(), c.get("person"), id);
   return note ? c.json({ ok: true }) : c.json({ error: "not_found", message: "That note couldn’t be found." }, 404);
+});
+
+/**
+ * A letter opened right inside its notification. GET fetches the whole letter (the push only
+ * carries what fits); POST /open counts it as opened, as the Letters page does. Not before it's ready.
+ */
+widgetRoutes.get("/letters/:id", async (c) => {
+  const letter = await letterForCard(await getDb(), c.req.param("id"));
+  if (!letter) return c.json({ error: "not_found", message: "That letter couldn’t be found." }, 404);
+  if (letter.lockedUntil) return c.json({ error: "not_yet", message: "This one isn't ready to open yet.", letter }, 403);
+  return c.json({ letter });
+});
+
+widgetRoutes.post("/letters/:id/open", async (c) => {
+  const { status, letter } = await openLetterInPlace(await getDb(), c.get("person"), c.req.param("id"));
+  if (status === 404) return c.json({ error: "not_found", message: "That letter couldn’t be found." }, 404);
+  if (status === 403) return c.json({ error: "not_yet", message: "This one isn't ready to open yet." }, 403);
+  return c.json({ ok: true, letter });
 });
 
 /**

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router";
 import SaveMemory from "../chat/SaveMemory.jsx";
 import { AnimatePresence, motion } from "motion/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -105,6 +106,19 @@ export default function LettersPage() {
     );
   const session = useSession();
   const [reading, setReading] = useState(null);
+  const [params, setParams] = useSearchParams();
+
+  // A letter's notification lands here with ?open=<id> and opens that letter (once it's ready).
+  useEffect(() => {
+    const id = params.get("open");
+    if (!id || !letters.data) return;
+    const letter = letters.data.letters.find((item) => item.id === id && !item.locked);
+    if (letter) {
+      if (!letter.openedAt) markOpen.mutate(letter.id);
+      setReading(letter);
+    }
+    setParams({}, { replace: true });
+  }, [params, letters.data]);
 
   if (letters.isPending) return <PageLoader />;
   if (letters.isError)

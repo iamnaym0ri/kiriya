@@ -119,14 +119,15 @@ content.resources_build_phase.files.select { |f| %w[envelope.png jar.png].includ
   content.resources_build_phase.remove_build_file(build_file)
 end
 
-# The cards themselves, each in its own folder: Letter/ (the little note's envelope) and Jar/ (the
-# note jar). Every .swift file compiles into the extension; the fonts (the site's Gaegu and
-# Parisienne, OFL) and their licences go in as resources at the bundle root.
+# The cards themselves, each in its own folder: Letter/ (the little note's envelope), Jar/ (the
+# note jar) and FormalLetter/ (a letter's wax-sealed envelope). Every .swift file compiles into the
+# extension; the fonts (the site's Gaegu, Parisienne, Allura and Cormorant, OFL) and their licences go
+# in as resources at the bundle root.
 def subgroup(parent, name)
   parent.children.find { |g| g.isa == "PBXGroup" && g.display_name == name } || parent.new_group(name, name)
 end
 content_dir = File.join(IOS, "App", "KiriyaNotificationContent")
-(ENV["CARDS"]&.split(",") || %w[Letter Jar]).each do |card|
+(ENV["CARDS"]&.split(",") || %w[Letter Jar FormalLetter]).each do |card|
   dir = File.join(content_dir, card)
   next unless File.directory?(dir)
   group = subgroup(content_group, card)

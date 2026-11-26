@@ -2,15 +2,32 @@ import SwiftUI
 import UserNotifications
 import WidgetKit
 
-// What the content extension draws: a sealed envelope that opens into the note (Letter/), or the
-// jar a note comes out of (Jar/). Both cards draw the site's lilac look themselves; this file holds
-// what they share: the notification's state, its buttons, and the card's height for the host.
+// What the content extension draws: a sealed envelope that opens into the note (Letter/), the
+// wax-sealed letter (FormalLetter/), or the jar a note comes out of (Jar/). Each card draws its own
+// look; this file holds what they share: the notification's state, its buttons, and the card's
+// height for the host.
 
 @MainActor
 final class NoteCardModel: ObservableObject {
-    enum Kind { case note, jar }
+    enum Kind { case note, letter, jar }
     enum Stage: Equatable { case sealed, open, pulling, pulled, failed(String) }
     enum Heart { case idle, sending, sent, failed }
+
+    /// A letter, as its push carries it (server/push/apns.js letterPayload). A long one arrives
+    /// trimmed (`truncated`) and is fetched whole as soon as the card shows.
+    struct LetterDetails: Equatable {
+        var id: String?
+        var title: String
+        var text: String
+        var from: String
+        var kind: String?
+        var openWhen: String?
+        var date: Date?
+        var lockedUntil: Date?
+        var truncated: Bool
+
+        var isLocked: Bool { (lockedUntil ?? .distantPast) > Date() }
+    }
 
     @Published var kind: Kind = .note
     @Published var stage: Stage = .sealed
@@ -21,6 +38,7 @@ final class NoteCardModel: ObservableObject {
     @Published var label: String?
     @Published var truncated = false
     @Published var preview = false
+    @Published var letter: LetterDetails?
     @Published var heart: Heart = .idle
 
     var openInApp: () -> Void = {}
@@ -32,10 +50,15 @@ final class NoteCardModel: ObservableObject {
     func load(_ notification: UNNotification) {
         let content = notification.request.content
         let info = content.userInfo
-        let kindName = info["kind"] as? String
-        kind = (kindName == "jar" || kindName == "reminder") ? .jar : .note
+        switch info["kind"] as? String {
+        case "jar", "reminder": kind = .jar
+        case "letter": kind = .letter
+        default: kind = .note
+        }
         heading = content.title
-        if let note = info["note"] as? [String: Any] {
+        if kind == .letter {
+            letter = Self.letter(from: info["letter"] as? [String: Any], body: content.body)
+        } else if let note = info["note"] as? [String: Any] {
             noteId = note["id"] as? String
             noteTitle = (note["title"] as? String).flatMap { $0.isEmpty ? nil : $0 }
             text = (note["text"] as? String) ?? content.body
@@ -48,21 +71,62 @@ final class NoteCardModel: ObservableObject {
         }
         stage = .sealed
         // iOS keeps a notification's changed buttons, so a card shown again starts from the full set.
-        setActions(kind == .note
-            ? [NotificationButtons.openNote, NotificationButtons.heart, NotificationButtons.openApp]
-            : [NotificationButtons.pull(again: false), NotificationButtons.openApp])
+        switch kind {
+        case .note: setActions([NotificationButtons.openNote, NotificationButtons.heart, NotificationButtons.openApp])
+        case .letter:
+            setActions(letter?.isLocked == true
+                ? [NotificationButtons.heart, NotificationButtons.openApp]
+                : [NotificationButtons.openLetter, NotificationButtons.heart, NotificationButtons.openApp])
+            fetchWholeLetter()
+        case .jar: setActions([NotificationButtons.pull(again: false), NotificationButtons.openApp])
+        }
     }
 
     func openEnvelope() {
-        guard kind == .note, stage == .sealed else { return }
+        guard kind != .jar, stage == .sealed else { return }
+        if kind == .letter, letter?.isLocked == true { return }
         withAnimation(.spring(response: 0.55, dampingFraction: 0.78)) { stage = .open }
         setActions([NotificationButtons.heart, NotificationButtons.openApp])
-        if let noteId {
-            Task {
-                try? await KiriyaAPI.openNote(noteId)
-                WidgetCenter.shared.reloadAllTimelines()
-            }
+        let id = kind == .letter ? letter?.id : noteId
+        guard let id else { return }
+        Task {
+            if kind == .letter { try? await KiriyaAPI.openLetter(id) } else { try? await KiriyaAPI.openNote(id) }
+            WidgetCenter.shared.reloadAllTimelines()
         }
+    }
+
+    /// A long letter's push carries only its start; the rest comes while she looks at the envelope.
+    private func fetchWholeLetter() {
+        guard let current = letter, current.truncated, !current.isLocked, let id = current.id, KiriyaAPI.isSetUp else { return }
+        Task {
+            guard let full = try? await KiriyaAPI.letter(id), let text = full.text, letter?.id == id else { return }
+            letter?.text = text
+            letter?.truncated = false
+        }
+    }
+
+    private static func letter(from payload: [String: Any]?, body: String) -> LetterDetails {
+        guard let payload, let title = payload["title"] as? String else {
+            // A push without the letter (an older server): the announcement is all there is.
+            return LetterDetails(id: nil, title: "a letter for you", text: body, from: "", truncated: true)
+        }
+        let nonEmpty: (Any?) -> String? = { ($0 as? String).flatMap { $0.isEmpty ? nil : $0 } }
+        return LetterDetails(id: nonEmpty(payload["id"]),
+                             title: title,
+                             text: (payload["text"] as? String) ?? "",
+                             from: nonEmpty(payload["from"]) ?? "",
+                             kind: nonEmpty(payload["kind"]),
+                             openWhen: nonEmpty(payload["openWhen"]),
+                             date: date(payload["date"]),
+                             lockedUntil: date(payload["lockedUntil"]),
+                             truncated: (payload["truncated"] as? Bool) ?? false)
+    }
+
+    private static func date(_ value: Any?) -> Date? {
+        guard let text = value as? String else { return nil }
+        let precise = ISO8601DateFormatter()
+        precise.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return precise.date(from: text) ?? ISO8601DateFormatter().date(from: text)
     }
 
     func pull() {
@@ -120,6 +184,8 @@ final class NoteCardModel: ObservableObject {
 enum NotificationButtons {
     static let openNote = UNNotificationAction(identifier: KiriyaNotificationActions.openHere, title: "Open note 💌", options: [],
                                                icon: UNNotificationActionIcon(systemImageName: "envelope.open"))
+    static let openLetter = UNNotificationAction(identifier: KiriyaNotificationActions.openHere, title: "Open letter 💌", options: [],
+                                                 icon: UNNotificationActionIcon(systemImageName: "envelope.open"))
     static let heart = UNNotificationAction(identifier: KiriyaNotificationActions.heart, title: "Send one back ❤️", options: [],
                                             icon: UNNotificationActionIcon(systemImageName: "heart.fill"))
     static let openApp = UNNotificationAction(identifier: KiriyaNotificationActions.openApp, title: "Open in app", options: [.foreground],
@@ -138,7 +204,8 @@ struct NoteCardView: View {
     var body: some View {
         Group {
             switch model.kind {
-            case .note: letter
+            case .note: noteCard
+            case .letter: letterCard
             case .jar: jar
             }
         }
@@ -156,13 +223,37 @@ struct NoteCardView: View {
     /// background and margins; a small strip under it says how "Send one back" went.
     private static let statusHeight: CGFloat = 40
 
-    private var letter: some View {
-        VStack(spacing: 0) {
+    private var noteCard: some View {
+        withHeartStatus(
             LetterCard(content: LetterContent(heading: model.heading, title: model.noteTitle, text: model.text,
                                               byline: model.byline, truncated: model.truncated),
                        isOpen: model.stage == .open,
                        onTapSealed: { model.openEnvelope() },
-                       maxHeight: 720 - Self.statusHeight)
+                       maxHeight: 720 - Self.statusHeight))
+    }
+
+    // MARK: a letter
+
+    /// The letter's own card (FormalLetter/FormalLetterCard.swift): a wax-sealed envelope that opens
+    /// into the letter on cream paper. A long letter scrolls inside its paper; one that isn't ready
+    /// yet stays sealed with its date on it.
+    private var letterCard: some View {
+        let letter = model.letter
+        return withHeartStatus(
+            FormalLetterCard(content: FormalLetterContent(heading: model.heading, title: letter?.title ?? "",
+                                                          text: letter?.text ?? "", from: letter?.from ?? "",
+                                                          kind: letter?.kind, openWhen: letter?.openWhen, date: letter?.date,
+                                                          lockedUntil: letter?.lockedUntil, truncated: letter?.truncated ?? false),
+                             isOpen: model.stage == .open,
+                             onTapSealed: { model.openEnvelope() },
+                             scrollable: true,
+                             maxHeight: 720 - Self.statusHeight))
+    }
+
+    /// The card, with a small strip under it once "Send one back" is pressed.
+    private func withHeartStatus(_ card: some View) -> some View {
+        VStack(spacing: 0) {
+            card
             if model.heart != .idle {
                 heartStatus
                     .frame(maxWidth: .infinity)

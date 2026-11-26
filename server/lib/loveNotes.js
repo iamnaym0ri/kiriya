@@ -5,7 +5,7 @@ import { env } from "../env.js";
 import { addDays, localDay, zonedInstant, zonedParts } from "./time.js";
 import { notificationSettings } from "../push/planner.js";
 import { pushConfigured, sendToSubscribers } from "../push/webpush.js";
-import { kiriya } from "../content/kiriya.js";
+import { letterForCard, letterIdFromLink, signatureName } from "./letterCard.js";
 
 export const NOTE_KINDS = ["note", "update", "surprise"];
 export const NOTE_TITLE_MAX = 60;
@@ -20,11 +20,6 @@ export const isNoteLink = (link) => typeof link === "string" && /^\/world(?:\/[a
 export const noteLink = (note) => note.link ?? `/world/notes?open=${note.id}`;
 
 /** What fits on a lock screen: the start of the note, cut at a word. */
-/** Josh's name as he signs it (Settings → signature), the same rule as the chat's (lib/chat.js names). */
-async function signatureName(db) {
-  const [row] = await db.select({ value: schema.settings.value }).from(schema.settings).where(eq(schema.settings.key, "signature"));
-  return String(row?.value ?? kiriya.signature).replace(/\s*<3\s*$/, "").trim() || "Josh";
-}
 
 export function notificationPreview(body, max = 150) {
   const text = body.replace(/\s+/g, " ").trim();
@@ -100,8 +95,9 @@ export async function deliverLoveNote(db, id, { now = new Date(), quiet = false 
           navigate: noteLink(note),
           badge: await unreadCount(db, note.recipient, now),
           kind: note.link?.startsWith("/world/letters") ? "letter" : "note",
-          // The whole note, so the app can open it right inside the notification.
+          // The whole note (or the letter it announces), so the app can open it right inside the notification.
           note: { id: note.id, title: note.title, text: note.body, from: await signatureName(db) }, // Josh writes every little note, test ones included
+          letter: await letterForCard(db, letterIdFromLink(note.link), { now }),
         },
         { role: note.recipient, ttlSeconds: 12 * 60 * 60 },
       );

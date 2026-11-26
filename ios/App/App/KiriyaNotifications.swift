@@ -26,11 +26,12 @@ enum KiriyaNotificationCategories {
         // heart is red. The content extension uses the same buttons (KiriyaNotificationContent/NoteCardView.swift).
         let heart = UNNotificationAction(identifier: Self.heart, title: "Send one back ❤️", options: [],
                                          icon: UNNotificationActionIcon(systemImageName: "heart.fill"))
-        let openLetter = UNNotificationAction(identifier: Self.open, title: "Open letter 💌", options: [.foreground],
+        // A letter opens right inside its notification too (the content extension's letter card).
+        let openLetter = UNNotificationAction(identifier: Self.openHere, title: "Open letter 💌", options: [],
                                               icon: UNNotificationActionIcon(systemImageName: "envelope.open"))
         let open = UNNotificationAction(identifier: Self.open, title: "Open", options: [.foreground],
                                         icon: UNNotificationActionIcon(systemImageName: "arrow.up.forward.app"))
-        // A little note opens right inside its notification, and the jar gives one up there too.
+        // A little note opens right inside its notification too, and the jar gives one up there.
         let openHere = UNNotificationAction(identifier: Self.openHere, title: "Open note 💌", options: [],
                                             icon: UNNotificationActionIcon(systemImageName: "envelope.open"))
         let pull = UNNotificationAction(identifier: Self.pull, title: "Pull one ✨", options: [],
@@ -50,7 +51,7 @@ enum KiriyaNotificationCategories {
         UNUserNotificationCenter.current().setNotificationCategories([
             category("CHAT", [reply, heart], hidden: "a new message ♡"),
             category("TAP", [heart], hidden: "a little tap ♡"),
-            category("LETTER", [openLetter, heart], hidden: "a letter for you ✉︎"),
+            category("LETTER", [openLetter, heart, openApp], hidden: "a letter for you ✉︎"),
             category("NOTE", [openHere, heart, openApp], hidden: "a little note for you ✉︎"),
             category("JAR", [pull, openApp], hidden: "new notes in your jar ♡"),
             category("EVENT", [open], hidden: "news about an event"),

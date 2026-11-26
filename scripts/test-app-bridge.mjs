@@ -7,6 +7,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import * as schema from "../server/db/schema.js";
+import { eq } from "drizzle-orm";
 import { hashPassphrase } from "../server/auth/passphrase.js";
 
 for (const name of ["DATABASE_URL", "kData_DATABASE_URL", "BLOB_READ_WRITE_TOKEN", "QSTASH_TOKEN", "VAPID_PUBLIC_KEY", "VITE_VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "CRON_SECRET", "OPENAI_API_KEY", "APNS_KEY", "ABLY_API_KEY", "GIPHY_API_KEY", "APP_ORIGINS"])
@@ -287,4 +288,47 @@ await test("Little notes carry their whole text for the notification; jar pulls 
   assert.equal(real.preview, false);
   assert.ok(real.note.text && real.note.byline);
   assert.equal((await request("widget/jar/pull", { method: "POST", token: hers.widgetKey, body: { requestId: "nope" } })).status, 400);
+});
+
+await test("Letters open inside their notification: the push carries the letter, the card fetches the rest", async () => {
+  const { apnsNotification, letterPayload } = await import("../server/push/apns.js");
+  const { letterForCard, letterIdFromLink, letterLink } = await import("../server/lib/letterCard.js");
+  const [letter] = await db.insert(schema.letters).values({ kind: "note", author: "giver", title: "for a rainy day", body: "dear you,\n\n" + "rain and you. ".repeat(600) }).returning();
+  const [later] = await db.insert(schema.letters).values({ kind: "open_when", author: "giver", title: "not yet", body: "secret words", openWhen: "you miss me", unlockAt: new Date(Date.now() + 86400_000) }).returning();
+
+  assert.equal(letterIdFromLink(letterLink(letter.id)), letter.id);
+  assert.equal(letterIdFromLink("/world/letters"), null);
+  const card = await letterForCard(db, letter.id);
+  assert.equal(card.from, "Josh");
+  const payload = letterPayload(card);
+  assert.equal(payload.truncated, true, "a long letter is trimmed in the push");
+  assert.ok(Buffer.byteLength(JSON.stringify(payload)) <= 3000);
+  const push = apnsNotification({ title: "a new letter for you ✉", body: "…", kind: "letter", letter: card });
+  assert.equal(push.payload.letter.id, letter.id);
+  assert.equal(push.aps.category, "LETTER");
+  const locked = letterPayload(await letterForCard(db, later.id));
+  assert.equal(locked.text, undefined, "a letter that isn't ready never carries its words");
+  assert.ok(locked.lockedUntil);
+  assert.equal(apnsNotification({ title: "n", body: "b", kind: "note", letter: card }).payload.letter, undefined);
+
+  // The card fetches the whole letter and opens it: hers counts, Josh's preview doesn't.
+  const hers = await json(await request("app/devices", { method: "POST", token: her, body: { label: "her phone (letters)" } }), 201);
+  const his = await json(await request("app/devices", { method: "POST", token: josh, body: { label: "his phone (letters)" } }), 201);
+  const full = await json(await request(`widget/letters/${letter.id}`, { token: hers.widgetKey }));
+  assert.equal(full.letter.text, letter.body);
+  assert.equal((await request(`widget/letters/${later.id}`, { token: hers.widgetKey })).status, 403);
+  assert.equal((await request(`widget/letters/${later.id}/open`, { method: "POST", token: hers.widgetKey, body: {} })).status, 403);
+  assert.equal((await request(`widget/letters/${randomUUID()}`, { token: hers.widgetKey })).status, 404);
+  await json(await request(`widget/letters/${letter.id}/open`, { method: "POST", token: his.widgetKey, body: {} }));
+  const [unread] = await db.select().from(schema.letters).where(eq(schema.letters.id, letter.id));
+  assert.equal(unread.openedAt, null, "Josh's preview doesn't open her letter");
+  await json(await request(`widget/letters/${letter.id}/open`, { method: "POST", token: hers.widgetKey, body: {} }));
+  const [opened] = await db.select().from(schema.letters).where(eq(schema.letters.id, letter.id));
+  assert.ok(opened.openedAt);
+
+  // Admin's "try this notification" carries the draft; nothing is saved for her.
+  const before = (await db.select().from(schema.letters)).length;
+  const tried = await request("admin/letters/test-announcement", { method: "POST", token: josh, body: { title: "draft", body: "draft words", kind: "note" } });
+  assert.equal(tried.status, 200);
+  assert.equal((await db.select().from(schema.letters)).length, before);
 });
