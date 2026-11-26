@@ -55,6 +55,8 @@ struct FormalLetterCard: View {
     @State private var phase = Phase.sealed
     @State private var wiggleStart: Date?
     @State private var nudged = false
+    /// When the letter came to rest (the crest kitten's clock for its sleepy peeks).
+    @State private var restSince: Date?
 
     private enum Phase: Equatable {
         case sealed
@@ -81,12 +83,16 @@ struct FormalLetterCard: View {
         .gesture(TapGesture().onEnded { tapped() }, including: isOpen && !locked ? .subviews : .all)
         .onAppear {
             FormalLetterFonts.loadIfNeeded()
-            if isOpen && !locked { phase = .open }
+            if isOpen && !locked {
+                phase = .open
+                restSince = Date()
+            }
         }
         .onChange(of: isOpen) { _, open in
             guard open else {
                 phase = .sealed
                 clockStart = Date()
+                restSince = nil
                 return
             }
             if content.isLocked() {
@@ -110,7 +116,10 @@ struct FormalLetterCard: View {
             // Only to stop the clock once the opening is over; the motion itself is all in FormalLetterGeometry.
             DispatchQueue.main.asyncAfter(deadline: .now() + FormalLetterGeometry.duration + 0.05) {
                 if case .opening = phase {
-                    withTransaction(transaction) { phase = .open }
+                    withTransaction(transaction) {
+                        phase = .open
+                        restSince = Date()
+                    }
                 }
             }
         }
@@ -189,8 +198,10 @@ struct FormalLetterCard: View {
     }
 
     private func scene(width: CGFloat, time: Double?, idle: Double = 0, wiggle: Double? = nil, locked: Bool, interactive: Bool = false) -> some View {
+        // (With Reduce Motion the kitten keeps still: no clock.)
         FormalLetterScene(content: content, time: time, idle: idle, wiggle: wiggle, width: width, maxHeight: maxHeight,
-                          scrollable: scrollable, locked: locked, interactive: interactive, emphasis: nudged ? 1 : 0)
+                          scrollable: scrollable, locked: locked, interactive: interactive, emphasis: nudged ? 1 : 0,
+                          restSince: reduceMotion ? nil : restSince)
     }
 
     // MARK: VoiceOver

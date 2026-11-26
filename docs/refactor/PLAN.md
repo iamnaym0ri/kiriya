@@ -238,7 +238,24 @@ New:
     - Opening (3.2 s): the seal breaks, the flap swings over, the letter rises out folded in thirds and unfolds. Reduce Motion: a 0.35 s crossfade.
     - Open: ivory deckled paper with a gilt edge, a K crest, title, date, "my dearest Kiriya," (unless the letter greets her itself), Cormorant body, "yours, always —" and the signature in Allura. Long letters scroll inside the paper.
     - Fonts: Cormorant and Allura (OFL), bundled as `FormalLetter-*`. `add-native-targets.rb` now adds `FormalLetter/` too.
-    - Wired into `NoteCardView.letterCard`; built and installed on Josh's phone. Not yet seen in a real notification (needs the server deploy for the letter payload).
+    - Wired into `NoteCardView.letterCard`. Deployed with the letter payload in 8785102.
+    - **Round 2 (Josh: "more flowers", "Maomao's face" for the crest, "a little bit of whimsy"; uncommitted):**
+      - A pressed-flower spray tucked under the wax rides away with the flap; a small echo spray stays on the pocket.
+      - The crest is an original sleepy lilac kitten with a lavender sprig. We can't draw Maomao herself (a copyrighted character), so Josh chose the kitten.
+      - Whimsy: a washi-taped flower in the paper's corner, paw prints up to the signature (a rosemary sprig on Maomao's), petals slipping out as the letter unfolds, an ear flick and a heartbeat as it settles, and a slow peek from the kitten every 7.5–11 s at rest. Reduce Motion keeps it all still.
+      - Built and installed on Josh's phone; a test letter was sent.
+- **First opening stutter (Josh: a few frames skipped the first time a note or letter opened; fine after).**
+  - The opening's network call and first widget reload ran on the main thread mid-animation; they now run detached, and the URL session and WidgetKit connection are set up in the background while the card is sealed.
+  - 0.7 s after a sealed card appears, its open state is drawn once out of sight (opacity 0.001, behind the opaque card) for 0.3 s, once per kind per process, so the first real opening starts warm.
+  - Debug builds log each opening's slow frames to `notecard-frames.log` in the App Group (`FrameProbe`). Waiting on Josh's next try to confirm.
+- **Widgets redesigned by three agents (2026-11-26, Josh's request; uncommitted).**
+  - **Little note** (`KiriyaWidgets/Notes/`, lab `ios/CardLab/WidgetNotes/`): a taped notepad page; a new note arrives folded and taped shut and is peeled open on the widget (counts as opened). The note push's service extension drops the note into the App Group and reloads the widget, so it shows at once with no fetch (`NotesWidgetMailbox`). On Josh's phone it shows his newest note to her with "not opened yet" / "she opened it" / "she loved it". The snapshot now carries the whole note (`widgetNote`) and, for admin, `sentNote`.
+  - **Next con** (`KiriyaWidgets/Con/`, lab `ios/CardLab/WidgetCon/`): a con ticket with a live countdown (days → live clock in the last 48 h → "today!!" → "happening now · day 2 of 3" → "was lovely ♡ · next up"), large shows the next three, Lock Screen ring. The snapshot now carries `events` (up to 5, ongoing and yesterday's included) with endsOn, city, tags, hers, url, link.
+  - Both keep their old widget kinds, so placed widgets carry on. Later: iOS 26 WidgetKit push for the notes widget (handler written, `NotesWidgetPush.uploads` off until the server side exists).
+  - **Thinking of you** (`KiriyaWidgets/Signals/`, lab `ios/CardLab/WidgetSignals/`): pastel sticker buttons, each an emoji + kaomoji + label (kaomoji and a short note now in `shared/taps.js`); small shows four, two or one (chosen in Edit Widget), medium four, large all seven, Lock Screen one or two. Buttons are Toggles so "sending…" shows at once, then "sent ♡" with hearts settling in the corner; failures say "try again".
+    - The buzz: iOS gives third-party pushes one system haptic (no custom vibration; Core Haptics only while the app is open). So each signal plays its own original sound (`App/Sounds/SignalsWidget-<key>.caf`): the same soft two-beat heartbeat, then a short tail that says which. With the app open, a matching heartbeat haptic (AHAP) plays instead of the system sound.
+    - Push body is now the kaomoji + note; the payload carries `tap`; every signal but ♡ has its own category (`TAP_<KEY>`) with a "Hug back 🫂"-style button beside "Send one back ❤️".
+    - `UIAppFonts` in `KiriyaWidgets-Info.plist` lists its two fonts (fonts registered at runtime came back blank after a reinstall in the lab).
   - **Server (`server/lib/letterCard.js`):**
     - A letter's announcement links to `/world/letters?open=<id>`.
     - The push carries the letter (`apns.js letterPayload`). It's trimmed to 3000 bytes, and a locked letter carries no words.

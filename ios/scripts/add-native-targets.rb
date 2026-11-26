@@ -41,7 +41,9 @@ add_resource(app, file_in(app_group, "PrivacyInfo.xcprivacy"))
 file_in(app_group, "App.entitlements")
 
 sounds = app_group.children.find { |g| g.display_name == "Sounds" } || app_group.new_group("Sounds", "Sounds")
-%w[chat.caf tap.caf letter.caf jar.caf].each { |name| add_resource(app, file_in(sounds, name)) }
+# The "Thinking of you" signals each have their own sound (copied in from KiriyaWidgets/Signals/ForTheApp/Sounds).
+signal_sounds = %w[thinking hug kiss morning night miss water].map { |key| "SignalsWidget-#{key}.caf" }
+(%w[chat.caf tap.caf letter.caf jar.caf] + signal_sounds).each { |name| add_resource(app, file_in(sounds, name)) }
 
 # --- KiriyaShared (App + widgets) -------------------------------------------------------------
 shared = main_group.children.find { |g| g.display_name == "KiriyaShared" } || main_group.new_group("KiriyaShared", "KiriyaShared")
@@ -87,11 +89,39 @@ file_in(widgets_group, "KiriyaWidgets-Info.plist")
 file_in(widgets_group, "KiriyaWidgets.entitlements")
 shared_refs.each { |ref| add_source(widgets, ref) }
 
+# Each redesigned widget lives in its own folder (Notes/ the little note, Con/ the next con, Signals/ thinking
+# of you): every top-level .swift file
+# compiles into the widget extension, and its Fonts/ (OFL, with their licences) go in as resources.
+widget_groups = {}
+(ENV["WIDGETS"]&.split(",") || %w[Notes Con Signals]).each do |name|
+  dir = File.join(IOS, "App", "KiriyaWidgets", name)
+  next unless File.directory?(dir)
+  group = widget_groups[name] = widgets_group.children.find { |g| g.isa == "PBXGroup" && g.display_name == name } || widgets_group.new_group(name, name)
+  Dir.children(dir).sort.grep(/\.swift\z/).each { |file| add_source(widgets, file_in(group, file)) }
+  fonts = File.join(dir, "Fonts")
+  next unless File.directory?(fonts)
+  fonts_group = group.children.find { |g| g.isa == "PBXGroup" && g.display_name == "Fonts" } || group.new_group("Fonts", "Fonts")
+  Dir.children(fonts).sort.grep(/\.(ttf|otf|txt)\z/).each { |file| add_resource(widgets, file_in(fonts_group, file)) }
+end
+# The little note's mailbox in the App Group: a NOTE push drops the note in (the service extension)
+# and a note opened in its notification is marked open (the content extension), so the widget
+# shows both at once.
+notes_mailbox = widget_groups["Notes"] && file_in(widget_groups["Notes"], "NotesWidgetMailbox.swift")
+# Thinking of you's part in the App itself (Signals/ForTheApp): the heartbeat haptic that plays with a
+# signal's sound while the app is open. Its widget intents stay in the widget extension only (in both
+# targets, the system can't map the widget's configuration intent).
+if widget_groups["Signals"]
+  for_app = widget_groups["Signals"].children.find { |g| g.isa == "PBXGroup" && g.display_name == "ForTheApp" } || widget_groups["Signals"].new_group("ForTheApp", "ForTheApp")
+  add_source(app, file_in(for_app, "SignalsWidgetHeartbeat.swift"))
+  add_resource(app, file_in(for_app, "SignalsWidget-heartbeat.ahap"))
+end
+
 service = extension_target(project, "KiriyaNotificationService", "love.kiriya.app.notifications")
 service_group = main_group.children.find { |g| g.display_name == "KiriyaNotificationService" } ||
                 main_group.new_group("KiriyaNotificationService", "KiriyaNotificationService")
 add_source(service, file_in(service_group, "KiriyaNotificationService.swift"))
-%w[envelope.png jar.png].each { |name| add_resource(service, file_in(service_group, name)) }
+add_source(service, notes_mailbox) if notes_mailbox
+%w[envelope.png jar.png PrivacyInfo.xcprivacy].each { |name| add_resource(service, file_in(service_group, name)) }
 file_in(service_group, "KiriyaNotificationService-Info.plist")
 file_in(service_group, "KiriyaNotificationService.entitlements")
 
@@ -104,6 +134,7 @@ add_resource(content, file_in(content_group, "PrivacyInfo.xcprivacy"))
 file_in(content_group, "KiriyaNotificationContent-Info.plist")
 file_in(content_group, "KiriyaNotificationContent.entitlements")
 add_source(content, shared_refs.find { |ref| ref.path == "KiriyaShared.swift" })
+add_source(content, notes_mailbox) if notes_mailbox
 # Linked explicitly: the code only adopts UNNotificationContentExtension (an Objective-C protocol), so
 # the linker would drop the auto-linked framework, and iOS then can't load the extension at all
 # (a SIGTRAP in +[EXConcreteExtensionContextVendor _extensionContextClass], seen 2026-11-25).

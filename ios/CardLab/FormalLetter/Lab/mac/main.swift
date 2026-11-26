@@ -92,7 +92,22 @@ func run() {
         case "flap": view = AnyView(FormalLetterFlapFace(m: m, inside: false))
         case "flapin": view = AnyView(FormalLetterFlapFace(m: m, inside: true))
         case "back": view = AnyView(FormalLetterEnvelopeBack(m: m))
-        case "crest": view = AnyView(Canvas { ctx, _ in FormalLetterCrest.draw(ctx, center: CGPoint(x: 60, y: 50), height: 80); FormalLetterCrest.draw(ctx, center: CGPoint(x: 170, y: 50), height: 80, look: .embossed) }.frame(width: 230, height: 110).background(FormalLetterPalette.paper))
+        case "spray": view = AnyView(HStack(spacing: 20) {
+                FormalLetterSpray(arrangement: .seal, k: 2).background(Color(red: 0.96, green: 0.87, blue: 0.91))
+                FormalLetterSpray(arrangement: .seal, k: 2, night: true).background(Color(red: 0.33, green: 0.24, blue: 0.37))
+                VStack { FormalLetterSpray(arrangement: .echo, k: 2).background(Color(red: 0.96, green: 0.87, blue: 0.91))
+                         FormalLetterSpray(arrangement: .corner, k: 2).background(FormalLetterPalette.paper) }
+            })
+        case "crest": view = AnyView(Canvas { ctx, _ in
+                FormalLetterCrest.draw(ctx, center: CGPoint(x: 60, y: 55), height: 80)
+                FormalLetterCrest.draw(ctx, center: CGPoint(x: 160, y: 55), height: 50)
+                FormalLetterCrest.draw(ctx, center: CGPoint(x: 240, y: 55), height: 80, look: .embossed)
+                for (i, o) in [0.35, 0.7, 1.0].enumerated() {
+                    let x = 340 + CGFloat(i) * 95
+                    FormalLetterCrest.draw(ctx, center: CGPoint(x: x, y: 55), height: 80, kitten: false)
+                    FormalLetterKitten.draw(ctx, center: CGPoint(x: x, y: 55), crestHeight: 80, pose: FormalLetterKittenPose(open: o, ear: o == 1 ? 14 : 0))
+                }
+            }.frame(width: 580, height: 115).background(FormalLetterPalette.paper))
         default: view = AnyView(FormalLetterEnvelopePocket(m: m, primary: "open when you miss me", secondary: "for the far-away nights"))
         }
         if let image = LabRender.image(view.padding(10).background(Color(white: 0.92)), scale: 5) {
@@ -212,10 +227,51 @@ func run() {
             print(out)
         }
 
+    case "crest":
+        // A close-up of the open letter's crest at 3x: formallab crest <out> <letter> <width>
+        let dir = out(args[0])
+        let (content, _) = letter(args[1])
+        let width = CGFloat(Double(args[2]) ?? 343)
+        let g = LabRender.geometry(content, width: width, locked: false)
+        let paperTop = g.paperRestCenter.y - g.paper.height / 2
+        let center = CGPoint(x: width / 2, y: paperTop + g.paper.crestCenterY)
+        if let image = LabRender.image(LabRender.scene(content, width: width, time: D, idle: 0), scale: 3),
+           let crop = image.cropping(to: CGRect(x: (center.x - 60) * 3, y: (center.y - 45) * 3, width: 120 * 3, height: 90 * 3)) {
+            LabRender.writePNG(crop, to: "\(dir)/crest-\(args[1])-\(Int(width))@3x.png")
+            print("\(dir)/crest-\(args[1])-\(Int(width))@3x.png")
+        }
+
+    case "restgif":
+        // The letter at rest, long enough for the kitten's first sleepy peek: formallab restgif <out> <letter> <width> [seconds]
+        let dir = out(args[0])
+        let (content, _) = letter(args[1])
+        let width = CGFloat(Double(args[2]) ?? 343)
+        let seconds = args.count > 3 ? Double(args[3]) ?? 6.5 : 6.5
+        let g = LabRender.geometry(content, width: width, locked: false)
+        let scale: CGFloat = 2
+        let w = Int(width * scale), h = Int(g.openHeight * scale) / 2 * 2
+        let mp4 = "\(dir)/rest-\(args[1])-\(Int(width)).mp4"
+        encode(path: mp4, width: w, height: h, fps: 30) { write in
+            for f in 0..<Int(seconds * 30) {
+                let view = LabRender.scene(content, width: width, time: D, idle: 0, height: g.openHeight, restTime: Double(f) / 30)
+                if let image = LabRender.image(view, scale: scale) { write(LabRender.rgba(image, width: w, height: h)) }
+            }
+        }
+        let gif = "\(dir)/rest-\(args[1])-\(Int(width)).gif"
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: ffmpeg)
+        process.arguments = ["-y", "-loglevel", "error", "-i", mp4, "-filter_complex",
+                             "fps=24,scale=\(Int(width * 1.5)):-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=192:stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a:diff_mode=rectangle",
+                             "-loop", "0", gif]
+        try? process.run()
+        process.waitUntilExit()
+        print(gif)
+
     case "overview":
         let dir = out(args[0])
         let width = CGFloat(Double(args.count > 1 ? args[1] : "343") ?? 343)
-        let picks: [(String, String, Double?)] = [("medium", "sealed", nil), ("short", "short, open", D), ("long", "long (scrolls), open", D), ("locked", "locked", nil)]
+        let picks: [(String, String, Double?)] = [("medium", "sealed", nil), ("maomao", "Maomao, sealed", nil), ("locked", "locked", nil),
+                                                  ("short", "short, open", D), ("long", "long (scrolls), open", D), ("maomao", "Maomao, open", D)]
         var frames: [(String, CGImage)] = []
         for (name, label, time) in picks {
             let (content, locked) = letter(name)
@@ -223,7 +279,7 @@ func run() {
                 frames.append((label, image))
             }
         }
-        if let sheet = LabRender.sheet(frames, columns: frames.count, gap: 24, background: CGColor(red: 0.96, green: 0.93, blue: 0.98, alpha: 1)) {
+        if let sheet = LabRender.sheet(frames, columns: 3, gap: 24, background: CGColor(red: 0.96, green: 0.93, blue: 0.98, alpha: 1)) {
             LabRender.writePNG(sheet, to: "\(dir)/overview-\(Int(width)).png")
             print("\(dir)/overview-\(Int(width)).png")
         }

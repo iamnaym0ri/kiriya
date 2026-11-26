@@ -94,7 +94,7 @@ function sample(kind, names) {
     case "chat":
       return { title: her, body: "test: how’s your day going? ♡", navigate: "/world/chat", kind: "chat", threadId: "chat" };
     case "tap":
-      return { title: (tapByKey.thinking?.push ?? "{from} is thinking of you ♡").replace("{from}", her), body: "tap to send one back ♡", navigate: "/world/chat", kind: "tap", threadId: "chat" };
+      return { title: tapByKey.thinking.push.replace("{from}", her), body: `${tapByKey.thinking.kaomoji}  ${tapByKey.thinking.note}`, navigate: "/world/chat", kind: "tap", tap: "thinking", threadId: "chat" };
     case "letter":
       return {
         title: "a new letter for you ✉",

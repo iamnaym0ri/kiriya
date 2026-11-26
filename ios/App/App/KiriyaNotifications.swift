@@ -48,7 +48,24 @@ enum KiriyaNotificationCategories {
                                    hiddenPreviewsBodyPlaceholder: hidden, options: [])
         }
 
-        UNUserNotificationCenter.current().setNotificationCategories([
+        // One of his signals: "Send one back ❤️" sends a ♡, and every signal but ♡ also offers itself
+        // straight back (a hug for a hug). The server sends those as TAP_<KEY>; ♡ stays TAP.
+        let backs: [(key: String, title: String, icon: String)] = [
+            ("hug", "Hug back 🫂", "figure.2.arms.open"),
+            ("kiss", "Kiss back 😘", "heart.circle"),
+            ("morning", "Good morning ☀️", "sun.max"),
+            ("night", "Goodnight 🌙", "moon.stars"),
+            ("miss", "Miss you too 🥺", "heart"),
+            ("water", "You too 💧", "drop"),
+        ]
+        let signals = backs.map { back in
+            category("TAP_\(back.key.uppercased())",
+                     [UNNotificationAction(identifier: "BACK_\(back.key)", title: back.title, options: [],
+                                           icon: UNNotificationActionIcon(systemImageName: back.icon)), heart],
+                     hidden: "a little tap ♡")
+        }
+
+        UNUserNotificationCenter.current().setNotificationCategories(Set(signals + [
             category("CHAT", [reply, heart], hidden: "a new message ♡"),
             category("TAP", [heart], hidden: "a little tap ♡"),
             category("LETTER", [openLetter, heart, openApp], hidden: "a letter for you ✉︎"),
@@ -56,7 +73,7 @@ enum KiriyaNotificationCategories {
             category("JAR", [pull, openApp], hidden: "new notes in your jar ♡"),
             category("EVENT", [open], hidden: "news about an event"),
             category("REMINDER", [pull, openApp], hidden: "a little reminder ♡"),
-        ])
+        ]))
     }
 }
 
@@ -107,10 +124,18 @@ final class KiriyaNotificationDelegate: NSObject, UNUserNotificationCenterDelega
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         // New things change what the widgets show.
         WidgetCenter.shared.reloadAllTimelines()
+        // One of his signals while the app is open: his heartbeat in her hand with the signal's own sound,
+        // in step (KiriyaWidgets/Signals/ForTheApp), instead of the system's sound and standard buzz.
+        let info = notification.request.content.userInfo
+        let isSignal = (info["kind"] as? String) == "tap"
+        if isSignal { SignalsWidgetHeartbeat.shared.play(info["tap"] as? String) }
+        let present: (UNNotificationPresentationOptions) -> Void = { options in
+            completionHandler(isSignal ? options.subtracting(.sound) : options)
+        }
         if let router {
-            router.userNotificationCenter(center, willPresent: notification, withCompletionHandler: completionHandler)
+            router.userNotificationCenter(center, willPresent: notification, withCompletionHandler: present)
         } else {
-            completionHandler([.banner, .list, .sound, .badge])
+            present([.banner, .list, .sound, .badge])
         }
     }
 
@@ -136,6 +161,15 @@ final class KiriyaNotificationDelegate: NSObject, UNUserNotificationCenterDelega
                 try await KiriyaAPI.reply(text, replyTo: replyTo, clientId: clientId)
                 // Like Messages: answering clears the conversation's other banners.
                 await Self.clearDelivered(thread: "chat")
+            }
+
+        case let action where action.hasPrefix("BACK_"):
+            // "Hug back 🫂" and friends: the same signal straight back.
+            let key = String(action.dropFirst("BACK_".count))
+            let clientId = KiriyaAPI.clientId("n", request.identifier, key)
+            runInBackground(completionHandler, failure: "your \(TapCatalog.emoji(for: key)) didn’t send. open the chat to try again?") {
+                try await KiriyaAPI.sendTap(key, clientId: clientId)
+                KiriyaStore.markTapSent(key)
             }
 
         case KiriyaNotificationCategories.openHere, KiriyaNotificationCategories.pull:

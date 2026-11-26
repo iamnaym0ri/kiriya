@@ -155,11 +155,6 @@ enum FormalLetterType {
             .tracking(tracking(style))
             .foregroundColor(color(style))
         switch style {
-        case .signature:
-            // A small red heart beside the name, sitting on its baseline like a full stop.
-            let heart = Text("\u{2764}\u{FE0F}").font(.system(size: 13)).baselineOffset(3)
-            if string.isEmpty { return heart }
-            return base + Text("  ") + heart
         case .closing where !string.hasSuffix("\u{2014}"):
             return base + Text(" ") + Text("\u{2764}\u{FE0F}").font(.system(size: 13)).baselineOffset(1)
         default:
@@ -177,7 +172,7 @@ enum FormalLetterType {
     static func measure(_ string: String, _ style: Style) -> CGFloat {
         let line = CTLineCreateWithAttributedString(attributed(string, style))
         var width = CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil))
-        if style == .signature { width += 26 }  // the heart
+        if style == .signature { width += 26 }  // the heart beside it (FormalLetterPaperLayout.heartRect)
         if style == .closing && !string.hasSuffix("\u{2014}") { width += 22 }
         return width
     }
@@ -341,6 +336,8 @@ struct FormalLetterPaperLayout: Equatable {
     let viewport: ClosedRange<CGFloat>?
     let scrollContentHeight: CGFloat
     let seed: Double
+    /// Maomao's letter (an apothecary's herb by her name rather than a kitten's paw prints).
+    var maomao = false
 
     static func == (a: Self, b: Self) -> Bool { a.key == b.key }
 
@@ -357,7 +354,8 @@ struct FormalLetterPaperLayout: Equatable {
         cacheLock.lock()
         if let hit = cache[key] { cacheLock.unlock(); return hit }
         cacheLock.unlock()
-        let made = build(content: content, width: width, maxHeight: maxHeight, scrollable: scrollable, key: key)
+        var made = build(content: content, width: width, maxHeight: maxHeight, scrollable: scrollable, key: key)
+        made.maomao = content.isFromMaomao
         cacheLock.lock()
         if cache.count > 24 { cache.removeAll() }
         cache[key] = made
@@ -528,6 +526,36 @@ struct FormalLetterPaperLayout: Equatable {
         for byte in key.utf8.prefix(400) { hash = (hash ^ UInt64(byte)) &* 1099511628211 }
         return Double(hash % 1000) / 100
     }
+
+    var signatureLine: Line? { lines.first { $0.style == .signature } }
+
+    /// The red heart just after the signature (worked out from CoreText's width of the name, so
+    /// the paper, the scrolling body and the beating heart all put it in the same place).
+    func heartRect(for line: Line) -> CGRect {
+        let name = FormalLetterType.measure(line.text, .signature) - 26
+        let size = CGSize(width: 12, height: 11)
+        return CGRect(x: (closingX + name + 9).rounded(), y: (line.baseline - 15).rounded(), width: size.width, height: size.height)
+    }
+
+    /// The crest kitten's canvas: centred on the paper's middle and the crest, on whole pixels.
+    var kittenCanvas: CGSize {
+        let w = Int(width.rounded())
+        return CGSize(width: w % 2 == 1 ? 61 : 60, height: 60)
+    }
+
+    /// Which third of the paper a point is in.
+    func fold(of y: CGFloat) -> Int { max(0, min(2, Int(y / (height / 3)))) }
+
+    /// The heart beats on its own (as an overlay on its third of the paper) when the whole
+    /// letter is on the paper, and it isn't sitting on a crease.
+    var heartBeats: Bool {
+        guard !scrolls, let line = signatureLine else { return false }
+        let rect = heartRect(for: line)
+        return fold(of: rect.minY - 2) == fold(of: rect.maxY + 2)
+    }
+
+    /// Where the touches go: the pressed flower in the corner, right of the crest.
+    var cornerBinding: CGPoint { CGPoint(x: width - 30, y: crestCenterY + 9) }
 
     /// Where a line starts, given the width SwiftUI measured for it.
     func x(for line: Line, measured: CGFloat) -> CGFloat {

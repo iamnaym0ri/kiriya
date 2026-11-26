@@ -159,6 +159,11 @@ struct FormalLetterGeometry {
         var paperLift = 0.0
         var paperShadowed = false
         var atRest = false
+        /// The crest's kitten (an ear flick as the letter settles) and the signature heart's beat.
+        var kitten = FormalLetterKittenPose.rest
+        var heartScale: CGFloat = 1
+        /// Seconds since the petals began to drift out of the fold (nil when there are none).
+        var petals: Double?
     }
 
     /// `time` nil: sealed (the idle loop runs on `idle`, and `wiggle` is the seconds since a tap on a
@@ -250,6 +255,12 @@ struct FormalLetterGeometry {
         p.paperShadowed = t > 0.7
         p.paperLift = M.easeOut(M.progress(t, 1.2, 2.0)) * (1 - M.easeInOut(settle))
 
+        // A few petals that were pressed inside drift out as the top third opens.
+        if t > 2.08, t < 3.05 { p.petals = t - 2.08 }
+        // As it settles: the kitten flicks an ear (twice), and the heart gives one "lub-dub".
+        p.kitten.ear = 15 * M.bump(M.progress(t, 2.62, 2.84)) + 9 * M.bump(M.progress(t, 2.88, 3.06))
+        p.heartScale = 1 + 0.26 * CGFloat(M.bump(M.progress(t, 2.76, 2.96))) + 0.13 * CGFloat(M.bump(M.progress(t, 2.98, 3.14)))
+
         // Unfolding: the top third, then the bottom third, each on a soft, well-damped spring.
         // (The springs' last fraction of a degree is eased out, so the folds lie exactly flat
         // before the letter comes to rest.)
@@ -304,6 +315,10 @@ struct FormalLetterScene: View {
     var interactive: Bool = false
     /// 0...1: a locked letter's date line darkening for a moment (its "not yet" with Reduce Motion).
     var emphasis: Double = 0
+    /// At rest: when the letter came to rest (the crest kitten's live clock), or, for rendering a
+    /// frame, the seconds since then.
+    var restSince: Date?
+    var restTime: Double?
 
     var body: some View {
         let g = FormalLetterGeometry.make(content: content, width: width, maxHeight: maxHeight, scrollable: scrollable, locked: locked)
@@ -330,11 +345,11 @@ struct FormalLetterScene: View {
                     FormalLetterEnvelopePocket(m: m, primary: g.envelopeLines.primary, secondary: g.envelopeLines.secondary, dateSeal: g.dateSeal).equatable()
                 }
                 .zIndex(3)
-                // The lavender lies on the pocket, its stem tucked under the flap's tip and the wax.
+                // A small echo of the flowers, pressed on the pocket (it stays with the envelope).
                 envelopeLayer(g, p) {
-                    let sprig = FormalLetterLavender.frame(m.lavenderLength)
-                    FormalLetterLavender(length: m.lavenderLength, angle: -15).equatable()
-                        .offset(x: m.sealCenter.x - sprig.width / 2 + m.sealDiameter * 0.08, y: m.sealCenter.y - sprig.height / 2 + m.sealDiameter * 0.12)
+                    let frame = FormalLetterSpray.frame(.echo, k: m.k)
+                    FormalLetterSpray(arrangement: .echo, k: m.k, night: m.tone == .night).equatable()
+                        .offset(x: m.echoBinding.x - frame.width / 2, y: m.echoBinding.y - frame.height / 2)
                 }
                 .zIndex(3.5)
                 envelopeLayer(g, p) {
@@ -353,6 +368,7 @@ struct FormalLetterScene: View {
                 paper(g, p)
                     .zIndex(p.paperFront ? 7 : 2)
             }
+            if let petals = p.petals { self.petals(g, p, petals).zIndex(7.5) }
             if interactive && g.paper.scrolls && p.atRest {
                 // The resting letter with its live scrolling body. It takes over only once
                 // everything is still, so even a slow first draw can't show as a hitch.
@@ -432,8 +448,14 @@ struct FormalLetterScene: View {
 
     private func flap(_ m: FormalLetterEnvelopeMetrics, _ p: FormalLetterGeometry.Pose, inside: Bool) -> some View {
         let sealFrame = FormalLetterWaxSeal.frameSize(m.sealDiameter)
+        let spray = FormalLetterSpray.frame(.seal, k: m.k)
         return ZStack(alignment: .topLeading) {
             FormalLetterFlapFace(m: m, inside: inside).equatable()
+            if !inside {
+                // The pressed flowers are tucked under the wax on the flap, so they lift away with it.
+                FormalLetterSpray(arrangement: .seal, k: m.k, night: m.tone == .night).equatable()
+                    .offset(x: m.sprayBinding.x - spray.width / 2, y: m.sprayBinding.y - spray.height / 2)
+            }
             if !inside {
                 // The seal's upper piece rides away on the flap.
                 FormalLetterWaxSeal(diameter: m.sealDiameter, piece: .upper).equatable()
@@ -486,14 +508,42 @@ struct FormalLetterScene: View {
     }
 
     private func paper(_ g: FormalLetterGeometry, _ p: FormalLetterGeometry.Pose) -> some View {
-        FormalLetterSheet(layout: g.paper, angles: p.foldAngles).equatable()
+        var kitten = p.kitten
+        if p.atRest, let restTime { kitten = FormalLetterPeek.pose(at: restTime) }
+        let live = p.atRest && interactive ? restSince.map { FormalLetterLiveKitten(since: $0) } : nil
+        return FormalLetterSheet(layout: g.paper, angles: p.foldAngles, kitten: kitten, heartScale: p.heartScale, live: live).equatable()
             .modifier(FormalLetterPaperShadow(shadowed: p.paperShadowed, lift: p.paperLift))
             .scaleEffect(p.paperScale)
             .position(p.paperCenter)
     }
 
+    /// Five petals slip out of the fold as the top third lifts, puff up a little, then drift down
+    /// and out towards the paper's edges, turning, and fade before the letter comes to rest.
+    private func petals(_ g: FormalLetterGeometry, _ p: FormalLetterGeometry.Pose, _ time: Double) -> some View {
+        typealias M = FormalLetterMotion
+        let specs: [(x: CGFloat, vx: CGFloat, vy: CGFloat, delay: Double, size: CGFloat, spin: Double, lilac: Bool)] = [
+            (-0.16, -92, -58, 0.0, 12, -150, false), (0.12, 84, -66, 0.06, 10.5, 170, true),
+            (-0.04, -60, -74, 0.13, 9.5, 120, true), (0.22, 104, -48, 0.18, 11.5, -130, false),
+        ]
+        let crease = p.paperCenter.y - g.paper.height * p.paperScale / 6
+        return ZStack(alignment: .topLeading) {
+            ForEach(specs.indices, id: \.self) { index in
+                let spec = specs[index]
+                let u = max(0, time - spec.delay)
+                let fade = M.easeOut(M.progress(u, 0, 0.12)) * (1 - M.easeIn(M.progress(u, 0.42, 0.74)))
+                let sway = 4 * CGFloat(sin(u * 8 + Double(index)))
+                FormalLetterPetal(size: spec.size, lilac: spec.lilac).equatable()
+                    .rotationEffect(.degrees(spec.spin * u + Double(index) * 47))
+                    .position(x: p.paperCenter.x + spec.x * g.paper.width + spec.vx * CGFloat(u) + sway,
+                              y: crease + spec.vy * CGFloat(u) + 0.5 * 230 * CGFloat(u * u))
+                    .opacity(u > 0 ? fade : 0)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
     private func resting(_ g: FormalLetterGeometry) -> some View {
-        FormalLetterRestingPaper(layout: g.paper)
+        FormalLetterRestingPaper(layout: g.paper, restSince: restSince)
             .modifier(FormalLetterPaperShadow(shadowed: true, lift: 0))
             .position(g.paperRestCenter)
     }

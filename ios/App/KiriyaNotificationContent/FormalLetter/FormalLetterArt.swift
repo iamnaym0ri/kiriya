@@ -108,26 +108,17 @@ enum FormalLetterOrnament {
     }
 }
 
-/// The letterhead: a script K in a gilt double oval, a little laurel round its foot and a heart.
+/// The letterhead: a sleepy lilac kitten in a gilt double oval, a little laurel round its foot and a
+/// heart. `kitten: false` leaves the oval empty, for when the kitten is drawn on its own (to blink).
 enum FormalLetterCrest {
     enum Look { case printed, embossed }
 
-    static func draw(_ ctx: GraphicsContext, center: CGPoint, height h: CGFloat, look: Look = .printed) {
+    static func draw(_ ctx: GraphicsContext, center: CGPoint, height h: CGFloat, look: Look = .printed, kitten: Bool = true) {
         let w = h * 0.74
         let oval = CGRect(x: center.x - w / 2, y: center.y - h / 2, width: w, height: h)
         let inner = oval.insetBy(dx: h * 0.06, dy: h * 0.06)
-        let leafColor: Color
-        let ink: Color
-        switch look {
-        case .printed:
-            leafColor = FormalLetterPalette.gold
-            ink = FormalLetterPalette.plum
-        case .embossed:
-            leafColor = FormalLetterPalette.paperFiber
-            ink = FormalLetterPalette.paperFiber
-        }
 
-        func drawAll(_ c: GraphicsContext, leaf: Color, ink: Color, heartColor: Color, offset: CGSize) {
+        func frame(_ c: GraphicsContext, leaf: Color, heartColor: Color, offset: CGSize) {
             var c = c
             c.translateBy(x: offset.width, y: offset.height)
             c.stroke(Path(ellipseIn: oval), with: .color(leaf), lineWidth: 0.9)
@@ -160,20 +151,207 @@ enum FormalLetterCrest {
             }
             c.fill(FormalLetterHeart().path(in: CGRect(x: center.x - h * 0.065, y: center.y + h * 0.5, width: h * 0.13, height: h * 0.12)),
                    with: .color(heartColor))
-            let k = c.resolve(Text("K").font(FormalLetterFonts.font(.script, size: h * 0.74)).foregroundColor(ink))
-            c.draw(k, at: CGPoint(x: center.x + h * 0.02, y: center.y + h * 0.06), anchor: .center)
         }
 
         switch look {
         case .printed:
-            drawAll(ctx, leaf: leafColor, ink: ink, heartColor: FormalLetterPalette.rose, offset: .zero)
+            frame(ctx, leaf: FormalLetterPalette.gold, heartColor: FormalLetterPalette.rose, offset: .zero)
+            if kitten { FormalLetterKitten.draw(ctx, center: center, crestHeight: h) }
         case .embossed:
             // Blind embossed: no ink, just the paper raised (light above, shade below).
-            drawAll(ctx, leaf: Color.white.opacity(0.9), ink: Color.white.opacity(0.9), heartColor: Color.white.opacity(0.9), offset: CGSize(width: -0.6, height: -0.6))
-            drawAll(ctx, leaf: FormalLetterPalette.crease.opacity(0.32), ink: FormalLetterPalette.crease.opacity(0.32),
-                    heartColor: FormalLetterPalette.crease.opacity(0.32), offset: CGSize(width: 0.6, height: 0.7))
-            drawAll(ctx, leaf: FormalLetterPalette.paperBack, ink: FormalLetterPalette.paperBack, heartColor: FormalLetterPalette.paperBack, offset: .zero)
+            let light = Color.white.opacity(0.9), shade = FormalLetterPalette.crease.opacity(0.32), base = FormalLetterPalette.paperBack
+            frame(ctx, leaf: light, heartColor: light, offset: CGSize(width: -0.6, height: -0.6))
+            frame(ctx, leaf: shade, heartColor: shade, offset: CGSize(width: 0.6, height: 0.7))
+            frame(ctx, leaf: base, heartColor: base, offset: .zero)
+            if kitten { FormalLetterKitten.drawEmbossed(ctx, center: center, crestHeight: h) }
         }
+    }
+}
+
+/// How the crest's kitten looks at a moment: how far it has opened its sleepy eyes (0 closed and
+/// content, 1 peeking) and the turn of its right ear (degrees).
+struct FormalLetterKittenPose: Equatable {
+    var open: Double = 0
+    var ear: Double = 0
+    static let rest = FormalLetterKittenPose()
+}
+
+/// The crest's kitten: an original little lilac cat face, front on, sleepy and content, with blush
+/// ears and cheeks, a pink nose, an ω mouth, fine whiskers, faint tabby marks and a sprig of
+/// lavender tucked behind one ear (the apothecary's touch). Drawn in units of the crest's height.
+enum FormalLetterKitten {
+    typealias P = FormalLetterPalette
+    static let furLight = P.rgb(0xf1e8f9)
+    static let furDeep = P.rgb(0xd5c2ea)
+    static let line = P.rgb(0x6f4f86)
+    static let earInner = P.rgb(0xf4c4d6)
+    static let nose = P.rgb(0xe48aab)
+    static let cheek = P.rgb(0xf2a9c3)
+    static let tabby = P.rgb(0xb79cd4)
+
+    /// The face's width and its centre, for a crest of height `h` centred at `center`.
+    static func metrics(center: CGPoint, crestHeight h: CGFloat) -> (w: CGFloat, head: CGPoint) {
+        (h * 0.52, CGPoint(x: center.x, y: center.y + h * 0.1))
+    }
+
+    static func headPath(_ o: CGPoint, _ w: CGFloat) -> Path {
+        func pt(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: o.x + x * w, y: o.y + y * w) }
+        var p = Path()
+        p.move(to: pt(0, -0.36))
+        p.addCurve(to: pt(0.5, 0.04), control1: pt(0.3, -0.36), control2: pt(0.5, -0.22))
+        p.addCurve(to: pt(0, 0.4), control1: pt(0.5, 0.3), control2: pt(0.27, 0.4))
+        p.addCurve(to: pt(-0.5, 0.04), control1: pt(-0.27, 0.4), control2: pt(-0.5, 0.3))
+        p.addCurve(to: pt(0, -0.36), control1: pt(-0.5, -0.22), control2: pt(-0.3, -0.36))
+        p.closeSubpath()
+        return p
+    }
+
+    /// An ear (side -1 left, 1 right), turned about its base by `turn` degrees; `scale` < 1 for the inner ear.
+    static func earPath(_ o: CGPoint, _ w: CGFloat, side s: CGFloat, turn: Double, scale: CGFloat = 1) -> Path {
+        let base = CGPoint(x: o.x + s * 0.27 * w, y: o.y - 0.25 * w)
+        func pt(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            // Relative to the base, shrunk towards it for the inner ear.
+            CGPoint(x: base.x + (o.x + s * x * w - base.x) * scale, y: base.y + (o.y + y * w - base.y) * scale)
+        }
+        var p = Path()
+        p.move(to: pt(0.47, -0.12))
+        p.addCurve(to: pt(0.07, -0.34), control1: pt(0.46, -0.66), control2: pt(0.16, -0.62))
+        p.closeSubpath()
+        let turnAbout = CGAffineTransform(translationX: base.x, y: base.y).rotated(by: CGFloat(turn * Double.pi / 180 * Double(s)))
+            .translatedBy(x: -base.x, y: -base.y)
+        return p.applying(turnAbout)
+    }
+
+    static func draw(_ ctx: GraphicsContext, center: CGPoint, crestHeight h: CGFloat, pose: FormalLetterKittenPose = .rest) {
+        let (w, o) = metrics(center: center, crestHeight: h)
+        let stroke = max(0.65, w * 0.026)
+        func pt(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: o.x + x * w, y: o.y + y * w) }
+
+        // A sprig of lavender, its stem tucked behind the right ear.
+        sprig(ctx, from: pt(0.17, -0.12), angle: -50, length: w * 0.7)
+
+        // Ears, then the head over their bases.
+        for side in [-1.0, 1.0] as [CGFloat] {
+            let turn = side > 0 ? pose.ear : 0
+            let ear = earPath(o, w, side: side, turn: turn)
+            ctx.fill(ear, with: .linearGradient(Gradient(colors: [furLight, furDeep]), startPoint: pt(0, -0.62), endPoint: pt(0, -0.1)))
+            ctx.stroke(ear, with: .color(line), style: StrokeStyle(lineWidth: stroke, lineJoin: .round))
+            ctx.fill(earPath(o, w, side: side, turn: turn, scale: 0.55).offsetBy(dx: -side * 0.02 * w, dy: 0.02 * w), with: .color(earInner))
+        }
+        let head = headPath(o, w)
+        ctx.fill(head, with: .linearGradient(Gradient(colors: [furLight, furDeep]), startPoint: pt(0, -0.36), endPoint: pt(0, 0.42)))
+        ctx.stroke(head, with: .color(line), style: StrokeStyle(lineWidth: stroke, lineJoin: .round))
+
+        // Faint tabby marks on the forehead.
+        var marks = Path()
+        for (x, len) in [(-0.07, 0.07), (0, 0.09), (0.07, 0.07)] as [(CGFloat, CGFloat)] {
+            marks.move(to: pt(x, -0.31))
+            marks.addLine(to: pt(x * 0.85, -0.31 + len))
+        }
+        ctx.stroke(marks, with: .color(tabby), style: StrokeStyle(lineWidth: stroke * 0.8, lineCap: .round))
+
+        // Cheeks.
+        for side in [-1.0, 1.0] as [CGFloat] {
+            var blush = ctx
+            blush.addFilter(.blur(radius: w * 0.02))
+            blush.fill(Path(ellipseIn: CGRect(x: o.x + side * 0.3 * w - 0.075 * w, y: o.y + 0.1 * w, width: 0.15 * w, height: 0.075 * w)),
+                       with: .color(cheek.opacity(0.55)))
+        }
+
+        // Sleepy, content eyes: soft downward curves. When it peeks, round dark eyes open from
+        // the middle of each curve (with a glint) as the curves fade.
+        let open = CGFloat(max(0, min(1, pose.open)))
+        for side in [-1.0, 1.0] as [CGFloat] {
+            let c = pt(side * 0.19, -0.02)
+            let ew = 0.085 * w, ed = 0.07 * w
+            if open > 0.005 {
+                let rx = 0.066 * w, ry = 0.08 * w * open
+                let center = CGPoint(x: c.x, y: c.y + ed * 0.95 - ry * 0.45)
+                ctx.fill(Path(ellipseIn: CGRect(x: center.x - rx, y: center.y - ry, width: rx * 2, height: ry * 2)), with: .color(line))
+                if open > 0.5 {
+                    let r = rx * 0.32
+                    ctx.fill(Path(ellipseIn: CGRect(x: center.x - rx * 0.35 - r, y: center.y - ry * 0.45 - r, width: r * 2, height: r * 2)),
+                             with: .color(Color.white.opacity(0.95 * Double((open - 0.5) / 0.5))))
+                }
+            }
+            var lower = Path()
+            lower.move(to: CGPoint(x: c.x - ew, y: c.y))
+            lower.addQuadCurve(to: CGPoint(x: c.x + ew, y: c.y), control: CGPoint(x: c.x, y: c.y + ed * 2))
+            ctx.stroke(lower, with: .color(line.opacity(Double(1 - open))), style: StrokeStyle(lineWidth: stroke * 1.1, lineCap: .round))
+        }
+
+        // Nose and ω mouth.
+        var nose = Path()
+        nose.move(to: pt(-0.042, 0.095))
+        nose.addQuadCurve(to: pt(0.042, 0.095), control: pt(0, 0.08))
+        nose.addQuadCurve(to: pt(0, 0.15), control: pt(0.04, 0.13))
+        nose.addQuadCurve(to: pt(-0.042, 0.095), control: pt(-0.04, 0.13))
+        ctx.fill(nose, with: .color(Self.nose))
+        var mouth = Path()
+        mouth.move(to: pt(-0.085, 0.15))
+        mouth.addQuadCurve(to: pt(0, 0.152), control: pt(-0.05, 0.225))
+        mouth.addQuadCurve(to: pt(0.085, 0.15), control: pt(0.05, 0.225))
+        ctx.stroke(mouth, with: .color(line), style: StrokeStyle(lineWidth: stroke * 0.85, lineCap: .round, lineJoin: .round))
+
+        // Fine whiskers, kept inside the oval.
+        var whiskers = Path()
+        for side in [-1.0, 1.0] as [CGFloat] {
+            whiskers.move(to: pt(side * 0.36, 0.1)); whiskers.addLine(to: pt(side * 0.56, 0.075))
+            whiskers.move(to: pt(side * 0.36, 0.15)); whiskers.addLine(to: pt(side * 0.55, 0.17))
+        }
+        ctx.stroke(whiskers, with: .color(line.opacity(0.5)), style: StrokeStyle(lineWidth: stroke * 0.6, lineCap: .round))
+    }
+
+    /// A tiny lavender sprig: a fine stem, five buds alternating along its top, one slim leaf.
+    static func sprig(_ ctx: GraphicsContext, from: CGPoint, angle: Double, length L: CGFloat) {
+        var c = ctx
+        c.translateBy(x: from.x, y: from.y)
+        c.rotate(by: .degrees(angle))
+        var stem = Path()
+        stem.move(to: .zero)
+        stem.addQuadCurve(to: CGPoint(x: L, y: 0), control: CGPoint(x: L * 0.5, y: L * 0.04))
+        c.stroke(stem, with: .color(FormalLetterFloraTone.day.stem), style: StrokeStyle(lineWidth: max(0.6, L * 0.04), lineCap: .round))
+        var leaf = Path()
+        leaf.move(to: CGPoint(x: L * 0.3, y: 0))
+        leaf.addQuadCurve(to: CGPoint(x: L * 0.55, y: L * 0.12), control: CGPoint(x: L * 0.38, y: L * 0.14))
+        leaf.addQuadCurve(to: CGPoint(x: L * 0.3, y: 0), control: CGPoint(x: L * 0.5, y: L * 0.02))
+        c.fill(leaf, with: .color(FormalLetterFloraTone.day.leafDeep))
+        for i in 0..<5 {
+            let u = 0.46 + 0.125 * CGFloat(i)
+            let side: CGFloat = i.isMultiple(of: 2) ? -1 : 1
+            let size = L * (0.17 - 0.018 * CGFloat(i))
+            var b = c
+            b.translateBy(x: L * u, y: side * size * 0.32)
+            b.rotate(by: .degrees(Double(side) * 28))
+            let rect = CGRect(x: -size / 2, y: -size * 0.32, width: size, height: size * 0.64)
+            b.fill(Path(ellipseIn: rect), with: .linearGradient(Gradient(colors: [FormalLetterFloraTone.day.lavenderLight, FormalLetterFloraTone.day.lavenderDeep]),
+                                                                startPoint: CGPoint(x: 0, y: rect.minY), endPoint: CGPoint(x: 0, y: rect.maxY)))
+        }
+    }
+
+    /// The kitten blind-embossed (the folded letter's outside): raised silhouette, pressed-in features.
+    static func drawEmbossed(_ ctx: GraphicsContext, center: CGPoint, crestHeight h: CGFloat) {
+        let (w, o) = metrics(center: center, crestHeight: h)
+        var shape = headPath(o, w)
+        shape.addPath(earPath(o, w, side: -1, turn: 0))
+        shape.addPath(earPath(o, w, side: 1, turn: 0))
+        var lit = ctx
+        lit.translateBy(x: -0.6, y: -0.6)
+        lit.stroke(shape, with: .color(Color.white.opacity(0.9)), lineWidth: 0.9)
+        var shade = ctx
+        shade.translateBy(x: 0.6, y: 0.7)
+        shade.stroke(shape, with: .color(FormalLetterPalette.crease.opacity(0.3)), lineWidth: 0.9)
+        func pt(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: o.x + x * w, y: o.y + y * w) }
+        var features = Path()
+        for side in [-1.0, 1.0] as [CGFloat] {
+            let c = pt(side * 0.19, -0.02)
+            features.move(to: CGPoint(x: c.x - 0.085 * w, y: c.y))
+            features.addQuadCurve(to: CGPoint(x: c.x + 0.085 * w, y: c.y), control: CGPoint(x: c.x, y: c.y + 0.14 * w))
+        }
+        features.move(to: pt(-0.085, 0.15))
+        features.addQuadCurve(to: pt(0, 0.152), control: pt(-0.05, 0.225))
+        features.addQuadCurve(to: pt(0.085, 0.15), control: pt(0.05, 0.225))
+        ctx.stroke(features, with: .color(FormalLetterPalette.crease.opacity(0.35)), style: StrokeStyle(lineWidth: 0.7, lineCap: .round))
     }
 }
 
@@ -424,64 +602,400 @@ struct FormalLetterWaxCrumb: View, Equatable {
     }
 }
 
-/// A sprig of pressed lavender tucked under the wax: buds in little whorls along the top of a fine
-/// stem, two slim leaves. Drawn from its cut end (hidden under the seal) up to the right.
-struct FormalLetterLavender: View, Equatable {
-    let length: CGFloat
-    var angle: Double = -24
+// MARK: - Pressed flowers
 
-    static func frame(_ length: CGFloat) -> CGSize { CGSize(width: length * 2.2, height: length * 2.2) }
+/// The pressed flowers' colours. On the night-plum envelope they're paler and glow softly instead
+/// of casting a shadow.
+struct FormalLetterFloraTone: Equatable {
+    let stem: Color
+    let leafLight: Color
+    let leafDeep: Color
+    let lavenderLight: Color
+    let lavenderDeep: Color
+    let lavenderPale: Color
+    let blushLight: Color
+    let blushDeep: Color
+    let lilacLight: Color
+    let lilacDeep: Color
+    let heartLight: Color
+    let heartDeep: Color
+    let breath: Color
+    let breathEdge: Color
+    let shadow: Color
+    let shadowRadius: CGFloat
+    let shadowOffset: CGSize
+
+    typealias P = FormalLetterPalette
+    static let day = FormalLetterFloraTone(
+        stem: P.rgb(0x8a9a7c), leafLight: P.rgb(0xa9bb9a), leafDeep: P.rgb(0x7c9070),
+        lavenderLight: P.rgb(0xb294d6), lavenderDeep: P.rgb(0x7d5ba6), lavenderPale: P.rgb(0xc9b0e6),
+        blushLight: P.rgb(0xfbe0ea), blushDeep: P.rgb(0xe8a3bd), lilacLight: P.rgb(0xf0e6fa), lilacDeep: P.rgb(0xc0a5e0),
+        heartLight: P.rgb(0xf6dc96), heartDeep: P.rgb(0xd6a744),
+        breath: P.rgb(0xfffdf8), breathEdge: P.rgb(0xd9c9b6),
+        shadow: P.plum.opacity(0.22), shadowRadius: 1.1, shadowOffset: CGSize(width: 0.5, height: 1))
+    static let night = FormalLetterFloraTone(
+        stem: P.rgb(0xb7c6a6), leafLight: P.rgb(0xd0ddc2), leafDeep: P.rgb(0xa3b693),
+        lavenderLight: P.rgb(0xdcc8f4), lavenderDeep: P.rgb(0xb193d8), lavenderPale: P.rgb(0xece0fb),
+        blushLight: P.rgb(0xfff0f5), blushDeep: P.rgb(0xf4bfd2), lilacLight: P.rgb(0xfaf5ff), lilacDeep: P.rgb(0xdccbf2),
+        heartLight: P.rgb(0xfbe8b4), heartDeep: P.rgb(0xe8c068),
+        breath: P.rgb(0xfffefa), breathEdge: P.rgb(0xf2e8da),
+        shadow: Color.white.opacity(0.2), shadowRadius: 2.4, shadowOffset: .zero)
+}
+
+/// Pressed flowers drawn as paths: lavender, five-petal blossoms, baby's breath, leaf sprigs and buds.
+/// Every function draws in the context it's given, from an origin, at an angle (degrees, 0 = right,
+/// negative = up), at the size given.
+enum FormalLetterFlora {
+    typealias Tone = FormalLetterFloraTone
+
+    static func polar(_ origin: CGPoint, _ angle: Double, _ distance: CGFloat) -> CGPoint {
+        let a = angle * Double.pi / 180
+        return CGPoint(x: origin.x + distance * CGFloat(cos(a)), y: origin.y + distance * CGFloat(sin(a)))
+    }
+
+    /// A fine stem with a gentle bend; returns where it ends.
+    @discardableResult
+    static func stem(_ c: GraphicsContext, from: CGPoint, angle: Double, length: CGFloat, bend: CGFloat = 0.06, width: CGFloat = 0.8, tone: Tone) -> CGPoint {
+        let end = polar(from, angle, length)
+        let mid = polar(from, angle, length * 0.5)
+        let normal = polar(.zero, angle + 90, length * bend)
+        var path = Path()
+        path.move(to: from)
+        path.addQuadCurve(to: end, control: CGPoint(x: mid.x + normal.x, y: mid.y + normal.y))
+        c.stroke(path, with: .color(tone.stem), style: StrokeStyle(lineWidth: width, lineCap: .round))
+        return end
+    }
+
+    static func leaf(_ c: GraphicsContext, base: CGPoint, angle: Double, length: CGFloat, width: CGFloat, tone: Tone) {
+        var l = c
+        l.translateBy(x: base.x, y: base.y)
+        l.rotate(by: .degrees(angle))
+        var path = Path()
+        path.move(to: .zero)
+        path.addQuadCurve(to: CGPoint(x: length, y: 0), control: CGPoint(x: length * 0.45, y: -width))
+        path.addQuadCurve(to: .zero, control: CGPoint(x: length * 0.55, y: width * 0.9))
+        l.fill(path, with: .linearGradient(Gradient(colors: [tone.leafLight, tone.leafDeep]),
+                                           startPoint: CGPoint(x: 0, y: -width), endPoint: CGPoint(x: length, y: width)))
+        var vein = Path()
+        vein.move(to: CGPoint(x: length * 0.08, y: 0))
+        vein.addLine(to: CGPoint(x: length * 0.8, y: 0))
+        l.stroke(vein, with: .color(tone.leafDeep.opacity(0.55)), lineWidth: 0.35)
+    }
+
+    /// Lavender: a fine stem and, along its top half, little whorls of separate buds (a pair either
+    /// side and one between), getting smaller and paler towards the tip.
+    static func lavender(_ c: GraphicsContext, from: CGPoint, angle: Double, length L: CGFloat, tone: Tone) {
+        var l = c
+        l.translateBy(x: from.x, y: from.y)
+        l.rotate(by: .degrees(angle))
+        var stem = Path()
+        stem.move(to: .zero)
+        stem.addQuadCurve(to: CGPoint(x: L * 0.97, y: -L * 0.02), control: CGPoint(x: L * 0.45, y: L * 0.03))
+        l.stroke(stem, with: .color(tone.stem), style: StrokeStyle(lineWidth: max(0.75, L * 0.012), lineCap: .round))
+        let whorls = max(6, Int(L / 8.5))
+        let spacing = L * 0.5 / CGFloat(whorls)
+        for i in 0..<whorls {
+            let u = CGFloat(i) / CGFloat(whorls - 1)
+            let x = L * 0.5 + L * 0.47 * u
+            let y = -L * 0.02 * (0.5 + 0.5 * u) * (0.5 + 0.5 * u)
+            let size = L * (0.05 - 0.02 * u)
+            let deep = i < whorls / 3 ? tone.lavenderDeep : tone.lavenderLight
+            let light = i < whorls / 3 ? tone.lavenderLight : tone.lavenderPale
+            let buds: [(dx: CGFloat, dy: CGFloat, turn: Double, scale: CGFloat)] = [
+                (0, -0.62, -38, 1), (0.15, 0.62, 38, 1), (0.5 * spacing / size, 0, 0, 0.78),
+            ]
+            for bud in buds where !(i == whorls - 1 && bud.turn == 0) {
+                var b = l
+                b.translateBy(x: x + bud.dx * size, y: y + bud.dy * size)
+                b.rotate(by: .degrees(bud.turn))
+                let w = size * 1.05 * bud.scale, h = size * 0.62 * bud.scale
+                let rect = CGRect(x: -w / 2, y: -h / 2, width: w, height: h)
+                b.fill(Path(ellipseIn: rect), with: .linearGradient(Gradient(colors: [light, deep]),
+                                                                    startPoint: CGPoint(x: 0, y: rect.minY), endPoint: CGPoint(x: 0, y: rect.maxY)))
+            }
+        }
+    }
+
+    /// A five-petal blossom, pressed flat: rounded petals with a faint vein each and a gold heart.
+    static func blossom(_ c: GraphicsContext, at center: CGPoint, radius r: CGFloat, rotation: Double, light: Color, deep: Color, tone: Tone) {
+        var b = c
+        b.translateBy(x: center.x, y: center.y)
+        b.rotate(by: .degrees(rotation))
+        for i in 0..<5 {
+            var p = b
+            p.rotate(by: .degrees(Double(i) * 72))
+            var petal = Path()
+            petal.move(to: CGPoint(x: r * 0.1, y: 0))
+            petal.addCurve(to: CGPoint(x: r * 0.98, y: -r * 0.08),
+                           control1: CGPoint(x: r * 0.3, y: -r * 0.5), control2: CGPoint(x: r * 0.95, y: -r * 0.52))
+            // A little notch at the tip.
+            petal.addQuadCurve(to: CGPoint(x: r * 0.98, y: r * 0.08), control: CGPoint(x: r * 0.86, y: 0))
+            petal.addCurve(to: CGPoint(x: r * 0.1, y: 0),
+                           control1: CGPoint(x: r * 0.95, y: r * 0.52), control2: CGPoint(x: r * 0.3, y: r * 0.5))
+            p.fill(petal, with: .linearGradient(Gradient(colors: [deep, light]), startPoint: .zero, endPoint: CGPoint(x: r, y: 0)))
+            p.stroke(petal, with: .color(deep.opacity(0.55)), lineWidth: 0.3)
+            var vein = Path()
+            vein.move(to: CGPoint(x: r * 0.25, y: 0))
+            vein.addLine(to: CGPoint(x: r * 0.62, y: 0))
+            p.stroke(vein, with: .color(deep.opacity(0.6)), lineWidth: 0.35)
+        }
+        let heart = r * 0.24
+        b.fill(Path(ellipseIn: CGRect(x: -heart, y: -heart, width: heart * 2, height: heart * 2)),
+               with: .linearGradient(Gradient(colors: [tone.heartLight, tone.heartDeep]),
+                                     startPoint: CGPoint(x: -heart, y: -heart), endPoint: CGPoint(x: heart, y: heart)))
+        for i in 0..<5 {
+            let dot = polar(.zero, Double(i) * 72 + 36, heart * 1.25)
+            b.fill(Path(ellipseIn: CGRect(x: dot.x - r * 0.045, y: dot.y - r * 0.045, width: r * 0.09, height: r * 0.09)),
+                   with: .color(tone.heartDeep))
+        }
+    }
+
+    /// Baby's breath: a fine branching stem ending in clusters of tiny white florets.
+    static func babysBreath(_ c: GraphicsContext, from: CGPoint, angle: Double, length L: CGFloat, clusters: Int, k: CGFloat, tone: Tone) {
+        let end = stem(c, from: from, angle: angle, length: L, bend: 0.04, width: 0.6, tone: tone)
+        var tips: [CGPoint] = [end]
+        for i in 0..<max(0, clusters - 1) {
+            let u = 0.45 + 0.45 * CGFloat(i) / CGFloat(max(1, clusters - 1))
+            let base = polar(from, angle, L * u)
+            let side: Double = i.isMultiple(of: 2) ? -1 : 1
+            tips.append(stem(c, from: base, angle: angle + side * (34 + Double(i % 3) * 6), length: L * (0.2 + 0.05 * CGFloat(i % 2)),
+                             bend: 0.05, width: 0.5, tone: tone))
+        }
+        for (index, tip) in tips.enumerated() {
+            let florets: [(CGFloat, CGFloat, CGFloat)] = [(0, 0, 1.35), (1.9, -1.2, 1.05), (-1.6, -1.6, 1.0), (0.6, 2.0, 0.9)]
+            for (n, f) in florets.enumerated() where n < 3 + index % 2 {
+                let rr = f.2 * k
+                let rect = CGRect(x: tip.x + f.0 * k - rr, y: tip.y + f.1 * k - rr, width: rr * 2, height: rr * 2)
+                c.fill(Path(ellipseIn: rect), with: .color(tone.breath))
+                c.stroke(Path(ellipseIn: rect), with: .color(tone.breathEdge), lineWidth: 0.35)
+            }
+        }
+    }
+
+    /// Olive-leaf sprig: a stem with slim leaves alternating along it, smaller towards the tip.
+    static func leafSprig(_ c: GraphicsContext, from: CGPoint, angle: Double, length L: CGFloat, leaves: Int, k: CGFloat, tone: Tone) {
+        stem(c, from: from, angle: angle, length: L, bend: 0.05, width: 0.75, tone: tone)
+        for i in 0..<leaves {
+            let u = 0.3 + 0.62 * CGFloat(i) / CGFloat(max(1, leaves - 1))
+            let base = polar(from, angle, L * u)
+            let side: Double = i.isMultiple(of: 2) ? -1 : 1
+            let size = 1 - 0.35 * u
+            leaf(c, base: base, angle: angle + side * 38, length: 13 * k * size, width: 3.2 * k * size, tone: tone)
+        }
+        leaf(c, base: polar(from, angle, L * 0.98), angle: angle, length: 9 * k, width: 2.4 * k, tone: tone)
+    }
+}
+
+/// A spray of pressed flowers, for the envelope (tucked under the wax, or a small echo of it) and
+/// for the letter's corner. `binding` is where the stems meet, at the centre of the frame.
+struct FormalLetterSpray: View, Equatable {
+    enum Arrangement: Equatable { case seal, echo, corner }
+    let arrangement: Arrangement
+    let k: CGFloat
+    var night = false
+
+    static func frame(_ arrangement: Arrangement, k: CGFloat) -> CGSize {
+        switch arrangement {
+        case .seal: return CGSize(width: 250 * k, height: 230 * k)
+        case .echo: return CGSize(width: 120 * k, height: 110 * k)
+        case .corner: return CGSize(width: 90 * k, height: 90 * k)
+        }
+    }
 
     var body: some View {
-        let size = Self.frame(length)
+        let size = Self.frame(arrangement, k: k)
+        let tone: FormalLetterFloraTone = night ? .night : .day
         return Canvas { ctx, _ in
             var c = ctx
             c.translateBy(x: size.width / 2, y: size.height / 2)
-            c.rotate(by: .degrees(angle))
-            let L = length
-            let stemColor = FormalLetterPalette.rgb(0x8a9a7c)
-            // A soft shadow: pressed flowers sit flat but not weightless.
-            var shade = c
-            shade.addFilter(.blur(radius: 1.2))
-            shade.translateBy(x: 0.6, y: 1.2)
-            var stem = Path()
-            stem.move(to: CGPoint(x: -L * 0.12, y: 0))
-            stem.addQuadCurve(to: CGPoint(x: L, y: -L * 0.02), control: CGPoint(x: L * 0.45, y: L * 0.035))
-            shade.stroke(stem, with: .color(FormalLetterPalette.plum.opacity(0.16)), lineWidth: 1.6)
-            c.stroke(stem, with: .color(stemColor), style: StrokeStyle(lineWidth: max(0.9, L * 0.016), lineCap: .round))
-            // Two slim leaves near the seal.
-            for (u, side, len) in [(0.2, -1.0, 0.3), (0.3, 1.0, 0.26)] as [(CGFloat, CGFloat, CGFloat)] {
-                var leaf = Path()
-                let base = CGPoint(x: L * u, y: L * 0.018)
-                let tip = CGPoint(x: base.x + L * len, y: base.y + side * L * 0.11)
-                leaf.move(to: base)
-                leaf.addQuadCurve(to: tip, control: CGPoint(x: base.x + L * len * 0.5, y: base.y + side * L * 0.12))
-                leaf.addQuadCurve(to: base, control: CGPoint(x: base.x + L * len * 0.55, y: base.y + side * L * 0.01))
-                c.fill(leaf, with: .linearGradient(Gradient(colors: [FormalLetterPalette.rgb(0x9db08f), FormalLetterPalette.rgb(0x7f9373)]),
-                                                   startPoint: base, endPoint: tip))
-            }
-            // The buds: whorls getting smaller towards the tip.
-            let whorls = 9
-            for i in 0..<whorls {
-                let u = 0.48 + 0.52 * CGFloat(i) / CGFloat(whorls - 1)
-                let x = L * u
-                let y = -L * 0.02 * u * u
-                let size = L * (0.085 - 0.045 * CGFloat(i) / CGFloat(whorls - 1))
-                for (k, side) in [-1.0, 1.0, 0.0].enumerated() {
-                    let bud = CGRect(x: x - size * 0.55, y: y + CGFloat(side) * size * 0.42 - size * 0.32, width: size * 1.1, height: size * 0.64)
-                    var b = c
-                    b.translateBy(x: bud.midX, y: bud.midY)
-                    b.rotate(by: .degrees(Double(side) * 32))
-                    let rect = CGRect(x: -bud.width / 2, y: -bud.height / 2, width: bud.width, height: bud.height)
-                    let colors = k == 2
-                        ? [FormalLetterPalette.rgb(0xc1a6e0), FormalLetterPalette.rgb(0x9a78c2)]
-                        : [FormalLetterPalette.rgb(0xa98bcf), FormalLetterPalette.rgb(0x7d5ba6)]
-                    b.fill(Path(ellipseIn: rect), with: .linearGradient(Gradient(colors: colors),
-                                                                        startPoint: CGPoint(x: 0, y: -rect.height / 2), endPoint: CGPoint(x: 0, y: rect.height / 2)))
+            c.addFilter(.shadow(color: tone.shadow, radius: tone.shadowRadius, x: tone.shadowOffset.width, y: tone.shadowOffset.height))
+            c.drawLayer { layer in
+                switch arrangement {
+                case .seal: Self.seal(layer, k: k, tone: tone)
+                case .echo: Self.echo(layer, k: k, tone: tone)
+                case .corner: Self.corner(layer, k: k, tone: tone)
                 }
             }
         }
         .frame(width: size.width, height: size.height)
+        .allowsHitTesting(false)
+    }
+
+    typealias F = FormalLetterFlora
+
+    /// Under the wax: cut stems peek out down to the left; the flowers fan up to the right.
+    nonisolated static func seal(_ c: GraphicsContext, k: CGFloat, tone: FormalLetterFloraTone) {
+        let o = CGPoint.zero
+        for (angle, length) in [(156.0, 30.0), (166.0, 25.0), (174.0, 28.0)] {
+            F.stem(c, from: o, angle: angle, length: length * k, bend: 0.03, width: 0.85, tone: tone)
+        }
+        F.leaf(c, base: F.polar(o, 26, 30 * k), angle: 30, length: 13 * k, width: 3 * k, tone: tone)
+        F.leafSprig(c, from: o, angle: -3, length: 66 * k, leaves: 5, k: k, tone: tone)
+        F.babysBreath(c, from: o, angle: 14, length: 52 * k, clusters: 3, k: k, tone: tone)
+        F.lavender(c, from: o, angle: -52, length: 72 * k, tone: tone)
+        F.babysBreath(c, from: o, angle: -40, length: 82 * k, clusters: 5, k: k, tone: tone)
+        F.lavender(c, from: o, angle: -36, length: 84 * k, tone: tone)
+        F.lavender(c, from: o, angle: -22, length: 98 * k, tone: tone)
+        F.leaf(c, base: F.polar(o, -74, 22 * k), angle: -70, length: 15 * k, width: 3.4 * k, tone: tone)
+        F.blossom(c, at: F.polar(o, 4, 60 * k), radius: 5 * k, rotation: 40, light: tone.blushLight, deep: tone.blushDeep, tone: tone)
+        F.blossom(c, at: F.polar(o, -62, 48 * k), radius: 5.8 * k, rotation: 12, light: tone.lilacLight, deep: tone.lilacDeep, tone: tone)
+        F.blossom(c, at: F.polar(o, -12, 44 * k), radius: 6.8 * k, rotation: 30, light: tone.lilacLight, deep: tone.lilacDeep, tone: tone)
+        F.blossom(c, at: F.polar(o, -33, 56 * k), radius: 8.4 * k, rotation: -8, light: tone.blushLight, deep: tone.blushDeep, tone: tone)
+    }
+
+    /// A small echo of the spray, for a corner of the envelope.
+    nonisolated static func echo(_ c: GraphicsContext, k: CGFloat, tone: FormalLetterFloraTone) {
+        let o = CGPoint.zero
+        F.leafSprig(c, from: o, angle: -152, length: 36 * k, leaves: 3, k: k * 0.8, tone: tone)
+        F.lavender(c, from: o, angle: -116, length: 50 * k, tone: tone)
+        F.babysBreath(c, from: o, angle: -136, length: 42 * k, clusters: 3, k: k, tone: tone)
+        F.leaf(c, base: F.polar(o, -100, 14 * k), angle: -96, length: 11 * k, width: 2.6 * k, tone: tone)
+        F.blossom(c, at: F.polar(o, -112, 31 * k), radius: 4.4 * k, rotation: 0, light: tone.lilacLight, deep: tone.lilacDeep, tone: tone)
+        F.blossom(c, at: F.polar(o, -138, 23 * k), radius: 5.6 * k, rotation: 20, light: tone.blushLight, deep: tone.blushDeep, tone: tone)
+    }
+
+    /// The letter's corner: a blossom, a sprig of baby's breath, a little lavender and a leaf, all
+    /// rising up and to the left from stems that run down to the right (where the tape holds them).
+    nonisolated static func corner(_ c: GraphicsContext, k: CGFloat, tone: FormalLetterFloraTone) {
+        let o = CGPoint.zero
+        for (angle, length) in [(48.0, 11.0), (56.0, 9.5)] {
+            F.stem(c, from: o, angle: angle, length: length * k, bend: 0.03, width: 0.7, tone: tone)
+        }
+        F.leaf(c, base: F.polar(o, -150, 6 * k), angle: -168, length: 13 * k, width: 3 * k, tone: tone)
+        F.lavender(c, from: o, angle: -102, length: 30 * k, tone: tone)
+        F.babysBreath(c, from: o, angle: -80, length: 26 * k, clusters: 3, k: k * 0.9, tone: tone)
+        F.stem(c, from: o, angle: -132, length: 17 * k, bend: 0.05, width: 0.75, tone: tone)
+        F.blossom(c, at: F.polar(o, -132, 18 * k), radius: 7 * k, rotation: 14, light: tone.blushLight, deep: tone.blushDeep, tone: tone)
+    }
+}
+
+// MARK: - Little touches on the letter
+
+enum FormalLetterTouches {
+    typealias P = FormalLetterPalette
+
+    /// The signature's red heart (drawn, so it can beat): glossy like the ❤️ beside it in the app.
+    static func heart(_ ctx: GraphicsContext, in rect: CGRect) {
+        let shape = FormalLetterHeart().path(in: rect)
+        ctx.fill(shape, with: .linearGradient(Gradient(colors: [P.rgb(0xf35d74), P.rgb(0xcb1f3d)]),
+                                              startPoint: CGPoint(x: rect.minX, y: rect.minY), endPoint: CGPoint(x: rect.maxX, y: rect.maxY)))
+        var gloss = Path()
+        gloss.addEllipse(in: CGRect(x: rect.minX + rect.width * 0.18, y: rect.minY + rect.height * 0.16,
+                                    width: rect.width * 0.22, height: rect.height * 0.16))
+        ctx.fill(gloss, with: .color(Color.white.opacity(0.55)))
+    }
+
+    /// A little paw print, stamped in soft ink: a pad and four toe beans.
+    static func paw(_ ctx: GraphicsContext, center: CGPoint, size s: CGFloat, angle: Double, color: Color) {
+        var c = ctx
+        c.translateBy(x: center.x, y: center.y)
+        c.rotate(by: .degrees(angle))
+        var pad = Path()
+        pad.move(to: CGPoint(x: -0.42 * s, y: 0.28 * s))
+        pad.addCurve(to: CGPoint(x: 0.42 * s, y: 0.28 * s), control1: CGPoint(x: -0.5 * s, y: -0.22 * s), control2: CGPoint(x: 0.5 * s, y: -0.22 * s))
+        pad.addQuadCurve(to: CGPoint(x: -0.42 * s, y: 0.28 * s), control: CGPoint(x: 0, y: 0.52 * s))
+        c.fill(pad, with: .color(color))
+        for (x, y, r) in [(-0.44, -0.3, 0.13), (-0.16, -0.5, 0.14), (0.16, -0.5, 0.14), (0.44, -0.3, 0.13)] as [(CGFloat, CGFloat, CGFloat)] {
+            c.fill(Path(ellipseIn: CGRect(x: (x - r) * s, y: (y - r * 1.15) * s, width: 2 * r * s, height: 2.3 * r * s)), with: .color(color))
+        }
+    }
+
+    /// A sprig of rosemary, for the apothecary: a fine stem with slim needle leaves along it.
+    static func herb(_ ctx: GraphicsContext, from: CGPoint, angle: Double, length L: CGFloat) {
+        let tone = FormalLetterFloraTone.day
+        var c = ctx
+        c.translateBy(x: from.x, y: from.y)
+        c.rotate(by: .degrees(angle))
+        var stem = Path()
+        stem.move(to: .zero)
+        stem.addQuadCurve(to: CGPoint(x: L, y: 0), control: CGPoint(x: L * 0.5, y: -L * 0.05))
+        c.stroke(stem, with: .color(tone.stem), style: StrokeStyle(lineWidth: 0.8, lineCap: .round))
+        let count = 9
+        for i in 0..<count {
+            let u = 0.18 + 0.8 * CGFloat(i) / CGFloat(count - 1)
+            let side: Double = i.isMultiple(of: 2) ? -1 : 1
+            let length = L * (0.2 - 0.08 * u)
+            var leaf = c
+            leaf.translateBy(x: L * u, y: -L * 0.05 * 4 * u * (1 - u))
+            leaf.rotate(by: .degrees(side * 48))
+            leaf.fill(Path(ellipseIn: CGRect(x: 0, y: -length * 0.13, width: length, height: length * 0.26)),
+                      with: .linearGradient(Gradient(colors: [tone.leafLight, tone.leafDeep]),
+                                            startPoint: .zero, endPoint: CGPoint(x: length, y: 0)))
+        }
+        // Two tiny pale-blue rosemary flowers.
+        for (u, side) in [(0.5, -1.0), (0.78, 1.0)] as [(CGFloat, CGFloat)] {
+            let p = CGPoint(x: L * u, y: side * L * 0.09 - L * 0.05 * 4 * u * (1 - u))
+            c.fill(Path(ellipseIn: CGRect(x: p.x - L * 0.035, y: p.y - L * 0.03, width: L * 0.07, height: L * 0.06)),
+                   with: .color(P.rgb(0xb9c4ea)))
+        }
+    }
+
+    /// A short strip of washi tape: translucent lilac, fine white stripes, torn ends.
+    static func tape(_ ctx: GraphicsContext, center: CGPoint, length: CGFloat, width: CGFloat, angle: Double) {
+        var c = ctx
+        c.translateBy(x: center.x, y: center.y)
+        c.rotate(by: .degrees(angle))
+        let half = length / 2, h = width / 2
+        var strip = Path()
+        let teeth = 4
+        strip.move(to: CGPoint(x: -half, y: -h))
+        strip.addLine(to: CGPoint(x: half, y: -h))
+        for i in 0..<teeth {
+            let y0 = -h + width * CGFloat(i) / CGFloat(teeth)
+            strip.addLine(to: CGPoint(x: half - (i.isMultiple(of: 2) ? 1.2 : 0), y: y0 + width / CGFloat(teeth) * 0.5))
+            strip.addLine(to: CGPoint(x: half, y: y0 + width / CGFloat(teeth)))
+        }
+        strip.addLine(to: CGPoint(x: -half, y: h))
+        for i in (0..<teeth).reversed() {
+            let y0 = -h + width * CGFloat(i) / CGFloat(teeth)
+            strip.addLine(to: CGPoint(x: -half + (i.isMultiple(of: 2) ? 0 : 1.2), y: y0 + width / CGFloat(teeth) * 0.5))
+            strip.addLine(to: CGPoint(x: -half, y: y0))
+        }
+        strip.closeSubpath()
+        c.fill(strip, with: .color(P.rgb(0xdcc9ef, 0.72)))
+        var lines = c
+        lines.clip(to: strip)
+        var stripes = Path()
+        var x = -half - width
+        while x < half + width {
+            stripes.move(to: CGPoint(x: x, y: h))
+            stripes.addLine(to: CGPoint(x: x + width, y: -h))
+            x += 3.2
+        }
+        lines.stroke(stripes, with: .color(Color.white.opacity(0.45)), lineWidth: 0.7)
+        c.fill(Path(CGRect(x: -half, y: -h, width: length, height: 0.8)), with: .color(Color.white.opacity(0.35)))
+    }
+
+    /// A pressed flower taped into the letter's corner (right of the crest, above the words).
+    static func corner(_ ctx: GraphicsContext, at binding: CGPoint) {
+        var c = ctx
+        c.translateBy(x: binding.x, y: binding.y)
+        c.addFilter(.shadow(color: P.plum.opacity(0.18), radius: 0.9, x: 0.4, y: 0.8))
+        c.drawLayer { layer in FormalLetterSpray.corner(layer, k: 1, tone: .day) }
+        // The tape across the stems, just below where they meet.
+        tape(ctx, center: CGPoint(x: binding.x + 3, y: binding.y + 3.5), length: 24, width: 8, angle: -40)
+    }
+}
+
+/// A petal drifting out of the letter as it unfolds.
+struct FormalLetterPetal: View, Equatable {
+    let size: CGFloat
+    let lilac: Bool
+
+    var body: some View {
+        Canvas { ctx, _ in
+            let tone = FormalLetterFloraTone.day
+            let r = size / 2
+            var petal = Path()
+            petal.move(to: CGPoint(x: 0, y: r))
+            petal.addCurve(to: CGPoint(x: size * 0.98, y: r * 0.92), control1: CGPoint(x: size * 0.3, y: 0), control2: CGPoint(x: size * 0.95, y: r * 0.1))
+            petal.addQuadCurve(to: CGPoint(x: size * 0.98, y: r * 1.08), control: CGPoint(x: size * 0.86, y: r))
+            petal.addCurve(to: CGPoint(x: 0, y: r), control1: CGPoint(x: size * 0.95, y: size * 0.95), control2: CGPoint(x: size * 0.3, y: size))
+            let light = lilac ? tone.lilacLight : tone.blushLight, deep = lilac ? tone.lilacDeep : tone.blushDeep
+            ctx.fill(petal, with: .linearGradient(Gradient(colors: [deep, light]), startPoint: CGPoint(x: 0, y: r), endPoint: CGPoint(x: size, y: r)))
+            ctx.stroke(petal, with: .color(deep.opacity(0.5)), lineWidth: 0.3)
+        }
+        .frame(width: size, height: size)
         .allowsHitTesting(false)
     }
 }

@@ -332,3 +332,70 @@ await test("Letters open inside their notification: the push carries the letter,
   assert.equal(tried.status, 200);
   assert.equal((await db.select().from(schema.letters)).length, before);
 });
+
+await test("The widget snapshot carries the whole little note, and on Josh's phone his newest note to her", async () => {
+  const { createLoveNote, deliverLoveNote } = await import("../server/lib/loveNotes.js");
+  const created = await createLoveNote(db, { recipient: "kiriya", title: "for the widget", body: "a whole note\n\nwith two paragraphs", sendAt: new Date(Date.now() - 500) });
+  await deliverLoveNote(db, created.id);
+  const hers = await json(await request("app/devices", { method: "POST", token: her, body: { label: "her iPhone" } }), 201);
+  const his = await json(await request("app/devices", { method: "POST", token: josh, body: { label: "his iPhone" } }), 201);
+  const mine = await json(await request("widget/app", { token: hers.widgetKey }));
+  assert.equal(mine.latestNote.id, created.id);
+  assert.equal(mine.latestNote.text, "a whole note\n\nwith two paragraphs");
+  assert.ok(mine.latestNote.from);
+  assert.equal(mine.latestNote.opened, false);
+  assert.match(mine.latestNote.link, /^kiriyalove:\/\/open\/world\/notes\?open=/);
+  assert.equal("sentNote" in mine, false, "only Josh's phone gets his sent note");
+  const theirs = await json(await request("widget/app", { token: his.widgetKey }));
+  assert.equal(theirs.sentNote.id, created.id);
+  assert.equal(theirs.sentNote.opened, false);
+});
+
+await test("The widget snapshot carries the cons for the Next con widget, ongoing ones included", async () => {
+  const { localDay } = await import("../server/lib/time.js");
+  const day = localDay();
+  const shift = (n) => new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
+  const row = (id, name, from, to, extra = {}) => ({
+    id, name, city: "Singapore", country: "Singapore", venue: "Suntec Singapore Convention & Exhibition Centre",
+    startsOn: shift(from), endsOn: to === null ? null : shift(to), tier: "sg", url: `https://example.com/${id}`,
+    confidence: "official", status: "upcoming", tags: ["anime", "cosplay"], hers: false, ...extra,
+  });
+  await db.insert(schema.events).values([
+    row("afa:2026", "AFA Singapore", -1, 1, { hers: true }),           // on now: day 2 of 3
+    row("sj60:2026", "SJ60 Musubi Festival", 0, 1),                    // starts today
+    row("sgcc:2026", "Singapore Comic Con", 7, 9, { hers: true }),
+    row("doujin:2026", "Doujin Market", 15, 16),
+    row("eoy:2026", "EOY Festival", 28, null),                         // no end date: one day
+    row("old:2026", "Last week's con", -9, -7),                        // over
+    row("ended:2026", "Ended yesterday", -3, -1),                      // over (status not yet 'past')
+    row("tbc:2026", "Unconfirmed", 3, 4, { confidence: "unconfirmed" }),
+    row("kl:2026", "Comic Fiesta", 2, 3, { tier: "regional", city: "Kuala Lumpur" }),
+  ]);
+  const device = await json(await request("app/devices", { method: "POST", token: her, body: { label: "her iPhone" } }), 201);
+  const snap = await json(await request("widget/app", { token: device.widgetKey }));
+  // Yesterday's con stays one more day (the widget's "was lovely"); nextEvent is the first not over.
+  assert.deepEqual(snap.events.map((e) => e.id), ["ended:2026", "afa:2026", "sj60:2026", "sgcc:2026", "doujin:2026"]);
+  assert.deepEqual(snap.nextEvent, snap.events[1]);
+  assert.deepEqual(snap.nextEvent, {
+    id: "afa:2026", title: "AFA Singapore", startsOn: shift(-1), endsOn: shift(1), daysAway: -1,
+    venue: "Suntec Singapore Convention & Exhibition Centre", city: "Singapore", tags: ["anime", "cosplay"],
+    hers: true, url: "https://example.com/afa:2026", link: "kiriyalove://open/world?event=afa%3A2026#events",
+  });
+  assert.equal(snap.events[2].daysAway, 0, "SJ60 starts today");
+});
+
+await test("A signal's push plays its own sound and offers itself straight back", async () => {
+  const { apnsNotification } = await import("../server/push/apns.js");
+  const { TAPS } = await import("../shared/taps.js");
+  for (const tap of TAPS) assert.ok(tap.kaomoji && tap.note, `${tap.key} has a kaomoji and a note`);
+  const hug = apnsNotification({ title: "Josh sent you a big hug 🫂", body: "(っ´▽`)っ  a long, warm squeeze", kind: "tap", tap: "hug" });
+  assert.equal(hug.aps.sound, "SignalsWidget-hug.caf");
+  assert.equal(hug.aps.category, "TAP_HUG");
+  assert.equal(hug.payload.tap, "hug");
+  const heart = apnsNotification({ title: "Josh is thinking of you ♡", body: "(˘︶˘)♡  right now, and always", kind: "tap", tap: "thinking" });
+  assert.equal(heart.aps.sound, "SignalsWidget-thinking.caf");
+  assert.equal(heart.aps.category, "TAP");
+  const unknown = apnsNotification({ title: "t", body: "b", kind: "tap", tap: "nope" });
+  assert.equal(unknown.aps.sound, "tap.caf");
+  assert.equal(unknown.payload.tap, undefined);
+});

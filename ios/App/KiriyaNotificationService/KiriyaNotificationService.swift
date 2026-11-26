@@ -14,6 +14,9 @@ final class NotificationService: UNNotificationServiceExtension {
                              withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
         self.contentHandler = contentHandler
         best = request.content
+        // A little note (or a letter's announcement) goes straight onto the Home Screen widget, with
+        // no network fetch (KiriyaWidgets/Notes/NotesWidgetMailbox.swift).
+        NotesWidgetMailbox.receive(request.content.userInfo)
 
         guard let content = request.content.mutableCopy() as? UNMutableNotificationContent else {
             return deliver(request.content)

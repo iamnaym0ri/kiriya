@@ -24,7 +24,10 @@ struct FormalLetterEnvelopeMetrics: Equatable {
     var sealTip: CGFloat { 0.3 }
     var sealCenter: CGPoint { CGPoint(x: width / 2, y: flapDepth - sealDiameter / 2 * sealTip) }
     var slope: CGFloat { flapDepth / (width / 2) }
-    var lavenderLength: CGFloat { (84 * k).rounded() }
+    /// Where the pressed flowers' stems meet, tucked under the wax (just below and left of its centre).
+    var sprayBinding: CGPoint { CGPoint(x: sealCenter.x - 4 * k, y: sealCenter.y + 6 * k) }
+    /// The small echo spray's stems, on the pocket's left side, clear of the address.
+    var echoBinding: CGPoint { CGPoint(x: width * 0.25, y: height * 0.6) }
     /// The flap's frame also holds the seal's upper piece, which hangs below its tip.
     var flapFrameHeight: CGFloat { (flapDepth + sealDiameter * 0.75).rounded(.up) }
     /// The pocket's frame (with room for the address's descenders at the bottom).

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, asc, eq, gte, ne } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, ne, sql } from "drizzle-orm";
 import { getDb, schema } from "../db/client.js";
 import { TAPS, tapByKey } from "../../shared/taps.js";
 import { unreadTotals } from "../lib/appBadge.js";
@@ -11,10 +11,10 @@ import { env } from "../env.js";
 import { ADDRESS_OPTIONS, ENERGY_LEVELS, FEELINGS, MOODS } from "../content/moods.js";
 import { readCheckin, saveCheckin } from "../lib/checkin.js";
 import { personForKey } from "../lib/deviceKeys.js";
-import { inbox, notificationPreview, openLoveNote } from "../lib/loveNotes.js";
+import { inbox, noteLink, notificationPreview, openLoveNote } from "../lib/loveNotes.js";
 import { pullNote } from "../lib/noteJar.js";
-import { letterForCard, openLetterInPlace } from "../lib/letterCard.js";
-import { localDay } from "../lib/time.js";
+import { letterForCard, openLetterInPlace, signatureName } from "../lib/letterCard.js";
+import { addDays, localDay } from "../lib/time.js";
 
 // For the phone widget and Shortcuts, which can't use the site's cookie. A revocable device key
 // (Settings → Phone widget) stands in for the passphrase and reaches only these routes: today's
@@ -155,6 +155,27 @@ const deep = (path) => `kiriyalove://open${path}`;
 const KIND_PREVIEW = { image: "📷 a photo", gif: "a GIF", sticker: "a sticker", voice: "🎙️ a voice note", deleted: "unsent a message" };
 const dayNumber = (day) => Date.parse(`${day}T00:00:00Z`) / 86_400_000;
 
+/**
+ * A con as the Next con widget shows it (ios/App/KiriyaWidgets/Con). Dates are Singapore days
+ * ("2026-11-27"); `endsOn` is always set (a one-day con ends the day it starts); `link` opens the
+ * app at the events section with this con picked out.
+ */
+function widgetEvent(event, day) {
+  return {
+    id: event.id,
+    title: event.name,
+    startsOn: event.startsOn,
+    endsOn: event.endsOn ?? event.startsOn,
+    daysAway: Math.round(dayNumber(event.startsOn) - dayNumber(day)),
+    venue: event.venue ?? null,
+    city: event.city ?? null,
+    tags: Array.isArray(event.tags) ? event.tags.filter((tag) => typeof tag === "string").slice(0, 6) : [],
+    hers: Boolean(event.hers),
+    url: event.url ?? null,
+    link: deep(`/world?event=${encodeURIComponent(event.id)}#events`),
+  };
+}
+
 function chatPreview(last, who, person) {
   if (!last) return null;
   const tap = last.kind === "tap" ? tapByKey[last.body] : null;
@@ -162,9 +183,27 @@ function chatPreview(last, who, person) {
   return { from: who[last.sender], mine: last.sender === person, preview, at: last.createdAt };
 }
 
+/** A little note as the Home Screen widget shows it (ios/App/KiriyaWidgets/Notes): the whole note, not just a preview. */
+function widgetNote(note, from) {
+  return {
+    id: note.id,
+    kind: note.kind,
+    title: note.title,
+    preview: notificationPreview(note.body, 180),
+    text: note.body,
+    at: note.at,
+    opened: Boolean(note.openedAt),
+    openedAt: note.openedAt ?? null,
+    reaction: note.reaction ?? null,
+    from,
+    link: deep(noteLink(note)),
+    letter: Boolean(note.link?.startsWith("/world/letters")),
+  };
+}
+
 export async function appSnapshot(db, person) {
   const day = localDay();
-  const [who, unread, chat, notes, [event]] = await Promise.all([
+  const [who, unread, chat, notes, cons, signer, sent] = await Promise.all([
     names(db),
     unreadTotals(db, person),
     chatSummary(db, person),
@@ -172,10 +211,24 @@ export async function appSnapshot(db, person) {
     db
       .select()
       .from(schema.events)
-      .where(and(eq(schema.events.status, "upcoming"), eq(schema.events.tier, "sg"), ne(schema.events.confidence, "unconfirmed"), gte(schema.events.startsOn, day)))
-      .orderBy(asc(schema.events.startsOn))
-      .limit(1),
+      // Cons on now count too, so the widget can say "happening now · day 2 of 3", and so does one that
+      // ended yesterday, for the widget's "AFA was lovely ♡" on the day after.
+      .where(
+        and(
+          eq(schema.events.status, "upcoming"),
+          eq(schema.events.tier, "sg"),
+          ne(schema.events.confidence, "unconfirmed"),
+          isNotNull(schema.events.startsOn),
+          gte(sql`coalesce(${schema.events.endsOn}, ${schema.events.startsOn})`, addDays(day, -1)),
+        ),
+      )
+      .orderBy(asc(schema.events.startsOn), desc(schema.events.hers), asc(schema.events.name))
+      .limit(5),
+    signatureName(db),
+    // On Josh's phone the widget shows his newest note to her, and whether she has opened it.
+    person === "admin" ? inbox(db, "kiriya", { limit: 1 }) : null,
   ]);
+  const ahead = cons.filter((event) => (event.endsOn ?? event.startsOn) >= day);
   const latest = notes.notes[0];
   const other = person === "kiriya" ? "admin" : "kiriya";
   return {
@@ -183,10 +236,12 @@ export async function appSnapshot(db, person) {
     me: who[person],
     other: who[other],
     unread,
-    latestNote: latest ? { title: latest.title, preview: notificationPreview(latest.body, 180), at: latest.at, opened: Boolean(latest.openedAt) } : null,
+    latestNote: latest ? widgetNote(latest, signer) : null,
+    ...(sent ? { sentNote: sent.notes[0] ? widgetNote(sent.notes[0], signer) : null } : {}),
     jar: { fresh: unread.jar },
     chat: { last: chatPreview(chat.last, who, person) },
-    nextEvent: event ? { title: event.name, startsOn: event.startsOn, daysAway: Math.round(dayNumber(event.startsOn) - dayNumber(day)), venue: event.venue ?? null } : null,
+    nextEvent: ahead[0] ? widgetEvent(ahead[0], day) : null,
+    events: cons.map((event) => widgetEvent(event, day)),
     taps: TAPS.map(({ key, emoji, label }) => ({ key, emoji, label })),
     links: { world: deep("/world"), chat: deep("/world/chat"), notes: deep("/world/notes"), jar: deep("/world#note-jar"), events: deep("/world#events") },
     updatedAt: new Date().toISOString(),

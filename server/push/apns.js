@@ -2,6 +2,7 @@ import apn from "@parse/node-apn";
 import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { schema } from "../db/client.js";
 import { env } from "../env.js";
+import { tapByKey } from "../../shared/taps.js";
 
 // Native notifications for the kiriya.love iPhone app, through Apple's push service with a
 // token-based .p8 key (no certificates to renew). Ad hoc builds use the production gateway; a build
@@ -67,17 +68,23 @@ export function letterPayload(letter) {
   return letter.lockedUntil || !letter.text ? out : fitText({ ...out, text: String(letter.text) });
 }
 
-export function apnsNotification({ title, body, navigate = "/world", kind = null, threadId = null, messageId = null, note: fullNote = null, letter = null }, { ttlSeconds = 6 * 60 * 60, now = Date.now(), badge = null } = {}) {
+export function apnsNotification({ title, body, navigate = "/world", kind = null, tap = null, threadId = null, messageId = null, note: fullNote = null, letter = null }, { ttlSeconds = 6 * 60 * 60, now = Date.now(), badge = null } = {}) {
   const style = KINDS[kind] ?? {};
+  // A "thinking of you" signal: which one (hug, kiss…), when the message says.
+  const signal = kind === "tap" && tapByKey[tap] ? tap : null;
   const note = new apn.Notification();
   note.topic = env.apnsBundleId;
   note.alert = { title: title.slice(0, 60), body: body.slice(0, 160) };
-  note.sound = style.sound ?? "default";
+  // Each signal has its own sound in the app (ios/App/App/Sounds): the same soft heartbeat she learns,
+  // then a little tail that says which. An app build without them plays the default sound.
+  note.sound = signal ? `SignalsWidget-${signal}.caf` : style.sound ?? "default";
   if (Number.isInteger(badge)) note.badge = badge;
   note.pushType = "alert";
   note.priority = 10;
   note.expiry = Math.floor(now / 1000) + ttlSeconds;
   if (style.category) note.category = style.category;
+  // Every signal but ♡ offers itself straight back ("Hug back 🫂"; ios/App/App/KiriyaNotifications.swift).
+  if (signal && signal !== "thinking") note.category = `TAP_${signal.toUpperCase()}`;
   if (threadId ?? style.thread) note.threadId = threadId ?? style.thread;
   // Letters, little notes and the jar get dressed up on the phone (an envelope or jar picture) by
   // the app's notification service extension, which needs permission to edit the notification.
@@ -90,6 +97,7 @@ export function apnsNotification({ title, body, navigate = "/world", kind = null
   note.payload = {
     navigate,
     ...(kind ? { kind } : {}),
+    ...(signal ? { tap: signal } : {}),
     ...(messageId ? { messageId } : {}),
     ...(inPlace ? { note: inPlace } : {}),
     ...(letterInPlace ? { letter: letterInPlace } : {}),

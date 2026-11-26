@@ -36,6 +36,8 @@ case "$1" in
       $BIN idle $OUT/idle locked $w
     done
     $BIN gif $OUT/gif medium 343
+    $BIN restgif $OUT/gif short 343 6.5
+    for l in short maomao; do for w in 343 393; do $BIN crest $OUT/crest $l $w; done; done
     SCROLLABLE=0 $BIN stills $OUT/stills-noscroll long
     ;;
   *)
@@ -44,6 +46,8 @@ case "$1" in
     case $mode in
       report|speak) $BIN $mode "$@" ;;
       stills|edges|sheet|frame|idle|video|gif|overview|piece) $BIN $mode $OUT/${mode%s}s "$@" ;;
+      restgif) $BIN $mode $OUT/gif "$@" ;;
+      crest) $BIN $mode $OUT/crest "$@" ;;
       *) $BIN $mode $OUT/$mode "$@" ;;
     esac
     ;;

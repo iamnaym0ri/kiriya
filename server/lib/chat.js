@@ -166,7 +166,7 @@ export function chatNotification(message, from) {
   };
   if (message.kind === "tap") {
     const tap = tapByKey[message.body];
-    return { title: tap.push.replace("{from}", from), body: "tap to send one back ♡", navigate: "/world/chat", kind: "tap", threadId: "chat", messageId: message.id };
+    return { title: tap.push.replace("{from}", from), body: `${tap.kaomoji}  ${tap.note}`, navigate: "/world/chat", kind: "tap", tap: tap.key, threadId: "chat", messageId: message.id };
   }
   const body = message.kind === "text" ? preview.text : message.body ? `${preview[message.kind]}: ${notificationPreview(message.body, 100)}` : preview[message.kind];
   return { title: from, body, navigate: "/world/chat", kind: "chat", threadId: "chat", messageId: message.id };

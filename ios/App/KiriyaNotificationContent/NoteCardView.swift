@@ -70,6 +70,7 @@ final class NoteCardModel: ObservableObject {
             truncated = kind == .note
         }
         stage = .sealed
+        Self.warmServices()
         // iOS keeps a notification's changed buttons, so a card shown again starts from the full set.
         switch kind {
         case .note: setActions([NotificationButtons.openNote, NotificationButtons.heart, NotificationButtons.openApp])
@@ -85,13 +86,39 @@ final class NoteCardModel: ObservableObject {
     func openEnvelope() {
         guard kind != .jar, stage == .sealed else { return }
         if kind == .letter, letter?.isLocked == true { return }
+        probe(kind == .letter ? "open letter" : "open note")
         withAnimation(.spring(response: 0.55, dampingFraction: 0.78)) { stage = .open }
         setActions([NotificationButtons.heart, NotificationButtons.openApp])
         let id = kind == .letter ? letter?.id : noteId
         guard let id else { return }
-        Task {
-            if kind == .letter { try? await KiriyaAPI.openLetter(id) } else { try? await KiriyaAPI.openNote(id) }
+        let isLetter = kind == .letter
+        // Off the main thread: the first request and the first widget reload in this process set
+        // things up (a URL session, a connection to WidgetKit), which would otherwise land in the
+        // middle of the opening and cost it frames.
+        Task.detached(priority: .utility) {
+            if isLetter {
+                try? await KiriyaAPI.openLetter(id)
+            } else {
+                // The Home Screen widget shows the note open at once, whatever the server has heard.
+                NotesWidgetMailbox.markOpened(id, reload: false)
+                try? await KiriyaAPI.openNote(id)
+            }
             WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
+
+    /// Debug builds log the frames around an opening (NotificationViewController's FrameProbe).
+    var probe: (String) -> Void = { _ in }
+
+    /// Once per process, while the first card is still sealed: the URL session and WidgetKit's
+    /// connection are set up in the background, so the first button press doesn't pay for them.
+    private static var warmedServices = false
+    private static func warmServices() {
+        guard !warmedServices else { return }
+        warmedServices = true
+        Task.detached(priority: .utility) {
+            _ = URLSession.shared.configuration
+            _ = WidgetCenter.shared
         }
     }
 
@@ -200,6 +227,10 @@ enum NotificationButtons {
 
 struct NoteCardView: View {
     @ObservedObject var model: NoteCardModel
+    /// True for a moment while the sealed card waits: see `warmingCopy`.
+    @State private var warming = false
+    /// The kinds of card already drawn open once in this process.
+    @MainActor private static var warmed: Set<String> = []
 
     var body: some View {
         Group {
@@ -224,12 +255,19 @@ struct NoteCardView: View {
     private static let statusHeight: CGFloat = 40
 
     private var noteCard: some View {
-        withHeartStatus(
-            LetterCard(content: LetterContent(heading: model.heading, title: model.noteTitle, text: model.text,
-                                              byline: model.byline, truncated: model.truncated),
+        let content = LetterContent(heading: model.heading, title: model.noteTitle, text: model.text,
+                                    byline: model.byline, truncated: model.truncated)
+        return withHeartStatus(
+            LetterCard(content: content,
                        isOpen: model.stage == .open,
                        onTapSealed: { model.openEnvelope() },
-                       maxHeight: 720 - Self.statusHeight))
+                       maxHeight: 720 - Self.statusHeight)
+                .background(alignment: .top) {
+                    if warming {
+                        warmingCopy(LetterCard(content: content, isOpen: true, maxHeight: 720 - Self.statusHeight))
+                    }
+                }
+                .task(id: "note|\(content.text)") { await warmUp("note") })
     }
 
     // MARK: a letter
@@ -239,15 +277,51 @@ struct NoteCardView: View {
     /// yet stays sealed with its date on it.
     private var letterCard: some View {
         let letter = model.letter
+        let content = FormalLetterContent(heading: model.heading, title: letter?.title ?? "",
+                                          text: letter?.text ?? "", from: letter?.from ?? "",
+                                          kind: letter?.kind, openWhen: letter?.openWhen, date: letter?.date,
+                                          lockedUntil: letter?.lockedUntil, truncated: letter?.truncated ?? false)
         return withHeartStatus(
-            FormalLetterCard(content: FormalLetterContent(heading: model.heading, title: letter?.title ?? "",
-                                                          text: letter?.text ?? "", from: letter?.from ?? "",
-                                                          kind: letter?.kind, openWhen: letter?.openWhen, date: letter?.date,
-                                                          lockedUntil: letter?.lockedUntil, truncated: letter?.truncated ?? false),
+            FormalLetterCard(content: content,
                              isOpen: model.stage == .open,
                              onTapSealed: { model.openEnvelope() },
                              scrollable: true,
-                             maxHeight: 720 - Self.statusHeight))
+                             maxHeight: 720 - Self.statusHeight)
+                .background(alignment: .top) {
+                    if warming {
+                        warmingCopy(FormalLetterCard(content: content, isOpen: true, scrollable: true, maxHeight: 720 - Self.statusHeight))
+                    }
+                }
+                .task(id: "letter|\(content.text)") {
+                    if !(letter?.isLocked ?? false) { await warmUp("letter") }
+                })
+    }
+
+    // MARK: the first opening
+
+    /// The first time a card opens in this process it pays for everything drawn for the first time
+    /// (the paper's view tree, its lettering at every size, its shapes), and the opening's first
+    /// frames stutter; every later opening is smooth. So while the sealed card waits, the open card
+    /// is drawn once, out of sight behind it (the sealed card is opaque, and the copy is all but
+    /// transparent too), then taken away. Once per kind of card in this process.
+    private func warmingCopy(_ card: some View) -> some View {
+        card
+            .opacity(0.001)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+
+    /// Waits until the notification has finished growing into view, then draws the open copy for a
+    /// few frames. Skipped if she opens the card first (it is warming up by then anyway).
+    private func warmUp(_ kind: String) async {
+        guard !Self.warmed.contains(kind), model.stage == .sealed else { return }
+        try? await Task.sleep(for: .milliseconds(700))
+        guard !Task.isCancelled, model.stage == .sealed, !Self.warmed.contains(kind) else { return }
+        Self.warmed.insert(kind)
+        model.probe("warm \(kind)")
+        warming = true
+        try? await Task.sleep(for: .milliseconds(300))
+        warming = false
     }
 
     /// The card, with a small strip under it once "Send one back" is pressed.

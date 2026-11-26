@@ -126,6 +126,47 @@ Maomao one is night plum; its letter modal sets the body in a book serif with an
 Heights (maxHeight 700): sealed 319 pt at 343 wide, 346 pt at 393. Open: short 439, birthday 586/559,
 no-title 358/346, truncated push 430, Maomao 700/694, medium/open-when/long/20,000-char 700 (scrolling).
 
+## Round 2 (2026-11-26): flowers, a kitten crest, a little whimsy
+Josh's notes: "more flowers on the envelope", a kitten instead of the script K at the top of the
+letter (an original cat; not Maomao or any existing character), and "a little bit of whimsy … cute
+but not too much". Public API and every height unchanged; no new files (all in the existing ones).
+
+23. Pressed-flower kit in `FormalLetterArt.swift` (`FormalLetterFlora`): lavender (separate buds in
+    little whorls, paler to the tip — the first try read as a solid caterpillar), five-petal blossoms
+    with a notch, vein and gold heart, baby's breath, olive-leaf sprigs, single leaves. Day tones, and
+    night tones for Maomao's envelope (paler, with a soft glow instead of a shadow).
+24. Envelope: a spray tucked under the wax (`FormalLetterSpray .seal`): cut stems peek out down-left,
+    flowers fan up-right (three lavender, four blossoms, baby's breath, a leaf sprig). It lives on the
+    flap, under the seal's upper piece, so it lifts away with the flap and turns over with it. A small
+    echo spray on the pocket's left side stays with the envelope. Tried the echo low in the left
+    corner first: it ran into long addresses ("open when you miss me" + its small-caps line), so it
+    moved up to the empty side panel, clear of the address, the seal and the locked date seal. Three
+    pink buds floating without stems were cut. Glint, breath, Reduce Motion: unchanged.
+25. Crest kitten (`FormalLetterKitten`): front-on lilac face, rounded ears with blush insides, faint
+    tabby marks, blush cheeks, pink nose, ω mouth, fine whiskers kept inside the oval, a lavender sprig
+    behind the right ear; plum line, the gold oval, laurel and heart kept. First eyes (a flat lid over a
+    dark half-moon) looked grumpy → gently closed, content curves. The folded letter's outside carries
+    the same kitten blind-embossed. The wax seal keeps the K (a cat there would repeat the crest and
+    read less formal at 60 pt).
+26. Whimsy, kept: a pressed flower taped into the letter's top-right corner (lilac washi tape across
+    its stems, beside the crest, above the words); two lilac paw prints walking up to Josh's
+    signature (a rosemary sprig by Maomao's instead); petals that slip out of the fold as the top third
+    opens and tumble out to the edges, fading before rest; as the letter settles the kitten flicks an
+    ear (twice) and the signature's heart gives one "lub-dub" (the heart is now drawn, glossy red like
+    the ❤️, so it can beat; only when the whole letter is on the paper); at rest the kitten slowly
+    opens round, glinting eyes, holds a moment and closes them again, first after 3.5 s, then every
+    7.5–11 s. Tried and cut: two doodled gold stars by the date (cute, but the top-right got busy with
+    the corner flower); half-lidded "blinks" (looked sly); crescent peek eyes (looked smug).
+27. How the motion stays cheap: the kitten and the beating heart are small views of their own riding on
+    their third of the sheet, so the letter is never redrawn for them; the peeks run on a custom
+    TimelineSchedule that has no frames between peeks; a peek due within 1.2 s of a scroll is skipped
+    (one already under way finishes). Reduce Motion: no petals, flick, beat or peeks.
+28. Checks: frame log (one 46 ms frame at the tap on this Intel simulator, then 16.7 ms through the
+    opening, rest and first peek); live peek seen on the simulator (snapshots at rest+2.75 s closed,
+    rest+4.2 s eyes open); hand-off to rest pixel-identical again after putting the kitten's and the
+    heart's canvases on whole pixels (the first try showed a faint outline round the kitten);
+    Reduce Motion still; device typecheck clean (Swift 5 target, and the card's files in Swift 6).
+
 ## Host integration (not done here — files outside this folder)
 1. `ios/scripts/add-native-targets.rb`: add `FormalLetter` to the card list (`%w[Letter Jar FormalLetter]`, or run
    with `CARDS=Letter,Jar,FormalLetter`) so its Swift files and `Fonts/` (4 .ttf + 2 OFL .txt) join the

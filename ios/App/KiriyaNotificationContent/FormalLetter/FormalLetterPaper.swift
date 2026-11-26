@@ -7,13 +7,33 @@ import SwiftUI
 
 enum FormalLetterInk {
     /// Draws one line of the letter at its baseline (`dy` shifts it, for the scrolling body).
-    static func draw(_ ctx: GraphicsContext, _ line: FormalLetterPaperLayout.Line, layout: FormalLetterPaperLayout, dy: CGFloat = 0) {
+    /// `heart: false` leaves the signature's heart to the beating one drawn over the paper.
+    static func draw(_ ctx: GraphicsContext, _ line: FormalLetterPaperLayout.Line, layout: FormalLetterPaperLayout, dy: CGFloat = 0, heart: Bool = true) {
         let resolved = ctx.resolve(FormalLetterType.text(line.text, line.style))
         let probe = CGSize(width: 4000, height: 600)
         let baseline = resolved.firstBaseline(in: probe)
         let measured = resolved.measure(in: probe)
         let x = layout.x(for: line, measured: measured.width)
         ctx.draw(resolved, at: CGPoint(x: x, y: line.baseline + dy - baseline), anchor: .topLeading)
+        if line.style == .signature {
+            if heart { FormalLetterTouches.heart(ctx, in: layout.heartRect(for: line).offsetBy(dx: 0, dy: dy)) }
+            signatureTouch(ctx, line, layout: layout, dy: dy)
+        }
+    }
+
+    /// Beside the signature, in the empty space to its left: two little paw prints walking up to it
+    /// (the crest's kitten was here), or, on Maomao's letters, a sprig of rosemary.
+    static func signatureTouch(_ ctx: GraphicsContext, _ line: FormalLetterPaperLayout.Line, layout: FormalLetterPaperLayout, dy: CGFloat) {
+        let x = layout.closingX
+        guard x - 64 >= layout.padX else { return }
+        let y = line.baseline + dy
+        if layout.maomao {
+            FormalLetterTouches.herb(ctx, from: CGPoint(x: x - 60, y: y - 4), angle: -24, length: 36)
+        } else {
+            let ink = FormalLetterPalette.rgb(0xb59bd2, 0.7)
+            FormalLetterTouches.paw(ctx, center: CGPoint(x: x - 48, y: y - 2), size: 8.5, angle: 62, color: ink)
+            FormalLetterTouches.paw(ctx, center: CGPoint(x: x - 27, y: y - 15), size: 8.5, angle: 70, color: ink)
+        }
     }
 
     /// The scrolling window's soft top and bottom edges, as an alpha mask (paper coordinates).
@@ -69,7 +89,9 @@ struct FormalLetterPaperFace: View, Equatable {
 
             let visible = (top - 60)...(top + sliceHeight + 60)
             if visible.contains(layout.crestCenterY) {
-                FormalLetterCrest.draw(ctx, center: CGPoint(x: size.width / 2, y: layout.crestCenterY), height: FormalLetterPaperMetrics.crestHeight)
+                // The crest's frame; its kitten is drawn over the paper (FormalLetterKittenCrest) so it can move.
+                FormalLetterCrest.draw(ctx, center: CGPoint(x: size.width / 2, y: layout.crestCenterY), height: FormalLetterPaperMetrics.crestHeight, kitten: false)
+                FormalLetterTouches.corner(ctx, at: layout.cornerBinding)
             }
 
             let viewport = layout.viewport
@@ -78,7 +100,7 @@ struct FormalLetterPaperFace: View, Equatable {
                 if let viewport, line.baseline > viewport.lowerBound {
                     windowed.append(line)
                 } else {
-                    FormalLetterInk.draw(ctx, line, layout: layout)
+                    FormalLetterInk.draw(ctx, line, layout: layout, heart: !layout.heartBeats)
                 }
             }
             // Ornaments that live in the flow (inside the window when the body scrolls).
@@ -154,11 +176,16 @@ struct FormalLetterPaperBack: View, Equatable {
 }
 
 /// The letter, folded in thirds or unfolding: each third is its own slice turned about its crease
-/// in 3D. `angles` = [top third, bottom third] in degrees (0 = flat; folded: -180 and 180). Flat all
-/// over, it's drawn as one sheet (no seams, one drawing).
+/// in 3D. `angles` = [top third, bottom third] in degrees (0 = flat; folded: -180 and 180). The
+/// crest's kitten and the signature's heart ride on their thirds as small views of their own, so
+/// they can move (an ear, an eye, a beat) without the paper being drawn again.
 struct FormalLetterSheet: View, Equatable {
     let layout: FormalLetterPaperLayout
     let angles: [Double]
+    var kitten: FormalLetterKittenPose = .rest
+    var heartScale: CGFloat = 1
+    /// At rest, the kitten's own clock (its rare sleepy peeks).
+    var live: FormalLetterLiveKitten?
     /// Overlap of a turning fold onto its neighbour, so no hairline shows between them.
     private static let overlap: CGFloat = 1
 
@@ -186,19 +213,171 @@ struct FormalLetterSheet: View, Equatable {
         let perspective = 0.24 * max(layout.width, height) / max(layout.width, layout.height)
         // Both faces stay mounted (the hidden one all but transparent), so turning over never
         // has to draw a face for the first time mid-animation.
-        ZStack(alignment: .top) {
+        ZStack(alignment: .topLeading) {
             FormalLetterPaperFace(layout: layout, top: top, height: height).equatable()
                 .opacity(front ? 1 : FormalLetterScene.unseen)
+            if index == layout.fold(of: layout.crestCenterY) {
+                FormalLetterKittenCrest(height: FormalLetterPaperMetrics.crestHeight, pose: kitten, live: live, canvas: layout.kittenCanvas)
+                    .position(x: layout.width / 2, y: layout.crestCenterY - top)
+                    .opacity(front ? 1 : FormalLetterScene.unseen)
+            }
+            if layout.heartBeats, let line = layout.signatureLine, index == layout.fold(of: layout.heartRect(for: line).midY) {
+                let rect = layout.heartRect(for: line)
+                FormalLetterBeatingHeart(size: rect.size, scale: heartScale).equatable()
+                    .position(x: rect.midX, y: rect.midY - top)
+                    .opacity(front ? 1 : FormalLetterScene.unseen)
+            }
             // (Once a fold lies flat, its back is let go.)
             if !base && angle != 0 {
                 FormalLetterPaperBack(layout: layout, panel: index, outer: index == 0, top: top, height: height).equatable()
                     .opacity(front ? FormalLetterScene.unseen : 1)
             }
         }
-        .frame(width: layout.width, height: height, alignment: .top)
+        .frame(width: layout.width, height: height, alignment: .topLeading)
         .rotation3DEffect(.degrees(base ? 0 : angle), axis: (x: 1, y: 0, z: 0),
                           anchor: UnitPoint(x: 0.5, y: hinge), perspective: perspective)
         .offset(y: top)
+    }
+}
+
+/// The signature's heart on its own, so it can give its little beat as the letter settles.
+struct FormalLetterBeatingHeart: View, Equatable {
+    let size: CGSize
+    let scale: CGFloat
+
+    var body: some View {
+        Canvas { ctx, canvas in
+            let w = size.width * scale, h = size.height * scale
+            FormalLetterTouches.heart(ctx, in: CGRect(x: (canvas.width - w) / 2, y: (canvas.height - h) / 2, width: w, height: h))
+        }
+        // 6 pt of room each side for the beat (and whole-pixel placement for a whole-point heart).
+        .frame(width: size.width + 12, height: size.height + 12)
+        .allowsHitTesting(false)
+    }
+}
+
+/// The kitten's clock at rest: when it came to rest, and which peeks are skipped (because she was
+/// scrolling just then).
+struct FormalLetterLiveKitten: Equatable {
+    let since: Date
+    var veto: Set<Int> = []
+}
+
+/// The crest's kitten, drawn over the crest's frame. Given a clock, it follows its own schedule of
+/// rare, slow, sleepy peeks, and is redrawn only while one is under way.
+struct FormalLetterKittenCrest: View {
+    let height: CGFloat
+    let pose: FormalLetterKittenPose
+    var live: FormalLetterLiveKitten?
+    let canvas: CGSize
+
+    var body: some View {
+        if let live {
+            TimelineView(FormalLetterPeek.Schedule(start: live.since)) { timeline in
+                FormalLetterKittenView(height: height, pose: FormalLetterPeek.pose(at: timeline.date.timeIntervalSince(live.since), veto: live.veto),
+                                       canvas: canvas).equatable()
+            }
+        } else {
+            FormalLetterKittenView(height: height, pose: pose, canvas: canvas).equatable()
+        }
+    }
+}
+
+struct FormalLetterKittenView: View, Equatable {
+    let height: CGFloat
+    let pose: FormalLetterKittenPose
+    /// Chosen so the canvas lands on whole pixels (see FormalLetterPaperLayout.kittenCanvas).
+    let canvas: CGSize
+
+    var body: some View {
+        Canvas { ctx, size in
+            FormalLetterKitten.draw(ctx, center: CGPoint(x: size.width / 2, y: size.height / 2), crestHeight: height, pose: pose)
+        }
+        .frame(width: canvas.width, height: canvas.height)
+        .allowsHitTesting(false)
+    }
+}
+
+/// The kitten's peeks at rest: the first a few seconds after the letter settles, then every 7–11
+/// seconds; each opens its eyes slowly, holds a moment and closes them again. All a function of
+/// the seconds since rest.
+enum FormalLetterPeek {
+    static let first = 3.5
+    static let gaps: [Double] = [9.0, 7.5, 11.0]
+    static let duration = 1.7
+    static var cycle: Double { gaps.reduce(0, +) }
+
+    static func start(_ k: Int) -> Double {
+        let laps = k / gaps.count
+        return first + Double(laps) * cycle + gaps.prefix(k % gaps.count).reduce(0, +)
+    }
+
+    /// The last peek starting at or before `t` (nil before the first).
+    static func latest(at t: Double) -> Int? {
+        guard t >= first else { return nil }
+        let laps = Int((t - first) / cycle)
+        var k = laps * gaps.count
+        while start(k + 1) <= t { k += 1 }
+        return k
+    }
+
+    static func next(after t: Double) -> Int { (latest(at: t) ?? -1) + 1 }
+
+    static func open(_ u: Double) -> Double {
+        typealias M = FormalLetterMotion
+        guard u > 0, u < duration else { return 0 }
+        return 0.85 * M.easeInOut(M.progress(u, 0, 0.5)) * (1 - M.easeInOut(M.progress(u, 1.15, duration)))
+    }
+
+    static func pose(at t: Double, veto: Set<Int> = []) -> FormalLetterKittenPose {
+        guard let k = latest(at: t), !veto.contains(k) else { return .rest }
+        return FormalLetterKittenPose(open: open(t - start(k)))
+    }
+
+    /// Frames only while a peek is under way (30 a second), none in between.
+    struct Schedule: TimelineSchedule {
+        let start: Date
+
+        func entries(from date: Date, mode: TimelineScheduleMode) -> Entries {
+            Entries(start: start, from: date, still: mode == .lowFrequency)
+        }
+
+        struct Entries: Sequence, IteratorProtocol {
+            let start: Date
+            var k: Int
+            var frame = 0
+            var done = false
+            let still: Bool
+            static let fps = 30.0
+
+            init(start: Date, from date: Date, still: Bool) {
+                self.start = start
+                self.still = still
+                let t = date.timeIntervalSince(start)
+                if let latest = FormalLetterPeek.latest(at: t), t < FormalLetterPeek.start(latest) + FormalLetterPeek.duration {
+                    k = latest
+                    frame = Int((t - FormalLetterPeek.start(latest)) * Self.fps)
+                } else {
+                    k = FormalLetterPeek.next(after: t)
+                }
+            }
+
+            mutating func next() -> Date? {
+                if still {
+                    if done { return nil }
+                    done = true
+                    return start
+                }
+                let frames = Int(FormalLetterPeek.duration * Self.fps) + 2
+                if frame > frames {
+                    k += 1
+                    frame = 0
+                }
+                let date = start.addingTimeInterval(FormalLetterPeek.start(k) + Double(frame) / Self.fps)
+                frame += 1
+                return date
+            }
+        }
     }
 }
 
@@ -207,15 +386,26 @@ struct FormalLetterSheet: View, Equatable {
 /// exactly as on the animated sheet, so nothing shifts when it takes over.
 struct FormalLetterRestingPaper: View {
     let layout: FormalLetterPaperLayout
+    /// When the letter came to rest (the kitten's clock), or nil for a still kitten.
+    var restSince: Date?
+    @State private var veto: Set<Int> = []
 
     var body: some View {
         ZStack(alignment: .topLeading) {
             FormalLetterPaperFace(layout: layout, windowText: layout.viewport == nil).equatable()
+            FormalLetterKittenCrest(height: FormalLetterPaperMetrics.crestHeight, pose: .rest,
+                                    live: restSince.map { FormalLetterLiveKitten(since: $0, veto: veto) }, canvas: layout.kittenCanvas)
+                .position(x: layout.width / 2, y: layout.crestCenterY)
             if let viewport = layout.viewport {
                 let height = viewport.upperBound - viewport.lowerBound
                 ScrollView(.vertical) {
                     FormalLetterScrollBody(layout: layout)
+                        .background(GeometryReader { proxy in
+                            Color.clear.preference(key: FormalLetterScrollOffset.self, value: proxy.frame(in: .named("formal-letter-body")).minY)
+                        })
                 }
+                .coordinateSpace(name: "formal-letter-body")
+                .onPreferenceChange(FormalLetterScrollOffset.self) { _ in scrolled() }
                 .scrollIndicatorsFlash(onAppear: true)
                 // A dark indicator on the ivory paper, even when the phone is in dark mode.
                 .environment(\.colorScheme, .light)
@@ -235,6 +425,20 @@ struct FormalLetterRestingPaper: View {
         }
         .frame(width: layout.width, height: layout.height, alignment: .topLeading)
     }
+
+    /// While she scrolls, the kitten keeps still: a peek due to start within a moment is skipped (one
+    /// already under way finishes).
+    private func scrolled() {
+        guard let restSince else { return }
+        let t = Date().timeIntervalSince(restSince)
+        let next = FormalLetterPeek.next(after: t)
+        if FormalLetterPeek.start(next) - t < 1.2, !veto.contains(next) { veto.insert(next) }
+    }
+}
+
+struct FormalLetterScrollOffset: PreferenceKey {
+    static var defaultValue: CGFloat { 0 }
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
 /// The scrolling words: the window's content in strips, made only as they scroll into view. Each

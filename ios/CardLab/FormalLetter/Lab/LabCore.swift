@@ -142,11 +142,11 @@ enum LabRender {
 
     /// The card at one moment (`time` nil = sealed, with `idle` seconds of idle loop), on its own background.
     static func scene(_ content: FormalLetterContent, width: CGFloat, time: Double?, idle: Double, wiggle: Double? = nil,
-                      locked: Bool = false, height: CGFloat? = nil) -> some View {
+                      locked: Bool = false, height: CGFloat? = nil, restTime: Double? = nil) -> some View {
         let g = geometry(content, width: width, locked: locked)
         let h = height ?? (time == nil || locked ? g.sealedHeight : g.openHeight)
         return FormalLetterScene(content: content, time: time, idle: idle, wiggle: wiggle, width: width,
-                                 scrollable: scrollable, locked: locked)
+                                 scrollable: scrollable, locked: locked, restTime: restTime)
             .frame(width: width, height: h, alignment: .top)
             .background(FormalLetterPalette.background)
             .environment(\.colorScheme, .light)

@@ -139,7 +139,8 @@ export default function NativeApp() {
     });
     let listener;
     import("@capacitor/app")
-      .then(({ App }) => App.addListener("appStateChange", ({ isActive }) => isActive && sync()))
+      // Leaving the app refreshes the widgets at once (a note just opened shows open on the Home Screen).
+      .then(({ App }) => App.addListener("appStateChange", ({ isActive }) => (isActive ? sync() : refreshWidgets({ force: true }))))
       .then((handle) => (listener = handle))
       .catch(() => {});
     return () => {
