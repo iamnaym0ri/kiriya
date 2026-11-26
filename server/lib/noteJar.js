@@ -142,6 +142,18 @@ export async function readNoteJar(db, day = localDay(), { now = new Date() } = {
 // Each pull has its own immutable snapshot; state contains only bounded selection metadata.
 // One compare-and-swap SQL statement advances state, stores the delivery and retires the note's
 // "new" heart together on Neon HTTP.
+/** What an admin preview pulls while the jar is empty (pullNote). */
+const sampleNote = {
+  id: "sample",
+  theme: "love",
+  label: "a sample note",
+  text: "ur jar is empty right now, so this is just a sample. write a few little notes in admin and she'll find them here ❤️",
+  feelings: [],
+  avoidFeelings: [],
+  minEnergy: 0,
+  voice: "josh",
+};
+
 export async function pullNote(db, requestId, { day = localDay(), now = new Date(), preview = false, random = Math.random } = {}) {
   const key = PREFIX + requestId;
   // A preview follows the admin's own test check-in; real pulls follow Kiriya's.
@@ -151,8 +163,10 @@ export async function pullNote(db, requestId, { day = localDay(), now = new Date
     // Josh sees what she'll get next, including notes still waiting for the morning.
     const { pool, fresh } = await jarPool(db, { now, includeWaiting: true });
     const chosen = chooseNote(empty(), { ...context, pool, fresh });
-    if (!chosen) throw Object.assign(new Error("The jar is empty."), { status: 404, code: "jar_empty" });
-    return { id: requestId, note: chosen.note, day, at: now.toISOString(), saved: false, revisited: false, fresh: chosen.fresh, preview: true };
+    // An empty jar still gives Josh something to look at (the site's jar and the notification's
+    // "Pull one" on his phone), marked as a sample; Kiriya never sees it, and nothing is saved.
+    const note = chosen?.note ?? { ...sampleNote, byline: `— ${await signatureOf(db)}` };
+    return { id: requestId, note, day, at: now.toISOString(), saved: false, revisited: false, fresh: Boolean(chosen?.fresh), preview: true, sample: !chosen };
   }
   await db.insert(schema.kv).values({ key: STATE, value: empty() }).onConflictDoNothing();
   for (let attempt = 0; attempt < 20; attempt++) {

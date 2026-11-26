@@ -106,7 +106,7 @@ function sample(kind, names) {
         note: {
           id: null,
           title: "a little note for you",
-          text: "this is a test note, so only your phone sees it.\n\nwhen it's real, the whole note opens right here, without the app: a quick bit of love in the middle of her day ♡",
+          text: "this is a test note, so only your phone sees it.\n\nwhen it's real, the whole note opens right here, without the app: a quick bit of love in the middle of her day ❤️",
           from: him,
         },
       };

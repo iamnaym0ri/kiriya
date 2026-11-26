@@ -104,8 +104,44 @@ add_resource(content, file_in(content_group, "PrivacyInfo.xcprivacy"))
 file_in(content_group, "KiriyaNotificationContent-Info.plist")
 file_in(content_group, "KiriyaNotificationContent.entitlements")
 add_source(content, shared_refs.find { |ref| ref.path == "KiriyaShared.swift" })
-# The same envelope and jar pictures the service extension attaches.
-%w[envelope.png jar.png].each { |name| add_resource(content, file_in(service_group, name)) }
+# Linked explicitly: the code only adopts UNNotificationContentExtension (an Objective-C protocol), so
+# the linker would drop the auto-linked framework, and iOS then can't load the extension at all
+# (a SIGTRAP in +[EXConcreteExtensionContextVendor _extensionContextClass], seen 2026-11-25).
+content.add_system_framework("UserNotificationsUI") unless content.frameworks_build_phase.files.any? { |f| f.display_name == "UserNotificationsUI.framework" }
+# Point it at the current SDK, as Xcode itself does (the gem writes a fixed SDK version into the path).
+project.files.select { |f| f.path.to_s.end_with?("UserNotificationsUI.framework") }.each do |ref|
+  ref.source_tree = "SDKROOT"
+  ref.path = "System/Library/Frameworks/UserNotificationsUI.framework"
+end
+# The cards draw everything themselves, so the service extension's envelope and jar pictures
+# (attached to the pushes) aren't copied in here any more.
+content.resources_build_phase.files.select { |f| %w[envelope.png jar.png].include?(f.display_name) }.each do |build_file|
+  content.resources_build_phase.remove_build_file(build_file)
+end
+
+# The cards themselves, each in its own folder: Letter/ (the little note's envelope) and Jar/ (the
+# note jar). Every .swift file compiles into the extension; the fonts (the site's Gaegu and
+# Parisienne, OFL) and their licences go in as resources at the bundle root.
+def subgroup(parent, name)
+  parent.children.find { |g| g.isa == "PBXGroup" && g.display_name == name } || parent.new_group(name, name)
+end
+content_dir = File.join(IOS, "App", "KiriyaNotificationContent")
+(ENV["CARDS"]&.split(",") || %w[Letter Jar]).each do |card|
+  dir = File.join(content_dir, card)
+  next unless File.directory?(dir)
+  group = subgroup(content_group, card)
+  Dir.children(dir).sort.each do |name|
+    path = File.join(dir, name)
+    if File.directory?(path)
+      fonts = subgroup(group, name)
+      Dir.children(path).sort.grep(/\.(ttf|otf|txt)\z/).each { |font| add_resource(content, file_in(fonts, font)) }
+    elsif name.end_with?(".swift")
+      add_source(content, file_in(group, name))
+    elsif name.match?(/\.(ttf|otf|txt)\z/)
+      add_resource(content, file_in(group, name))
+    end
+  end
+end
 
 # --- Embed the extensions in the app ----------------------------------------------------------
 embed = app.copy_files_build_phases.find { |p| p.name == "Embed Foundation Extensions" } ||

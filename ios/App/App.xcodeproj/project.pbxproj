@@ -7,16 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		08054118222EC13E2754C4F0 /* jar.png in Resources */ = {isa = PBXBuildFile; fileRef = 459D56B7CE29023D3BCD98E5 /* jar.png */; };
 		0819098C9313443947659274 /* WidgetsMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E021572ED933EF392FE9D /* WidgetsMain.swift */; };
+		09B78A299B007DA5F3736B4F /* JarLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36682688BA5A3E74B43B1EE3 /* JarLayout.swift */; };
 		0DA5ABA26A963FA19D89DA30 /* KiriyaShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A9A2F965A4141C6202F129 /* KiriyaShared.swift */; };
+		199937B0F5D942FEA10D36B6 /* LetterCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C10CB3501DC809603E5137 /* LetterCard.swift */; };
 		1C14CAD5562C5DF0EADBBBF9 /* KiriyaNotificationContent.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 06A5616A2005252EC1EC03F6 /* KiriyaNotificationContent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		23CECA666266707A98231A14 /* Parisienne-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A60D6743F823B95FBF900336 /* Parisienne-Regular.ttf */; };
+		24A2ED70E5480D0DEA4B41BA /* Gaegu-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7FB0120602FE99112BBEC126 /* Gaegu-Regular.ttf */; };
 		26517060198AEA3285097B4D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C6DBA107C073F6F5F1C2B13 /* Foundation.framework */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		346A800B85FADF73666B224A /* KiriyaAppShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C4C92274FB1E4BD43FDC49 /* KiriyaAppShortcuts.swift */; };
+		37C954E5D83155994008AF39 /* LetterMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D48CCD1A58E6839A8EBD99 /* LetterMotion.swift */; };
 		3AD60108C8F3896C60B35F68 /* envelope.png in Resources */ = {isa = PBXBuildFile; fileRef = 84EDA973C1C6C1037650D19F /* envelope.png */; };
+		407538DF27D1454C0A28645B /* UserNotificationsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73CF34D08DACA900045B49CE /* UserNotificationsUI.framework */; };
 		4280DF43BD5DC8A8F2B2227E /* jar.png in Resources */ = {isa = PBXBuildFile; fileRef = 459D56B7CE29023D3BCD98E5 /* jar.png */; };
 		483BA755B269B210EA122065 /* KiriyaIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C2423D7B42F3AE492FDF8 /* KiriyaIntents.swift */; };
+		4A15932D8D3088E7FF4E0259 /* LetterEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9385E4116303FFB081F7079 /* LetterEnvelope.swift */; };
 		4A9529AE15A55EBF70B69FF7 /* tap.caf in Resources */ = {isa = PBXBuildFile; fileRef = AD80B842ABE9D873B6BFDA45 /* tap.caf */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		501BCF53A2453B127FA9887F /* KiriyaIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761C2423D7B42F3AE492FDF8 /* KiriyaIntents.swift */; };
@@ -28,22 +34,34 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		51E953548DE74E047774F81F /* KiriyaNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD6A56BF896B491F2B1A239 /* KiriyaNotificationService.swift */; };
 		53F573E3FC906A4B71E58826 /* jar.caf in Resources */ = {isa = PBXBuildFile; fileRef = C3CC8E2FA759CA413E4AC891 /* jar.caf */; };
-		579BE608DC34992788D52891 /* envelope.png in Resources */ = {isa = PBXBuildFile; fileRef = 84EDA973C1C6C1037650D19F /* envelope.png */; };
+		544D74620C87C02F9D6A9EFD /* LetterScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = C784336AA94174ABBA83DD91 /* LetterScene.swift */; };
+		5CC7792CDFFC18F1354E1EF5 /* JarTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEC1E7BD5EDE332975BBB0C /* JarTimeline.swift */; };
 		5D2D2DB40E200F2F274B7E9E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2B5022FC7FA2136B6AAB72D5 /* PrivacyInfo.xcprivacy */; };
+		63558885463B043CD7223B4E /* JarGaegu-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5ACF07859407B87561A20236 /* JarGaegu-OFL.txt */; };
 		6A2660BF6D02AC2E570DA3C9 /* letter.caf in Resources */ = {isa = PBXBuildFile; fileRef = 5B38EE03F7D5B52312ABDC60 /* letter.caf */; };
+		77B4C37A2E25D6FC628D5801 /* JarArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 381034C198E653DC70648F39 /* JarArt.swift */; };
 		78A6C318853F8A1C0B4DD0D7 /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B800F823CCC12556D5A712A /* WidgetViews.swift */; };
+		7B1EEED7D2A526DA3F1C775F /* GAEGU-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 81BCB9CC714E8C96CD6A746A /* GAEGU-OFL.txt */; };
+		81B562D6B1AE0B1F56DD31CD /* JarScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 734E648B2260BA78916F69E6 /* JarScene.swift */; };
 		8AB009972F0F1135DBA91189 /* chat.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4D9D205D3F8372FC0B091A9E /* chat.caf */; };
 		8E56798D24756698CF9F514D /* KiriyaShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A9A2F965A4141C6202F129 /* KiriyaShared.swift */; };
+		8EDE1E5A24A87E0E605C013F /* PARISIENNE-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2BDD7ED9A2B25F41E116CC63 /* PARISIENNE-OFL.txt */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		9C5FABD02C7DEE539333EF25 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C6DBA107C073F6F5F1C2B13 /* Foundation.framework */; };
+		9F980BFF25930314675B1F1D /* Gaegu-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F8EA3FBB08197C77FDDB2E3 /* Gaegu-Bold.ttf */; };
+		A0517A237E14876CC389AAC9 /* LetterPaper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEED9C222CDEEF406175E5D /* LetterPaper.swift */; };
 		A50E3380A547E4D852B2632A /* KiriyaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3911AC88462B730DAFF3F67 /* KiriyaNotifications.swift */; };
 		AAE38BB4B0E8C7A88624A37E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C6DBA107C073F6F5F1C2B13 /* Foundation.framework */; };
 		B583D937712C6B543BDFDFBC /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E4FB398ADD7A068D92DD4E5 /* MainViewController.swift */; };
 		B9466A2D70ACC6D813CF61AF /* KiriyaShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A9A2F965A4141C6202F129 /* KiriyaShared.swift */; };
 		B9DB2AAC97CF8F9B70185025 /* NotificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EABE5F619809E262E428E1FA /* NotificationViewController.swift */; };
+		C3D3E7BC2043947B4F9D9A66 /* LetterStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69B63F2D1B7FAA7A4266B7B /* LetterStyle.swift */; };
 		CE23389B4F818A425A34CFBC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BD8112B0B32D177878788D42 /* PrivacyInfo.xcprivacy */; };
 		D598871BE68459A839D7791D /* NoteCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88D2B5315C37C8AEE99772E /* NoteCardView.swift */; };
+		EC725D032D16E196ED334BDA /* JarCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A104F16897B6E86B4ADEF2C9 /* JarCard.swift */; };
+		ED5109C2ABA977BBFC98A605 /* JarText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307A840A419CA1FC4CEA8B74 /* JarText.swift */; };
 		EF74ECF62DBC98A354F281B8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E377EAD302CCD01C33D93C92 /* PrivacyInfo.xcprivacy */; };
+		F6DBD3EE0659E6D31A34176D /* JarGaegu-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F953CC5EDD8320AB32192B6 /* JarGaegu-Regular.ttf */; };
 		F741B51FE90FCFB06C5E7ED6 /* KiriyaWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 010CD9CC0E2CA74BD9D71D6C /* KiriyaWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F777CF95D7574E130DCD74D1 /* WidgetTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8E5F10FA29C8FE64AB70FBD /* WidgetTheme.swift */; };
 		F9E5D12242FF36C794E058C5 /* WidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D554833FB6DE52D8287E50 /* WidgetProvider.swift */; };
@@ -95,10 +113,19 @@
 		03A9A2F965A4141C6202F129 /* KiriyaShared.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KiriyaShared.swift; sourceTree = "<group>"; };
 		06A5616A2005252EC1EC03F6 /* KiriyaNotificationContent.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KiriyaNotificationContent.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A5EF8BF37B55DA886F1E02D /* App.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		0EEED9C222CDEEF406175E5D /* LetterPaper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LetterPaper.swift; sourceTree = "<group>"; };
 		119E021572ED933EF392FE9D /* WidgetsMain.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetsMain.swift; sourceTree = "<group>"; };
 		1D86143A7CEC5A2B6008A286 /* KiriyaNotificationService.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = KiriyaNotificationService.entitlements; sourceTree = "<group>"; };
+		21D48CCD1A58E6839A8EBD99 /* LetterMotion.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LetterMotion.swift; sourceTree = "<group>"; };
 		2B5022FC7FA2136B6AAB72D5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2BDD7ED9A2B25F41E116CC63 /* PARISIENNE-OFL.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = "PARISIENNE-OFL.txt"; sourceTree = "<group>"; };
+		2F8EA3FBB08197C77FDDB2E3 /* Gaegu-Bold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "Gaegu-Bold.ttf"; sourceTree = "<group>"; };
+		2F953CC5EDD8320AB32192B6 /* JarGaegu-Regular.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "JarGaegu-Regular.ttf"; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		2FEC1E7BD5EDE332975BBB0C /* JarTimeline.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JarTimeline.swift; sourceTree = "<group>"; };
+		307A840A419CA1FC4CEA8B74 /* JarText.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JarText.swift; sourceTree = "<group>"; };
+		36682688BA5A3E74B43B1EE3 /* JarLayout.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JarLayout.swift; sourceTree = "<group>"; };
+		381034C198E653DC70648F39 /* JarArt.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JarArt.swift; sourceTree = "<group>"; };
 		3B800F823CCC12556D5A712A /* WidgetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetViews.swift; sourceTree = "<group>"; };
 		459D56B7CE29023D3BCD98E5 /* jar.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = jar.png; sourceTree = "<group>"; };
 		48C4C92274FB1E4BD43FDC49 /* KiriyaAppShortcuts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KiriyaAppShortcuts.swift; sourceTree = "<group>"; };
@@ -113,20 +140,31 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		5ACF07859407B87561A20236 /* JarGaegu-OFL.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = "JarGaegu-OFL.txt"; sourceTree = "<group>"; };
 		5B38EE03F7D5B52312ABDC60 /* letter.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = letter.caf; sourceTree = "<group>"; };
+		734E648B2260BA78916F69E6 /* JarScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JarScene.swift; sourceTree = "<group>"; };
+		73CF34D08DACA900045B49CE /* UserNotificationsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotificationsUI.framework; path = System/Library/Frameworks/UserNotificationsUI.framework; sourceTree = SDKROOT; };
 		74659FFB742F966DCCCCA7A9 /* KiriyaWidgets.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = KiriyaWidgets.entitlements; sourceTree = "<group>"; };
 		761C2423D7B42F3AE492FDF8 /* KiriyaIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KiriyaIntents.swift; sourceTree = "<group>"; };
+		7FB0120602FE99112BBEC126 /* Gaegu-Regular.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "Gaegu-Regular.ttf"; sourceTree = "<group>"; };
+		81BCB9CC714E8C96CD6A746A /* GAEGU-OFL.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = "GAEGU-OFL.txt"; sourceTree = "<group>"; };
 		82175DDCF64C5DCF76D8A25B /* KiriyaNotificationContent-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "KiriyaNotificationContent-Info.plist"; sourceTree = "<group>"; };
+		84C10CB3501DC809603E5137 /* LetterCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LetterCard.swift; sourceTree = "<group>"; };
 		84EDA973C1C6C1037650D19F /* envelope.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = envelope.png; sourceTree = "<group>"; };
 		8AD6A56BF896B491F2B1A239 /* KiriyaNotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KiriyaNotificationService.swift; sourceTree = "<group>"; };
 		8C6DBA107C073F6F5F1C2B13 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		A104F16897B6E86B4ADEF2C9 /* JarCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JarCard.swift; sourceTree = "<group>"; };
 		A1D554833FB6DE52D8287E50 /* WidgetProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetProvider.swift; sourceTree = "<group>"; };
+		A60D6743F823B95FBF900336 /* Parisienne-Regular.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "Parisienne-Regular.ttf"; sourceTree = "<group>"; };
+		A69B63F2D1B7FAA7A4266B7B /* LetterStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LetterStyle.swift; sourceTree = "<group>"; };
 		AD80B842ABE9D873B6BFDA45 /* tap.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = tap.caf; sourceTree = "<group>"; };
 		B8E5F10FA29C8FE64AB70FBD /* WidgetTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetTheme.swift; sourceTree = "<group>"; };
+		B9385E4116303FFB081F7079 /* LetterEnvelope.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LetterEnvelope.swift; sourceTree = "<group>"; };
 		BD8112B0B32D177878788D42 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C3CC8E2FA759CA413E4AC891 /* jar.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = jar.caf; sourceTree = "<group>"; };
+		C784336AA94174ABBA83DD91 /* LetterScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LetterScene.swift; sourceTree = "<group>"; };
 		C88D2B5315C37C8AEE99772E /* NoteCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NoteCardView.swift; sourceTree = "<group>"; };
 		CD020707AB7EDFA3F21849A1 /* KiriyaNotificationService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "KiriyaNotificationService-Info.plist"; sourceTree = "<group>"; };
 		E377EAD302CCD01C33D93C92 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -166,12 +204,29 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAE38BB4B0E8C7A88624A37E /* Foundation.framework in Frameworks */,
+				407538DF27D1454C0A28645B /* UserNotificationsUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		06C81E1323554A6A84BD0CFF /* Jar */ = {
+			isa = PBXGroup;
+			children = (
+				381034C198E653DC70648F39 /* JarArt.swift */,
+				A104F16897B6E86B4ADEF2C9 /* JarCard.swift */,
+				5ACF07859407B87561A20236 /* JarGaegu-OFL.txt */,
+				2F953CC5EDD8320AB32192B6 /* JarGaegu-Regular.ttf */,
+				36682688BA5A3E74B43B1EE3 /* JarLayout.swift */,
+				734E648B2260BA78916F69E6 /* JarScene.swift */,
+				307A840A419CA1FC4CEA8B74 /* JarText.swift */,
+				2FEC1E7BD5EDE332975BBB0C /* JarTimeline.swift */,
+			);
+			name = Jar;
+			path = Jar;
+			sourceTree = "<group>";
+		};
 		1A561A61015732426B7E9EF2 /* KiriyaShared */ = {
 			isa = PBXGroup;
 			children = (
@@ -190,6 +245,8 @@
 				82175DDCF64C5DCF76D8A25B /* KiriyaNotificationContent-Info.plist */,
 				5046325F52C39A1B344C336C /* KiriyaNotificationContent.entitlements */,
 				E377EAD302CCD01C33D93C92 /* PrivacyInfo.xcprivacy */,
+				2B83B361ADE8D9966C6B6574 /* Letter */,
+				06C81E1323554A6A84BD0CFF /* Jar */,
 			);
 			name = KiriyaNotificationContent;
 			path = KiriyaNotificationContent;
@@ -210,6 +267,21 @@
 			path = KiriyaWidgets;
 			sourceTree = "<group>";
 		};
+		2B83B361ADE8D9966C6B6574 /* Letter */ = {
+			isa = PBXGroup;
+			children = (
+				4B37EF3E2C39DA38484140CB /* Fonts */,
+				84C10CB3501DC809603E5137 /* LetterCard.swift */,
+				B9385E4116303FFB081F7079 /* LetterEnvelope.swift */,
+				21D48CCD1A58E6839A8EBD99 /* LetterMotion.swift */,
+				0EEED9C222CDEEF406175E5D /* LetterPaper.swift */,
+				C784336AA94174ABBA83DD91 /* LetterScene.swift */,
+				A69B63F2D1B7FAA7A4266B7B /* LetterStyle.swift */,
+			);
+			name = Letter;
+			path = Letter;
+			sourceTree = "<group>";
+		};
 		2E0928996476D7CCEAA34AB2 /* KiriyaNotificationService */ = {
 			isa = PBXGroup;
 			children = (
@@ -221,6 +293,19 @@
 			);
 			name = KiriyaNotificationService;
 			path = KiriyaNotificationService;
+			sourceTree = "<group>";
+		};
+		4B37EF3E2C39DA38484140CB /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				81BCB9CC714E8C96CD6A746A /* GAEGU-OFL.txt */,
+				2F8EA3FBB08197C77FDDB2E3 /* Gaegu-Bold.ttf */,
+				7FB0120602FE99112BBEC126 /* Gaegu-Regular.ttf */,
+				2BDD7ED9A2B25F41E116CC63 /* PARISIENNE-OFL.txt */,
+				A60D6743F823B95FBF900336 /* Parisienne-Regular.ttf */,
+			);
+			name = Fonts;
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		504EC2FB1FED79650016851F = {
@@ -294,6 +379,7 @@
 			isa = PBXGroup;
 			children = (
 				8C6DBA107C073F6F5F1C2B13 /* Foundation.framework */,
+				73CF34D08DACA900045B49CE /* UserNotificationsUI.framework */,
 			);
 			name = iOS;
 			sourceTree = "<group>";
@@ -447,9 +533,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				579BE608DC34992788D52891 /* envelope.png in Resources */,
-				08054118222EC13E2754C4F0 /* jar.png in Resources */,
 				EF74ECF62DBC98A354F281B8 /* PrivacyInfo.xcprivacy in Resources */,
+				7B1EEED7D2A526DA3F1C775F /* GAEGU-OFL.txt in Resources */,
+				9F980BFF25930314675B1F1D /* Gaegu-Bold.ttf in Resources */,
+				24A2ED70E5480D0DEA4B41BA /* Gaegu-Regular.ttf in Resources */,
+				8EDE1E5A24A87E0E605C013F /* PARISIENNE-OFL.txt in Resources */,
+				23CECA666266707A98231A14 /* Parisienne-Regular.ttf in Resources */,
+				63558885463B043CD7223B4E /* JarGaegu-OFL.txt in Resources */,
+				F6DBD3EE0659E6D31A34176D /* JarGaegu-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -480,6 +571,18 @@
 				B9DB2AAC97CF8F9B70185025 /* NotificationViewController.swift in Sources */,
 				D598871BE68459A839D7791D /* NoteCardView.swift in Sources */,
 				0DA5ABA26A963FA19D89DA30 /* KiriyaShared.swift in Sources */,
+				199937B0F5D942FEA10D36B6 /* LetterCard.swift in Sources */,
+				4A15932D8D3088E7FF4E0259 /* LetterEnvelope.swift in Sources */,
+				37C954E5D83155994008AF39 /* LetterMotion.swift in Sources */,
+				A0517A237E14876CC389AAC9 /* LetterPaper.swift in Sources */,
+				544D74620C87C02F9D6A9EFD /* LetterScene.swift in Sources */,
+				C3D3E7BC2043947B4F9D9A66 /* LetterStyle.swift in Sources */,
+				77B4C37A2E25D6FC628D5801 /* JarArt.swift in Sources */,
+				EC725D032D16E196ED334BDA /* JarCard.swift in Sources */,
+				09B78A299B007DA5F3736B4F /* JarLayout.swift in Sources */,
+				81B562D6B1AE0B1F56DD31CD /* JarScene.swift in Sources */,
+				ED5109C2ABA977BBFC98A605 /* JarText.swift in Sources */,
+				5CC7792CDFFC18F1354E1EF5 /* JarTimeline.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

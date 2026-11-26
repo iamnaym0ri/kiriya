@@ -39,6 +39,12 @@ try {
     assert.equal(jar.fresh, 0);
     await assert.rejects(pullNote(db, randomUUID(), opts()), (error) => error.code === "jar_empty");
     assert.equal(chooseNote(blank(), { pool: [] }), null);
+    // Josh's preview gets a marked sample instead, and nothing is saved.
+    const sample = await pullNote(db, randomUUID(), { ...opts(), preview: true });
+    assert.equal(sample.preview, true);
+    assert.equal(sample.sample, true);
+    assert.equal(sample.note.id, "sample");
+    assert.equal((await readNoteJar(db, day, { now: later })).pulled, 0);
   });
 
   await test("A note written tonight waits for 08:00 tomorrow; one written before 08:00 joins that morning", () => {

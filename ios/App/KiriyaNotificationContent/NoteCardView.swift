@@ -2,22 +2,9 @@ import SwiftUI
 import UserNotifications
 import WidgetKit
 
-// What the content extension draws: a sealed envelope that opens into the note, or the jar that a
-// note comes out of. The site's lilac look (the same colours as the widgets, WidgetTheme.swift).
-
-enum Palette {
-    static let paper = Color(red: 1.0, green: 0.969, blue: 0.984)        // #fff7fb
-    static let lilac = Color(red: 0.937, green: 0.898, blue: 0.965)      // #efe5f6
-    static let lilacDeep = Color(red: 0.851, green: 0.776, blue: 0.925)  // #d9c6ec
-    static let plum = Color(red: 0.306, green: 0.184, blue: 0.388)       // #4e2f63
-    static let soft = Color(red: 0.541, green: 0.416, blue: 0.639)       // #8a6aa3
-    static let heart = Color(red: 0.886, green: 0.267, blue: 0.361)      // #e2445c
-    static let line = Color(red: 0.851, green: 0.776, blue: 0.925).opacity(0.55)
-
-    static var background: some View {
-        LinearGradient(colors: [paper, lilac, lilacDeep.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing)
-    }
-}
+// What the content extension draws: a sealed envelope that opens into the note (Letter/), or the
+// jar a note comes out of (Jar/). Both cards draw the site's lilac look themselves; this file holds
+// what they share: the notification's state, its buttons, and the card's height for the host.
 
 @MainActor
 final class NoteCardModel: ObservableObject {
@@ -37,6 +24,8 @@ final class NoteCardModel: ObservableObject {
     @Published var heart: Heart = .idle
 
     var openInApp: () -> Void = {}
+    /// The card's natural height, for the notification's size (NotificationViewController).
+    var reportHeight: (CGFloat) -> Void = { _ in }
     var setActions: ([UNNotificationAction]) -> Void = { _ in }
     private var noteId: String?
 
@@ -58,6 +47,10 @@ final class NoteCardModel: ObservableObject {
             truncated = kind == .note
         }
         stage = .sealed
+        // iOS keeps a notification's changed buttons, so a card shown again starts from the full set.
+        setActions(kind == .note
+            ? [NotificationButtons.openNote, NotificationButtons.heart, NotificationButtons.openApp]
+            : [NotificationButtons.pull(again: false), NotificationButtons.openApp])
     }
 
     func openEnvelope() {
@@ -75,7 +68,7 @@ final class NoteCardModel: ObservableObject {
     func pull() {
         guard kind == .jar, stage != .pulling else { return }
         guard KiriyaAPI.isSetUp else {
-            stage = .failed("open kiriya.love once, then the jar opens from here ♡")
+            stage = .failed("open kiriya.love once, then the jar opens from here ❤️")
             return
         }
         withAnimation(.easeInOut(duration: 0.25)) { stage = .pulling }
@@ -89,6 +82,11 @@ final class NoteCardModel: ObservableObject {
                 withAnimation(.spring(response: 0.55, dampingFraction: 0.78)) { stage = .pulled }
                 setActions([NotificationButtons.pull(again: true), NotificationButtons.openApp])
                 WidgetCenter.shared.reloadAllTimelines()
+            } catch KiriyaAPIError.badResponse(404) {
+                // Every note has been pulled (the server's "jar_empty"); new ones come in the morning.
+                withAnimation { stage = .failed("the jar is waiting for new notes ❤️") }
+            } catch KiriyaAPIError.badResponse(401) {
+                withAnimation { stage = .failed("open kiriya.love once, then the jar opens from here ❤️") }
             } catch {
                 withAnimation { stage = .failed("the jar got a little stuck. try again?") }
             }
@@ -102,7 +100,7 @@ final class NoteCardModel: ObservableObject {
             return
         }
         withAnimation { heart = .sending }
-        // The same id the app's own "♡ back" uses, so a retry can never send twice.
+        // The same id the app's own "send one back" uses, so a retry can never send twice.
         let clientId = KiriyaAPI.clientId("n", notificationId, "heart")
         Task {
             do {
@@ -117,172 +115,69 @@ final class NoteCardModel: ObservableObject {
     }
 }
 
-/// The buttons under the card once it has changed (the first set comes from the app's categories).
+/// The buttons under the card once it has changed. The first set comes from the app's categories
+/// (ios/App/App/KiriyaNotifications.swift): an icon, the words, then a colour emoji (so the heart is red).
 enum NotificationButtons {
-    static let heart = UNNotificationAction(identifier: KiriyaNotificationActions.heart, title: "send one back", options: [],
+    static let openNote = UNNotificationAction(identifier: KiriyaNotificationActions.openHere, title: "Open note 💌", options: [],
+                                               icon: UNNotificationActionIcon(systemImageName: "envelope.open"))
+    static let heart = UNNotificationAction(identifier: KiriyaNotificationActions.heart, title: "Send one back ❤️", options: [],
                                             icon: UNNotificationActionIcon(systemImageName: "heart.fill"))
     static let openApp = UNNotificationAction(identifier: KiriyaNotificationActions.openApp, title: "Open in app", options: [.foreground],
                                               icon: UNNotificationActionIcon(systemImageName: "arrow.up.forward.app"))
     static func pull(again: Bool) -> UNNotificationAction {
-        UNNotificationAction(identifier: KiriyaNotificationActions.pull, title: again ? "Pull another" : "Pull one", options: [],
+        UNNotificationAction(identifier: KiriyaNotificationActions.pull, title: again ? "Pull another ✨" : "Pull one ✨", options: [],
                              icon: UNNotificationActionIcon(systemImageName: "sparkles"))
     }
 }
 
+// MARK: - The card
+
 struct NoteCardView: View {
     @ObservedObject var model: NoteCardModel
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var bob = false
 
     var body: some View {
-        VStack(spacing: 14) {
+        Group {
             switch model.kind {
-            case .note: note
+            case .note: letter
             case .jar: jar
             }
-            footer
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 18)
         .frame(maxWidth: .infinity)
-        .background(Palette.background)
-        .onAppear { if !reduceMotion { bob = true } }
+        .fixedSize(horizontal: false, vertical: true)
+        .background(GeometryReader { proxy in Color.clear.preference(key: CardHeight.self, value: proxy.size.height) })
+        .onPreferenceChange(CardHeight.self) { height in model.reportHeight(height) }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(LetterPalette.background)
     }
 
     // MARK: a little note
 
-    @ViewBuilder private var note: some View {
-        if model.stage == .sealed {
-            VStack(spacing: 10) {
-                Text(model.heading)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Palette.soft)
-                    .multilineTextAlignment(.center)
-                picture("envelope", height: 150)
-                    .rotationEffect(.degrees(bob ? -3 : 3))
-                    .offset(y: bob ? -3 : 3)
-                    .animation(reduceMotion ? nil : .easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: bob)
-                    .onTapGesture { model.openEnvelope() }
-                    .accessibilityAddTraits(.isButton)
-                    .accessibilityLabel(Text("Open the note"))
-                Text("tap to open ♡")
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(Palette.soft)
-            }
-            .transition(.opacity)
-        } else {
-            VStack(spacing: 6) {
-                picture("envelope", height: 48)
-                    .rotationEffect(.degrees(-8))
-                    .opacity(0.9)
-                paper(title: model.noteTitle, label: nil)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+    /// The sealed envelope that opens into the note (Letter/LetterCard.swift). It draws its own
+    /// background and margins; a small strip under it says how "Send one back" went.
+    private static let statusHeight: CGFloat = 40
+
+    private var letter: some View {
+        VStack(spacing: 0) {
+            LetterCard(content: LetterContent(heading: model.heading, title: model.noteTitle, text: model.text,
+                                              byline: model.byline, truncated: model.truncated),
+                       isOpen: model.stage == .open,
+                       onTapSealed: { model.openEnvelope() },
+                       maxHeight: 720 - Self.statusHeight)
+            if model.heart != .idle {
+                heartStatus
+                    .frame(maxWidth: .infinity)
+                    .frame(height: Self.statusHeight)
+                    .transition(.opacity)
             }
         }
     }
 
-    // MARK: the jar
-
-    @ViewBuilder private var jar: some View {
-        switch model.stage {
-        case .pulled:
-            VStack(spacing: 6) {
-                picture("jar", height: 52)
-                paper(title: nil, label: model.label)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                if model.preview {
-                    Text("a preview: her jar is untouched")
-                        .font(.system(size: 12, design: .rounded))
-                        .foregroundStyle(Palette.soft)
-                }
-            }
-        default:
-            VStack(spacing: 10) {
-                Text(model.heading)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Palette.soft)
-                    .multilineTextAlignment(.center)
-                picture("jar", height: 150)
-                    .rotationEffect(.degrees(model.stage == .pulling ? (bob ? -6 : 6) : 0))
-                    .animation(model.stage == .pulling && !reduceMotion ? .easeInOut(duration: 0.12).repeatForever(autoreverses: true) : .default, value: bob)
-                    .onTapGesture { model.pull() }
-                    .accessibilityAddTraits(.isButton)
-                    .accessibilityLabel(Text("Pull a note from the jar"))
-                if case .failed(let message) = model.stage {
-                    Text(message)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(Palette.heart)
-                } else {
-                    Text(model.stage == .pulling ? "pulling one out…" : "tap the jar to pull one ♡")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(Palette.soft)
-                }
-            }
-        }
-    }
-
-    // MARK: pieces
-
-    private func paper(title: String?, label: String?) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if let label, !label.isEmpty {
-                Text(label)
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Palette.soft)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(Capsule().fill(Palette.lilac))
-            }
-            if let title {
-                Text(title)
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
-                    .foregroundStyle(Palette.plum)
-            }
-            Text(model.text)
-                .font(.system(size: 17, design: .rounded))
-                .foregroundStyle(Palette.plum)
-                .lineSpacing(4)
-                .lineLimit(28)
-                .fixedSize(horizontal: false, vertical: true)
-            if model.truncated {
-                Text("the rest is waiting in the app ♡")
-                    .font(.system(size: 13, design: .rounded))
-                    .foregroundStyle(Palette.soft)
-            }
-            if !model.byline.isEmpty {
-                Text(model.byline)
-                    .font(.system(size: 17, design: .serif).italic())
-                    .foregroundStyle(Palette.soft)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-            }
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Palette.paper)
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Palette.lilacDeep, lineWidth: 1.5))
-                .shadow(color: Palette.plum.opacity(0.12), radius: 8, x: 2, y: 4)
-        )
-        .rotationEffect(.degrees(-1.2))
-        .padding(.horizontal, 4)
-    }
-
-    @ViewBuilder private var footer: some View {
-        HStack {
-            switch model.heart {
-            case .idle: EmptyView()
-            case .sending: status("sending your ♡…", Palette.soft)
-            case .sent: status("sent ♡", Palette.heart)
-            case .failed: status("that didn’t send. try again?", Palette.heart)
-            }
-            Spacer(minLength: 0)
-            Button { model.openInApp() } label: {
-                Text("open in app ›")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Palette.soft)
-            }
-            .buttonStyle(.plain)
+    @ViewBuilder private var heartStatus: some View {
+        switch model.heart {
+        case .idle: EmptyView()
+        case .sending: status("sending your ❤️…", LetterPalette.softInk)
+        case .sent: status("sent ❤️", LetterPalette.heart)
+        case .failed: status("that didn’t send. try again?", LetterPalette.heart)
         }
     }
 
@@ -290,18 +185,32 @@ struct NoteCardView: View {
         Text(text)
             .font(.system(size: 14, weight: .bold, design: .rounded))
             .foregroundStyle(color)
-            .transition(.scale.combined(with: .opacity))
     }
 
-    private func picture(_ name: String, height: CGFloat) -> some View {
-        Group {
-            if let image = UIImage(named: name) {
-                Image(uiImage: image).resizable().scaledToFit()
-            } else {
-                Image(systemName: name == "jar" ? "sparkles" : "envelope.fill").resizable().scaledToFit().foregroundStyle(Palette.soft)
-            }
-        }
-        .frame(height: height)
-        .accessibilityHidden(true)
+    // MARK: the jar
+
+    /// The app's note jar (Jar/JarCard.swift): it waits with its count, wiggles while the server
+    /// picks a note, then gives the note up. It draws its own heading, captions and background.
+    private var jar: some View {
+        JarCard(heading: model.heading,
+                newCount: JarCard.newCount(fromTitle: model.heading),
+                state: jarState,
+                onPull: { model.pull() })
     }
+
+    private var jarState: JarCardState {
+        switch model.stage {
+        case .pulling: return .pulling
+        case .pulled:
+            return .pulled(JarPulledNote(text: model.text, byline: model.byline, label: model.label, isPreview: model.preview))
+        case .failed(let message): return .failed(message)
+        case .sealed, .open: return .waiting
+        }
+    }
+}
+
+/// The card's natural height (see NoteCardView.body).
+struct CardHeight: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
 }

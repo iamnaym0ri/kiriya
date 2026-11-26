@@ -7,13 +7,15 @@ import WidgetKit
 /// kiriya.love's notification content extension: what a little note or the note jar shows when its
 /// notification is pressed and held (docs/refactor/MAC-BUILD.md).
 ///
-/// - A little note arrives sealed in its envelope. "Open ✉" (or a tap on the envelope) opens it right
-///   here and the whole note slides out; it counts as opened, as in the app. The server sends the
-///   note's full text in the push (server/push/apns.js notePayload).
-/// - The jar's morning push and the evening reminder get "Pull one": a note comes out of the jar
-///   right here, the same draw as in the app (on Josh's phone, a preview that changes nothing).
-/// - "send one back" sends a ♡ without opening anything; "Open in app" opens the page.
-/// Target membership: KiriyaNotificationContent, plus ../KiriyaShared/KiriyaShared.swift.
+/// - A little note arrives sealed in its envelope (Letter/). "Open note 💌" (or a tap on the
+///   envelope) opens it right here and the note comes to rest on top; it counts as opened, as in
+///   the app. The server sends the note's full text in the push (server/push/apns.js notePayload).
+/// - The jar's morning push and the evening reminder get "Pull one ✨": a note comes out of the
+///   app's own jar (Jar/) right here, the same draw as in the app (on Josh's phone, a preview that
+///   changes nothing).
+/// - "Send one back ❤️" sends a heart without opening anything; "Open in app" opens the page.
+/// Target membership: KiriyaNotificationContent (NoteCardView, Letter/, Jar/ and their fonts, via
+/// ios/scripts/add-native-targets.rb), plus ../KiriyaShared/KiriyaShared.swift.
 final class NotificationViewController: UIViewController, UNNotificationContentExtension {
     private let model = NoteCardModel()
 
@@ -21,8 +23,13 @@ final class NotificationViewController: UIViewController, UNNotificationContentE
         super.viewDidLoad()
         model.openInApp = { [weak self] in self?.extensionContext?.performNotificationDefaultAction() }
         model.setActions = { [weak self] actions in self?.extensionContext?.notificationActions = actions }
+        // The card measures itself and the notification follows, so nothing is cut off as it opens.
+        model.reportHeight = { [weak self] height in
+            guard let self else { return }
+            let target = CGSize(width: self.view.bounds.width, height: min(height.rounded(.up), 720))
+            if abs(target.height - self.preferredContentSize.height) > 1 { self.preferredContentSize = target }
+        }
         let host = UIHostingController(rootView: NoteCardView(model: model))
-        host.sizingOptions = .preferredContentSize
         host.view.backgroundColor = .clear
         addChild(host)
         view.addSubview(host.view)
@@ -34,12 +41,6 @@ final class NotificationViewController: UIViewController, UNNotificationContentE
             host.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
         host.didMove(toParent: self)
-    }
-
-    /// The card grows when the envelope opens; the notification follows its height.
-    override func preferredContentSizeDidChange(forChildContentContainer container: UIContentContainer) {
-        super.preferredContentSizeDidChange(forChildContentContainer: container)
-        preferredContentSize = CGSize(width: view.bounds.width, height: min(container.preferredContentSize.height, 620))
     }
 
     func didReceive(_ notification: UNNotification) {

@@ -272,6 +272,12 @@ await test("Little notes carry their whole text for the notification; jar pulls 
   assert.ok((await inbox(db, "kiriya")).notes.find((n) => n.id === created.id).openedAt);
 
   // The jar: her pull is real (new notes first); his is a preview that changes nothing.
+  // While it's empty, his preview is a marked sample (so "Pull one" can be tried) and hers says so.
+  const emptyPreview = await json(await request("widget/jar/pull", { method: "POST", token: his.widgetKey, body: { requestId: randomUUID() } }));
+  assert.equal(emptyPreview.preview, true);
+  assert.equal(emptyPreview.note.label, "a sample note");
+  assert.match(emptyPreview.note.byline, /^— /);
+  assert.equal((await request("widget/jar/pull", { method: "POST", token: hers.widgetKey, body: { requestId: randomUUID() } })).status, 404);
   const { addJarNote } = await import("../server/lib/noteJar.js");
   await addJarNote(db, { text: "a jar note for the notification" }, { now: new Date(Date.now() - 86400_000) });
   const preview = await json(await request("widget/jar/pull", { method: "POST", token: his.widgetKey, body: { requestId: randomUUID() } }));

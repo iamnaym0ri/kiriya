@@ -22,19 +22,23 @@ enum KiriyaNotificationCategories {
 
     /// At launch, before any notification can be answered.
     static func register() {
-        let heart = UNNotificationAction(identifier: Self.heart, title: "send one back", options: [],
+        // Each button: its icon (iOS draws these in one colour), the words, then a colour emoji, so the
+        // heart is red. The content extension uses the same buttons (KiriyaNotificationContent/NoteCardView.swift).
+        let heart = UNNotificationAction(identifier: Self.heart, title: "Send one back ❤️", options: [],
                                          icon: UNNotificationActionIcon(systemImageName: "heart.fill"))
+        let openLetter = UNNotificationAction(identifier: Self.open, title: "Open letter 💌", options: [.foreground],
+                                              icon: UNNotificationActionIcon(systemImageName: "envelope.open"))
+        let open = UNNotificationAction(identifier: Self.open, title: "Open", options: [.foreground],
+                                        icon: UNNotificationActionIcon(systemImageName: "arrow.up.forward.app"))
         // A little note opens right inside its notification, and the jar gives one up there too.
-        let openHere = UNNotificationAction(identifier: Self.openHere, title: "Open ✉", options: [],
+        let openHere = UNNotificationAction(identifier: Self.openHere, title: "Open note 💌", options: [],
                                             icon: UNNotificationActionIcon(systemImageName: "envelope.open"))
-        let pull = UNNotificationAction(identifier: Self.pull, title: "Pull one", options: [],
+        let pull = UNNotificationAction(identifier: Self.pull, title: "Pull one ✨", options: [],
                                         icon: UNNotificationActionIcon(systemImageName: "sparkles"))
         let openApp = UNNotificationAction(identifier: Self.openApp, title: "Open in app", options: [.foreground],
                                            icon: UNNotificationActionIcon(systemImageName: "arrow.up.forward.app"))
-        let open = UNNotificationAction(identifier: Self.open, title: "Open", options: [.foreground],
-                                        icon: UNNotificationActionIcon(systemImageName: "envelope.open"))
         // A reply sends as her, so it asks for Face ID / the passcode first when the phone is locked.
-        let reply = UNTextInputNotificationAction(identifier: Self.reply, title: "Reply", options: [.authenticationRequired],
+        let reply = UNTextInputNotificationAction(identifier: Self.reply, title: "Reply 💬", options: [.authenticationRequired],
                                                   icon: UNNotificationActionIcon(systemImageName: "arrowshape.turn.up.left"),
                                                   textInputButtonTitle: "Send", textInputPlaceholder: "say something sweet")
 
@@ -46,7 +50,7 @@ enum KiriyaNotificationCategories {
         UNUserNotificationCenter.current().setNotificationCategories([
             category("CHAT", [reply, heart], hidden: "a new message ♡"),
             category("TAP", [heart], hidden: "a little tap ♡"),
-            category("LETTER", [open, heart], hidden: "a letter for you ✉︎"),
+            category("LETTER", [openLetter, heart], hidden: "a letter for you ✉︎"),
             category("NOTE", [openHere, heart, openApp], hidden: "a little note for you ✉︎"),
             category("JAR", [pull, openApp], hidden: "new notes in your jar ♡"),
             category("EVENT", [open], hidden: "news about an event"),

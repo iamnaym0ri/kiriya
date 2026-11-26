@@ -194,8 +194,45 @@ Everything that can be built and tested on Linux is done. The Swift half is writ
   - `capacitor.config.json` had `ios.scheme: "kiriya"`. That's the Xcode scheme name for `npx cap run`, not the web view's URL scheme, so it was removed. The app's origin stays `capacitor://localhost`.
   - Silenced one Sendable warning in `KiriyaNotifications.swift`.
 - **Reviewed, not yet proven on the phone:** the notification-delegate takeover. Capacitor registers plugins, and with them the push handler, inside the bridge's init, before `capacitorDidLoad`, so taps queued on a cold start are handed over with their handler in place.
-- **Seen on the phone:** the site's top bar sits under the status bar (clock, battery). It needs a safe-area top inset inside the app.
-- **Next:** deploy (Josh approved "now"), then the MAC-BUILD.md §6 checklist on his phone, then TestFlight.
+- **Seen on the phone:** the site's top bar sat under the status bar. Fixed app-only in `src/styles/in-app.css` (`html.in-app`).
+- **Deployed three times on 2026-11-25** (`main` = connection-refactor): the phases 1–4b site, then c541761 (test mode), then 130bb35 (in-place notes and the fixes below).
+
+#### Phone testing on Josh's iPhone 11 (2026-11-25)
+
+Works (verified on the phone):
+- bearer sign-in, Face ID enrolment, push registration, the widget key in the App Group;
+- note and letter pushes with the envelope picture;
+- "send one back" with the app in the background, and Reply with the app fully closed;
+- a tapped notification opens its page, warm and cold.
+
+Bugs found and fixed:
+- **Native plugins were awaited directly.** Helpers like `async () => (await import(…)).Plugin` make JS call `plugin.then()`, which a Capacitor plugin answers as a native method: "….then() is not implemented on ios". Push registration, the widget key and over-the-air updates all failed silently. Helpers now return the module; see the note in `src/lib/native.js`.
+- **A notification tapped while the app was closed landed on /world.** The front page's signed-in redirect won the race; the pending page now waits until the app has left `/`.
+- **The updater accepted older versions** (any different version). Now newer-only (`shared/appVersion.js`), so a TestFlight build made from undeployed code never swaps back to the live copy.
+- **The content extension crashed on load** (SIGTRAP in `_extensionContextClass`): the linker dropped UserNotificationsUI, so it is now linked explicitly (`add-native-targets.rb`).
+
+New:
+- **App test mode.** Admin → "Try the app on my phone" sends sample notifications of each kind to the admin's phones only. While it's on, the admin phone's notification buttons, widgets, Siri and quick action are checked but answered with "test mode ✓", and nothing reaches Kiriya. It is off after 12 h. Josh's wish: the app stays a surprise until he tells her.
+- **Little notes open inside the notification.** A new KiriyaNotificationContent extension (`love.kiriya.app.notecard`).
+  - "Open note 💌" opens an envelope in place and shows the whole note, which is marked opened.
+  - The jar's morning push and the reminder get "Pull one ✨" (a preview on Josh's phone).
+  - Buttons: an icon, the words, then a colour emoji ("Send one back ❤️"), at Josh's request.
+- **Josh asked for the letter and jar cards to be perfected (2026-11-25).**
+  - Two dedicated agents are building them as standalone SwiftUI in `ios/App/KiriyaNotificationContent/Letter/` and `…/Jar/`, each with a render lab in `ios/CardLab/{Letter,Jar}/` that renders frames in its own simulator (logs in `PROGRESS.md`).
+  - The jar must match the in-app jar (`src/world/today/NoteJar.*`).
+  - The lead integrates them into `NoteCardView.swift` once they're done.
+- **Both cards are done and wired in (2026-11-25, evening).**
+  - **Letter** (`Letter/`): a sealed envelope that idles while it waits, a 2.8 s opening, and the note resting on the open envelope. It uses the site's Gaegu and Parisienne fonts (OFL, shipped in the extension).
+  - **Jar** (`Jar/`): the app's own jar, ported path by path from `NoteJar.jsx`. It waits, rattles while pulling, then pulls. "Pull another" works, and so do the failed state and Reduce Motion.
+  - `NoteCardView.swift` is now only the model, the buttons and the host. The old hand-drawn envelope and jar are gone, and so is the copy of `envelope.png`/`jar.png` in the content extension.
+  - `add-native-targets.rb` adds every file in `Letter/` and `Jar/` (`CARDS=Letter` limits it to one).
+  - Built and installed on Josh's phone. Josh: the letter is "perfect".
+  - The render outputs live in the scratchpad (`cardlab/`); the labs can recreate them.
+- **The jar "got stuck" on Josh's phone because the live jar was empty** (0 notes).
+  - An admin preview pull of an empty jar now returns a marked sample note (`pullNote`, label "a sample note", `sample: true`, nothing saved). The site's jar shows the same sample to the admin.
+  - Her real pulls still answer `jar_empty`, and the card says "the jar is waiting for new notes ❤️" instead of "stuck".
+
+Still to check on the phone: Siri, widgets on the Home Screen, quick actions, swipe-back, the alternate icons, the badge, and the over-the-air update cycle with a real deploy. Then TestFlight.
 
 ### 5. Quizzes + game library
 

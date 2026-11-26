@@ -126,6 +126,21 @@ The previous session's memory lives on the other machine and is not available on
 
 ## 4. Do this next, in order
 
+> **Status, 2026-11-25 (iMac session).** Steps 1–2 are done, step 3 builds, and step 4 is in progress. See PLAN.md "Phone testing on Josh's iPhone 11" for what works and what was fixed.
+>
+> **Notification cards.** Little notes and the jar open inside their notification (KiriyaNotificationContent).
+> - The polished SwiftUI cards live in `Letter/` and `Jar/`. Re-render them with the labs in `ios/CardLab/` (see each `PROGRESS.md`).
+> - Josh signed off the letter. The jar was re-tested after the empty-jar sample fix.
+>
+> **iMac practicalities**
+> - **Node:** not on `PATH`. Use `~/.cache/rora-audit-toolchain/node-v22.23.3-darwin-x64/bin`.
+> - **Pushing to GitHub:** HTTPS has no credentials here. Push over SSH with the account key:
+>   `GIT_SSH_COMMAND="ssh -i ~/.ssh/rora_imac_20260930 -o IdentitiesOnly=yes" git push git@github.com:iamnaym0ri/kiriya.git <branch>`
+> - **Deploying:** fast-forward `main` without checking it out (`git fetch . connection-refactor:main`, then push `main`). A checkout rewrites files, and Xcode then fails with "Entitlements file … was modified during the build". If that happens, delete `ios/App/build/derived/Build/Intermediates.noindex/XCBuildData`.
+> - **Josh's phone:** iPhone 11, iOS 27. Use UDID `00008030-000C4D5C346B402E` for xcodebuild and the CoreDevice id `2DC98319-…` for devicectl. Two apps on it have an `App.app/App` process, so match the kiriya.love bundle container before terminating anything.
+> - **Web Inspector for the app:** `~/.cache/kiriya-ios-tooling/wi.py` (a copy of Rora's helper aimed at `love.kiriya.app`).
+> - **The app is a surprise for Kiriya until Josh says.** Test with admin → "Try the app on my phone" (test mode).
+
 1. **Get the code onto the Mac.** If Josh hasn't pushed it yet, ask him; it needs a commit from the WSL machine. Then:
    - `npm ci`
    - create `.env.local` (copy from `.env.example`; dev works with almost nothing)
