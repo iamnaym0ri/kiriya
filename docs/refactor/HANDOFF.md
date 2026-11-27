@@ -207,6 +207,13 @@ merged, what still needs Josh's phone, and the keys still to come.
     `realRole: "admin"`. `shared/ViewAsBanner.jsx` floats above the tab bar with "back to josh".
     Tests: `scripts/test-view-as.mjs`.
 
+- **Round 2 shipped 2026-11-27** (main `eaaf8b6`, app bundle 1.20261127.123730): events never
+  vanish and lead with what/when/where/tickets/weather, merch has its own pages and pictures (stored
+  and served at most 1600 px), characters refined with a two-choice tap menu and "stay", a real paper
+  doll, a bouquet maker, her gallery, centre stage first with her corner in the header, smooth
+  background charms, the note jar up front. Status table and what's still to see on the phone:
+  `RENOVATION.md`, "Round 2 status".
+
 ## 6. Conventions that kept things working
 
 - **Tests:**
