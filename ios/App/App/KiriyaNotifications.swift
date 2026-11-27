@@ -73,6 +73,10 @@ enum KiriyaNotificationCategories {
             category("JAR", [pull, openApp], hidden: "new notes in your jar ♡"),
             category("EVENT", [open], hidden: "news about an event"),
             category("REMINDER", [pull, openApp], hidden: "a little reminder ♡"),
+            // A quiz question (or its answer): "Answer ✏️" opens it in the app (server/push/apns.js).
+            category("QUIZ", [UNNotificationAction(identifier: Self.open, title: "Answer ✏️", options: [.foreground],
+                                                   icon: UNNotificationActionIcon(systemImageName: "pencil.and.scribble")), heart],
+                     hidden: "a quiz question for you ♡"),
         ]))
     }
 }
