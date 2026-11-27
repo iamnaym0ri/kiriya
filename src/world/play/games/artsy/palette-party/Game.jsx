@@ -131,7 +131,9 @@ export default function ColourClub({ onReward }) {
         : `“${said.score >= 30 ? `${said.score}%. ` : ""}${pick(said.kind === "close" ? LINES.close : LINES.far, talk).slice(1)}`
     : total
       ? `${total} ${total === 1 ? "drop" : "drops"} in the bowl. compare when it looks right.`
-      : pick(LINES.start, firstLine);
+      : !state.results.length && !state.checks
+        ? "tap the pots to drop paint in your bowl, then compare it with my sample. fewer tries, more stars."
+        : pick(LINES.start, firstLine);
   const face = matched ? "pleased" : said ? (said.step ? "writing" : "thinking") : total ? "curious" : "deadpan";
 
   return (
