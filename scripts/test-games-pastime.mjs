@@ -4,6 +4,9 @@ import assert from "node:assert/strict";
 import { seeded } from "../src/world/play/games/pastime/_shared/rng.js";
 import * as herb from "../src/world/play/games/pastime/herb-match/engine.js";
 import * as charms from "../src/world/play/games/pastime/charm-merge/engine.js";
+import * as slider from "../src/world/play/games/pastime/slide-us/engine.js";
+import * as drops from "../src/world/play/games/pastime/charm-drop/engine.js";
+import * as spot from "../src/world/play/games/pastime/spot-difference/scenes.js";
 
 // ---------- herb patch (match-3) ----------
 
@@ -247,4 +250,123 @@ test("Charm ladder: long games keep ids unique and saved games are checked befor
   }
   assert.equal(charms.isGame({ cells: [1, 2, 3] }), false);
   assert.equal(charms.isGame(null), false);
+});
+
+// ---------- us, in pieces (slide puzzle) ----------
+
+test("Slide puzzle: every size mixes into a solvable, well-mixed board with the gap in the corner", () => {
+  for (const n of slider.SIZES)
+    for (let s = 1; s <= 25; s++) {
+      const puzzle = slider.newPuzzle(n, seeded(s * n));
+      assert.equal(slider.isSolved(puzzle), false);
+      assert.equal(slider.gapOf(puzzle), n * n - 1);
+      assert.ok(slider.solvable(puzzle.tiles, n));
+      assert.ok(slider.distance(puzzle.tiles, n) >= n * n);
+      assert.ok(slider.isPuzzle(puzzle));
+    }
+  // The parity rule itself: one swapped pair can never be solved.
+  assert.equal(slider.solvable([1, 0, 2, 3, 4, 5, 6, 7, 8], 3), false);
+  assert.equal(slider.solvable([0, 1, 2, 3, 4, 5, 6, 7, 8], 3), true);
+  assert.equal(slider.solvable([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 13, 15], 4), false);
+});
+
+test("Slide puzzle: a tap slides a whole line toward the gap; taps off the line do nothing", () => {
+  const puzzle = { n: 3, tiles: [0, 1, 2, 3, 4, 5, 6, 7, 8], moves: 0 };
+  const row = slider.slide(puzzle, 6); // bottom-left: 6 and 7 shift right
+  assert.deepEqual(row.tiles, [0, 1, 2, 3, 4, 5, 8, 6, 7]);
+  assert.equal(row.moves, 1);
+  const col = slider.slide(puzzle, 2); // top-right: 2 and 5 shift down
+  assert.deepEqual(col.tiles, [0, 1, 8, 3, 4, 2, 6, 7, 5]);
+  assert.strictEqual(slider.slide(puzzle, 0), puzzle, "not in line with the gap");
+  assert.strictEqual(slider.slide(puzzle, 8), puzzle, "the gap itself");
+  assert.equal(slider.isSolved(slider.slide(row, 8)), true, "one tap slides the line back and the picture is whole");
+  assert.equal(slider.isPuzzle({ n: 3, tiles: [1, 0, 2, 3, 4, 5, 6, 7, 8], moves: 0 }), false, "an unsolvable save is refused");
+});
+
+// ---------- charm drop (falling blocks) ----------
+
+const dropGame = (rows, current = { type: "locket", dir: 0, x: 0, y: 0 }) => {
+  const grid = Array.from({ length: drops.ROWS }, () => new Array(drops.COLS).fill(null));
+  rows.forEach((row, i) => [...row].forEach((ch, x) => (grid[drops.ROWS - rows.length + i][x] = ch === "#" ? "leaf" : null)));
+  return { grid, bag: [], queue: ["star", "moon", "crown", "petal"], hold: null, canHold: true, score: 0, lines: 0, over: false, pieces: 0, best4: 0, current };
+};
+
+test("Charm drop: pieces are four charms each in every turn, and the bag deals four of each kind", () => {
+  for (const type of drops.KINDS) for (let dir = 0; dir < 4; dir++) assert.equal(drops.cellsOf({ type, dir, x: 0, y: 0 }).length, 4);
+  const random = seeded(4);
+  let game = drops.newGame(random);
+  const dealt = [game.current.type];
+  for (let i = 0; i < 27; i++) {
+    game = drops.hardDrop({ ...game, grid: game.grid.map((row) => row.map(() => null)) }, random).state;
+    dealt.push(game.current.type);
+  }
+  for (const kind of drops.KINDS) assert.equal(dealt.filter((type) => type === kind).length, 4, kind);
+});
+
+test("Charm drop: walls and settled charms stop a piece; turning beside a wall nudges it in", () => {
+  let game = dropGame([], { type: "ribbon", dir: 1, x: -2, y: 4 }); // standing up against the left wall
+  assert.strictEqual(drops.move(game, -1), game);
+  const turned = drops.rotate(game);
+  assert.notStrictEqual(turned, game, "the wall kick finds room");
+  assert.ok(drops.cellsOf(turned.current).every(([x]) => x >= 0 && x < drops.COLS));
+  game = dropGame(["##########".slice(0, 0)], { type: "locket", dir: 0, x: 4, y: 0 });
+  assert.equal(drops.ghostOf(game).y, drops.ROWS - 2);
+});
+
+test("Charm drop: full rows clear and score double per extra row; a stack over the top ends the jar", () => {
+  const game = dropGame([
+    "########..",
+    "########..",
+  ], { type: "locket", dir: 0, x: 8, y: 0 });
+  const { state, cleared } = drops.hardDrop(game, seeded(1));
+  assert.deepEqual(cleared, [drops.ROWS - 2, drops.ROWS - 1]);
+  assert.equal(state.lines, 2);
+  assert.ok(state.grid.every((row) => row.every((cell) => cell === null)), "everything above fell into place");
+  assert.equal(state.score, (drops.ROWS - 2) * 2 + 10 + 200);
+  const full = dropGame(Array.from({ length: drops.ROWS }, (_, i) => (i % 2 ? "#########." : ".#########")), { type: "locket", dir: 0, x: 4, y: -2 });
+  assert.equal(drops.lock(full, seeded(1)).state.over, true);
+});
+
+test("Charm drop: keep swaps once per piece, and saved jars are checked", () => {
+  const random = seeded(7);
+  const game = drops.newGame(random);
+  const kept = drops.hold(game, random);
+  assert.equal(kept.hold, game.current.type);
+  assert.strictEqual(drops.hold(kept, random), kept, "only once until the next piece");
+  assert.ok(drops.isGame(game));
+  assert.equal(drops.isGame({ grid: [] }), false);
+  assert.ok(drops.stepFor({ lines: 0 }) > drops.stepFor({ lines: 60 }));
+  assert.ok(drops.stepFor({ lines: 500 }) >= 0.2, "never frantic");
+});
+
+// ---------- look twice (spot the difference) ----------
+
+test("Look twice: every round has five well-spaced differences, each really changing one picture", () => {
+  for (let n = 0; n < 80; n++) {
+    const round = spot.buildRound(n);
+    assert.equal(round.diffs.length, spot.DIFFERENCES, `round ${n}`);
+    assert.deepEqual(spot.buildRound(n), round, "a round is the same every time");
+    for (const a of round.diffs)
+      for (const b of round.diffs) if (a !== b) assert.ok(Math.hypot(a.x - b.x, a.y - b.y) >= a.r + b.r, "no two overlap");
+    for (const diff of round.diffs) {
+      const top = round.top.find((item) => item.id === diff.id);
+      const bottom = round.bottom.find((item) => item.id === diff.id);
+      assert.notDeepEqual(top, bottom, `${diff.kind} changes something`);
+      assert.ok(diff.r + spot.TAP_SLACK >= 22, "big enough to tap");
+    }
+    assert.notEqual(spot.sceneSvg(round, "top"), spot.sceneSvg(round, "bottom"));
+  }
+  const scenes = new Set(Array.from({ length: 8 }, (_, n) => spot.buildRound(n).scene));
+  assert.equal(scenes.size, spot.SCENE_IDS.length, "the rounds visit every place");
+});
+
+test("Look twice: a tap counts near a difference (either picture), once, and misses elsewhere", () => {
+  const round = spot.buildRound(3);
+  const [first, second] = round.diffs;
+  assert.equal(spot.hitTest(round, [], first.x + 3, first.y - 2), first.id);
+  assert.equal(spot.hitTest(round, [first.id], first.x, first.y), null, "already found");
+  assert.equal(spot.hitTest(round, [], second.x, second.y), second.id);
+  const far = round.diffs.every((diff) => Math.hypot(diff.x - 0, diff.y - 0) > diff.r + spot.TAP_SLACK);
+  if (far) assert.equal(spot.hitTest(round, [], 0, 0), null);
+  assert.ok(spot.scenePicture(0).svg.startsWith("<svg"));
 });

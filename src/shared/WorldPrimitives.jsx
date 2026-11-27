@@ -200,6 +200,7 @@ export function Credits({ onClose }) {
         </a>{" "}
         © Microsoft, MIT licence. GIF search powered by GIPHY.
       </p>
+      <p>Pastime games: charm ladder adapted from <a href="https://github.com/gabrielecirulli/2048" target="_blank" rel="noreferrer">2048</a> by Gabriele Cirulli (MIT); charm drop adapted from <a href="https://github.com/jakesgordon/javascript-tetris" target="_blank" rel="noreferrer">javascript-tetris</a> by Jake Gordon (MIT); herb patch follows <a href="https://github.com/PlaytestersKitchen/match-three-js" target="_blank" rel="noreferrer">match-three-js</a> (MIT). Their pictures are drawn for this site.</p>
       <h3>Reference collection</h3>
       <p>
         Maomao portraits and botanical images are from the supplied reference

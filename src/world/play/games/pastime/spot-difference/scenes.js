@@ -6,7 +6,7 @@ import { ASYMMETRIC, COLOURS, RADIUS, VARIANTS, drawItem } from "./drawings.js";
 export const WIDTH = 360;
 export const HEIGHT = 260;
 export const DIFFERENCES = 5;
-export const TAP_SLACK = 14; // a tap this far outside a drawing still counts
+export const TAP_SLACK = 16; // a tap this far outside a drawing still counts
 
 const SOFT = ["lilac", "pink", "peach", "butter", "mint", "sky", "coral", "teal"];
 const ALL = Object.keys(COLOURS);
@@ -95,8 +95,8 @@ const SCENES = [
       ${Array.from({ length: 14 }, (_, i) => `<circle cx="${(i * 71) % 350 + 6}" cy="${(i * 29) % 50 + 8}" r="1.3" fill="#fff" opacity="0.8"/>`).join("")}`,
     items: [
       ["moon", 316, 38, 1.1, ["butter", "cream", "peach"]],
-      ["star", 42, 30, 0.9, ["butter", "cream", "pink"]],
-      ["star", 210, 22, 0.8, ["butter", "sky", "pink"]],
+      ["star", 42, 30, 1, ["butter", "cream", "pink"]],
+      ["star", 210, 24, 0.95, ["butter", "sky", "pink"]],
       ["lantern", 54, 66, 0.85, ["pink", "peach", "coral", "butter"]],
       ["lantern", 118, 73, 0.85, ["lilac", "peach", "butter"]],
       ["lantern", 182, 76, 0.85, ["coral", "pink", "teal"]],

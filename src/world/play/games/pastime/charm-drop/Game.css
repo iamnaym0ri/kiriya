@@ -1,0 +1,32 @@
+.drop { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.drop-main { flex: 1; min-height: 0; display: flex; gap: 10px; }
+.drop-stage { flex: 1; min-width: 0; min-height: 0; display: grid; place-items: center; }
+.drop-jar {
+  position: relative;
+  border-radius: 6px 6px 16px 16px;
+  box-shadow: 0 0 0 4px #fff9fd, 0 0 0 5.5px #c9aed8, 0 8px 0 5px #e3d3ea;
+  overflow: hidden;
+}
+.drop-jar canvas { display: block; touch-action: none; }
+.drop-jar .pastime-cheer { font-size: 28px; }
+.drop-side { flex: none; width: 76px; display: flex; flex-direction: column; gap: 8px; }
+.drop-box {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  padding: 8px 4px;
+  border: 1px dashed #cdb3d8;
+  border-radius: 14px;
+  background: color-mix(in srgb, #fff9fd 88%, transparent);
+  color: var(--ink);
+}
+.drop-keep { min-height: 72px; font: inherit; }
+.drop-keep:disabled { opacity: 0.55; }
+.drop-keep__empty { font: 17px/1 var(--font-hand, "Gaegu", cursive); color: var(--ink-faint); }
+.drop-numbers { gap: 1px; }
+.drop-numbers b { font: 700 21px/1.1 var(--font-hand, "Gaegu", cursive); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.drop-piece { display: block; }
+.drop-controls { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.drop-controls .pastime-button { min-height: 52px; padding: 0; font: 22px/1 system-ui, sans-serif; touch-action: none; -webkit-touch-callout: none; }
+.drop-again { width: 100%; margin-top: 6px; }
