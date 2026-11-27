@@ -313,6 +313,37 @@ function FlungArms() {
   );
 }
 
+/** Both arms thrown up: the push-off of a hop. Sleeves fall back toward her shoulders. */
+function RaisedArms() {
+  return (
+    <g className="mm-arms mm-arms--raised">
+      <g className="mm-arm mm-arm--l">
+        <path d="M72 156c-10-8-20-24-26-40l-9 4c2 16 10 32 21 44 6 2 12-2 14-8Z" {...robe} />
+        <path d="m38 120 8-4" {...cuff} />
+        <ellipse cx="41" cy="111" rx="6.5" ry="6.5" {...hand} />
+      </g>
+      <g className="mm-arm mm-arm--r">
+        <path d="M128 156c10-8 20-24 26-40l9 4c-2 16-10 32-21 44-6 2-12-2-14-8Z" {...robe} />
+        <path d="m162 120-8-4" {...cuff} />
+        <ellipse cx="159" cy="111" rx="6.5" ry="6.5" {...hand} />
+      </g>
+    </g>
+  );
+}
+
+/** A flinch: both hands snap up in front of her collar. */
+function StartleArms() {
+  return (
+    <g className="mm-arms mm-arms--startle">
+      <path d="M68 154c-10 6-14 18-10 28 4 6 12 6 18 0l6-18c-4-2-10-6-14-10Z" {...robe} />
+      <path d="M132 154c10 6 14 18 10 28-4 6-12 6-18 0l-6-18c4-2 10-6 14-10Z" {...robe} />
+      <path d="m80 168 4-9m36 9-4-9" stroke={CUFF} strokeWidth="5" strokeLinecap="round" />
+      <path d="M80 158q-2-10 3-12l1 5 2-7q4-1 4 3v-4q4-1 4 3l1 6q1 6-6 9-7 1-9-3Z" {...hand} />
+      <path d="M120 158q2-10-3-12l-1 5-2-7q-4-1-4 3v-4q-4-1-4 3l-1 6q-1 6 6 9 7 1 9-3Z" {...hand} />
+    </g>
+  );
+}
+
 /** Picked up by the scruff like a kitten: paws tucked up, everything else slack. */
 function PawArms() {
   return (
@@ -452,12 +483,13 @@ function armsFor(pose) {
     case "walk":
       return { back: <RestArms /> };
     case "jump":
-      return { back: <RestArms spread={-16} /> };
+      return { front: <RaisedArms /> };
     case "land":
       return { back: <RestArms spread={14} /> };
     case "fall":
-    case "react":
       return { front: <FlungArms /> };
+    case "react":
+      return { front: <StartleArms /> };
     case "wave":
       return { front: <WaveArms /> };
     case "held":

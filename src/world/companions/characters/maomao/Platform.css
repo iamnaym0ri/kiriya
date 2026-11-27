@@ -36,6 +36,11 @@
 }
 
 /* forming: puffs pop in from the middle out, the sprigs sprout, the lantern lowers into place */
+/* Opacity lives on the whole body, never on single puffs: half-transparent puffs would show the
+   outline layer through each other. */
+.mm-cloud[data-state="forming"] .mm-cloud__body {
+  animation: mm-cloud-fade-in 0.22s ease-out both;
+}
 .mm-cloud[data-state="forming"] .mm-cloud__puff {
   animation: mm-puff-in 0.42s cubic-bezier(0.3, 1.5, 0.5, 1) both;
 }
@@ -50,6 +55,9 @@
 }
 
 /* fading: the puffs shrink and lift away, leaving a last breath of steam */
+.mm-cloud[data-state="fading"] .mm-cloud__body {
+  animation: mm-cloud-fade-out 0.5s ease-in both;
+}
 .mm-cloud[data-state="fading"] .mm-cloud__puff {
   animation: mm-puff-out 0.5s ease-in both;
 }
@@ -117,14 +125,12 @@
 }
 @keyframes mm-puff-in {
   from {
-    opacity: 0;
     scale: 0.2;
   }
 }
 @keyframes mm-puff-out {
   to {
-    opacity: 0;
-    scale: 0.3;
+    scale: 0.45;
     translate: 0 -4px;
   }
 }

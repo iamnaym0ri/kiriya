@@ -65,7 +65,7 @@ export default function Platform({ width = 100, state = "steady" }) {
       </defs>
 
       {/* Steam from somewhere inside, rising behind her. */}
-      <g className="mm-cloud__steam" fill="none" stroke="#d3e2d2" strokeWidth="1.5" strokeLinecap="round">
+      <g className="mm-cloud__steam" fill="none" stroke="#c3d8c2" strokeWidth="1.6" strokeLinecap="round">
         <path d={`M${w * 0.4} 9q-3-4 0-8t0-8`} />
         <path d={`M${w * 0.47} 8q-3-4 0-7t0-7`} />
         <path d={`M${w * 0.36} 10q3-4 0-7t0-6`} />
@@ -95,13 +95,13 @@ export default function Platform({ width = 100, state = "steady" }) {
         {/* Outline layer underneath, fill layer on top: the overlaps vanish and only the cloud's
             outer edge keeps a line, like the hand-drawn mascot. */}
         <g className="mm-cloud__line" fill="#cbbfdc" stroke="#cbbfdc" strokeWidth="2.6">
-          <rect {...belly} />
+          <rect className="mm-cloud__puff" {...belly} />
           {puffs.map((puff, i) => (
             <circle key={i} className="mm-cloud__puff" cx={puff.cx} cy={puff.cy} r={puff.r} style={{ animationDelay: `${puff.delay}ms` }} />
           ))}
         </g>
         <g fill={`url(#${uid}-fill)`}>
-          <rect {...belly} />
+          <rect className="mm-cloud__puff" {...belly} />
           {puffs.map((puff, i) => (
             <circle key={i} className="mm-cloud__puff" cx={puff.cx} cy={puff.cy} r={puff.r} style={{ animationDelay: `${puff.delay}ms` }} />
           ))}
