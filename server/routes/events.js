@@ -133,8 +133,11 @@ eventRoutes.get("/home", async (c) => {
   const next = dated.find((e) => e.hers) ?? dated[0] ?? null;
   const since = me.lastLookedAt;
   const byId = new Map(cards.map((e) => [e.id, e]));
+  // One line per event (its latest news), so one event's batch of updates can't crowd out others.
+  const shown = new Set();
   const fresh = log
     .filter((entry) => byId.has(entry.eventId) && (!since || new Date(entry.at).toISOString() > since))
+    .filter((entry) => !shown.has(entry.eventId) && shown.add(entry.eventId))
     .slice(0, 4)
     .map((entry) => {
       const event = byId.get(entry.eventId);

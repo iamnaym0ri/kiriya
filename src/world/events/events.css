@@ -1929,11 +1929,17 @@ a.ev-glance__link:active {
 }
 .ev-actions--two .ev-action__icon,
 .ev-actions--two .ev-save.ev-action .ev-save__icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
+}
+.ev-actions--two .ev-action,
+.ev-actions--two .ev-save.ev-action {
+  gap: 6px;
+  padding-inline: 8px;
 }
 .ev-actions--two .ev-action__label {
   font: 700 14px/1.2 var(--font-ui);
+  white-space: nowrap;
 }
 
 .ev-gone {

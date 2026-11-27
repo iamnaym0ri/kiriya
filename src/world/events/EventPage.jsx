@@ -129,8 +129,9 @@ function When({ item, now }) {
 
 function Glance({ item, now }) {
   const maps = mapsLinks(item.venue);
-  const t = ticketFacts(item.tickets);
+  const t = ticketFacts(item.tickets, now);
   const buy = item.tickets?.url ?? item.links?.find((l) => l.kind === "tickets")?.url ?? null;
+  const salesSoon = t.opensAt && t.opensAt - now.getTime() < 7 * 86_400_000;
   const w = dayWeather(item, now);
   const where = item.venue?.name;
   return (
@@ -157,7 +158,16 @@ function Glance({ item, now }) {
           href={maps?.place}
           action={maps ? <span className="ev-pill">map</span> : null}
         />
-        <GlanceRow icon="ticket" label="tickets" title={t.title} detail={t.detail} tone={t.tone} href={buy} action={buy ? <span className="ev-pill ev-pill--strong">{item.tickets?.status === "on_sale" ? "buy" : "view"}</span> : null} />
+        <GlanceRow icon="ticket" label="tickets" title={t.title} detail={t.detail} tone={t.tone} href={buy} action={buy ? <span className="ev-pill ev-pill--strong">{t.status === "on_sale" ? "buy" : "view"}</span> : null}>
+          {salesSoon && (
+            <span className="ev-glance__count">
+              <span className="ev-glance__ticker">
+                <span className="ev-glance__count-label">sales open in</span>
+                <Countdown to={new Date(t.opensAt)} label="sales open in" inline />
+              </span>
+            </span>
+          )}
+        </GlanceRow>
         {w ? (
           <GlanceRow icon={w.icon} label="weather" title={`${w.tempHigh}° / ${w.tempLow}°${w.rainChance != null ? ` · ${w.rainChance}% rain` : ""}`} detail={[dayLabel(w.date), w.summary?.toLowerCase()].filter(Boolean).join(" · ")} />
         ) : item.startsOn && !item.datesTbc && phaseOf(item, now).phase !== "ended" ? (

@@ -435,6 +435,19 @@ try {
     assert.deepEqual([card.openEnded, card.dateLabel, card.endsOn], [true, "from 20 nov", "2027-01-19"]);
     const steps = dossier.timelineFor({ timeline: [{ stage: "tickets", at: "2026-12-02 12:00", title: "tickets on sale", text: "SISTIC", sourceIds: [] }], startsOn: "2027-05-14", endsOn: "2027-05-14", status: "upcoming", dossier: {} }, today);
     assert.equal(steps.find((x) => x.stage === "tickets").state, "next", "a sale date still to come isn't 'done'");
+
+    // The card's ticket line says what's known, and flips to on sale when the moment passes.
+    const sistic = "https://www.sistic.com.sg/events/finalfantasy0527";
+    const sources = [{ id: "s3", url: sistic, kind: "ticketing", publisher: "SISTIC" }];
+    const soon = dossier.ticketSummary({ status: "soon", opensAt: "2026-12-02 12:00", buyUrl: sistic, tiers: [] }, { sources, now: new Date("2026-11-27T04:00:00Z") });
+    assert.deepEqual([soon.status, soon.label, soon.opensAt, soon.seller, soon.url], ["soon", "tickets 2 dec", "2026-12-02T04:00:00.000Z", "SISTIC", sistic]);
+    const later = dossier.ticketSummary({ status: "soon", opensAt: "2026-12-02 12:00", buyUrl: sistic, tiers: [] }, { sources, now: new Date("2026-12-02T04:00:01Z") });
+    assert.equal(later.status, "on_sale", "no new research needed for the sale to open");
+    const fromTimeline = dossier.ticketSummary({ status: "tbc", tiers: [] }, { timeline: [{ stage: "tickets", at: "2026-12-10" }], now: new Date("2026-11-27T04:00:00Z") });
+    assert.deepEqual([fromTimeline.status, fromTimeline.label, fromTimeline.opensHasTime], ["soon", "tickets 10 dec", false], "the timeline knows when, so the card does too");
+    assert.equal(dossier.ticketSummary({ status: "on_sale", buyUrl: "https://animefestival.asia/afasg26/ticketing/", tiers: [] }, { sources: [{ url: "https://animefestival.asia/afasg26/", kind: "ticketing", publisher: "SOZO" }], official: "https://animefestival.asia/afasg26/" }).seller, null, "sold on the event's own site: nobody to name");
+    const priced = dossier.ticketSummary({ status: "on_sale", tiers: [{ name: "a", price: 18, currency: "SGD", status: "sold_out" }, { name: "b", price: 28, currency: "SGD", status: "on_sale" }] }, {});
+    assert.equal(priced.label, "from S$28", "the lowest price still on sale");
   });
 
   await test("Pictures: share pictures and Instagram posts, copied through the site's API, robots.txt obeyed, no Claude calls", async () => {

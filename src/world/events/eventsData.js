@@ -88,7 +88,9 @@ export function fromCard(card) {
     timeLabel: card.timeLabel ?? null,
     days: roughDays(card),
     venue: card.venueName ? { name: card.venueName, area: card.venueArea ?? null } : null,
-    tickets: card.tickets ? { status: card.tickets.status, label: card.tickets.label ?? null, from: card.tickets.from ?? null } : null,
+    tickets: card.tickets
+      ? { status: card.tickets.status, label: card.tickets.label ?? null, from: card.tickets.from ?? null, opensAt: card.tickets.opensAt ?? null, opensHasTime: card.tickets.opensHasTime ?? true, url: card.tickets.url ?? null, seller: card.tickets.seller ?? null }
+      : null,
     merchInfo: card.merch ?? null,
     countdown: card.countdown ?? null,
     image: card.image?.url ? { ...card.image, url: mediaUrl(card.image.url) } : null,
@@ -138,11 +140,12 @@ export function fromDetail(detail) {
   item.datesNote = d.datesNote ?? null;
   item.popup = d.popup ? { about: d.popup.about ?? null, sold: d.popup.sold ?? [] } : null;
   if (d.tickets)
+    // The card's line already says what's known (it reads the timeline too); the dossier adds detail.
     item.tickets = {
       ...item.tickets,
-      status: d.tickets.status ?? item.tickets?.status,
-      url: d.tickets.buyUrl ?? null,
-      opensAt: d.tickets.opensAt ?? null,
+      status: item.tickets?.status ?? d.tickets.status,
+      url: item.tickets?.url ?? d.tickets.buyUrl ?? null,
+      opensAt: item.tickets?.opensAt ?? d.tickets.opensAt ?? null,
       note: d.tickets.note ?? null,
       tiers: d.tickets.tiers ?? [],
     };

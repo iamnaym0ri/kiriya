@@ -253,7 +253,7 @@ deleted.
   "onNow": [EventCard],           // happening today
   "upcoming": [EventCard],        // the next four after `next`
   "fresh": [{ "id": "uuid", "at": "…", "kind": "merch", "title": "exclusives revealed", "text": "…", "big": true,
-              "event": { "id": "…", "name": "…", "kind": "con", "dateLabel": "27–29 nov" } }],   // ≤4 unseen since the section mark
+              "event": { "id": "…", "name": "…", "kind": "con", "dateLabel": "27–29 nov" } }],   // ≤4 unseen since the section mark, one per event
   "merch": [MerchCard],           // up to six: her events first, pieces with a picture first, no sold-out
   "counts": { "upcoming": 11, "unseenUpdates": 4, "saved": 2 },
   "me": Me, "today": "2026-11-27", "updatedAt": "…"

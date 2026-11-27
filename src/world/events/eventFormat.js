@@ -59,8 +59,12 @@ export function dateRange(item, { withYear = false, now = new Date() } = {}) {
   return `${dayNumber(start)} ${monthShort(start)} – ${dayNumber(end)} ${monthShort(end)}${year(end)}`;
 }
 
-/** "10:00–21:00" for one open day. */
-export const hours = (d) => (d?.opens && d?.closes ? `${d.opens}–${d.closes}` : d?.opens ? `from ${d.opens}` : "hours tbc");
+/** "10am – 9pm" for one open day (12-hour, like every other time on these screens). */
+const hhmm12 = (t) => {
+  const [h, m] = String(t).split(":").map(Number);
+  return `${h % 12 || 12}${m ? `.${String(m).padStart(2, "0")}` : ""}${h >= 12 ? "pm" : "am"}`;
+};
+export const hours = (d) => (d?.opens && d?.closes ? `${hhmm12(d.opens)} – ${hhmm12(d.closes)}` : d?.opens ? `from ${hhmm12(d.opens)}` : "hours tbc");
 
 /** The open days as moments: [{ date, start, end, note }], oldest first. */
 export function openings(item) {
@@ -201,10 +205,16 @@ const TIER_CHIPS = {
 };
 export const tierChip = (status) => TIER_CHIPS[status] ?? null;
 
-function ticketChip(tickets) {
+function ticketChip(tickets, now = new Date()) {
+  const opens = sgMoment(tickets?.opensAt);
+  if (tickets?.status === "soon" && Number.isFinite(opens)) {
+    // "tickets 2 dec" while it's coming, "tickets on sale" once that moment has passed.
+    if (opens > now.getTime()) return { tone: "plum", label: `tickets ${dayNumber(opens)} ${monthShort(opens)}` };
+    return { tone: "mint", label: "tickets on sale" };
+  }
   switch (tickets?.status) {
     case "on_sale":
-      return { tone: "mint", label: tickets.label ? `tickets ${tickets.label}` : "tickets on sale" };
+      return { tone: "mint", label: tickets.label && tickets.label !== "tickets on sale" ? `tickets ${tickets.label}` : "tickets on sale" };
     case "selling_fast":
       return { tone: "rose", label: "selling fast" };
     case "sold_out":
@@ -240,7 +250,7 @@ export function chipsFor(item, now = new Date(), { live = true } = {}) {
   if (p.phase === "ended") return [{ tone: "mute", label: "ended" }];
   const chips = [];
   if (live && p.phase === "open") chips.push({ tone: "rose", label: "on now" });
-  const ticket = ticketChip(item.tickets);
+  const ticket = ticketChip(item.tickets, now);
   if (ticket && item.kind !== "merch") chips.push(ticket);
   if (item.merchInfo?.label) chips.push({ tone: item.merchInfo.exclusives ? "rose" : "plum", label: item.merchInfo.label });
   return chips;
@@ -328,26 +338,59 @@ export function dayWeather(item, now = new Date()) {
   return days.find((d) => d.date === first) ?? days.find((d) => d.date >= first) ?? null;
 }
 
-/** The ticket line: what she needs to know first (status, from-price, when sales open). */
-export function ticketFacts(tickets) {
-  if (!tickets) return { title: "tickets tbc", detail: null, tone: "plum" };
-  const priced = (tickets.tiers ?? []).filter((t) => t.price != null && t.status !== "sold_out");
-  const from = tickets.from ?? (priced.length ? Math.min(...priced.map((t) => t.price)) : null);
-  const fromLabel = from === 0 ? "free" : from != null ? `from ${price({ amount: from, currency: priced[0]?.currency ?? "SGD" })}` : null;
-  const opens = tickets.opensAt && /^\d{4}-\d{2}-\d{2}/.test(tickets.opensAt) ? `on sale ${dayLabel(tickets.opensAt.slice(0, 10))}${/\d{2}:\d{2}/.test(tickets.opensAt) ? `, ${tickets.opensAt.match(/(\d{2}:\d{2})/)[1]}` : ""}` : null;
-  switch (tickets.status) {
+/** "2026-12-02 12:00", ISO, or a plain day (Singapore time) → epoch ms, or NaN. Safari-safe. */
+export function sgMoment(value) {
+  if (typeof value === "number") return value;
+  const m = String(value ?? "").trim().match(/^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+  if (!m) return NaN;
+  if (/(?:[+-]\d{2}:?\d{2}|Z)$/.test(String(value).trim())) return Date.parse(String(value).trim().replace(" ", "T"));
+  return Date.parse(`${m[1]}T${m[2] ?? "00"}:${m[3] ?? "00"}:00+08:00`);
+}
+
+/** "12pm", "9.30am" in Singapore time (the site's own way of writing a time). */
+export function clock12(value) {
+  const [h, m] = TIME.format(asDate(value)).split(":").map(Number);
+  return `${h % 12 || 12}${m ? `.${String(m).padStart(2, "0")}` : ""}${h >= 12 ? "pm" : "am"}`;
+}
+
+/**
+ * The ticket line: what she needs to know first, from everything known (status, when sales open,
+ * who sells them, the lowest price still on sale). A sale that was "soon" reads as on sale once its
+ * moment passes, even before the next research. → { status, title, detail, tone, opensAt (ms|null) }
+ */
+export function ticketFacts(tickets, now = new Date()) {
+  if (!tickets) return { status: "tbc", title: "tickets tbc", detail: null, tone: "plum", opensAt: null };
+  const opensMs = sgMoment(tickets.opensAt);
+  const opens = Number.isFinite(opensMs) ? opensMs : null;
+  let status = tickets.status ?? "tbc";
+  if ((status === "soon" || status === "tbc") && opens && opens <= now.getTime()) status = "on_sale";
+  else if (status === "tbc" && opens) status = "soon";
+  const tiers = tickets.tiers ?? [];
+  const available = tiers.filter((t) => t.price != null && t.status !== "sold_out");
+  const from = tickets.from ?? (available.length ? Math.min(...available.map((t) => t.price)) : null);
+  const fromLabel = from === 0 ? "free" : from != null ? `from ${price({ amount: from, currency: available[0]?.currency ?? "SGD" })}` : null;
+  const when = opens ? `${dayLabel(opens)}${tickets.opensHasTime === false ? "" : `, ${clock12(opens)}`}` : null;
+  const seller = tickets.seller ?? (tickets.url ? siteOf(tickets.url) : null);
+  const on = seller ? `on ${seller}` : null;
+  switch (status) {
     case "on_sale":
-      return { title: fromLabel ? `on sale · ${fromLabel}` : "on sale now", detail: priced.length > 1 ? `${priced.length} kinds of ticket` : null, tone: "mint" };
+      return {
+        status,
+        title: fromLabel ? `on sale · ${fromLabel}` : "on sale now",
+        detail: [available.length > 1 ? `${available.length} kinds of ticket` : null, on, !fromLabel && when ? `since ${when}` : null].filter(Boolean).join(" · ") || null,
+        tone: "mint",
+        opensAt: null,
+      };
     case "soon":
-      return { title: "tickets soon", detail: opens ?? "sales not open yet", tone: "plum" };
+      return { status, title: when ? `on sale ${when}` : "tickets soon", detail: on ?? (when ? null : "sales not open yet"), tone: "plum", opensAt: opens };
     case "sold_out":
-      return { title: "sold out", detail: null, tone: "mute" };
+      return { status, title: "sold out", detail: on, tone: "mute", opensAt: null };
     case "free":
-      return { title: "free entry", detail: null, tone: "mint" };
+      return { status, title: "free entry", detail: tiers.length ? null : "no ticket needed", tone: "mint", opensAt: null };
     case "closed":
-      return { title: "sales closed", detail: null, tone: "mute" };
+      return { status, title: "sales closed", detail: null, tone: "mute", opensAt: null };
     default:
-      return { title: "tickets tbc", detail: opens, tone: "plum" };
+      return { status: "tbc", title: "tickets tbc", detail: on, tone: "plum", opensAt: null };
   }
 }
 

@@ -70,7 +70,7 @@ export function withSourceId(value) {
 
 const datesTbcOf = (row) => !row.startsOn || row.confidence === "unconfirmed" || Boolean(row.dossier?.datesTbc);
 
-export function eventCard(row, { today, me, log = [] }) {
+export function eventCard(row, { today, me, log = [], now = new Date() }) {
   const dossier = row.dossier ?? {};
   const days = dossier.days ?? [];
   const first = days.find((d) => d.date === row.startsOn) ?? days[0];
@@ -105,7 +105,7 @@ export function eventCard(row, { today, me, log = [] }) {
     fandoms: row.fandoms ?? [],
     fandomLabels: (row.fandoms ?? []).map(fandomLabel),
     tags: row.tags ?? [],
-    tickets: ticketSummary(dossier.tickets),
+    tickets: ticketSummary(dossier.tickets, { timeline: dossier.timeline ?? [], sources: dossier.sources ?? [], links: dossier.links ?? [], official: row.url, now }),
     merch: merchSummary(dossier.merch),
     status,
     phase: currentPhase(steps),
@@ -173,7 +173,7 @@ export function merchDetail(item, row, { today, me }) {
       tagline: row.tagline ?? null,
       timeLabel: eventCard(row, { today, me, log: [] }).timeLabel,
       venue: venue ? { name: venue.name, hall: venue.hall ?? null, area: venue.area ?? null, address: venue.address ?? null, lat: venue.lat ?? null, lng: venue.lng ?? null } : row.venue ? { name: row.venue } : null,
-      tickets: ticketSummary(row.dossier?.tickets),
+      tickets: ticketSummary(row.dossier?.tickets, { timeline: row.dossier?.timeline ?? [], sources: row.dossier?.sources ?? [], links: row.dossier?.links ?? [], official: row.url }),
       url: row.url ?? null,
     },
     more: (row.dossier?.merch ?? []).filter((m) => m.id !== item.id).slice(0, 8).map((m) => presentMerch(m, row, { today, me })),

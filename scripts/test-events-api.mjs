@@ -113,6 +113,13 @@ try {
     const ids = new Set(event.sources.map((s) => s.id));
     const walk = (v) => (Array.isArray(v) ? v.forEach(walk) : v && typeof v === "object" ? (Array.isArray(v.sourceIds) && v.sourceIds.forEach((id) => assert.ok(ids.has(id), id)), Object.values(v).forEach(walk)) : null);
     walk(event.dossier);
+    const home = await json(await request("events/home", { cookie: josh }));
+    assert.equal(home.fresh.length, 4);
+    assert.equal(new Set(home.fresh.map((f) => f.event.id)).size, 4, "one line per event in what's new, so one event's batch can't crowd out the rest");
+    const ff = (await json(await request("events/fx-ffxiv-eorzean-symphony-2027", { cookie: her }))).event;
+    const opened = Date.now() >= Date.parse("2026-12-02T04:00:00Z");
+    assert.deepEqual([ff.tickets.status, ff.tickets.seller, ff.tickets.opensAt], [opened ? "on_sale" : "soon", "SISTIC", "2026-12-02T04:00:00.000Z"], "the ticket line knows when sales open and where");
+    assert.match(ff.tickets.url, /^https:\/\/www\.sistic\.com\.sg\//);
     const asJosh = await json(await request(`events/${afa}`, { cookie: josh }));
     assert.equal(asJosh.event.admin.origin, "fixture");
     assert.equal((await request("events/missing", { cookie: her })).status, 404);
