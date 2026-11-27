@@ -1,0 +1,862 @@
+/* Hatsune Miku companion (characters/miku). Every rule is scoped to .hmiku and every animation is
+   transform/opacity on a handful of groups, so she stays cheap next to the engine on an iPhone 11.
+   Static values (rotate/translate) are the pose itself; the animations only add life on top, so
+   with motion off (offscreen, quiet, Reduce Motion) each pose still reads as a clear still frame.
+   Coordinates are on her 220 x 240 drawing grid; feet at (110, 236). */
+
+.hmiku {
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* ---- pivots ------------------------------------------------------------------------------------ */
+.hmiku__root,
+.hmiku__breath {
+  transform-origin: 110px 236px;
+}
+.hmiku__headrig {
+  transform-origin: 110px 160px;
+}
+.hmiku__upper {
+  transform-origin: 110px 236px;
+}
+.hmiku__arm,
+.hmiku__leg,
+.hmiku__shin,
+.hmiku__leek {
+  transform-origin: 0 0;
+}
+
+/* ---- resting shapes ---------------------------------------------------------------------------- */
+.hmiku__arm--r {
+  rotate: 13deg;
+}
+.hmiku__arm--l {
+  rotate: -13deg;
+}
+.hmiku__notes,
+.hmiku__zzz,
+.hmiku__bang,
+.hmiku__glints {
+  opacity: 0;
+}
+.hmiku__note,
+.hmiku__z,
+.hmiku__glint {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* ---- always-on clocks: breath, blink, tails ------------------------------------------------------- */
+.hmiku__breath {
+  animation: hmiku-breathe 5.2s ease-in-out infinite;
+}
+.hmiku__headrig {
+  animation: hmiku-hum-tilt 7.4s ease-in-out infinite;
+}
+.hmiku__tail--l,
+.hmiku__tail--r {
+  animation: hmiku-tail-sway 5.2s ease-in-out infinite;
+}
+/* The right tail lives in mirrored space; half a cycle out makes both swing the same way on screen. */
+.hmiku__tail--r {
+  animation-delay: -2.6s;
+}
+.hmiku__eye-open {
+  animation: hmiku-blink 5.9s linear infinite;
+}
+.hmiku__blink {
+  opacity: 0;
+  animation: hmiku-blink-line 5.9s linear infinite;
+}
+.hmiku__arm--r {
+  animation: hmiku-arm-idle-r 5.2s ease-in-out infinite;
+}
+.hmiku__arm--l {
+  animation: hmiku-arm-idle-l 5.2s ease-in-out infinite;
+}
+
+@keyframes hmiku-breathe {
+  0%, 100% { translate: 0 0; scale: 1 1; }
+  50% { translate: 0 -0.8px; scale: 1.003 1.006; }
+}
+@keyframes hmiku-hum-tilt {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: -1.6deg; }
+  75% { rotate: 1.6deg; }
+}
+@keyframes hmiku-tail-sway {
+  0%, 100% { rotate: -1.6deg; }
+  50% { rotate: 1.6deg; }
+}
+@keyframes hmiku-blink {
+  0%, 46%, 49.4%, 100% { scale: 1 1; }
+  47.6% { scale: 1 0.06; }
+}
+@keyframes hmiku-blink-line {
+  0%, 46.8%, 48.6%, 100% { opacity: 0; }
+  47.4%, 48% { opacity: 1; }
+}
+@keyframes hmiku-arm-idle-r {
+  0%, 100% { rotate: 13deg; }
+  50% { rotate: 15deg; }
+}
+@keyframes hmiku-arm-idle-l {
+  0%, 100% { rotate: -13deg; }
+  50% { rotate: -15deg; }
+}
+
+/* ---- walk: a light, bouncy step --------------------------------------------------------------- */
+.hmiku[data-pose="walk"] .hmiku__root {
+  rotate: 2.5deg;
+  animation: hmiku-walk-bob 0.56s ease-in-out infinite;
+}
+.hmiku[data-pose="walk"] .hmiku__leg--l {
+  animation: hmiku-step 0.56s ease-in-out infinite;
+}
+.hmiku[data-pose="walk"] .hmiku__leg--r {
+  animation: hmiku-step 0.56s ease-in-out infinite;
+  animation-delay: -0.28s;
+}
+.hmiku[data-pose="walk"] .hmiku__arm--r {
+  animation: hmiku-swing-r 0.56s ease-in-out infinite;
+}
+.hmiku[data-pose="walk"] .hmiku__arm--l {
+  animation: hmiku-swing-l 0.56s ease-in-out infinite;
+}
+.hmiku[data-pose="walk"] .hmiku__tail--l,
+.hmiku[data-pose="walk"] .hmiku__tail--r {
+  animation: hmiku-tail-trot 0.56s ease-in-out infinite;
+  animation-delay: -0.1s;
+}
+.hmiku[data-pose="walk"] .hmiku__tail--r {
+  animation-name: hmiku-tail-trot-r;
+}
+.hmiku[data-pose="walk"] .hmiku__skirt {
+  animation: hmiku-skirt-sway 0.56s ease-in-out infinite;
+}
+.hmiku[data-pose="walk"] .hmiku__headrig {
+  animation: hmiku-walk-head 0.56s ease-in-out infinite;
+}
+
+@keyframes hmiku-walk-bob {
+  0%, 50%, 100% { translate: 0 0; }
+  25%, 75% { translate: 0 -4.5px; }
+}
+@keyframes hmiku-step {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  25% { translate: 0 -5px; rotate: 9deg; }
+  50% { translate: 0 -1px; rotate: 2deg; }
+}
+@keyframes hmiku-swing-r {
+  0%, 100% { rotate: 22deg; }
+  50% { rotate: 2deg; }
+}
+@keyframes hmiku-swing-l {
+  0%, 100% { rotate: -4deg; }
+  50% { rotate: -24deg; }
+}
+@keyframes hmiku-tail-trot {
+  0%, 50%, 100% { rotate: 3deg; }
+  25%, 75% { rotate: -2deg; }
+}
+@keyframes hmiku-tail-trot-r {
+  0%, 50%, 100% { rotate: -3deg; }
+  25%, 75% { rotate: 2deg; }
+}
+@keyframes hmiku-skirt-sway {
+  0%, 100% { rotate: -2deg; }
+  50% { rotate: 2deg; }
+}
+@keyframes hmiku-walk-head {
+  0%, 100% { rotate: -1.4deg; }
+  50% { rotate: 1.4deg; }
+}
+
+/* ---- jump: the push and the rise ---------------------------------------------------------------- */
+.hmiku[data-pose="jump"] .hmiku__root {
+  scale: 0.95 1.07;
+  animation: hmiku-launch 0.42s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.hmiku[data-pose="jump"] .hmiku__leg--l {
+  translate: -1px -6px;
+  rotate: 16deg;
+  scale: 1 0.8;
+}
+.hmiku[data-pose="jump"] .hmiku__leg--r {
+  translate: 1px -6px;
+  rotate: -16deg;
+  scale: 1 0.8;
+}
+.hmiku[data-pose="jump"] .hmiku__arm--r {
+  rotate: 128deg;
+  scale: 1 1.18;
+  animation: none;
+}
+.hmiku[data-pose="jump"] .hmiku__arm--l {
+  rotate: -128deg;
+  scale: 1 1.18;
+  animation: none;
+}
+.hmiku[data-pose="jump"] .hmiku__tail--l,
+.hmiku[data-pose="jump"] .hmiku__tail--r {
+  rotate: -7deg;
+  scale: 0.97 1.04;
+  animation: none;
+}
+@keyframes hmiku-launch {
+  0% { scale: 1.1 0.88; translate: 0 3px; }
+  45% { scale: 0.92 1.1; translate: 0 -3px; }
+  100% { scale: 0.95 1.07; translate: 0 0; }
+}
+
+/* ---- fall: hair lifts, arms out ------------------------------------------------------------------ */
+.hmiku[data-pose="fall"] .hmiku__arm--r {
+  rotate: 106deg;
+  scale: 1 1.1;
+  animation: hmiku-flutter-r 0.42s ease-in-out infinite;
+}
+.hmiku[data-pose="fall"] .hmiku__arm--l {
+  rotate: -106deg;
+  scale: 1 1.1;
+  animation: hmiku-flutter-l 0.42s ease-in-out infinite;
+}
+.hmiku[data-pose="fall"] .hmiku__tail--l,
+.hmiku[data-pose="fall"] .hmiku__tail--r {
+  rotate: 15deg;
+  scale: 1 0.86;
+  animation: hmiku-tail-float 0.5s ease-in-out infinite;
+}
+.hmiku[data-pose="fall"] .hmiku__tail--r {
+  animation-delay: -0.25s;
+}
+.hmiku[data-pose="fall"] .hmiku__skirt {
+  animation: hmiku-skirt-flutter 0.3s ease-in-out infinite;
+}
+.hmiku[data-pose="fall"] .hmiku__leg--l {
+  rotate: 7deg;
+}
+.hmiku[data-pose="fall"] .hmiku__leg--r {
+  rotate: -7deg;
+}
+@keyframes hmiku-flutter-r {
+  0%, 100% { rotate: 100deg; }
+  50% { rotate: 114deg; }
+}
+@keyframes hmiku-flutter-l {
+  0%, 100% { rotate: -100deg; }
+  50% { rotate: -114deg; }
+}
+@keyframes hmiku-tail-float {
+  0%, 100% { rotate: 13deg; }
+  50% { rotate: 18deg; }
+}
+@keyframes hmiku-skirt-flutter {
+  0%, 100% { scale: 1.02 0.96; }
+  50% { scale: 1.06 1.02; }
+}
+
+/* ---- land: squash, then up ----------------------------------------------------------------------- */
+.hmiku[data-pose="land"] .hmiku__root {
+  animation: hmiku-land 0.56s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+.hmiku[data-pose="land"] .hmiku__tail--l,
+.hmiku[data-pose="land"] .hmiku__tail--r {
+  animation: hmiku-tail-settle 0.7s ease-out both;
+}
+.hmiku[data-pose="land"] .hmiku__arm--r {
+  animation: hmiku-balance-r 0.56s ease-out both;
+}
+.hmiku[data-pose="land"] .hmiku__arm--l {
+  animation: hmiku-balance-l 0.56s ease-out both;
+}
+@keyframes hmiku-land {
+  0% { scale: 1.16 0.82; translate: 0 2px; }
+  38% { scale: 0.95 1.06; translate: 0 -2px; }
+  70% { scale: 1.02 0.98; translate: 0 0; }
+  100% { scale: 1 1; translate: 0 0; }
+}
+@keyframes hmiku-tail-settle {
+  0% { rotate: -6deg; }
+  40% { rotate: 6deg; }
+  75% { rotate: -2deg; }
+  100% { rotate: 0deg; }
+}
+@keyframes hmiku-balance-r {
+  0% { rotate: 62deg; }
+  100% { rotate: 13deg; }
+}
+@keyframes hmiku-balance-l {
+  0% { rotate: -62deg; }
+  100% { rotate: -13deg; }
+}
+
+/* ---- sit: on the cloud, legs over the edge, swinging ---------------------------------------------- */
+.hmiku:is([data-pose="sit"], [data-pose="sleep"]) .hmiku__upper {
+  translate: 0 27px;
+}
+.hmiku:is([data-pose="sit"], [data-pose="sleep"]) .hmiku__skirt {
+  scale: 1.12 1;
+}
+.hmiku[data-pose="sit"] .hmiku__arm--r {
+  rotate: 28deg;
+  animation: none;
+}
+.hmiku[data-pose="sit"] .hmiku__arm--l {
+  rotate: -28deg;
+  animation: none;
+}
+.hmiku[data-pose="sit"] .hmiku__shin--l {
+  rotate: 12deg;
+  animation: hmiku-kick-l 1.5s ease-in-out infinite;
+}
+.hmiku[data-pose="sit"] .hmiku__shin--r {
+  rotate: -12deg;
+  animation: hmiku-kick-r 1.5s ease-in-out infinite;
+}
+.hmiku[data-pose="sit"] .hmiku__root {
+  transform-origin: 110px 236px;
+  animation: hmiku-sit-sway 3s ease-in-out infinite;
+}
+.hmiku[data-pose="sit"] .hmiku__headrig {
+  animation: hmiku-sit-bob 3s ease-in-out infinite;
+}
+@keyframes hmiku-kick-l {
+  0%, 100% { rotate: 22deg; scale: 1 1; }
+  50% { rotate: -2deg; scale: 1 0.8; }
+}
+@keyframes hmiku-kick-r {
+  0%, 100% { rotate: 2deg; scale: 1 0.8; }
+  50% { rotate: -22deg; scale: 1 1; }
+}
+@keyframes hmiku-sit-sway {
+  0%, 100% { rotate: -1.2deg; }
+  50% { rotate: 1.2deg; }
+}
+@keyframes hmiku-sit-bob {
+  0%, 50%, 100% { rotate: 0deg; translate: 0 0; }
+  25% { rotate: -3deg; translate: 0 1px; }
+  75% { rotate: 3deg; translate: 0 1px; }
+}
+
+/* ---- sleep: dozing on the cloud ----------------------------------------------------------------- */
+.hmiku[data-pose="sleep"] .hmiku__breath {
+  animation-duration: 6.6s;
+}
+.hmiku[data-pose="sleep"] .hmiku__headrig {
+  rotate: 7deg;
+  translate: 0 3px;
+  animation: hmiku-doze 6.6s ease-in-out infinite;
+}
+.hmiku[data-pose="sleep"] .hmiku__arm--r {
+  rotate: -9deg;
+  animation: none;
+}
+.hmiku[data-pose="sleep"] .hmiku__arm--l {
+  rotate: 9deg;
+  animation: none;
+}
+.hmiku[data-pose="sleep"] .hmiku__shin--l {
+  rotate: 5deg;
+}
+.hmiku[data-pose="sleep"] .hmiku__shin--r {
+  rotate: -5deg;
+}
+.hmiku[data-pose="sleep"] .hmiku__zzz {
+  opacity: 1;
+}
+.hmiku[data-pose="sleep"] .hmiku__z {
+  animation: hmiku-z 3.3s ease-in-out infinite;
+}
+.hmiku[data-pose="sleep"] .hmiku__z--2 {
+  animation-delay: -1.6s;
+}
+.hmiku[data-pose="sleep"] .hmiku__tail--l,
+.hmiku[data-pose="sleep"] .hmiku__tail--r {
+  animation-duration: 6.6s;
+}
+.hmiku[data-pose="sleep"] .hmiku__tail--r {
+  animation-delay: -3.3s;
+}
+@keyframes hmiku-doze {
+  0%, 100% { rotate: 6deg; translate: 0 2px; }
+  60% { rotate: 9deg; translate: 0 4px; }
+}
+@keyframes hmiku-z {
+  0% { opacity: 0; translate: -3px 6px; scale: 0.7; }
+  30% { opacity: 1; }
+  100% { opacity: 0; translate: 5px -10px; scale: 1.1; }
+}
+
+/* ---- wave ----------------------------------------------------------------------------------------- */
+.hmiku[data-pose="wave"] .hmiku__arm--l {
+  rotate: -120deg;
+  scale: 1 1.2;
+  animation: hmiku-wave 0.44s ease-in-out infinite;
+}
+.hmiku[data-pose="wave"] .hmiku__headrig {
+  rotate: 3deg;
+  animation: none;
+}
+.hmiku[data-pose="wave"] .hmiku__root {
+  animation: hmiku-bounce 0.88s ease-in-out infinite;
+}
+@keyframes hmiku-wave {
+  0%, 100% { rotate: -108deg; }
+  50% { rotate: -134deg; }
+}
+@keyframes hmiku-bounce {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -2px; }
+}
+
+/* ---- react: a startled little hop --------------------------------------------------------------- */
+.hmiku[data-pose="react"] .hmiku__root {
+  animation: hmiku-startle 0.6s cubic-bezier(0.22, 0.72, 0.2, 1) both;
+}
+.hmiku[data-pose="react"] .hmiku__arm--r {
+  rotate: 126deg;
+  scale: 1 1.16;
+  animation: none;
+}
+.hmiku[data-pose="react"] .hmiku__arm--l {
+  rotate: -126deg;
+  scale: 1 1.16;
+  animation: none;
+}
+.hmiku[data-pose="react"] .hmiku__tail--l,
+.hmiku[data-pose="react"] .hmiku__tail--r {
+  rotate: 6deg;
+  animation: hmiku-tail-flare 0.7s ease-out both;
+}
+.hmiku[data-pose="react"] .hmiku__bang {
+  opacity: 1;
+  animation: hmiku-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  transform-origin: 178px 74px;
+}
+@keyframes hmiku-startle {
+  0% { translate: 0 0; scale: 1 1; }
+  18% { translate: 0 1px; scale: 1.06 0.94; }
+  45% { translate: 0 -11px; scale: 0.96 1.05; }
+  75% { translate: 0 1px; scale: 1.04 0.97; }
+  100% { translate: 0 0; scale: 1 1; }
+}
+@keyframes hmiku-tail-flare {
+  0% { rotate: 0deg; }
+  45% { rotate: 14deg; }
+  100% { rotate: 6deg; }
+}
+@keyframes hmiku-pop {
+  0% { scale: 0.3; opacity: 0; }
+  100% { scale: 1; opacity: 1; }
+}
+
+/* ---- held: picked up, dangling ------------------------------------------------------------------ */
+.hmiku[data-pose="held"] .hmiku__root {
+  transform-origin: 110px 40px;
+  animation:
+    hmiku-dangle-in 1.5s cubic-bezier(0.33, 0.9, 0.3, 1) both,
+    hmiku-dangle 2.4s ease-in-out 1.5s infinite;
+}
+.hmiku[data-pose="held"] .hmiku__arm--r {
+  rotate: 124deg;
+  scale: 1 1.18;
+  animation: hmiku-flail-r 0.5s ease-in-out infinite;
+}
+.hmiku[data-pose="held"] .hmiku__arm--l {
+  rotate: -124deg;
+  scale: 1 1.18;
+  animation: hmiku-flail-l 0.5s ease-in-out infinite;
+  animation-delay: -0.25s;
+}
+.hmiku[data-pose="held"] .hmiku__leg--l {
+  animation: hmiku-paddle 0.6s ease-in-out infinite;
+}
+.hmiku[data-pose="held"] .hmiku__leg--r {
+  animation: hmiku-paddle 0.6s ease-in-out infinite;
+  animation-delay: -0.3s;
+}
+.hmiku[data-pose="held"] .hmiku__tail--l,
+.hmiku[data-pose="held"] .hmiku__tail--r {
+  rotate: -5deg;
+  animation: none;
+}
+@keyframes hmiku-dangle-in {
+  0% { rotate: -12deg; }
+  25% { rotate: 8deg; }
+  50% { rotate: -5deg; }
+  75% { rotate: 2.5deg; }
+  100% { rotate: -1.5deg; }
+}
+@keyframes hmiku-dangle {
+  0%, 100% { rotate: -1.5deg; }
+  50% { rotate: 1.5deg; }
+}
+@keyframes hmiku-flail-r {
+  0%, 100% { rotate: 116deg; }
+  50% { rotate: 132deg; }
+}
+@keyframes hmiku-flail-l {
+  0%, 100% { rotate: -116deg; }
+  50% { rotate: -132deg; }
+}
+@keyframes hmiku-paddle {
+  0%, 100% { rotate: 7deg; translate: 0 0; }
+  50% { rotate: -7deg; translate: 0 -3px; }
+}
+
+/* ---- sing: hand on the headset, swaying, notes rising ------------------------------------------- */
+.hmiku[data-pose="sing"] .hmiku__arm--r {
+  rotate: 136deg;
+  scale: 1 1.14;
+  animation: none;
+}
+.hmiku[data-pose="sing"] .hmiku__arm--l {
+  rotate: -62deg;
+  animation: hmiku-reach 1.6s ease-in-out infinite;
+}
+.hmiku[data-pose="sing"] .hmiku__headrig {
+  animation: hmiku-sing-sway 1.6s ease-in-out infinite;
+}
+.hmiku[data-pose="sing"] .hmiku__root {
+  animation: hmiku-sit-sway 1.6s ease-in-out infinite;
+}
+.hmiku[data-pose="sing"] .hmiku__mouth-o {
+  animation: hmiku-sing-mouth 0.8s ease-in-out infinite;
+}
+@keyframes hmiku-reach {
+  0%, 100% { rotate: -56deg; }
+  50% { rotate: -74deg; }
+}
+@keyframes hmiku-sing-sway {
+  0%, 100% { rotate: -4deg; }
+  50% { rotate: 4deg; }
+}
+@keyframes hmiku-sing-mouth {
+  0%, 100% { scale: 1 1; }
+  30% { scale: 0.82 0.55; }
+  60% { scale: 1.08 1.12; }
+}
+
+/* ---- swish: the twin-tail flip ------------------------------------------------------------------ */
+.hmiku[data-pose="swish"] .hmiku__root {
+  animation: hmiku-twist 1.5s cubic-bezier(0.3, 0.7, 0.3, 1) infinite;
+}
+.hmiku[data-pose="swish"] .hmiku__tail--l {
+  animation: hmiku-swish-l 1.5s cubic-bezier(0.3, 0.7, 0.3, 1) infinite;
+  animation-delay: 0.06s;
+}
+.hmiku[data-pose="swish"] .hmiku__tail--r {
+  animation: hmiku-swish-r 1.5s cubic-bezier(0.3, 0.7, 0.3, 1) infinite;
+  animation-delay: 0.06s;
+}
+.hmiku[data-pose="swish"] .hmiku__arm--r {
+  rotate: 30deg;
+  animation: none;
+}
+.hmiku[data-pose="swish"] .hmiku__arm--l {
+  rotate: -122deg;
+  scale: 1 1.2;
+  animation: none;
+}
+.hmiku[data-pose="swish"] .hmiku__headrig {
+  rotate: -4deg;
+  animation: none;
+}
+@keyframes hmiku-twist {
+  0%, 100% { rotate: 0deg; translate: 0 0; }
+  18% { rotate: -6deg; translate: -2px -3px; }
+  42% { rotate: 6deg; translate: 2px -3px; }
+  66% { rotate: -2deg; translate: 0 0; }
+}
+@keyframes hmiku-swish-l {
+  0%, 100% { rotate: 0deg; }
+  20% { rotate: -14deg; }
+  46% { rotate: 20deg; }
+  70% { rotate: -5deg; }
+  86% { rotate: 2deg; }
+}
+@keyframes hmiku-swish-r {
+  0%, 100% { rotate: 0deg; }
+  20% { rotate: 14deg; }
+  46% { rotate: -20deg; }
+  70% { rotate: 5deg; }
+  86% { rotate: -2deg; }
+}
+
+/* ---- leek: the famous twirl --------------------------------------------------------------------- */
+.hmiku[data-pose="leek"] .hmiku__arm--r {
+  rotate: 126deg;
+  scale: 1 1.14;
+  animation: hmiku-leek-arm 0.5s ease-in-out infinite;
+}
+.hmiku[data-pose="leek"] .hmiku__leek {
+  rotate: 150deg;
+  animation: hmiku-leek-spin 0.5s linear infinite;
+}
+.hmiku[data-pose="leek"] .hmiku__arm--l {
+  rotate: -28deg;
+  animation: none;
+}
+.hmiku[data-pose="leek"] .hmiku__root {
+  animation: hmiku-beat 0.5s ease-in-out infinite;
+}
+.hmiku[data-pose="leek"] .hmiku__tail--l,
+.hmiku[data-pose="leek"] .hmiku__tail--r {
+  animation: hmiku-tail-trot 0.5s ease-in-out infinite;
+}
+.hmiku[data-pose="leek"] .hmiku__tail--r {
+  animation-name: hmiku-tail-trot-r;
+}
+@keyframes hmiku-leek-arm {
+  0%, 100% { rotate: 110deg; }
+  50% { rotate: 142deg; }
+}
+@keyframes hmiku-leek-spin {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+}
+@keyframes hmiku-beat {
+  0%, 100% { translate: 0 0; scale: 1 1; }
+  20% { translate: 0 1px; scale: 1.02 0.98; }
+  55% { translate: 0 -3px; scale: 0.99 1.01; }
+}
+
+/* ---- point: the "number one" pose, finger to the sky --------------------------------------------- */
+.hmiku[data-pose="point"] .hmiku__arm--r {
+  rotate: 124deg;
+  scale: 1 1.22;
+  animation: none;
+}
+.hmiku[data-pose="point"] .hmiku__finger {
+  rotate: 56deg;
+}
+.hmiku[data-pose="point"] .hmiku__arm--l {
+  rotate: -30deg;
+  animation: none;
+}
+.hmiku[data-pose="point"] .hmiku__headrig {
+  rotate: 4deg;
+  animation: none;
+}
+.hmiku[data-pose="point"] .hmiku__root {
+  animation: hmiku-bounce 1.2s ease-in-out infinite;
+}
+
+/* ---- dance: side steps -------------------------------------------------------------------------- */
+.hmiku[data-pose="dance"] .hmiku__root {
+  animation: hmiku-sidestep 1s ease-in-out infinite;
+}
+.hmiku[data-pose="dance"] .hmiku__arm--r {
+  rotate: 118deg;
+  scale: 1 1.12;
+  animation: hmiku-dance-r 1s ease-in-out infinite;
+}
+.hmiku[data-pose="dance"] .hmiku__arm--l {
+  rotate: -40deg;
+  scale: 1 1.12;
+  animation: hmiku-dance-l 1s ease-in-out infinite;
+}
+.hmiku[data-pose="dance"] .hmiku__leg--l {
+  animation: hmiku-step 0.5s ease-in-out infinite;
+}
+.hmiku[data-pose="dance"] .hmiku__leg--r {
+  animation: hmiku-step 0.5s ease-in-out infinite;
+  animation-delay: -0.25s;
+}
+.hmiku[data-pose="dance"] .hmiku__tail--l {
+  animation: hmiku-swish-l 1s ease-in-out infinite;
+  animation-delay: 0.08s;
+}
+.hmiku[data-pose="dance"] .hmiku__tail--r {
+  animation: hmiku-swish-r 1s ease-in-out infinite;
+  animation-delay: 0.08s;
+}
+.hmiku[data-pose="dance"] .hmiku__headrig {
+  animation: hmiku-sing-sway 1s ease-in-out infinite;
+}
+@keyframes hmiku-sidestep {
+  0%, 100% { translate: -5px 0; rotate: -3deg; }
+  25% { translate: 0 -4px; }
+  50% { translate: 5px 0; rotate: 3deg; }
+  75% { translate: 0 -4px; }
+}
+@keyframes hmiku-dance-r {
+  0%, 100% { rotate: 118deg; }
+  50% { rotate: 28deg; }
+}
+@keyframes hmiku-dance-l {
+  0%, 100% { rotate: -28deg; }
+  50% { rotate: -118deg; }
+}
+
+/* ---- notes and glints --------------------------------------------------------------------------- */
+.hmiku:is([data-pose="sing"], [data-pose="leek"], [data-pose="dance"], [data-face="hum"], [data-face="sing"]) .hmiku__notes {
+  opacity: 1;
+}
+.hmiku:is([data-pose="sing"], [data-pose="leek"], [data-pose="dance"], [data-face="hum"], [data-face="sing"]) .hmiku__note {
+  animation: hmiku-note 2.4s ease-out infinite;
+}
+.hmiku .hmiku__note--2 {
+  animation-delay: -0.8s !important;
+}
+.hmiku .hmiku__note--3 {
+  animation-delay: -1.6s !important;
+}
+.hmiku[data-face="hum"]:not([data-pose="sing"]) .hmiku__note {
+  animation-duration: 4.2s;
+}
+.hmiku:is([data-pose="point"], [data-pose="swish"]) .hmiku__glints {
+  opacity: 1;
+}
+.hmiku:is([data-pose="point"], [data-pose="swish"]) .hmiku__glint {
+  animation: hmiku-twinkle 1.1s ease-in-out infinite;
+}
+.hmiku .hmiku__glint--2 {
+  animation-delay: -0.4s !important;
+}
+.hmiku .hmiku__glint--3 {
+  animation-delay: -0.75s !important;
+}
+@keyframes hmiku-note {
+  0% { opacity: 0; translate: 0 6px; rotate: -8deg; scale: 0.7; }
+  20% { opacity: 1; }
+  70% { opacity: 0.9; }
+  100% { opacity: 0; translate: 8px -22px; rotate: 10deg; scale: 1; }
+}
+@keyframes hmiku-twinkle {
+  0%, 100% { opacity: 0.3; scale: 0.7; }
+  50% { opacity: 1; scale: 1.1; }
+}
+
+/* ---- motion off: offscreen, paused by the engine, or Reduce Motion ------------------------------- */
+.hmiku[data-motion="off"] *,
+.hmiku[data-motion="off"] {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hmiku * {
+    animation: none !important;
+  }
+}
+
+/* ================================================================================================
+   Her cloud (Platform.jsx)
+   ================================================================================================ */
+.hmiku-cloud {
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+}
+.hmiku-cloud__puff,
+.hmiku-cloud__base {
+  transform-box: view-box;
+}
+.hmiku-cloud__note {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hmiku-cloud__wave {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+/* steady: a slow bob, the notes bobbing out of step */
+.hmiku-cloud[data-state="steady"] .hmiku-cloud__body {
+  animation: hmiku-cloud-bob 3.6s ease-in-out infinite;
+}
+.hmiku-cloud[data-state="steady"] .hmiku-cloud__note--1 {
+  animation: hmiku-cloud-note 2.8s ease-in-out infinite;
+}
+.hmiku-cloud[data-state="steady"] .hmiku-cloud__note--2 {
+  animation: hmiku-cloud-note 2.8s ease-in-out -1.4s infinite;
+}
+
+/* forming: puffs pop in from the middle, the melody line draws across, the notes hop up */
+.hmiku-cloud[data-state="forming"] .hmiku-cloud__puff {
+  animation: hmiku-puff-in 0.36s cubic-bezier(0.3, 1.5, 0.55, 1) var(--hmc-delay, 0ms) both;
+}
+.hmiku-cloud[data-state="forming"] .hmiku-cloud__base {
+  animation: hmiku-base-in 0.3s ease-out both;
+}
+.hmiku-cloud[data-state="forming"] .hmiku-cloud__wave {
+  animation: hmiku-wave-in 0.5s ease-out 0.08s both;
+}
+.hmiku-cloud[data-state="forming"] .hmiku-cloud__notes {
+  animation: hmiku-notes-in 0.5s cubic-bezier(0.3, 1.5, 0.55, 1) 0.18s both;
+}
+.hmiku-cloud[data-state="forming"] .hmiku-cloud__shade {
+  animation: hmiku-fade-in 0.4s ease-out both;
+}
+
+/* fading: the ends go first, puffs sink and thin out, the notes float off */
+.hmiku-cloud[data-state="fading"] .hmiku-cloud__puff {
+  animation: hmiku-puff-out 0.5s ease-in var(--hmc-out, 0ms) both;
+}
+.hmiku-cloud[data-state="fading"] .hmiku-cloud__base {
+  animation: hmiku-base-out 0.6s ease-in 0.12s both;
+}
+.hmiku-cloud[data-state="fading"] .hmiku-cloud__wave {
+  animation: hmiku-fade-out 0.4s ease-in both;
+}
+.hmiku-cloud[data-state="fading"] .hmiku-cloud__notes {
+  animation: hmiku-notes-out 0.7s ease-out both;
+}
+.hmiku-cloud[data-state="fading"] .hmiku-cloud__shade {
+  animation: hmiku-fade-out 0.5s ease-in both;
+}
+
+@keyframes hmiku-cloud-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 1px; }
+}
+@keyframes hmiku-cloud-note {
+  0%, 100% { translate: 0 0; rotate: -6deg; }
+  50% { translate: 0 -2.5px; rotate: 6deg; }
+}
+@keyframes hmiku-puff-in {
+  0% { scale: 0.2; opacity: 0; }
+  100% { scale: 1; opacity: 1; }
+}
+@keyframes hmiku-base-in {
+  0% { scale: 0.6 0.4; opacity: 0; }
+  100% { scale: 1 1; opacity: 1; }
+}
+@keyframes hmiku-wave-in {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes hmiku-notes-in {
+  0% { opacity: 0; translate: 0 6px; }
+  100% { opacity: 1; translate: 0 0; }
+}
+@keyframes hmiku-puff-out {
+  0% { scale: 1; opacity: 1; translate: 0 0; }
+  100% { scale: 0.35; opacity: 0; translate: 0 4px; }
+}
+@keyframes hmiku-base-out {
+  0% { scale: 1 1; opacity: 1; }
+  100% { scale: 0.7 0.3; opacity: 0; }
+}
+@keyframes hmiku-notes-out {
+  0% { opacity: 1; translate: 0 0; }
+  100% { opacity: 0; translate: 3px -14px; }
+}
+@keyframes hmiku-fade-in {
+  from { opacity: 0; }
+}
+@keyframes hmiku-fade-out {
+  to { opacity: 0; }
+}
+.hmiku-cloud__base {
+  transform-origin: 50% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hmiku-cloud * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+  }
+}
