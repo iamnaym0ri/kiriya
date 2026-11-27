@@ -65,6 +65,30 @@ try {
     assert.deepEqual([page.messages, page.me, page.live, page.unread], [[], "kiriya", false, 0]);
   });
 
+  await test("Each phone's check-in shows the other one as active, and when it's night there", async () => {
+    // Nobody has checked in yet.
+    const before = await json(await request("me/chat/summary", { cookie: josh }));
+    assert.deepEqual(before.presence, { seenAt: null, tz: null });
+    // Her phone checks in with its time zone; Josh sees her seen just now, in Singapore.
+    await json(await request("me/chat/summary?tz=Asia%2FSingapore", { cookie: her }));
+    const seen = await json(await request("me/chat/summary", { cookie: josh }));
+    assert.equal(seen.presence.tz, "Asia/Singapore");
+    assert(Date.now() - Date.parse(seen.presence.seenAt) < 5000);
+    // A made-up zone is ignored, and the known one is kept.
+    await json(await request("me/chat/summary?tz=Not%2FAZone", { cookie: her }));
+    assert.equal((await chat.presenceOf(db, "kiriya")).tz, "Asia/Singapore");
+    // Josh previewing her side never checks in as her.
+    const earlier = new Date(Date.now() - 3600e3).toISOString();
+    await db.update(schema.kv).set({ value: { at: earlier, tz: "Asia/Singapore" } }).where(eq(schema.kv.key, "chat:presence:kiriya"));
+    const original = new URL("/api/me/chat/summary?tz=America%2FChicago", "https://kiriya.love");
+    const rewritten = new URL("/api", original);
+    rewritten.search = original.search;
+    rewritten.searchParams.set("__route", "me/chat/summary");
+    const previewed = await handlers.GET(new Request(rewritten, { headers: { "x-kw": "1", cookie: josh, "x-view-as": "kiriya" } }));
+    assert.equal(previewed.status, 200);
+    assert.deepEqual(await chat.presenceOf(db, "kiriya"), { seenAt: earlier, tz: "Asia/Singapore" });
+  });
+
   await test("Messages send once even when a flaky connection retries them", async () => {
     const clientId = randomUUID();
     hello = await json(await request("me/chat/messages", { method: "POST", cookie: josh, body: { clientId, kind: "text", body: "  hi baby ♡  " } }), 201);
@@ -86,6 +110,11 @@ try {
     await send(her, { kind: "gif", media: { url: "https://media2.giphy.com/media/abc/200w.gif", giphyId: "abc" } });
     await send(her, { kind: "sticker", media: { url: "/stickers/fluent/sparkling-heart.webp" } });
     await send(her, { kind: "sticker", media: { url: "/stickers/fluent/not-a-real-one.webp" } }, 400);
+    // The iPhone's own stickers and Genmoji: a PNG uploaded to the chat folder.
+    const iphone = await send(her, { kind: "sticker", media: { url: "/api/uploads/media?path=chat%2F173-ab12cd34.png", width: 320, height: 300, mime: "image/png", alt: "cat with a heart" } });
+    assert.equal(iphone.media.alt, "cat with a heart");
+    await send(her, { kind: "sticker", media: { url: "/api/uploads/media?path=art%2F173-ab12cd34.png", width: 320, height: 300 } }, 400);
+    await send(her, { kind: "sticker", media: { url: "https://evil.example/s.png" } }, 400);
     await send(her, { kind: "voice", media: { url: "/api/uploads/media?path=chat%2F172-ab12cd34.m4a", duration: 4.2, peaks: [0.1, 0.8, 0.4] } });
     await send(her, { kind: "tap", body: "hug" });
   });
@@ -261,7 +290,9 @@ try {
     const push = chat.chatNotification({ kind: "tap", body: "thinking" }, "Josh");
     assert.equal(push.title, "Josh is thinking of you ♡");
     assert.equal(push.kind, "tap");
-    assert.equal(chat.chatNotification({ kind: "voice", body: "" }, "Kiriya").body, "🎙️ sent you a voice note");
+    assert.equal(chat.chatNotification({ kind: "voice", body: "" }, "Kiriya").body, "🎙️ a voice note");
+    assert.equal(chat.chatNotification({ kind: "image", body: "us!", media: { items: [{ type: "image" }, { type: "image" }, { type: "image" }, { type: "video" }] } }, "Kiriya").body, "📷 3 photos and a video: us!");
+    assert.equal(chat.chatNotification({ kind: "image", body: "", media: { items: [{ type: "video" }] } }, "Kiriya").body, "🎬 a video");
   });
 
   await test("Each of them keeps their own look; only known themes and their own uploads are accepted", async () => {

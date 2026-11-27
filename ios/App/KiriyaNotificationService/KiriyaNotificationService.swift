@@ -4,8 +4,10 @@ import UserNotifications
 ///
 /// Letters and little notes arrive with a drawn envelope, and new jar notes with the jar, so they
 /// look special next to an ordinary chat message. The pictures ship inside this extension, so
-/// nothing is downloaded. The server marks those pushes `mutable-content` (server/push/apns.js);
-/// every other push never reaches this code. On any trouble the notification shows as sent.
+/// nothing is downloaded. Chat messages sealed end to end arrive as "a new message ♡" with their
+/// preview sealed; it's opened here. The server marks those pushes `mutable-content`
+/// (server/push/apns.js); every other push never reaches this code. On any trouble the
+/// notification shows as sent.
 final class NotificationService: UNNotificationServiceExtension {
     private var contentHandler: ((UNNotificationContent) -> Void)?
     private var best: UNNotificationContent?
@@ -28,6 +30,14 @@ final class NotificationService: UNNotificationServiceExtension {
         case "letter", "note": picture = "envelope"
         case "jar": picture = "jar"
         default: picture = nil
+        }
+
+        // A chat message sealed end to end: the server only sent "a new message ♡" and the sealed
+        // preview; open it here with the chat key the app keeps in the Keychain
+        // (KiriyaShared/KiriyaChatCrypto.swift). With the chat lock on, it stays hidden.
+        if kind == "chat", let sealed = content.userInfo["sealed"] as? [String: Any], !KiriyaChatCrypto.previewsHidden,
+           let words = KiriyaChatCrypto.preview(sealed), !words.isEmpty {
+            content.body = words
         }
 
         if let picture, let attachment = Self.attachment(named: picture) {

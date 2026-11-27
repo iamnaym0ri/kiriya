@@ -16,6 +16,7 @@ import {
   useChatLive,
   useChatMessages,
   useChatPrefs,
+  useChatSummary,
   useDeleteMessage,
   useDiscardMessage,
   useEditMessage,
@@ -33,10 +34,10 @@ import { HoldMenu } from "./HoldMenu.jsx";
 import { useKeyboardLift } from "./keyboard.js";
 import { Message } from "./Message.jsx";
 import { openViewer } from "./viewer.js";
-import { WALLPAPERS, wallpaperUrl } from "./wallpapers.js";
+import { useChatRoom } from "./lock/useChatRoom.jsx";
+import { WALLPAPERS } from "./wallpapers.js";
 import { ChatIcon, TypingIndicator } from "./parts.jsx";
 import "./Chat.css";
-import "./legacyLook.css";
 
 const GROUP_GAP_MS = 5 * 60 * 1000;
 const LEAVE_MS = 240;
@@ -223,7 +224,36 @@ function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loading
 }
 
 /** Their name and whether they're here right now; memories and the design sheet on the right. */
+// How long a check-in counts as "here", and the hours that count as night where they are.
+const ACTIVE_MS = 150_000;
+const hourIn = (tz, now) => {
+  try {
+    return Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: tz }).format(now));
+  } catch {
+    return null;
+  }
+};
+
+/** "typing", "active" (green), "sleep" (amber crescent: away, and it's night where they are) or "inactive" (grey). */
+export function presenceState({ online, typing, seenAt, tz, now = Date.now() }) {
+  if (typing) return "typing";
+  if (online || (seenAt && now - Date.parse(seenAt) < ACTIVE_MS)) return "active";
+  const hour = tz ? hourIn(tz, now) : null;
+  if (hour !== null && (hour >= 23 || hour < 7)) return "sleep";
+  return "inactive";
+}
+
+const STATE_WORDS = { typing: "typing…", active: "active", sleep: "sleep", inactive: "inactive" };
+
 function ChatHeader({ name, online, typing, app, onOpenDesign }) {
+  // Fresher while the chat is open: the other phone's check-in and time zone come with the summary.
+  const presence = useChatSummary({ every: 30_000 }).data?.presence;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const tick = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(tick);
+  }, []);
+  const state = presenceState({ online, typing, seenAt: presence?.seenAt, tz: presence?.tz, now });
   return (
     <header className="chat__head">
       {!app && (
@@ -233,7 +263,16 @@ function ChatHeader({ name, online, typing, app, onOpenDesign }) {
       )}
       <h1 className="chat__who">
         <span className="chat__name">{name}</span>
-        <i className="chat__dot" data-online={online || undefined} data-typing={typing || undefined} role="img" aria-label={typing ? "typing" : online ? "here now" : "away"} />
+        <span className="chat__status" data-state={state} role="status">
+          {state === "sleep" ? (
+            <svg className="chat__moon" viewBox="0 0 12 12" aria-hidden="true">
+              <path d="M8.6 1.2a5 5 0 1 0 2.2 7.9A4.2 4.2 0 0 1 8.6 1.2Z" />
+            </svg>
+          ) : (
+            <i className="chat__dot" aria-hidden="true" />
+          )}
+          <span className="chat__state">{STATE_WORDS[state]}</span>
+        </span>
       </h1>
       <div className="chat__actions">
         <Link className="chat__icon-button" to="/world/memories" aria-label="Our memories">
@@ -256,6 +295,7 @@ export default function ChatPage() {
   const other = me === "kiriya" ? "admin" : "kiriya";
   const preview = Boolean(viewingAs());
   const prefs = useChatPrefs().data ?? { bubble: "lilac", background: "petals", typing: "hearts" };
+  const room = useChatRoom(prefs); // chat-room: its look, the Face ID lock, the keys (lock/useChatRoom.jsx)
   const live = useChatLive({ live: first?.live, me, enabled: Boolean(first) });
   const send = useSendMessage(me);
   const edit = useEditMessage();
@@ -347,8 +387,11 @@ export default function ChatPage() {
   const doSend = useCallback(
     (message) => {
       haptic("light");
-      send.mutate(message, { onError: (error) => error?.code === "chat_locked" && say(lockedHint) });
       setReplyTo(null);
+      // Resolves once it's posted (or has failed), so a composer can keep several sends in order.
+      return send.mutateAsync(message).catch((error) => {
+        if (error?.code === "chat_locked") say(lockedHint);
+      });
     },
     [send, say],
   );
@@ -410,14 +453,11 @@ export default function ChatPage() {
       </div>
     );
 
-  const background = prefs.background === "photo" && !prefs.backgroundUrl ? "petals" : WALLPAPERS[prefs.background] || ["petals", "night", "notebook", "photo"].includes(prefs.background) ? prefs.background : "petals";
-  const style = {
-    ...(background === "photo" ? { "--chat-photo": `url("${prefs.backgroundUrl}")` } : {}),
-    ...(WALLPAPERS[background] ? { "--chat-wallpaper": `url("${wallpaperUrl(background, prefs)}")` } : {}),
-  };
+  const background = room.look["data-background"];
 
   return (
-    <div ref={shell} className="chat" data-app={app || undefined} data-theme={prefs.theme ?? "lilac"} data-bubble={prefs.bubble} data-background={background} style={style}>
+    <div ref={shell} className="chat" data-app={app || undefined} {...room.look} data-locked={room.screen ? "" : undefined}>
+      {room.screen ?? room.overlay}
       <div className="chat__backdrop" aria-hidden="true" />
       <ChatHeader name={names[other]} online={live.online} typing={live.typing} app={app} onOpenDesign={() => setDesignOpen(true)} />
       <MessageScroller.Provider autoScroll defaultScrollPosition="end">
@@ -464,7 +504,7 @@ export default function ChatPage() {
       {held &&
         // On <body>, above the tab bar, in a layer that carries the chat's look (theme, bubbles).
         createPortal(
-          <div className="chat chat--layer" data-theme={prefs.theme ?? "lilac"} data-bubble={prefs.bubble} data-background={background} style={style}>
+          <div className="chat chat--layer" {...room.look}>
             <HoldMenu
           held={held}
           me={me}

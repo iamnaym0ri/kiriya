@@ -105,3 +105,10 @@
 .ss[data-phase="over"] .ss-swatch:not([data-found]) { opacity: 0.4; }
 .ss-done { width: 100%; max-width: 420px; animation: brain-rise 0.3s ease-out; }
 @keyframes ss-in { from { opacity: 0; transform: scale(0.97); } }
+
+/* On a tall stage (an iPhone 11 and up) the result card gets its own room under the grid, so the
+   grid doesn't jump up when the run ends. Shorter stages keep the card in the flow (and scroll). */
+@container (min-height: 740px) {
+  .ss { position: relative; padding-bottom: 196px; --grid: min(calc(100cqw - 32px), calc(100cqh - 330px), 460px); }
+  .ss-done { position: absolute; left: 16px; right: 16px; bottom: 16px; width: auto; max-width: 420px; margin-inline: auto; box-sizing: border-box; }
+}

@@ -24,7 +24,8 @@ export default function HomeSection() {
   }, [birthday]);
   const todayNote = today?.cards?.find((card) => card.kind === "special");
   return (
-    <div className="app-section app-section--home home">
+    // data-opening-wait: the app's opening animation stays up until home has its content (capped).
+    <div className="app-section app-section--home home" data-opening-wait={query.isPending || undefined}>
       <div className="app-section__body home__body">
         <p className="home__dateline" data-companion-ok>
           <span>your little lilac world</span>

@@ -14,7 +14,7 @@ process.env.VAPID_PUBLIC_KEY = "test-public";
 process.env.VAPID_PRIVATE_KEY = "test-private";
 const {
   addJarNote, announceJar, announceTime, remindJar, reminderTime, chooseNote, deleteJarNote, editJarNote, jarNote, keepNote,
-  listJarNotes, nextRelease, noteHistory, pullNote, readNoteJar,
+  listJarNotes, nextRelease, noteHistory, pullNote, readNoteJar, peekNote, reactToPull, herJarMarks,
 } = await import("../server/lib/noteJar.js");
 const { saveCheckin } = await import("../server/lib/checkin.js");
 const { birthdayInfo } = await import("../server/lib/birthday.js");
@@ -183,6 +183,71 @@ try {
     for (const year of [2026, 2027, 2028, 2030]) {
       assert(!birthdayInfo(`${year}-09-14`).isBirthday); assert(birthdayInfo(`${year}-09-15`).isBirthday); assert(!birthdayInfo(`${year}-09-16`).isBirthday);
     }
+  });
+
+  await test("No daily limit: the next note is ready before she taps, and the pull keeps exactly that note", async () => {
+    // Many pulls in one day, each one instant: peek shows the next note, the pull keeps it.
+    let last = null;
+    for (let i = 0; i < 12; i++) {
+      const peeked = await peekNote(db, { day, now: later, random: Math.random });
+      assert(peeked?.note?.id, "the jar always has a next note while it has notes");
+      const before = await readNoteJar(db, day, { now: later });
+      assert.equal((await peekNote(db, { day, now: later })).note.text.length > 0, true);
+      assert.deepEqual(await readNoteJar(db, day, { now: later }), before, "peeking takes nothing out of the jar");
+      const pulled = await pullNote(db, randomUUID(), { day, now: later, random: Math.random, prefer: peeked.note.id });
+      assert.equal(pulled.note.id, peeked.note.id, "what she saw is what she keeps");
+      assert.equal(pulled.reaction, null);
+      if (last && before.total > 1) assert.notEqual(pulled.note.id, last, "never the same note twice in a row");
+      last = pulled.note.id;
+    }
+    // A stale preference (a note no longer allowed, or gone) falls back to the usual pick.
+    const fallback = await pullNote(db, randomUUID(), { ...opts(), prefer: "00000000-0000-4000-8000-000000000000" });
+    assert(fallback.note.id);
+    // New notes still come first, whatever the app had ready.
+    const fresh = await addJarNote(db, { text: "brand new" }, { now: later });
+    await editJarNote(db, fresh.id, { releaseNow: true }, { now: later });
+    assert.equal((await peekNote(db, { day, now: later })).note.id, fresh.id);
+    assert.equal((await peekNote(db, { day, now: later })).fresh, true);
+    const other = (await listJarNotes(db, { now: later })).notes.find((n) => n.id !== fresh.id && n.status === "read");
+    assert.equal((await pullNote(db, randomUUID(), { ...opts(), prefer: other.id })).note.id, fresh.id);
+  });
+
+  await test("Josh's previews go round the whole jar and change nothing for her", async () => {
+    const before = await readNoteJar(db, day, { now: later }), history = await noteHistory(db);
+    const { notes } = await listJarNotes(db, { now: later });
+    const seen = [];
+    for (let i = 0; i < notes.length; i++) {
+      const peek = await peekNote(db, { day, now: later, preview: true, exclude: seen });
+      const pull = await pullNote(db, randomUUID(), { ...opts(), preview: true, prefer: peek.note.id, exclude: seen });
+      assert.equal(pull.note.id, peek.note.id);
+      assert(!seen.includes(pull.note.id), "each preview is a note he hasn't just seen");
+      seen.push(pull.note.id);
+    }
+    assert.equal(new Set(seen).size, notes.length);
+    assert.deepEqual(await readNoteJar(db, day, { now: later }), before);
+    assert.deepEqual(await noteHistory(db), history);
+  });
+
+  await test("Her reactions on jar notes are kept on her pull, and Josh sees them on his notes", async () => {
+    const pulled = await pullNote(db, randomUUID(), opts());
+    const hearted = await reactToPull(db, pulled.id, "heart");
+    assert.equal(hearted.reaction, "heart");
+    assert.equal(hearted.note.text, pulled.note.text, "the snapshot itself is untouched");
+    assert.equal((await reactToPull(db, pulled.id, "🥹")).reaction, "🥹");
+    assert.equal(await reactToPull(db, randomUUID(), "heart"), null);
+    const marks = await herJarMarks(db, [pulled.note.id]);
+    assert.equal(marks.get(pulled.note.id).reaction, "🥹");
+    assert(marks.get(pulled.note.id).pulls >= 1);
+    const listed = (await listJarNotes(db, { now: later })).notes.find((n) => n.id === pulled.note.id);
+    assert.equal(listed.her.reaction, "🥹");
+    // Taking it back clears it, unless an earlier pull of the same note still has one.
+    await reactToPull(db, pulled.id, null);
+    const after = (await herJarMarks(db, [pulled.note.id])).get(pulled.note.id);
+    assert.notEqual(after.reaction, "🥹");
+    // A note she never pulled has no marks.
+    const untouched = await addJarNote(db, { text: "never pulled" }, { now: later });
+    assert.equal((await listJarNotes(db, { now: later })).notes.find((n) => n.id === untouched.id).her.pulls, 0);
+    await deleteJarNote(db, untouched.id);
   });
 
   await test("Pull snapshots stay immutable rows in kv", async () => {

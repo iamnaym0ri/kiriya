@@ -1,13 +1,18 @@
+import { useEffect, useRef } from "react";
+import { haptic } from "../../lib/native.js";
 import { AdminEdit } from "../../shared/admin/AdminEdit.jsx";
+import { useDailyStyle } from "../../shared/DailyStyle.jsx";
 import { ReactionMark } from "../../shared/ReactionBar.jsx";
 import { Icon } from "../../shared/WorldPrimitives.jsx";
 import EnvelopeArt, { toneFor } from "./Envelope.jsx";
 import JarMini from "./JarMini.jsx";
 import { onItsWay, opensIn, when } from "./format.js";
+import { rectOf, reducedMotion } from "./Reveal.jsx";
 
 // The root of the app's notes & letters section: the note jar first, as its centrepiece, then
 // what's new, every letter and every little note. Josh sees exactly this, plus his pencils, her
-// marks, and what's on its way.
+// marks, and what's on its way. Everything opens in the middle of the screen (Reveals.jsx), flying
+// out of where she tapped it, so each opener passes its own element along.
 
 const NOTES_ON_ROOT = 6;
 export const NOTE_KIND = {
@@ -25,7 +30,7 @@ export function NoteRow({ note, unread, admin, mine = false, onOpen }) {
   const status = admin && !mine ? (note.openedAt ? "she read it" : "not opened yet") : null;
   return (
     <li className="app-row app-row--more mail-row" data-unread={unread || undefined}>
-      <button type="button" className="mail-row__button" onClick={() => onOpen(note)}>
+      <button type="button" className="mail-row__button" onClick={(event) => onOpen(note, rectOf(event.currentTarget.querySelector(".mail-row__icon") ?? event.currentTarget))}>
         <span className="mail-row__icon" data-kind={note.kind} aria-hidden="true">
           <Icon name={kind.icon} size={18} />
         </span>
@@ -57,7 +62,7 @@ function LetterTile({ letter, admin, isNew, onOpen }) {
   const herMark = admin && letter.author !== "maomao" && !letter.locked ? (letter.openedAt ? "she opened it" : "not opened yet") : null;
   return (
     <li>
-      <button type="button" className="mail-letter" data-locked={letter.locked || undefined} onClick={() => onOpen(letter)}>
+      <button type="button" className="mail-letter" data-locked={letter.locked || undefined} onClick={(event) => onOpen(letter, rectOf(event.currentTarget.querySelector(".envelope-art")))}>
         <EnvelopeArt
           tone={toneFor(letter)}
           open={Boolean(letter.openedAt) && !letter.locked}
@@ -74,7 +79,156 @@ function LetterTile({ letter, admin, isNew, onOpen }) {
   );
 }
 
-export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpenNote, onOpenJar, onAllNotes, onWrite, onCancelNote, cancelling }) {
+/** The jar's little facts wear tiny drawn icons (no font has to carry the symbols). */
+function FactIcon({ name }) {
+  const paths = {
+    notes: <path d="M3 5.5h10v7H3zM3 5.5l5 3.6 5-3.6" />,
+    heart: <path d="M8 13s-5-3.1-5-6.6A2.6 2.6 0 0 1 8 5a2.6 2.6 0 0 1 5 1.4C13 9.9 8 13 8 13Z" />,
+    pulled: <path d="M8 13V5.5M5 8l3-3 3 3M4 13h8" />,
+    always: <path d="M8 8c-1.4-1.9-2.4-2.6-3.6-2.6a2.6 2.6 0 0 0 0 5.2C5.6 10.6 6.6 9.9 8 8Zm0 0c1.4 1.9 2.4 2.6 3.6 2.6a2.6 2.6 0 0 0 0-5.2C10.4 5.4 9.4 6.1 8 8Z" />,
+    mood: (
+      <>
+        <circle cx="8" cy="8" r="5.2" />
+        <path d="M6 6.8v.4M10 6.8v.4M5.9 9.4q2.1 1.9 4.2 0" />
+      </>
+    ),
+  };
+  return (
+    <svg className="mail-jar__icon" viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+      {paths[name]}
+    </svg>
+  );
+}
+
+/**
+ * The note jar's island: the jar itself (bigger, and a button: a tap pulls a note out, straight
+ * into the middle of the screen), what's in it, and the little facts that used to sit under the
+ * jar's own page (no daily limit, how many notes, picked for her mood), all before she taps.
+ */
+function JarIsland({ jar, fresh, admin, from, greet, onPull, onWrite }) {
+  const { current: feeling, open: openFeeling } = useDailyStyle();
+  const art = useRef(null);
+  const data = jar.data;
+  const total = data?.total ?? 0;
+  const empty = jar.isSuccess && !total && !admin;
+  const pulled = data?.pulled ?? 0;
+
+  // The jar reacts to every pull: a squash, the lid pops, a puff of hearts (under the veil).
+  const bounce = (big = true) => {
+    const svg = art.current?.querySelector(".jar-mini");
+    if (!svg || reducedMotion()) return;
+    svg.animate(
+      big
+        ? [{ transform: "none" }, { transform: "scale(1.06, 0.9)", offset: 0.22 }, { transform: "translateY(-8px) scale(0.96, 1.06)", offset: 0.5 }, { transform: "none" }]
+        : [{ transform: "none" }, { transform: "rotate(-5deg)", offset: 0.2 }, { transform: "rotate(5deg)", offset: 0.45 }, { transform: "rotate(-2deg)", offset: 0.7 }, { transform: "none" }],
+      { duration: big ? 520 : 620, easing: "ease-out" },
+    );
+    svg.querySelector(".jar-mini__lid-pop")?.animate(
+      big ? [{ transform: "none" }, { transform: "translateY(-14px) rotate(-12deg)", offset: 0.35 }, { transform: "translateY(-3px) rotate(4deg)", offset: 0.7 }, { transform: "none" }] : [{ transform: "none" }, { transform: "translateY(-4px)", offset: 0.4 }, { transform: "none" }],
+      { duration: big ? 620 : 520, easing: "ease-out" },
+    );
+    if (big) {
+      const puff = art.current.querySelector(".mail-jar__puff");
+      puff?.classList.remove("is-on");
+      void puff?.getBoundingClientRect();
+      puff?.classList.add("is-on");
+    }
+  };
+
+  useEffect(() => {
+    if (!greet) return undefined;
+    const timer = setTimeout(() => bounce(false), 450);
+    return () => clearTimeout(timer);
+  }, [greet]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const pull = () => {
+    if (empty) {
+      haptic("light");
+      bounce(false);
+      return;
+    }
+    bounce(true);
+    onPull(rectOf(art.current?.querySelector(".jar-mini"), { x: 0.36, y: 0.2, w: 0.28, h: 0.14 }));
+  };
+
+  const line = jar.isPending
+    ? "a little love is waiting…"
+    : fresh > 0
+      ? admin
+        ? `${fresh === 1 ? "a new note" : `${fresh} new notes`} she hasn’t pulled yet`
+        : `${fresh === 1 ? "a new little note" : `${fresh} new little notes`} from ${from}!`
+      : empty
+        ? "new little notes are on their way"
+        : "for the bright days, the “ugh” days, & everything in between.";
+  const label = empty ? "the jar is filling up…" : admin ? "pull a note" : fresh > 0 ? (fresh === 1 ? "pull ur new note" : "pull a new note") : "pull a note";
+
+  return (
+    <section className="app-card mail-card mail-jar" id="note-jar" aria-labelledby="mail-jar-title" data-fresh={fresh > 0 || undefined} data-empty={empty || undefined}>
+      <div className="mail-jar__art" ref={art}>
+        <button type="button" className="mail-jar__jar" onClick={pull} aria-label={empty ? "the note jar, filling up" : `the note jar: ${label}`}>
+          <JarMini fresh={fresh} />
+        </button>
+        <span className="mail-jar__puff" aria-hidden="true">
+          <span>♥</span>
+          <span>♡</span>
+          <span>♥</span>
+          <span>✦</span>
+        </span>
+      </div>
+      <span className="mail-jar__eyebrow">the note jar</span>
+      <h2 id="mail-jar-title" className="mail-jar__title">a little jar, just for u</h2>
+      <p className="mail-jar__line" data-fresh={fresh > 0 || undefined}>
+        {line}
+      </p>
+      <ul className="mail-jar__facts" aria-label="about the jar">
+        {admin ? (
+          <>
+            <li>
+              <FactIcon name="notes" /> {total} little {total === 1 ? "note" : "notes"} inside
+            </li>
+            <li>
+              <FactIcon name="always" /> no daily limit
+            </li>
+            <li>
+              <FactIcon name="pulled" /> she’s pulled {pulled}
+            </li>
+            <li>
+              <button type="button" className="mail-jar__mood" onClick={() => onWrite({ kind: "jar" })}>
+                <FactIcon name="heart" /> {data?.her?.reacted ? `she reacted to ${data.her.reacted}` : "her reactions"}
+              </button>
+            </li>
+          </>
+        ) : (
+          <>
+            <li>
+              <FactIcon name="notes" /> {empty ? "filling up" : `${total} little ${total === 1 ? "note" : "notes"} inside`}
+            </li>
+            <li>
+              <FactIcon name="always" /> no daily limit
+            </li>
+            <li>
+              <button type="button" className="mail-jar__mood" onClick={openFeeling}>
+                {feeling?.feeling?.emoji ? <span aria-hidden="true" className="mail-jar__emoji">{feeling.feeling.emoji}</span> : <FactIcon name="mood" />}
+                {feeling?.feeling ? "picked for ur mood" : "a note for ur mood"}
+              </button>
+            </li>
+          </>
+        )}
+      </ul>
+      <button type="button" className="mail-jar__pull" onClick={pull} data-empty={empty || undefined}>
+        {label} {!empty && <span aria-hidden="true">♡</span>}
+      </button>
+      {!admin && !empty && <p className="mail-jar__hint">tap the jar as often as u like</p>}
+      {admin && (
+        <div className="mail-card__admin">
+          <AdminEdit label="add notes to the jar" onClick={() => onWrite({ kind: "jar" })} />
+        </div>
+      )}
+    </section>
+  );
+}
+
+export default function MailHome({ mail, jar, fresh, newIds, greetJar, onOpenLetter, onOpenNote, onPull, onAllNotes, onWrite, onCancelNote, cancelling }) {
   const { admin, letters, maomao, notes, test, upcoming, signature } = mail;
   const from = signature.toLowerCase();
   const unreadNotes = notes.filter((note) => !note.openedAt).length;
@@ -102,32 +256,7 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
         <p className="app-section__subtitle">{subtitle}</p>
       </header>
       <div className="app-section__body mail-body">
-        <section className="app-card mail-card mail-jar" aria-labelledby="mail-jar-title" data-fresh={fresh > 0 || undefined}>
-          <button type="button" className="mail-jar__open" onClick={onOpenJar} aria-describedby="mail-jar-line">
-            <span className="mail-jar__art">
-              <JarMini fresh={fresh} />
-            </span>
-            <span className="mail-jar__eyebrow">the note jar</span>
-            <strong id="mail-jar-title" className="mail-jar__title">a little jar, just for u</strong>
-            <span id="mail-jar-line" className="mail-jar__line" data-fresh={fresh > 0 || undefined}>
-              {jar.isPending
-                ? "a little love is waiting…"
-                : fresh > 0
-                  ? admin
-                    ? `${fresh === 1 ? "a new note" : `${fresh} new notes`} she hasn’t pulled yet`
-                    : `${fresh === 1 ? "a new little note" : `${fresh} new little notes`} from ${from}!`
-                  : jar.data?.total
-                    ? "a little encouragement, whenever u need one"
-                    : "new little notes are on their way"}
-            </span>
-            <span className="mail-jar__pull">{fresh > 0 && !admin ? (fresh === 1 ? "pull ur new note" : "pull a new note") : "pull a note"} <span aria-hidden="true">♡</span></span>
-          </button>
-          {admin && (
-            <div className="mail-card__admin">
-              <AdminEdit label="add notes to the jar" onClick={() => onWrite({ kind: "jar" })} />
-            </div>
-          )}
-        </section>
+        <JarIsland jar={jar} fresh={fresh} admin={admin} from={from} greet={greetJar} onPull={onPull} onWrite={onWrite} />
 
         {showNew ? (
           <section className="app-card mail-card mail-new" aria-labelledby="mail-new-title">
@@ -137,7 +266,7 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
             <ul className="app-list mail-list">
               {newLetters.map((letter) => (
                 <li key={letter.id} className="app-row app-row--more mail-row mail-row--letter" data-unread={!letter.openedAt || undefined}>
-                  <button type="button" className="mail-row__button" onClick={() => onOpenLetter(letter)}>
+                  <button type="button" className="mail-row__button" onClick={(event) => onOpenLetter(letter, rectOf(event.currentTarget.querySelector(".envelope-art")))}>
                     <EnvelopeArt className="mail-row__envelope" tone={toneFor(letter)} open={Boolean(letter.openedAt)} reaction={letter.reaction} />
                     <span className="mail-row__text">
                       <span className="mail-row__eyebrow">{admin ? (letter.openedAt ? "she opened it" : "not opened yet") : letter.openedAt ? "opened just now" : `${letterKind(letter)} from ${from}`}</span>
@@ -252,7 +381,7 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
             </header>
             <ul className="app-list mail-list">
               {test.slice(0, 5).map((note) => (
-                <NoteRow key={note.id} note={note} unread={!note.openedAt} admin={admin} mine onOpen={(item) => onOpenNote(item, { test: true })} />
+                <NoteRow key={note.id} note={note} unread={!note.openedAt} admin={admin} mine onOpen={(item, origin) => onOpenNote(item, origin, { test: true })} />
               ))}
             </ul>
           </section>

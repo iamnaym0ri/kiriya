@@ -340,3 +340,66 @@ test("picture stitch: clue numbers and single-line logic", () => {
   assert.deepEqual(lines.settleLine([0, 0, 0, 0], []), [-1, -1, -1, -1]);
   assert.equal(lines.settleLine([1, -1, 1, 0], [3]), null, "a contradiction");
 });
+
+test("lantern corridor: every corridor can be lit, and its par is the true fewest taps", async () => {
+  const L = await import(`${BRAIN}/lantern-puzzle/logic.js`);
+  // Brute force on 3×3 agrees with the GF(2) solver.
+  for (let mask = 0; mask < 1 << 9; mask++) {
+    let board = L.allLit(3);
+    for (let i = 0; i < 9; i++) if (mask & (1 << i)) board = L.press(board, 3, i);
+    let best = Infinity;
+    for (let taps = 0; taps < 1 << 9; taps++) {
+      let b = board;
+      for (let i = 0; i < 9; i++) if (taps & (1 << i)) b = L.press(b, 3, i);
+      if (L.isLit(b)) best = Math.min(best, (taps.toString(2).match(/1/g) ?? []).length);
+    }
+    assert.equal(L.bestTaps(board, 3).length, best);
+  }
+  for (let level = 1; level <= 14; level++) {
+    for (let k = 0; k < 20; k++) {
+      const corridor = L.newCorridor(level);
+      assert.equal(corridor.size, L.levelPlan(level).size);
+      const route = L.bestTaps(corridor.board, corridor.size);
+      assert.equal(route.length, corridor.par);
+      assert.ok(!L.isLit(corridor.board), "a corridor never starts lit");
+      let b = corridor.board;
+      for (const i of route) b = L.press(b, corridor.size, i);
+      assert.ok(L.isLit(b));
+    }
+  }
+  const dark = L.allLit(5);
+  dark[0] = false;
+  assert.equal(L.bestTaps(dark, 5), null, "one dark corner on 5×5 can't be lit, and is never dealt");
+  assert.deepEqual([L.starsFor(4, 4), L.starsFor(6, 4), L.starsFor(7, 4)], [3, 2, 1]);
+});
+
+test("odd jar: exactly one jar differs, in exactly one detail she has met", async () => {
+  const J = await import(`${BRAIN}/odd-jar/logic.js`);
+  for (let level = 1; level <= 16; level++) {
+    for (let k = 0; k < 40; k++) {
+      const shelf = J.newShelf(level);
+      assert.equal(shelf.count, J.jarCount(level));
+      assert.ok(shelf.at >= 0 && shelf.at < shelf.count);
+      const differs = Object.keys(J.DETAILS).filter((name) => shelf.base[name] !== shelf.odd[name]);
+      assert.deepEqual(differs, [shelf.kind]);
+      assert.ok(level >= J.DETAILS[shelf.kind].from, `${shelf.kind} shows up from level ${J.DETAILS[shelf.kind].from}`);
+      if (shelf.kind === "flip") assert.equal(shelf.base.label, "leaf", "a flipped label is always a leaf");
+      assert.equal(shelf.wobble.some(Boolean), J.wobbles(level) && shelf.wobble.some(Boolean));
+      if (!J.wobbles(level)) assert.ok(shelf.wobble.every((w) => w === 0));
+    }
+  }
+  let run = J.newRun();
+  const wrong = run.shelf.at === 0 ? 1 : 0;
+  run = J.inspect(run, wrong);
+  assert.equal(run.hearts, J.HEARTS - 1);
+  assert.equal(J.inspect(run, wrong), run, "the same wrong jar can't cost twice");
+  run = J.clue(run);
+  assert.ok(run.shelf.hint);
+  run = J.inspect(run, run.shelf.at);
+  assert.equal(run.shelf.phase, "found");
+  run = J.nextShelf(run);
+  assert.equal(run.level, 2);
+  for (let i = 0; i < run.shelf.count && run.shelf.phase !== "over"; i++) if (i !== run.shelf.at) run = J.inspect(run, i);
+  assert.equal(run.shelf.phase, "over");
+  assert.equal(run.hearts, 0);
+});

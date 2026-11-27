@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 
-// Lantern puzzle (src/world/play/MoreMaomaoGames.jsx), on the brain shelf.
+// Lantern corridor (id lantern-puzzle): the website's lantern puzzle grown into levels, 3×3 to 5×5,
+// with a par for each corridor. The website keeps its own version (MoreMaomaoGames.jsx).
 function LanternPuzzleIcon() {
   const lit = new Set([0, 4, 5, 7]);
   const lanterns = [];
@@ -22,9 +23,9 @@ export default {
   id: "lantern-puzzle",
   shelf: "brain",
   order: 13,
-  title: "lantern puzzle",
-  blurb: "light every lantern on the path",
+  title: "lantern corridor",
+  blurb: "light every lantern, at par if you can",
   Icon: LanternPuzzleIcon,
   load: () => import("./Game.jsx"),
-  credit: "Lantern puzzle: our own game",
+  credit: "Lantern corridor: our own game (a lights-out puzzle; the par solver is written for it)",
 };

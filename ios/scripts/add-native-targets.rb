@@ -34,7 +34,7 @@ end
 
 # --- App target -------------------------------------------------------------------------------
 app_group = main_group.children.find { |g| g.display_name == "App" && g.isa == "PBXGroup" }
-%w[MainViewController.swift KiriyaNotifications.swift KiriyaAppShortcuts.swift].each do |name|
+%w[MainViewController.swift KiriyaNotifications.swift KiriyaAppShortcuts.swift KiriyaChatPlugin.swift].each do |name|
   add_source(app, file_in(app_group, name))
 end
 add_resource(app, file_in(app_group, "PrivacyInfo.xcprivacy"))
@@ -49,6 +49,10 @@ signal_sounds = %w[thinking hug kiss morning night miss water].map { |key| "Sign
 shared = main_group.children.find { |g| g.display_name == "KiriyaShared" } || main_group.new_group("KiriyaShared", "KiriyaShared")
 shared_refs = %w[KiriyaShared.swift KiriyaIntents.swift].map { |name| file_in(shared, name) }
 shared_refs.each { |ref| add_source(app, ref) }
+# The chat's end-to-end encryption (CryptoKit + the Keychain): the app, the widgets, both
+# notification extensions (the service opens previews, the content extension's Reply seals).
+chat_crypto = file_in(shared, "KiriyaChatCrypto.swift")
+add_source(app, chat_crypto)
 
 # --- Extension targets ------------------------------------------------------------------------
 def extension_target(project, name, bundle_id)
@@ -88,6 +92,7 @@ add_resource(widgets, file_in(widgets_group, "PrivacyInfo.xcprivacy"))
 file_in(widgets_group, "KiriyaWidgets-Info.plist")
 file_in(widgets_group, "KiriyaWidgets.entitlements")
 shared_refs.each { |ref| add_source(widgets, ref) }
+add_source(widgets, chat_crypto)
 
 # Each redesigned widget lives in its own folder (Notes/ the little note, Con/ the next con, Signals/ thinking
 # of you): every top-level .swift file
@@ -121,6 +126,7 @@ service_group = main_group.children.find { |g| g.display_name == "KiriyaNotifica
                 main_group.new_group("KiriyaNotificationService", "KiriyaNotificationService")
 add_source(service, file_in(service_group, "KiriyaNotificationService.swift"))
 add_source(service, notes_mailbox) if notes_mailbox
+add_source(service, chat_crypto)
 %w[envelope.png jar.png PrivacyInfo.xcprivacy].each { |name| add_resource(service, file_in(service_group, name)) }
 file_in(service_group, "KiriyaNotificationService-Info.plist")
 file_in(service_group, "KiriyaNotificationService.entitlements")
@@ -134,6 +140,7 @@ add_resource(content, file_in(content_group, "PrivacyInfo.xcprivacy"))
 file_in(content_group, "KiriyaNotificationContent-Info.plist")
 file_in(content_group, "KiriyaNotificationContent.entitlements")
 add_source(content, shared_refs.find { |ref| ref.path == "KiriyaShared.swift" })
+add_source(content, chat_crypto)
 add_source(content, notes_mailbox) if notes_mailbox
 # Linked explicitly: the code only adopts UNNotificationContentExtension (an Objective-C protocol), so
 # the linker would drop the auto-linked framework, and iOS then can't load the extension at all

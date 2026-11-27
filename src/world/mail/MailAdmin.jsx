@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { EditField, EditSheet } from "../../shared/admin/AdminEdit.jsx";
+import { ReactionMark } from "../../shared/ReactionBar.jsx";
 import { useAdminJar, useAdminLetters, useDeleteLetter, useJarEdit, useSaveLetter, useSendNote, useTryLetter } from "./useMail.js";
 import { onItsWay } from "./format.js";
 
@@ -326,9 +327,15 @@ export function JarEditor({ open, onClose }) {
             <li key={note.id} className="mail-jar-note" data-status={note.status}>
               <p>{note.text}</p>
               <p className="mail-jar-note__meta">
-                <span className="mail-jar-note__status">{JAR_STATUS[note.status]}</span>
+                <span className="mail-jar-note__status">{note.status === "read" && note.her?.pulls > 1 ? `she pulled it ${note.her.pulls} times` : JAR_STATUS[note.status]}</span>
                 {note.status === "waiting" ? ` · joins ${onItsWay(note.releaseAt)}` : ""}
                 {note.feelings.length ? ` · ${note.label}` : ""}
+                {note.her?.reaction && (
+                  <span className="mail-jar-note__her">
+                    {" · her reaction "}
+                    <ReactionMark reaction={note.her.reaction} className="mail-jar-note__mark" />
+                  </span>
+                )}
               </p>
               <div className="mail-jar-note__actions">
                 {note.status === "waiting" && (

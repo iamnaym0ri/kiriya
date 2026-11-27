@@ -258,10 +258,20 @@ export function GifMedia({ media }) {
   );
 }
 
-/** An old sticker message (stickers are now the iPhone's own; old ones keep showing). */
+/**
+ * A sticker: the iPhone's own stickers and Genmoji (a see-through PNG, sealed like a photo), and the
+ * old built-in and uploaded ones. No bubble, no box: just the sticker. What she just sent shows from
+ * the phone's own copy until the stored one has loaded.
+ */
 export function StickerMedia({ media }) {
   const src = useMediaUrl(media);
-  return <div className="msg__sticker">{src && <img src={src} alt={media.alt ?? "a sticker"} loading="lazy" decoding="async" />}</div>;
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className="msg__sticker" data-loaded={loaded || undefined}>
+      {media.localUrl && !loaded && <img className="msg__sticker-local" src={media.localUrl} alt="" aria-hidden="true" draggable="false" />}
+      {src && <img src={src} alt={media.alt || "a sticker"} loading="lazy" decoding="async" draggable="false" onLoad={() => setLoaded(true)} />}
+    </div>
+  );
 }
 
 /** The tiny picture beside a quoted reply (its first photo, the video's poster or the GIF's still). */

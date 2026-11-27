@@ -1,8 +1,8 @@
 import { useId } from "react";
 
-// A small drawing of the note jar for its card in the notes & letters section: the same glass,
-// lid, bow and folded notes as the big jar (today/NoteJar.jsx), with the red heart when there are
-// new notes from Josh.
+// The note jar for its island in the notes & letters section (and, tiny, on "another one"): the same
+// glass, lid, bow and folded notes as the big jar (today/NoteJar.jsx), with the red heart when there
+// are new notes from Josh. The island bounces it and pops its lid on every pull (MailHome.jsx).
 export default function JarMini({ fresh = 0 }) {
   const id = useId().replace(/:/g, "");
   return (
@@ -47,8 +47,11 @@ export default function JarMini({ fresh = 0 }) {
         </g>
       </g>
       <g className="jar-mini__lid">
-        <ellipse cx="60" cy="33" rx="29" ry="6" fill="#e4bdd4" stroke="#b787a9" strokeWidth="1.3" />
-        <path d="M31 32v6q0 5 29 5t29-5v-6q-2 5-29 5t-29-5Z" fill={`url(#${id}-lid)`} stroke="#b787a9" strokeWidth="1.3" />
+        <g className="jar-mini__lid-pop">
+          <ellipse cx="60" cy="33" rx="29" ry="6" fill="#e4bdd4" stroke="#b787a9" strokeWidth="1.3" />
+          <path d="M31 32v6q0 5 29 5t29-5v-6q-2 5-29 5t-29-5Z" fill={`url(#${id}-lid)`} stroke="#b787a9" strokeWidth="1.3" />
+          <path d="M37 32q23-6 46 0" fill="none" stroke="#fff6fc" strokeWidth="1.4" opacity=".8" />
+        </g>
       </g>
       {fresh > 0 && (
         <g className="jar-mini__heart" transform="translate(92 26)">

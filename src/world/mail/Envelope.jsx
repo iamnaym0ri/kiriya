@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useLayoutEffect, useRef } from "react";
 import { HEART } from "../../../shared/reactions.js";
 
 // Hand-drawn envelopes for the notes & letters section. Sealed ones wait with a wax seal, opened ones
@@ -104,14 +104,51 @@ export default function EnvelopeArt({ tone = "blush", open = false, locked = fal
 }
 
 /**
- * The first opening of a sealed letter: the seal lifts, the flap folds back and the letter slides
- * out. Transform and opacity only; the caller skips it for Reduce Motion.
+ * The first opening of a sealed letter, in the middle of the screen: the envelope flies up from
+ * where she tapped it, the seal pops, the flap folds back and the letter slides up out of it. Then
+ * `onDone(rect)` hands over to the letter itself (it rises from `rect`, the paper's top, and
+ * unfolds) while the envelope sinks away (`leaving`). A tap skips ahead. Transform and opacity
+ * only; the caller skips it for Reduce Motion.
  */
-export function EnvelopeOpening({ tone = "blush", onDone }) {
+export function EnvelopeOpening({ tone = "blush", origin = null, leaving = false, onDone }) {
   const id = useId().replace(/:/g, "");
   const t = TONES[tone] ?? TONES.blush;
+  const box = useRef(null);
+  const paper = useRef(null);
+  const done = useRef(false);
+  const finish = () => {
+    if (done.current) return;
+    done.current = true;
+    const rect = paper.current?.getBoundingClientRect();
+    onDone?.(rect && rect.width ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height * 0.5 } : null);
+  };
+  useLayoutEffect(() => {
+    const node = box.current;
+    if (!node || !origin) return undefined;
+    const rect = node.getBoundingClientRect();
+    const dx = origin.left + origin.width / 2 - (rect.left + rect.width / 2);
+    const dy = origin.top + origin.height / 2 - (rect.top + rect.height / 2);
+    const scale = Math.max(0.2, Math.min(1, origin.width / rect.width));
+    const flight = node.animate(
+      [
+        { transform: `translate3d(${dx}px, ${dy}px, 0) scale(${scale})`, opacity: 0.6 },
+        { transform: "translate3d(0, -12px, 0) scale(1.03)", opacity: 1, offset: 0.7 },
+        { transform: "translate3d(0, 0, 0) scale(1)", opacity: 1 },
+      ],
+      { duration: 420, easing: "cubic-bezier(0.25, 0.75, 0.3, 1)", fill: "backwards" },
+    );
+    return () => flight.cancel();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <div className="envelope-opening" onAnimationEnd={(event) => event.animationName === "envelope-opening-out" && onDone?.()} onClick={() => onDone?.()}>
+    <div
+      ref={box}
+      className="envelope-opening"
+      data-leaving={leaving || undefined}
+      onAnimationEnd={(event) => event.animationName === "envelope-paper" && finish()}
+      onClick={finish}
+      role="img"
+      aria-label="the envelope opens"
+    >
       <svg className="envelope-opening__art" viewBox="0 -10 200 160" aria-hidden="true">
         <defs>
           <linearGradient id={`${id}-body`} x1="0" y1="0" x2="0.3" y2="1">
@@ -122,14 +159,11 @@ export function EnvelopeOpening({ tone = "blush", onDone }) {
             <stop offset="0" stopColor={t.waxLight} />
             <stop offset="1" stopColor={t.wax} />
           </radialGradient>
-          <clipPath id={`${id}-inside`}>
-            <rect x="0" y="-40" width="200" height="186" />
-          </clipPath>
         </defs>
         <ellipse cx="100" cy="146" rx="84" ry="4" fill="#6b4a80" opacity="0.12" />
         <rect x="4" y="40" width="192" height="104" rx="9" fill={t.inner} />
         <path className="envelope-opening__flap-back" d="M6 41 L100 3 L194 41 Z" fill={t.light} stroke={t.line} strokeWidth="1.4" strokeLinejoin="round" />
-        <g className="envelope-opening__paper">
+        <g ref={paper} className="envelope-opening__paper">
           <rect x="26" y="48" width="148" height="92" rx="3" fill="#fffdf8" stroke="#e2d4dc" strokeWidth="1" />
           <path d="M40 66h88M40 78h112M40 90h104M40 102h70" stroke="#d9c6dd" strokeWidth="2.4" strokeLinecap="round" />
         </g>
@@ -142,7 +176,6 @@ export function EnvelopeOpening({ tone = "blush", onDone }) {
           <path d="M100 104.5c-6.5-4.2-8.4-8.3-6.4-10.9 1.6-2.1 4.7-1.7 6.4.8 1.7-2.5 4.8-2.9 6.4-.8 2 2.6.1 6.7-6.4 10.9Z" fill="#ffeaf3" opacity="0.92" />
         </g>
       </svg>
-      <p className="envelope-opening__skip">tap to open</p>
     </div>
   );
 }

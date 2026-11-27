@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 
-// Find the odd jar (src/world/play/MaomaoGames.jsx), on the brain shelf.
+// Odd jar, on the brain shelf: an endless run of Maomao's shelves, three hearts, one jar that
+// differs in a single detail. The website keeps its own five-mystery version (MaomaoGames.jsx).
 function OddJarIcon() {
   const jar = (x, odd) =>
     h("g", { key: x, transform: `translate(${x} 0)` },
@@ -26,7 +27,7 @@ export default {
   shelf: "brain",
   order: 11,
   title: "odd jar",
-  blurb: "one jar breaks the pattern. which?",
+  blurb: "one jar is different. spot the detail",
   Icon: OddJarIcon,
   load: () => import("./Game.jsx"),
   credit: "Find the odd jar: our own game",
