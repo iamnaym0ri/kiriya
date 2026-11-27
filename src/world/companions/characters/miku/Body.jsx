@@ -130,9 +130,18 @@ function Headset() {
           <ellipse cx={x} cy="120" rx="2" ry="3.2" fill="#ff9fcf" opacity=".8" />
         </g>
       ))}
-      {/* microphone boom on her right, towards her mouth */}
-      <path d="M48 131Q55 150 84 150" fill="none" stroke="#2a2f38" strokeWidth="2.2" strokeLinecap="round" />
-      <ellipse cx="87" cy="150" rx="4" ry="3" fill={SLATE} stroke="#20242c" strokeWidth="1" />
+    </g>
+  );
+}
+
+// The microphone boom on her right, curving round to her mouth; drawn over the cheek and side lock.
+function Mic() {
+  return (
+    <g className="hmiku__mic">
+      <path d="M47 130Q53 151 82 150" fill="none" stroke="#2a2f38" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M48 131Q54 149 80 149" fill="none" stroke="#6f7787" strokeWidth=".8" strokeLinecap="round" opacity=".8" />
+      <rect x="80" y="146.4" width="8" height="6" rx="3" fill={SLATE} stroke="#20242c" strokeWidth="1" />
+      <circle cx="86" cy="149.4" r="1.3" fill={MAGENTA} opacity=".85" />
     </g>
   );
 }
@@ -203,13 +212,13 @@ function Leg() {
 function SeatedLeg() {
   return (
     <g>
-      <rect x="-4.6" y="-2" width="9.2" height="12" rx="4.4" fill={SKIN} stroke={SKIN_SHADE} strokeWidth=".8" />
-      <ellipse cx="0" cy="-.5" rx="5.8" ry="4.6" fill={SKIN} stroke={SKIN_SHADE} strokeWidth=".8" />
-      <path d="M-5.6 7h11.2v12.5H-5.6Z" fill={INK} stroke={INK_LINE} strokeWidth="1.1" />
-      <rect x="-6.2" y="5.8" width="12.4" height="3.4" rx="1.4" fill={TEAL} stroke={TEAL_DARK} strokeWidth=".7" />
-      <ellipse cx="0" cy="20.5" rx="6.6" ry="4" fill={INK} stroke={INK_LINE} strokeWidth="1.1" />
-      <path d="M-5.4 22.6q5.4 3 10.8 0" stroke={TEAL} strokeWidth="2" strokeLinecap="round" fill="none" />
-      <path d="M-2.2 10v8" stroke={INK_HI} strokeWidth="1.3" strokeLinecap="round" />
+      <rect x="-4.6" y="-1" width="9.2" height="19" rx="4.4" fill={SKIN} stroke={SKIN_SHADE} strokeWidth=".8" />
+      <ellipse cx="0" cy="0" rx="6" ry="4.4" fill={SKIN} stroke={SKIN_SHADE} strokeWidth=".8" />
+      <path d="M-5.6 15h11.2v14H-5.6Z" fill={INK} stroke={INK_LINE} strokeWidth="1.1" />
+      <rect x="-6.2" y="13.6" width="12.4" height="3.4" rx="1.4" fill={TEAL} stroke={TEAL_DARK} strokeWidth=".7" />
+      <ellipse cx="0" cy="30" rx="6.6" ry="4" fill={INK} stroke={INK_LINE} strokeWidth="1.1" />
+      <path d="M-5.4 32.2q5.4 3 10.8 0" stroke={TEAL} strokeWidth="2" strokeLinecap="round" fill="none" />
+      <path d="M-2.2 18v9" stroke={INK_HI} strokeWidth="1.3" strokeLinecap="round" />
     </g>
   );
 }
@@ -415,6 +424,7 @@ export default function MikuBody({ pose = "idle", expression, facing = 1, playin
                   />
                   <MikuFace expression={face} moving={animate} uid={uid} />
                   <Fringe uid={uid} />
+                  <Mic />
                 </g>
               </g>
 

@@ -107,6 +107,14 @@
   50% { rotate: -15deg; }
 }
 
+/* ---- turning: on the move she looks where she is going (the flip handles left/right) ----------- */
+.hmiku__face {
+  transition: translate 0.3s ease;
+}
+.hmiku:is([data-pose="walk"], [data-pose="jump"], [data-pose="fall"], [data-pose="dance"]) .hmiku__face {
+  translate: 4px 0;
+}
+
 /* ---- walk: a light, bouncy step --------------------------------------------------------------- */
 .hmiku[data-pose="walk"] .hmiku__root {
   rotate: 2.5deg;
@@ -146,8 +154,8 @@
 }
 @keyframes hmiku-step {
   0%, 100% { translate: 0 0; rotate: 0deg; }
-  25% { translate: 0 -5px; rotate: 9deg; }
-  50% { translate: 0 -1px; rotate: 2deg; }
+  20% { translate: 1px -6px; rotate: 12deg; }
+  42% { translate: 0 -1px; rotate: 3deg; }
 }
 @keyframes hmiku-swing-r {
   0%, 100% { rotate: 22deg; }
@@ -297,7 +305,7 @@
   translate: 0 27px;
 }
 .hmiku:is([data-pose="sit"], [data-pose="sleep"]) .hmiku__skirt {
-  scale: 1.12 1;
+  scale: 1.18 0.92;
 }
 .hmiku[data-pose="sit"] .hmiku__arm--r {
   rotate: 28deg;
@@ -592,7 +600,7 @@
   animation: hmiku-leek-arm 0.5s ease-in-out infinite;
 }
 .hmiku[data-pose="leek"] .hmiku__leek {
-  rotate: 150deg;
+  rotate: 0deg;
   animation: hmiku-leek-spin 0.5s linear infinite;
 }
 .hmiku[data-pose="leek"] .hmiku__arm--l {
