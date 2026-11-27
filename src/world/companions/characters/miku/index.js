@@ -1,4 +1,4 @@
-import Body, { MIKU_POSES } from "./Body.jsx";
+import Body, { LeekIcon, MIKU_POSES } from "./Body.jsx";
 import { MIKU_EXPRESSIONS } from "./Face.jsx";
 import Platform from "./Platform.jsx";
 import Thumb from "./Thumb.jsx";
@@ -41,7 +41,7 @@ export default {
     heldAt: 0.86, // between the twin tails, at the top of her head
     sway: 1.1,
     talkiness: 0.5,
-    expressions: { tapped: "surprised", picked: "flustered", putDown: "joy", walk: "happy", jump: "joy" },
+    expressions: { tapped: "surprised", picked: "flustered", putDown: "joy", walk: "happy", jump: "joy", stay: "happy", wander: "joy" },
   },
   behaviours: [
     { id: "swing", weight: 5, pose: "sit", expression: "happy", seconds: [8, 16], topic: "idle" },
@@ -55,7 +55,43 @@ export default {
     { id: "wave", weight: 1, pose: "wave", expression: "joy", seconds: [2, 3], topic: "hello" },
     { id: "nap", weight: 1, pose: "sleep", expression: "asleep", seconds: [10, 20], topic: "sleepy", hours: [22, 7], stay: true },
     { id: "sing-up-top", weight: 1, pose: "sing", expression: "sing", seconds: [4, 7], topic: "singing", level: "top" },
+    // Round 2, all in place (so staying still looks like a concert): a sideways peace sign and a
+    // wink, a curtain-call bow, her teal penlight waved in time, and vocal scales that wobble.
+    { id: "peace", weight: 1.5, pose: "peace", expression: "wink", seconds: [2, 3], topic: "peace" },
+    {
+      id: "bow",
+      weight: 1,
+      steps: [
+        { pose: "bow", expression: "proud", seconds: [1.6, 1.6], topic: "bow" },
+        { pose: "wave", expression: "joy", seconds: [1.2, 1.6] },
+      ],
+    },
+    { id: "glowstick", weight: 1.5, pose: "glowstick", prop: "glowstick", expression: "happy", seconds: [3, 5], topic: "glowstick", bounce: { count: 4, height: 5, every: 0.5 } },
+    {
+      id: "scales",
+      weight: 1,
+      steps: [
+        { pose: "sing", expression: "determined", seconds: [1.8, 2.2], topic: "scales" },
+        { pose: "sing", expression: "sing", seconds: [1.6, 2], bounce: { count: 3, height: 4, every: 0.4 } },
+        { pose: "react", expression: "giggle", seconds: [1, 1.2] },
+      ],
+    },
   ],
+  // The tap menu's own choice: a leek. Out it comes, swung up and down at polka tempo with a bob on
+  // every beat, then held up in her "number one" pose with a wink.
+  action: {
+    id: "leek",
+    label: "hand her a leek",
+    icon: LeekIcon,
+    pose: "leek",
+    prop: "leek",
+    expression: "joy",
+    topic: "action",
+    steps: [
+      { pose: "leek", expression: "joy", seconds: [2.6, 3], bounce: { count: 5, height: 6, every: 0.5 } },
+      { pose: "point", expression: "wink", seconds: [1.6, 2], topic: "actionAfter" },
+    ],
+  },
   // Her birthday (31 Aug), Miku Day (9 Mar) and the seasons are folded in for the day she opens it.
   lines: linesForToday(),
   visit,
