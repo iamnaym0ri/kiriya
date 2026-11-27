@@ -1,0 +1,254 @@
+.fortune-game {
+  background:
+    radial-gradient(circle at 50% 42%, #fffaff 0, #f7effc 38%, transparent 70%),
+    radial-gradient(circle, #ffffffa6 0 1.4px, transparent 2.2px) 0 0 / 24px 24px,
+    linear-gradient(#f3ebfa, #eadcf5);
+}
+
+.fortune-area {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  perspective: 1200px;
+}
+
+/* ---------- the tin ---------- */
+.fortune-tin-wrap { display: grid; place-items: center; }
+.fortune-tin {
+  width: 176px;
+  height: 220px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  animation: fortune-bob 3.2s ease-in-out infinite;
+}
+.fortune-tin svg { width: 100%; height: 100%; overflow: visible; }
+.fortune-tin[data-shaking="true"] { animation: fortune-shake .22s ease-in-out infinite; }
+@keyframes fortune-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes fortune-shake {
+  0%, 100% { transform: rotate(0) translateY(0); }
+  25% { transform: rotate(-9deg) translateY(-6px); }
+  75% { transform: rotate(9deg) translateY(-3px); }
+}
+
+/* ---------- the slip ---------- */
+.fortune-slip {
+  position: relative;
+  width: var(--slip-w);
+  height: var(--slip-h);
+  transform-style: preserve-3d;
+  --panel-h: calc(var(--slip-h) / 3);
+}
+.fortune-slip[data-state="landing"] { animation: fortune-land .65s cubic-bezier(.2, 1.25, .4, 1) both; }
+@keyframes fortune-land {
+  from { transform: translateY(32%) scale(.3) rotate(-24deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.fortune-slip__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--panel-h);
+  transform-style: preserve-3d;
+  transition: transform .58s cubic-bezier(.45, .05, .25, 1);
+}
+.fortune-slip__panel--top { top: 0; transform-origin: 50% 100%; }
+.fortune-slip__panel--middle { top: var(--panel-h); }
+.fortune-slip__panel--bottom { top: calc(var(--panel-h) * 2); transform-origin: 50% 0; transition-delay: .5s; }
+.fortune-slip:is([data-state="landing"], [data-state="folded"]) .fortune-slip__panel--top { transform: rotateX(-180deg) translateZ(-2px); }
+.fortune-slip:is([data-state="landing"], [data-state="folded"]) .fortune-slip__panel--bottom { transform: rotateX(180deg) translateZ(-1px); }
+.fortune-slip:is([data-state="landing"], [data-state="folded"]) .fortune-slip__panel { transition: none; }
+
+.fortune-slip__face, .fortune-slip__back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.fortune-slip__face {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px 20px;
+  background:
+    repeating-linear-gradient(transparent 0 27px, #efe3f3 27px 28px),
+    #fffaf3;
+  border-inline: 1.6px solid #d9c3ea;
+}
+.fortune-slip__panel--top .fortune-slip__face { border-top: 1.6px solid #d9c3ea; border-radius: 6px 6px 0 0; justify-content: space-between; padding-top: 14px; }
+.fortune-slip__panel--middle .fortune-slip__face {
+  box-shadow: inset 0 9px 10px -10px #8d6aa566, inset 0 -9px 10px -10px #8d6aa566;
+  align-items: center;
+}
+.fortune-slip__panel--bottom .fortune-slip__face { border-bottom: 1.6px solid #d9c3ea; border-radius: 0 0 6px 6px; padding-bottom: 14px; }
+.fortune-slip__back {
+  transform: rotateX(180deg);
+  background:
+    linear-gradient(90deg, transparent calc(50% - 15px), #c9a8f5 calc(50% - 15px), #c9a8f5 calc(50% + 15px), transparent calc(50% + 15px)),
+    radial-gradient(circle, #e7d7f5 0 1.6px, transparent 2.4px) 0 0 / 14px 14px,
+    #f6effc;
+  border: 1.6px solid #c9b0dd;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px #6b4a7a22;
+}
+.fortune-slip__meta { display: flex; justify-content: space-between; gap: 8px; }
+.fortune-slip__meta .luck-pixel { font-size: 9px; }
+.fortune-slip__level { display: flex; align-items: center; gap: 14px; }
+.fortune-seal {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: 3px double #c2006f;
+  color: #c2006f;
+  font: 700 26px/1 "Hiragino Mincho ProN", "Yu Mincho", serif;
+  transform: rotate(-8deg);
+  background: #fff0f6;
+}
+.fortune-slip[data-state="open"] .fortune-seal { animation: fortune-stamp .42s cubic-bezier(.3, 1.6, .5, 1) both; }
+.fortune-slip[data-state="unfolding"] .fortune-seal { opacity: 0; }
+@keyframes fortune-stamp {
+  from { transform: rotate(-8deg) scale(1.9); opacity: 0; }
+  to { transform: rotate(-8deg) scale(1); opacity: 1; }
+}
+.fortune-slip__label { font: 700 clamp(23px, calc(var(--slip-h) * .064), 29px)/1 var(--font-hand); color: var(--luck-ink); letter-spacing: -.01em; }
+.fortune-slip__text {
+  margin: 0;
+  text-align: center;
+  font: clamp(19px, calc(var(--slip-h) * .055), 25px)/1.18 var(--font-hand);
+  color: #4a2f57;
+  text-wrap: balance;
+}
+.fortune-slip__lucky { display: grid; gap: 8px; margin: 0; }
+.fortune-slip__lucky > div { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; border-bottom: 1px dashed #e1cfe9; padding-bottom: 4px; }
+.fortune-slip__lucky dt { font: 9px var(--font-pixel); letter-spacing: .08em; color: var(--luck-ink-soft); text-transform: uppercase; white-space: nowrap; }
+.fortune-slip__lucky dd { margin: 0; display: inline-flex; align-items: center; gap: 6px; font: 700 19px/1.05 var(--font-hand); color: var(--luck-ink); text-align: right; }
+.fortune-swatch { flex: none; width: 15px; height: 15px; border-radius: 50%; border: 1.6px solid #4a2f57; }
+.fortune-slip__wax {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 46% 54% 50% 50%;
+  background: #b78be0;
+  color: #fff;
+  font-size: 16px;
+  box-shadow: inset 0 -3px 0 #9468c6, 0 2px 4px #4a2f5733;
+  transform: rotate(10deg);
+}
+
+.fortune-slip__ribbon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 120px;
+  height: 92px;
+  margin: -46px 0 0 -60px;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translateZ(6px);
+  cursor: pointer;
+  animation: fortune-ribbon-pulse 1.8s ease-in-out infinite;
+}
+.fortune-slip__ribbon svg { width: 100%; height: 100%; overflow: visible; }
+.fortune-slip[data-state="landing"] .fortune-slip__ribbon { animation: none; }
+.fortune-slip[data-state="unfolding"] .fortune-slip__ribbon { animation: fortune-ribbon-off .4s ease-in forwards; }
+@keyframes fortune-ribbon-pulse { 0%, 100% { transform: translateZ(6px) scale(1); } 50% { transform: translateZ(6px) scale(1.07) rotate(-3deg); } }
+@keyframes fortune-ribbon-off {
+  from { transform: translateZ(6px); opacity: 1; }
+  to { transform: translateZ(6px) translate(30px, -70px) rotate(40deg) scale(.6); opacity: 0; }
+}
+
+/* ---------- foot ---------- */
+.fortune-foot {
+  flex: none;
+  min-height: 112px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 0 22px 14px;
+  text-align: center;
+}
+.fortune-foot__line { margin: 0; font-size: 23px; line-height: 1.15; color: var(--luck-ink); display: grid; gap: 3px; }
+.fortune-foot__line small { font-size: 17px; color: var(--luck-hand); }
+
+/* ---------- keepsakes ---------- */
+.fortune-keep { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.fortune-keep li { border-radius: 12px; background: #fffaf3; border: 1.5px solid #eadcf2; box-shadow: 0 3px 0 #efe4f5; }
+.fortune-keep button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+.fortune-keep__seal {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2.5px double #c2006f;
+  color: #c2006f;
+  font: 700 16px/1 "Hiragino Mincho ProN", "Yu Mincho", serif;
+  transform: rotate(-8deg);
+}
+.fortune-keep__head { display: grid; gap: 3px; min-width: 0; }
+.fortune-keep__head .luck-pixel { font-size: 9px; }
+.fortune-keep__text { font: 19px/1.15 var(--font-hand); color: var(--luck-ink); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.fortune-keep li[data-open="true"] .fortune-keep__text { -webkit-line-clamp: unset; display: block; }
+.fortune-keep__more { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 0 14px 12px 64px; font: 17px var(--font-hand); color: var(--luck-hand); }
+.fortune-keep__more span { display: inline-flex; align-items: center; gap: 5px; }
+.fortune-keep__empty { font: 20px var(--font-hand); color: var(--luck-hand); text-align: center; margin: 20px 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fortune-tin, .fortune-tin[data-shaking="true"], .fortune-slip, .fortune-slip__ribbon, .fortune-slip .fortune-seal { animation: none !important; }
+  .fortune-slip__panel { transition: none !important; }
+}
+html[data-little-motion="off"] :is(.fortune-tin, .fortune-slip, .fortune-slip__ribbon, .fortune-seal) { animation: none !important; }
+html[data-little-motion="off"] .fortune-slip__panel { transition: none !important; }
+
+.fortune-slip__back-note {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-4deg);
+  font: 700 22px/1 var(--font-hand);
+  color: #9b6091;
+}
+.fortune-slip__back-note small { display: block; margin-top: 4px; font: 9px var(--font-pixel); letter-spacing: .1em; color: #a991b4; }
+
+/* Which side of a folding panel shows. backface-visibility alone isn't reliable everywhere (some
+   WebKit paths ignore it), so each side also switches exactly halfway through its turn. */
+.fortune-slip__panel--top .fortune-slip__face, .fortune-slip__panel--bottom .fortune-slip__face { opacity: 1; }
+.fortune-slip__back { opacity: 0; }
+.fortune-slip:is([data-state="landing"], [data-state="folded"]) :is(.fortune-slip__panel--top, .fortune-slip__panel--bottom) .fortune-slip__face { opacity: 0; }
+.fortune-slip:is([data-state="landing"], [data-state="folded"]) .fortune-slip__back { opacity: 1; }
+.fortune-slip[data-state="unfolding"] .fortune-slip__panel--top .fortune-slip__face { animation: fortune-side-in .58s step-end both; }
+.fortune-slip[data-state="unfolding"] .fortune-slip__panel--top .fortune-slip__back { animation: fortune-side-out .58s step-end both; }
+.fortune-slip[data-state="unfolding"] .fortune-slip__panel--bottom .fortune-slip__face { animation: fortune-side-in .58s step-end .5s both; }
+.fortune-slip[data-state="unfolding"] .fortune-slip__panel--bottom .fortune-slip__back { animation: fortune-side-out .58s step-end .5s both; }
+@keyframes fortune-side-in { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes fortune-side-out { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .fortune-slip[data-state="unfolding"] :is(.fortune-slip__face, .fortune-slip__back) { animation: none !important; }
+}
