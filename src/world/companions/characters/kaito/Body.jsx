@@ -30,15 +30,16 @@ const INK = "#2b2f3d";
 
 // Poses every companion shares, then his own.
 export const SHARED_POSES = ["idle", "walk", "jump", "fall", "land", "sit", "wave", "react", "sleep", "held"];
-export const OWN_POSES = ["icecream", "offer", "brainfreeze", "hum", "snuggle", "slip", "treat"];
+export const OWN_POSES = ["crouch", "icecream", "offer", "brainfreeze", "hum", "snuggle", "slip", "treat"];
 export const POSES = [...SHARED_POSES, ...OWN_POSES];
-const POSE_ALIASES = { stand: "idle", picked: "held", dangle: "held", carried: "held", hop: "jump", crouch: "jump", eat: "icecream" };
+const POSE_ALIASES = { stand: "idle", picked: "held", dangle: "held", carried: "held", hop: "jump", eat: "icecream" };
 const SITTING = new Set(["sit", "sleep", "treat"]);
 
 // The face each pose wears when the engine doesn't ask for one.
 const POSE_FACE = {
   idle: "gentle",
   walk: "gentle",
+  crouch: "gentle",
   jump: "joyful",
   fall: "surprised",
   land: "happy",
@@ -176,6 +177,9 @@ function Boots({ sitting }) {
     // Sitting on the cloud's edge: the boots hang down over its front and swing.
     return (
       <g className="kaito__legs kaito__legs--sit">
+        {/* Knees towards her, peeking from under the coat. */}
+        <ellipse cx="91" cy="225" rx="7.5" ry="5.5" fill={PANTS} stroke="#3a4166" strokeWidth=".8" />
+        <ellipse cx="109" cy="225" rx="7.5" ry="5.5" fill={PANTS} stroke="#3a4166" strokeWidth=".8" />
         <g className="kaito__boot kaito__boot--l" style={{ transformOrigin: "91px 232px" }}>
           <path d="M87 222H99L98 240H86Z" fill={PANTS} />
           <path d="M85 236H97V254Q97 261 90 261H84Q79 261 81 256L85 252Z" fill={BOOT} stroke="#141c40" strokeWidth=".9" />
@@ -293,6 +297,7 @@ const ARMS = {
   up: [[[77, 168], [56, 152], [50, 124]], [[123, 168], [144, 152], [150, 124]]],
   flail: [[[77, 169], [56, 162], [42, 142]], [[123, 169], [144, 162], [158, 142]]],
   out: [[[77, 170], [60, 182], [51, 191]], [[123, 170], [140, 182], [149, 191]]],
+  back: [[[77, 171], [66, 186], [70, 200]], [[123, 171], [134, 186], [130, 200]]],
   startle: [[[77, 170], [58, 170], [46, 181]], [[123, 170], [142, 170], [154, 181]]],
   lap: [[[77, 170], [66, 186], [76, 197]], [[123, 170], [134, 186], [124, 197]]],
   folded: [[[77, 170], [76, 190], [91, 197]], [[123, 170], [124, 190], [109, 197]]],
@@ -309,6 +314,7 @@ const ARMS = {
 const POSE_ARMS = {
   idle: "rest",
   walk: "rest",
+  crouch: "back",
   jump: "up",
   fall: "flail",
   land: "out",
@@ -364,9 +370,13 @@ function Hands({ pose }) {
   );
 }
 
-/** Little marks around him that must not mirror (letters, notes): drawn outside the facing flip. */
+/**
+ * Little marks around him (the "!", z's, notes, frost, a heart). The engine mirrors the whole body to
+ * face left; letters are flipped back so they still read.
+ */
 function Effects({ pose, expression, facing }) {
-  const fx = (x) => (facing < 0 ? 200 - x : x);
+  const fx = (x) => x;
+  const unflip = (x) => (facing < 0 ? `translate(${2 * x} 0) scale(-1 1)` : undefined);
   return (
     <g className="kaito__effects" aria-hidden="true">
       {pose === "react" && (
@@ -377,8 +387,12 @@ function Effects({ pose, expression, facing }) {
       )}
       {pose === "sleep" && (
         <g fill="#8a7fc0" fontWeight="700" fontFamily="ui-rounded, 'SF Pro Rounded', system-ui, sans-serif">
-          <text className="kaito__z kaito__z--1" x={fx(156)} y="72" fontSize="18" textAnchor="middle">z</text>
-          <text className="kaito__z kaito__z--2" x={fx(170)} y="52" fontSize="14" textAnchor="middle">z</text>
+          <g transform={unflip(156)}>
+            <text className="kaito__z kaito__z--1" x="156" y="72" fontSize="18" textAnchor="middle">z</text>
+          </g>
+          <g transform={unflip(170)}>
+            <text className="kaito__z kaito__z--2" x="170" y="52" fontSize="14" textAnchor="middle">z</text>
+          </g>
         </g>
       )}
       {pose === "hum" && (
@@ -481,6 +495,7 @@ export function Figure({ id, pose, face, motion }) {
               {/* The fringe's shadow on the forehead. */}
               <path d={FRINGE} transform="translate(1 4)" fill="#5a4c95" opacity=".16" clipPath={`url(#${id}-face)`} />
               <KaitoFace expression={face} moving={motion} />
+              <path d={FACE} fill={`url(#${id}-rim)`} />
               <path d={FRINGE} fill={`url(#${id}-hair)`} />
               {/* Lock partings, then a broken shine ring across the crown. */}
               <path
@@ -500,7 +515,6 @@ export function Figure({ id, pose, face, motion }) {
                 opacity=".62"
               />
               <path d="M52 114q-1 13 1 22M149 110q1 13-1 22" stroke={HAIR_LIGHT} strokeWidth="1.8" strokeLinecap="round" fill="none" opacity=".7" />
-              <path d={FACE} fill={`url(#${id}-rim)`} />
               <KaitoBrows expression={face} moving={motion} />
               <Headset />
               {(pose === "snuggle" || pose === "sleep") && <ScarfUp />}
@@ -517,7 +531,7 @@ export function Figure({ id, pose, face, motion }) {
 
 export const useReducedMotion = () => useSyncExternalStore(subscribeReducedMotion, readReducedMotion, () => true);
 
-function KaitoBody({ pose = "idle", expression, facing = 1, playing = true, scale = 1 }) {
+function KaitoBody({ pose = "idle", expression, facing = 1, playing = true, talking = false }) {
   const id = useId();
   const reduced = useReducedMotion();
   const p = POSES.includes(pose) ? pose : POSE_ALIASES[pose] ?? "idle";
@@ -529,15 +543,13 @@ function KaitoBody({ pose = "idle", expression, facing = 1, playing = true, scal
       data-pose={p}
       data-expression={face}
       data-motion={motion ? "on" : "off"}
-      style={{ width: 100 * scale, height: 118 * scale }}
+      data-talking={talking ? "on" : undefined}
       aria-hidden="true"
     >
       <svg viewBox="0 0 200 236" className="kaito__svg" overflow="visible">
         <Defs id={id} />
         <ellipse className="kaito__ground" cx="100" cy="231" rx="42" ry="6.5" fill={`url(#${id}-ground)`} />
-        <g transform={facing < 0 ? "translate(200 0) scale(-1 1)" : undefined}>
-          <Figure id={id} pose={p} face={face} motion={motion} />
-        </g>
+        <Figure id={id} pose={p} face={face} motion={motion} />
         <Effects pose={p} expression={face} facing={facing} />
       </svg>
     </div>

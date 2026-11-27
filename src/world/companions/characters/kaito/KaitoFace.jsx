@@ -409,6 +409,9 @@ export function KaitoFace({ expression, moving }) {
           </g>
         )}
         <path d={topMouth} fill="none" stroke="#8f4f68" strokeWidth="2" strokeLinecap="round" />
+        {f.mouthOpen < 4 && f.squeeze < 0.5 && (
+          <ellipse className="kaito__talk" cx="100" cy={mouthY + 1.6 + f.smile * 0.5} rx="3.6" ry="2.8" fill="#a4566f" stroke="#8f4f68" strokeWidth="1" />
+        )}
         {f.tongue > 0.01 && (
           <path
             d={`M97.6 ${mouthY + 1.6}q2.9 6.6 6 0Z`}

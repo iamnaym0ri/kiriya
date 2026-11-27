@@ -6,7 +6,8 @@
 .kaito {
   position: relative;
   display: block;
-  flex: none;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 .kaito__svg {
@@ -450,7 +451,49 @@
   }
 }
 
+/* ---------- crouch: the anticipation before a jump --------------------------------------------- */
+.kaito[data-pose="crouch"] .kaito__root {
+  scale: 1.07 0.9;
+  translate: 0 2px;
+}
+.kaito[data-pose="crouch"] .kaito__boot--l {
+  translate: -2px 0;
+  rotate: -6deg;
+}
+.kaito[data-pose="crouch"] .kaito__boot--r {
+  translate: 2px 0;
+  rotate: 6deg;
+}
+.kaito[data-pose="crouch"] .kaito__tails {
+  rotate: 12deg;
+}
+.kaito[data-pose="crouch"] .kaito__head {
+  translate: 0 2px;
+}
+
+/* ---------- talking: a little mouth flap while his bubble is up -------------------------------- */
+.kaito__talk {
+  opacity: 0;
+}
+.kaito[data-talking="on"] .kaito__talk {
+  animation: kaito-talk 0.42s steps(1, end) infinite;
+}
+@keyframes kaito-talk {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
 /* ---------- sitting on the cloud's edge (sit, sleep, treat) ----------------------------------- */
+.kaito:is([data-pose="sit"], [data-pose="sleep"], [data-pose="treat"]) .kaito__coat-halves {
+  transform-origin: 100px 170px;
+  scale: 1.07 1;
+}
 .kaito:is([data-pose="sit"], [data-pose="sleep"], [data-pose="treat"]) .kaito__upper {
   translate: 0 10px;
 }
@@ -621,7 +664,6 @@
 /* Picked up by the back of the collar: everything below hangs and swings, damped. */
 .kaito[data-pose="held"] .kaito__root {
   transform-origin: 100px 156px;
-  animation: kaito-held-sway 1.6s cubic-bezier(0.33, 0.9, 0.3, 1) both;
 }
 .kaito[data-pose="held"] .kaito__ground {
   opacity: 0;
@@ -640,23 +682,6 @@
 .kaito[data-pose="held"] .kaito__tails {
   rotate: -6deg;
   animation: kaito-dangle 1.4s ease-in-out infinite;
-}
-@keyframes kaito-held-sway {
-  0% {
-    rotate: -12deg;
-  }
-  25% {
-    rotate: 8deg;
-  }
-  50% {
-    rotate: -5deg;
-  }
-  75% {
-    rotate: 2.5deg;
-  }
-  100% {
-    rotate: -1deg;
-  }
 }
 @keyframes kaito-dangle {
   0%,
@@ -1090,6 +1115,9 @@
 .kaito[data-motion="off"] * {
   animation: none !important;
   transition-duration: 0s !important;
+}
+.kaito-cloud[data-playing="off"] * {
+  animation: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
   .kaito *,
