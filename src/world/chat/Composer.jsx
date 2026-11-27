@@ -1,28 +1,25 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../../lib/api.js";
-import { newClientId } from "../../lib/chat.js";
+// Where they write (round 3). Left to right: a quick signal, GIFs, the paper clip (up to 10 photos
+// and videos at once), the field ("talk to me baby") and the voice note button, which becomes send
+// while there are words or pictures. Emoji, stickers and Genmoji come from the iPhone's own
+// keyboard; pasted pictures (a copied sticker or photo) join the tray like picked ones.
+import { useEffect, useRef, useState } from "react";
+import { ALBUM_MAX, newClientId } from "../../lib/chat.js";
 import { sealFile } from "../../lib/chatCrypto.js";
-import { shrinkImage, uploadFile } from "../../lib/uploads.js";
-import { tapFeedback } from "../../lib/native.js";
+import { uploadFile } from "../../lib/uploads.js";
+import { haptic, tapFeedback } from "../../lib/native.js";
+import { PREVIEW_MESSAGE } from "../../lib/viewAs.js";
 import { TAPS } from "../../../shared/taps.js";
-import { STICKER_PACKS } from "../../../shared/stickers.js";
+import { prepare, release } from "./attachments.js";
+import { clock } from "./media.jsx";
+import { snippetOf } from "./Message.jsx";
+import GifPicker from "./GifPicker.jsx";
 import { ChatIcon } from "./parts.jsx";
 
-const EmojiPicker = lazy(() => import("emoji-picker-react"));
 const MAX_VOICE_SECONDS = 120;
+const CAPTION_MAX = 500;
+const TEXT_MAX = 4000;
 const finePointer = () => window.matchMedia?.("(pointer: fine)").matches;
-
-async function imageSize(file) {
-  try {
-    const bitmap = await createImageBitmap(file);
-    const size = { width: bitmap.width, height: bitmap.height };
-    bitmap.close?.();
-    return size;
-  } catch {
-    return {};
-  }
-}
+const lockedHint = "the chat is still unlocking on this phone ♡ your words are kept; try again in a moment.";
 
 /** 32 bars from a recording, for the little waveform. */
 async function peaksOf(blob) {
@@ -44,135 +41,195 @@ async function peaksOf(blob) {
   }
 }
 
-function GifPanel({ onPick }) {
-  const [query, setQuery] = useState("");
-  const [term, setTerm] = useState("");
-  useEffect(() => {
-    const timer = setTimeout(() => setTerm(query.trim()), 400);
-    return () => clearTimeout(timer);
-  }, [query]);
-  const gifs = useQuery({ queryKey: ["me", "chat", "gifs", term], queryFn: () => api(`/me/chat/gifs?q=${encodeURIComponent(term)}`), staleTime: 10 * 60_000, retry: false });
+/** The quick signals: one tap sends a little moment ("thinking of you", a hug, a kiss…). */
+function Signals({ onPick, onClose }) {
   return (
-    <>
-      <input className="media-panel__search" type="search" placeholder="search GIFs…" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search GIFs" />
-      {gifs.isError ? (
-        <p className="media-panel__note">{gifs.error?.status === 503 ? "GIF search isn’t switched on yet ♡" : "GIFs couldn’t load just now."}</p>
-      ) : (
-        <div className="media-panel__grid">
-          {(gifs.data?.gifs ?? []).map((gif) => (
-            <button key={gif.id} type="button" onClick={() => onPick(gif)} aria-label={gif.title || "a GIF"}>
-              <img src={gif.still ?? gif.url} alt="" loading="lazy" decoding="async" onMouseEnter={(e) => (e.currentTarget.src = gif.url)} />
-            </button>
-          ))}
-        </div>
-      )}
-      <p className="media-panel__giphy">Powered by GIPHY</p>
-    </>
-  );
-}
-
-function StickerPanel({ onPick }) {
-  const queryClient = useQueryClient();
-  const custom = useQuery({ queryKey: ["me", "chat", "stickers"], queryFn: () => api("/me/chat/stickers"), staleTime: 5 * 60_000 });
-  const input = useRef(null);
-  const add = useMutation({
-    mutationFn: async (file) => {
-      const ready = file.type === "image/gif" ? file : await shrinkImage(file, 512);
-      const stored = await uploadFile(ready, { folder: "stickers" });
-      return api("/me/chat/stickers", { method: "POST", body: { url: stored.url, label: file.name.replace(/\.\w+$/, "").slice(0, 60) } });
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["me", "chat", "stickers"] }),
-  });
-  const mine = custom.data?.stickers ?? [];
-  return (
-    <>
-      <div className="media-panel__grid media-panel__grid--stickers">
-        <button type="button" onClick={() => input.current?.click()} aria-label="Add your own sticker" disabled={add.isPending}>
-          <span style={{ fontSize: 26, color: "#8f63ad" }}>{add.isPending ? "…" : "＋"}</span>
+    <div className="sheet sheet--signals" role="dialog" aria-label="Send a signal">
+      <div className="sheet__bar">
+        <p className="sheet__title">send a little signal ♡</p>
+        <button type="button" className="sheet__close" aria-label="Close signals" onClick={onClose}>
+          <ChatIcon name="close" size={18} />
         </button>
-        {mine.map((sticker) => (
-          <button key={sticker.id} type="button" onClick={() => onPick({ url: sticker.url, alt: sticker.label })} aria-label={sticker.label || "your sticker"}>
-            <img src={sticker.url} alt="" loading="lazy" decoding="async" />
-          </button>
-        ))}
-        {STICKER_PACKS.flatMap((pack) => pack.stickers).map((sticker) => (
-          <button key={sticker.id} type="button" onClick={() => onPick({ url: sticker.url, alt: sticker.label })} aria-label={sticker.label}>
-            <img src={sticker.url} alt="" loading="lazy" decoding="async" />
+      </div>
+      <div className="signals" role="group">
+        {TAPS.map((tap, i) => (
+          <button key={tap.key} type="button" className="signals__tile" data-signal={tap.key} style={{ "--i": i }} onClick={() => onPick(tap)}>
+            <span className="signals__emoji" aria-hidden="true">
+              {tap.emoji}
+            </span>
+            <span className="signals__label">{tap.label}</span>
           </button>
         ))}
       </div>
-      <input ref={input} type="file" accept="image/png,image/webp,image/gif,image/jpeg" hidden onChange={(e) => e.target.files?.[0] && add.mutate(e.target.files[0])} />
-      {add.isError && <p className="media-panel__note">That sticker couldn’t be added.</p>}
-      <p className="media-panel__giphy">{STICKER_PACKS[0]?.credit}</p>
-    </>
+    </div>
   );
 }
 
-export default function Composer({ onSend, replyTo, replyLabel, onCancelReply, notifyTyping, placeholder }) {
+/** Picked photos and videos, waiting above the field until they're sent. */
+function Tray({ attachments, onRemove }) {
+  return (
+    <div className="tray" role="list" aria-label={`${attachments.length} of ${ALBUM_MAX} attached`}>
+      {attachments.map((a) => (
+        <span key={a.id} className="tray__item" role="listitem" data-type={a.type ?? "loading"}>
+          {a.previewUrl || a.poster?.previewUrl ? <img src={a.type === "video" ? (a.poster?.previewUrl ?? "") : a.previewUrl} alt="" draggable="false" /> : <span className="tray__loading" aria-label="getting it ready" />}
+          {a.type === "video" && (
+            <span className="tray__duration" aria-hidden="true">
+              <ChatIcon name="play" size={10} stroke={2.4} /> {clock(a.duration)}
+            </span>
+          )}
+          <button type="button" className="tray__remove" aria-label="Remove" onClick={() => onRemove(a.id)}>
+            <ChatIcon name="close" size={12} stroke={2.6} />
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export default function Composer({ names, me, replyTo, editing, onCancelReply, onCancelEdit, onSend, onEdit, notifyTyping, preview, fieldRef }) {
   const [text, setText] = useState("");
-  const [panel, setPanel] = useState(null); // taps | emoji | media
-  const [mediaTab, setMediaTab] = useState("stickers");
+  const [attachments, setAttachments] = useState([]);
+  const [panel, setPanel] = useState(null); // signals | gif
   const [busy, setBusy] = useState("");
+  const [hint, setHint] = useState("");
   const [recording, setRecording] = useState(null); // { recorder, started, stream }
   const [elapsed, setElapsed] = useState(0);
-  const [hint, setHint] = useState("");
-  const [focused, setFocused] = useState(false);
-  const field = useRef(null);
-  const photo = useRef(null);
+  const ownField = useRef(null);
+  const field = fieldRef ?? ownField;
+  const picker = useRef(null);
   const chunks = useRef([]);
+  const draft = useRef("");
+  const other = me === "kiriya" ? "admin" : "kiriya";
 
   useEffect(() => {
-    if (replyTo) field.current?.focus();
-  }, [replyTo]);
-  // Local development only: ?focus=1 raises the keyboard, so the Simulator can test the composer
-  // on the keyboard without a tap.
+    if (!hint) return undefined;
+    const timer = setTimeout(() => setHint(""), 4200);
+    return () => clearTimeout(timer);
+  }, [hint]);
+  useEffect(() => {
+    if (replyTo) field.current?.focus({ preventScroll: true });
+  }, [replyTo, field]);
+  // Editing puts the message's words in the field (and puts her draft back afterwards).
+  useEffect(() => {
+    if (editing) {
+      draft.current = text;
+      setText(editing.body ?? "");
+      setPanel(null);
+      requestAnimationFrame(() => {
+        const node = field.current;
+        node?.focus({ preventScroll: true });
+        node?.setSelectionRange?.(node.value.length, node.value.length);
+      });
+    } else if (draft.current !== null) {
+      setText(draft.current ?? "");
+      draft.current = null;
+    }
+  }, [editing]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Local development only: ?focus=1 raises the keyboard, so the Simulator can test the composer.
   useEffect(() => {
     if (import.meta.env.DEV && new URLSearchParams(window.location.search).has("focus")) setTimeout(() => field.current?.focus(), 600);
-  }, []);
+  }, [field]);
   useEffect(() => {
     const el = field.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
-  }, [text]);
+    el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
+  }, [text, field, attachments.length]);
   useEffect(() => {
-    if (!recording) return;
+    if (!recording) return undefined;
     const timer = setInterval(() => {
       const seconds = (Date.now() - recording.started) / 1000;
       setElapsed(seconds);
       if (seconds >= MAX_VOICE_SECONDS) stopRecording(true);
     }, 250);
     return () => clearInterval(timer);
-  }, [recording]);
+  }, [recording]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => attachments.forEach(release), []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const toggle = (name) => setPanel((current) => (current === name ? null : name));
+  if (preview)
+    return (
+      <div className="composer composer--preview">
+        <p className="composer__preview" role="note">
+          {PREVIEW_MESSAGE}
+        </p>
+      </div>
+    );
 
-  function sendText() {
-    const body = text.trim();
-    if (!body) return;
-    onSend({ clientId: newClientId(), kind: "text", body, replyTo });
-    setText("");
+  const toggle = (name) => {
+    setPanel((current) => (current === name ? null : name));
+    field.current?.blur();
     tapFeedback();
+  };
+
+  async function addFiles(files) {
+    const list = [...files].filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/") || /\.(mov|mp4|m4v|heic|jpe?g|png|webp|gif)$/i.test(file.name ?? ""));
+    if (!list.length) return;
+    const room = ALBUM_MAX - attachments.length;
+    if (room <= 0) return setHint(`up to ${ALBUM_MAX} at a time ♡`);
+    if (list.length > room) setHint(`up to ${ALBUM_MAX} at a time ♡ the first ${room} are in.`);
+    const placeholders = list.slice(0, room).map((file, i) => ({ id: `loading-${Date.now()}-${i}`, loading: true, name: file.name }));
+    setAttachments((current) => [...current, ...placeholders]);
+    setPanel(null);
+    await Promise.all(
+      list.slice(0, room).map(async (file, i) => {
+        const ready = await prepare(file);
+        setAttachments((current) => {
+          if (!current.some((a) => a.id === placeholders[i].id)) {
+            release(ready);
+            return current;
+          }
+          if (ready.error) {
+            setHint(ready.error);
+            return current.filter((a) => a.id !== placeholders[i].id);
+          }
+          return current.map((a) => (a.id === placeholders[i].id ? ready : a));
+        });
+      }),
+    );
   }
 
-  async function sendPhoto(file) {
-    setBusy("sending your photo…");
-    try {
-      const ready = file.type === "image/gif" ? file : await shrinkImage(file, 1800);
-      const { blob, sealed } = await sealFile(ready);
-      const [size, stored] = await Promise.all([imageSize(ready), uploadFile(blob, { folder: "chat" })]);
-      onSend({ clientId: newClientId(), kind: "image", body: text.trim(), media: { url: stored.url, ...size, ...(sealed ? { sealed } : {}) }, replyTo });
-      setText("");
-    } catch (error) {
-      setHint(error?.message ?? "That photo couldn’t be sent.");
-    } finally {
-      setBusy("");
+  function remove(id) {
+    setAttachments((current) => {
+      release(current.find((a) => a.id === id));
+      return current.filter((a) => a.id !== id);
+    });
+  }
+
+  function clearAfterSend() {
+    setText("");
+    setAttachments([]);
+    notifyTyping("");
+  }
+
+  function send() {
+    const body = text.trim();
+    const ready = attachments.filter((a) => !a.loading);
+    if (editing) {
+      if (editing.kind === "text" && !body) return setHint("a message can’t be empty ♡ delete it instead?");
+      if (body !== (editing.body ?? "").trim()) onEdit(editing, editing.kind === "text" ? body : body.slice(0, CAPTION_MAX));
+      else onCancelEdit();
+      notifyTyping("");
+      return;
     }
+    if (attachments.some((a) => a.loading)) return setHint("one moment, still getting them ready…");
+    if (ready.length) {
+      const caption = body.length <= CAPTION_MAX ? body : "";
+      onSend({ clientId: newClientId(), kind: "image", body: caption, attachments: ready, replyTo });
+      if (body && !caption) onSend({ clientId: newClientId(), kind: "text", body, replyTo: null });
+      clearAfterSend();
+      tapFeedback();
+      return;
+    }
+    if (!body) return;
+    onSend({ clientId: newClientId(), kind: "text", body, replyTo });
+    clearAfterSend();
+    tapFeedback();
   }
 
   async function startRecording() {
     setHint("");
-    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return setHint("Voice notes aren’t supported on this device.");
+    setPanel(null);
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return setHint("voice notes aren’t supported on this device.");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const type = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"].find((t) => MediaRecorder.isTypeSupported(t));
@@ -180,22 +237,22 @@ export default function Composer({ onSend, replyTo, replyLabel, onCancelReply, n
       chunks.current = [];
       recorder.ondataavailable = (event) => event.data.size && chunks.current.push(event.data);
       recorder.start(250);
-      tapFeedback();
+      haptic("medium");
       setElapsed(0);
       setRecording({ recorder, stream, started: Date.now() });
     } catch {
-      setHint("The microphone isn’t allowed. You can turn it on in your phone’s settings.");
+      setHint("the microphone isn’t allowed. you can turn it on in your phone’s settings.");
     }
   }
 
-  function stopRecording(send) {
+  function stopRecording(sendIt) {
     const current = recording;
     if (!current) return;
     setRecording(null);
     const seconds = (Date.now() - current.started) / 1000;
     current.recorder.onstop = async () => {
       current.stream.getTracks().forEach((track) => track.stop());
-      if (!send) return;
+      if (!sendIt) return;
       if (seconds < 0.8) return setHint("hold on a little longer to record ♡");
       const mime = (current.recorder.mimeType || "audio/mp4").split(";")[0];
       const blob = new Blob(chunks.current, { type: mime });
@@ -204,9 +261,15 @@ export default function Composer({ onSend, replyTo, replyLabel, onCancelReply, n
         const file = new File([blob], `voice.${mime.includes("webm") ? "webm" : "m4a"}`, { type: mime });
         const sealedFile = await sealFile(file);
         const [stored, peaks] = await Promise.all([uploadFile(sealedFile.blob, { folder: "chat" }), peaksOf(blob)]);
-        onSend({ clientId: newClientId(), kind: "voice", body: "", media: { url: stored.url, duration: Math.min(MAX_VOICE_SECONDS, Math.max(0.8, seconds)), mime, ...(peaks ? { peaks } : {}), ...(sealedFile.sealed ? { sealed: sealedFile.sealed } : {}) }, replyTo });
+        onSend({
+          clientId: newClientId(),
+          kind: "voice",
+          body: "",
+          media: { url: stored.url, duration: Math.min(MAX_VOICE_SECONDS, Math.max(0.8, seconds)), mime, ...(peaks ? { peaks } : {}), ...(sealedFile.sealed ? { sealed: sealedFile.sealed } : {}) },
+          replyTo,
+        });
       } catch (error) {
-        setHint(error?.message ?? "That voice note couldn’t be sent.");
+        setHint(error?.code === "chat_locked" ? lockedHint : (error?.message ?? "that voice note couldn’t be sent."));
       } finally {
         setBusy("");
       }
@@ -214,164 +277,173 @@ export default function Composer({ onSend, replyTo, replyLabel, onCancelReply, n
     current.recorder.stop();
   }
 
+  const ready = attachments.length > 0;
   const hasText = text.trim().length > 0;
+  const canSend = hasText || ready || Boolean(editing);
+  const keepFocus = (event) => event.preventDefault();
+  const replyName = replyTo ? (replyTo.sender === me ? "your message" : names?.[other]) : "";
+
   return (
-    <div className="composer">
-      {panel === "taps" && (
-        <div className="composer__panel">
-          <div className="composer__taps" role="group" aria-label="Send a little tap">
-            {TAPS.map((tap) => (
-              <button
-                key={tap.key}
-                type="button"
-                onClick={() => {
-                  onSend({ clientId: newClientId(), kind: "tap", body: tap.key });
-                  tapFeedback();
-                  setPanel(null);
-                }}
-              >
-                <span aria-hidden="true">{tap.emoji}</span>
-                {tap.label}
-              </button>
-            ))}
-          </div>
-        </div>
+    <div
+      className="composer"
+      data-panel={panel || undefined}
+      onDragOver={(event) => event.dataTransfer?.types?.includes("Files") && event.preventDefault()}
+      onDrop={(event) => {
+        if (!event.dataTransfer?.files?.length) return;
+        event.preventDefault();
+        addFiles(event.dataTransfer.files);
+      }}
+    >
+      {panel === "signals" && (
+        <Signals
+          onClose={() => setPanel(null)}
+          onPick={(tap) => {
+            onSend({ clientId: newClientId(), kind: "tap", body: tap.key });
+            haptic("success");
+            setPanel(null);
+          }}
+        />
       )}
-      {panel === "emoji" && (
-        <div className="composer__panel">
-          <Suspense fallback={<p className="media-panel__note">opening the emoji box…</p>}>
-            <EmojiPicker
-              width="100%"
-              height={320}
-              lazyLoadEmojis
-              previewConfig={{ showPreview: false }}
-              skinTonesDisabled={false}
-              style={{ "--epr-bg-color": "#fffaff", "--epr-category-label-bg-color": "#fffaff", "--epr-highlight-color": "#8f63ad", "--epr-hover-bg-color": "#f3e3fa", border: 0 }}
-              onEmojiClick={(emoji) => {
-                setText((current) => current + emoji.emoji);
-                field.current?.focus();
-              }}
-            />
-          </Suspense>
-        </div>
+      {panel === "gif" && (
+        <GifPicker
+          onClose={() => setPanel(null)}
+          onPick={(gif) => {
+            onSend({
+              clientId: newClientId(),
+              kind: "gif",
+              body: "",
+              media: {
+                url: gif.url,
+                ...(gif.mp4 ? { mp4: gif.mp4 } : {}),
+                ...(gif.still ? { still: gif.still } : {}),
+                giphyId: gif.id,
+                ...(gif.width ? { width: gif.width, height: gif.height } : {}),
+                ...(gif.title ? { alt: gif.title.slice(0, 200) } : {}),
+              },
+              replyTo,
+            });
+            tapFeedback();
+            setPanel(null);
+          }}
+        />
       )}
-      {panel === "media" && (
-        <div className="composer__panel">
-          <div className="media-panel__tabs" role="tablist">
-            <button type="button" role="tab" aria-selected={mediaTab === "stickers"} onClick={() => setMediaTab("stickers")}>
-              stickers
-            </button>
-            <button type="button" role="tab" aria-selected={mediaTab === "gifs"} onClick={() => setMediaTab("gifs")}>
-              GIFs
-            </button>
-          </div>
-          {mediaTab === "stickers" ? (
-            <StickerPanel
-              onPick={(media) => {
-                onSend({ clientId: newClientId(), kind: "sticker", media, replyTo });
-                setPanel(null);
-              }}
-            />
-          ) : (
-            <GifPanel
-              onPick={(gif) => {
-                onSend({ clientId: newClientId(), kind: "gif", media: { url: gif.url, ...(gif.still ? { still: gif.still } : {}), giphyId: gif.id, ...(gif.width ? { width: gif.width, height: gif.height } : {}), alt: gif.title?.slice(0, 200) }, replyTo });
-                setPanel(null);
-              }}
-            />
-          )}
-        </div>
-      )}
-      {replyTo && (
-        <div className="composer__reply">
-          <span>↩ replying to {replyLabel}</span>
-          <button type="button" className="chat__icon-button" onClick={onCancelReply} aria-label="Cancel reply">
-            <ChatIcon name="close" size={16} />
+      {(replyTo || editing) && (
+        <div className="composer__context" data-kind={editing ? "edit" : "reply"}>
+          <ChatIcon name={editing ? "edit" : "reply"} size={16} />
+          <span>
+            {editing ? (
+              <>
+                <strong>editing</strong> {editing.kind === "image" ? "the caption" : "your message"}
+              </>
+            ) : (
+              <>
+                replying to <strong>{replyName}</strong> <em>{snippetOf(replyTo)}</em>
+              </>
+            )}
+          </span>
+          <button type="button" aria-label={editing ? "Stop editing" : "Cancel reply"} onClick={editing ? onCancelEdit : onCancelReply}>
+            <ChatIcon name="close" size={14} stroke={2.4} />
           </button>
         </div>
       )}
+      {ready && !editing && <Tray attachments={attachments} onRemove={remove} />}
       <div className="composer__row">
-        {/* While she types, the field gets the room: taps and stickers step aside. */}
-        {!(focused || hasText) && (
-          <button type="button" className="chat__icon-button" aria-label="Send a little tap" aria-pressed={panel === "taps"} onClick={() => toggle("taps")}>
-            <ChatIcon name="heart" />
-          </button>
-        )}
         {recording ? (
           <>
-            <button type="button" className="chat__icon-button" aria-label="Cancel recording" onClick={() => stopRecording(false)}>
+            <button type="button" className="composer__tool" aria-label="Cancel recording" onClick={() => stopRecording(false)}>
               <ChatIcon name="close" />
             </button>
-            <div className="composer__field" role="status" aria-live="polite">
-              ● recording {Math.floor(elapsed / 60)}:{String(Math.floor(elapsed % 60)).padStart(2, "0")}
+            <div className="composer__recording" role="status" aria-live="polite">
+              <i aria-hidden="true" /> recording {clock(elapsed)}
             </div>
           </>
         ) : (
           <>
-            <button type="button" className="chat__icon-button" aria-label="Emoji" aria-pressed={panel === "emoji"} onClick={() => toggle("emoji")}>
-              <ChatIcon name="smile" />
-            </button>
-            {!(focused || hasText) && (
-              <button type="button" className="chat__icon-button" aria-label="Stickers and GIFs" aria-pressed={panel === "media"} onClick={() => toggle("media")}>
-                <ChatIcon name="sticker" />
-              </button>
+            {!editing && (
+              <>
+                <button type="button" className="composer__tool" aria-label="Send a signal" aria-pressed={panel === "signals"} onClick={() => toggle("signals")}>
+                  <ChatIcon name="heart" />
+                </button>
+                <button type="button" className="composer__tool composer__tool--gif" aria-label="GIFs" aria-pressed={panel === "gif"} onClick={() => toggle("gif")}>
+                  <span aria-hidden="true">GIF</span>
+                </button>
+                <button
+                  type="button"
+                  className="composer__tool"
+                  aria-label="Add photos or videos"
+                  onClick={() => {
+                    setPanel(null);
+                    picker.current?.click();
+                  }}
+                  disabled={attachments.length >= ALBUM_MAX}
+                >
+                  <ChatIcon name="clip" />
+                </button>
+              </>
             )}
-            <textarea
-              ref={field}
-              className="composer__field"
-              rows={1}
-              value={text}
-              placeholder={placeholder}
-              aria-label="Message"
-              enterKeyHint="send"
-              onFocus={() => {
-                setFocused(true);
-                setPanel((current) => (current === "emoji" ? current : null));
-              }}
-              onBlur={() => setFocused(false)}
-              onChange={(event) => {
-                setText(event.target.value);
-                notifyTyping();
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey && finePointer()) {
+            <div className="composer__field">
+              <textarea
+                ref={field}
+                rows={1}
+                value={text}
+                maxLength={editing?.kind === "image" || ready ? undefined : TEXT_MAX}
+                placeholder={editing?.kind === "image" ? "add a caption" : ready ? "add a caption…" : "talk to me baby"}
+                aria-label="Message"
+                enterKeyHint="send"
+                onFocus={() => setPanel(null)}
+                onBlur={() => notifyTyping("")}
+                onChange={(event) => {
+                  setText(event.target.value);
+                  if (!editing) notifyTyping(event.target.value);
+                }}
+                onPaste={(event) => {
+                  const files = [...(event.clipboardData?.files ?? [])].filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/"));
+                  if (!files.length || editing) return;
                   event.preventDefault();
-                  sendText();
-                }
-              }}
-            />
-            {!hasText && (
-              <button type="button" className="chat__icon-button" aria-label="Send a photo" onClick={() => photo.current?.click()} disabled={Boolean(busy)}>
-                <ChatIcon name="image" />
-              </button>
-            )}
+                  addFiles(files);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey && finePointer()) {
+                    event.preventDefault();
+                    send();
+                  }
+                  if (event.key === "Escape" && editing) onCancelEdit();
+                }}
+              />
+            </div>
           </>
         )}
-        {hasText ? (
-          <button
-            type="button"
-            className="composer__send"
-            aria-label="Send"
-            // Keeps the keyboard up after sending, like any messaging app.
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={sendText}
-          >
-            <ChatIcon name="send" />
-          </button>
-        ) : (
+        {canSend || recording ? (
           <button
             type="button"
             className="composer__send"
             data-recording={recording ? true : undefined}
-            aria-label={recording ? "Send voice note" : "Record a voice note"}
-            onClick={() => (recording ? stopRecording(true) : startRecording())}
-            disabled={Boolean(busy)}
+            aria-label={recording ? "Send voice note" : editing ? "Save the edit" : "Send"}
+            // Keeps the keyboard up after sending, like any messaging app.
+            onPointerDown={keepFocus}
+            onMouseDown={keepFocus}
+            onClick={() => (recording ? stopRecording(true) : send())}
           >
-            <ChatIcon name={recording ? "send" : "mic"} />
+            <ChatIcon name={editing ? "check" : "up"} stroke={2.2} />
+          </button>
+        ) : (
+          <button type="button" className="composer__send composer__send--voice" aria-label="Record a voice note" onClick={startRecording} disabled={Boolean(busy)}>
+            <ChatIcon name="mic" />
           </button>
         )}
       </div>
-      <input ref={photo} type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && sendPhoto(e.target.files[0]).finally(() => (e.target.value = ""))} />
+      <input
+        ref={picker}
+        type="file"
+        accept="image/*,video/*"
+        multiple
+        hidden
+        onChange={(event) => {
+          const files = [...(event.target.files ?? [])];
+          event.target.value = "";
+          addFiles(files);
+        }}
+      />
       {(busy || hint) && (
         <p className="composer__hint" role="status">
           {busy || hint}
@@ -380,3 +452,5 @@ export default function Composer({ onSend, replyTo, replyLabel, onCancelReply, n
     </div>
   );
 }
+
+export { lockedHint };
