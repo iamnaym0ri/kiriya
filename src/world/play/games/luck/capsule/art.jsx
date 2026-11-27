@@ -74,8 +74,8 @@ export function CapsuleSvg({ colour = "lilac", className = "" }) {
 }
 
 // ---------- the machine ----------
-// viewBox 0 0 300 440. Dome centred on (150, 132); crank on (150, 318); chute mouth at (150, 386).
-export const MACHINE = { width: 300, height: 440, dome: { cx: 150, cy: 132, r: 106 }, crank: { cx: 150, cy: 318, r: 40 }, chute: { x: 150, y: 386 } };
+// viewBox 0 -18 300 458 (the heart on top pokes above 0). Dome centred on (150, 132); crank on (150, 318); chute mouth at (150, 386).
+export const MACHINE = { top: -18, width: 300, height: 458, dome: { cx: 150, cy: 132, r: 106 }, crank: { cx: 150, cy: 318, r: 40 }, chute: { x: 150, y: 386 } };
 
 export function MachineBack() {
   return (
@@ -112,9 +112,6 @@ export function DomeGlass({ children, napping }) {
   const { cx, cy, r } = MACHINE.dome;
   return (
     <>
-      {/* topper */}
-      <path d="M150 26c-6-10-20-9-20-1 0 7 14 10 20 12 6-2 20-5 20-12 0-8-14-9-20 1z" fill="#ff9fc6" stroke={INK} strokeWidth="3" strokeLinejoin="round" />
-      <rect x="134" y="18" width="32" height="14" rx="7" fill="#b78be0" stroke={INK} strokeWidth="3" />
       {/* collar */}
       <path d="M54 226h192v14c0 9-7 14-16 14H70c-9 0-16-5-16-14z" fill="#b78be0" stroke={INK} strokeWidth="3.2" />
       {/* glass */}
@@ -129,6 +126,9 @@ export function DomeGlass({ children, napping }) {
       <path d={`M${cx - 86} ${cy - 6}a${r - 10} ${r - 10} 0 0 1 3 -14`} stroke="#fff" strokeWidth="6" strokeLinecap="round" fill="none" opacity=".7" />
       <path d={`M${cx + 78} ${cy + 34}a${r - 14} ${r - 14} 0 0 1 -20 26`} stroke="#fff" strokeWidth="5" strokeLinecap="round" fill="none" opacity=".45" />
       <circle cx={cx} cy={cy} r={r + 6} fill="none" stroke={INK} strokeWidth="3.4" />
+      {/* topper: a little cap and a heart */}
+      <rect x="130" y="13" width="40" height="13" rx="6.5" fill="#b78be0" stroke={INK} strokeWidth="3" />
+      <path d="M150 8c-4-7-15-6-14 1 0 5 9 8 14 10 5-2 14-5 14-10 1-7-10-8-14-1z" fill="#ff9fc6" stroke={INK} strokeWidth="2.8" strokeLinejoin="round" transform="translate(0 -9)" />
       {napping && (
         <g className="capsule-nap-sign">
           <path d="M120 54l30-16 30 16" stroke={INK} strokeWidth="2" fill="none" />
@@ -159,8 +159,8 @@ export function Crank() {
 export function CrankHint({ show }) {
   const { cx, cy, r } = MACHINE.crank;
   const R = r + 13;
-  const a0 = -2.4;
-  const a1 = 0.9;
+  const a0 = -0.95;
+  const a1 = 1.25;
   const p = (a) => `${(cx + R * Math.cos(a)).toFixed(1)} ${(cy + R * Math.sin(a)).toFixed(1)}`;
   const tip = { x: cx + R * Math.cos(a1), y: cy + R * Math.sin(a1) };
   // The arrowhead points along the circle, clockwise: two short strokes back from the tip.
@@ -168,7 +168,7 @@ export function CrankHint({ show }) {
   const wing = (turn) => `${(tip.x + 9 * Math.cos(back + turn)).toFixed(1)} ${(tip.y + 9 * Math.sin(back + turn)).toFixed(1)}`;
   return (
     <g className="capsule-crank-hint" data-show={show}>
-      <path d={`M${p(a0)}A${R} ${R} 0 1 1 ${p(a1)}`} fill="none" stroke="#9b6091" strokeWidth="2.6" strokeDasharray="5 6" strokeLinecap="round" />
+      <path d={`M${p(a0)}A${R} ${R} 0 0 1 ${p(a1)}`} fill="none" stroke="#9b6091" strokeWidth="2.6" strokeDasharray="5 6" strokeLinecap="round" />
       <path d={`M${wing(0.55)}L${tip.x.toFixed(1)} ${tip.y.toFixed(1)}L${wing(-0.55)}`} fill="none" stroke="#9b6091" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
     </g>
   );

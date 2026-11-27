@@ -5,7 +5,7 @@ import { mulberry32 } from "../_kit/random.js";
 
 export const DOME_COLOURS = ["lilac", "pink", "mint", "butter", "lilac", "pink", "mint", "butter", "berry", "gold"];
 const GRAVITY = 1400; // px/s² in dome units
-const DAMPING = 0.992;
+const DAMPING = 0.975;
 const ITERATIONS = 4;
 
 /**
@@ -92,10 +92,11 @@ export function stirDome(dome, strength = 1) {
     const d = Math.hypot(ball.x, ball.y) || 1;
     const tx = -ball.y / d;
     const ty = ball.x / d;
-    const lift = ball.y > 0 ? (ball.y / dome.radius) * 5 : 0;
-    const kick = strength * (4 + rng() * 3);
+    // The paddle sweeps the heap sideways and bumps the bottom of it up; the top barely moves.
+    const low = Math.max(0, ball.y / dome.radius);
+    const kick = strength * (0.8 + rng() * 1.2) * (0.4 + low);
     ball.px -= tx * kick;
-    ball.py -= ty * kick - lift * strength;
+    ball.py -= ty * kick - strength * low * (2 + rng() * 2.5);
   }
   dome.calm = 0;
 }

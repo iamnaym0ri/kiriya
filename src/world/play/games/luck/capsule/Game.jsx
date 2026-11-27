@@ -254,13 +254,14 @@ export default function CapsuleGame({ onReward }) {
       play("roll");
       await node.animate(
         [
-          { transform: "translate(-50%, -78%) scale(.55) rotate(-90deg)", opacity: 0 },
-          { transform: "translate(-50%, -40%) scale(.7) rotate(-20deg)", opacity: 1, offset: 0.25 },
-          { transform: "translate(-30%, 0%) scale(.85) rotate(160deg)", offset: 0.6 },
-          { transform: "translate(-50%, -14%) scale(.86) rotate(250deg)", offset: 0.8 },
-          { transform: "translate(-50%, 0%) scale(.86) rotate(360deg)" },
+          { transform: "translate(-50%, 6%) scale(.4) rotate(-120deg)", opacity: 0 },
+          { transform: "translate(-50%, 0%) scale(.6) rotate(-60deg)", opacity: 1, offset: 0.2 },
+          { transform: "translate(-50%, -40%) scale(.96) rotate(-12deg)", offset: 0.55 },
+          { transform: "translate(-50%, 0%) scale(.86) rotate(8deg)", offset: 0.78 },
+          { transform: "translate(-50%, -9%) scale(.86) rotate(-3deg)", offset: 0.9 },
+          { transform: "translate(-50%, 0%) scale(.86) rotate(0deg)" },
         ],
-        { duration: 900, easing: "cubic-bezier(.3,.7,.4,1)" },
+        { duration: 820, easing: "ease-out" },
       ).finished.catch(() => {});
       play("clack");
       haptic("light");
@@ -444,7 +445,7 @@ export default function CapsuleGame({ onReward }) {
 
       <div className="capsule-area" ref={areaRef}>
         <div className="capsule-machine" style={{ width: machineW, height: machineH }} data-napping={napping}>
-          <svg viewBox={`0 0 ${MACHINE.width} ${MACHINE.height}`} width={machineW} height={machineH} aria-hidden="true">
+          <svg viewBox={`0 ${MACHINE.top} ${MACHINE.width} ${MACHINE.height}`} width={machineW} height={machineH} aria-hidden="true">
             <MachineBack />
             <DomeGlass napping={napping}>
               {dome.balls.map((ball) => (
@@ -462,7 +463,7 @@ export default function CapsuleGame({ onReward }) {
             className="capsule-crank"
             style={{
               left: (MACHINE.crank.cx / MACHINE.width) * 100 + "%",
-              top: (MACHINE.crank.cy / MACHINE.height) * 100 + "%",
+              top: ((MACHINE.crank.cy - MACHINE.top) / MACHINE.height) * 100 + "%",
               width: Math.max(88, MACHINE.crank.r * 2.6 * scale),
               height: Math.max(88, MACHINE.crank.r * 2.6 * scale),
             }}
@@ -481,7 +482,7 @@ export default function CapsuleGame({ onReward }) {
               type="button"
               className="capsule-tray"
               data-colour={pull.capsule}
-              style={{ top: ((MACHINE.chute.y + 6) / MACHINE.height) * 100 + "%", width: 92 * scale, height: 92 * scale }}
+              style={{ top: ((MACHINE.chute.y - 32 - MACHINE.top) / MACHINE.height) * 100 + "%", width: 84 * scale, height: 84 * scale }}
               onClick={open}
               disabled={phase !== "tray"}
               aria-label="open your capsule"
