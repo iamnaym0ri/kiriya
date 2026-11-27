@@ -206,7 +206,8 @@ html.app-shell .me-profile {
   border-radius: 50%;
   background: color-mix(in srgb, var(--theme-soft) 80%, transparent);
   color: var(--theme-accent);
-  font: 15px/1 "Apple Color Emoji", "Segoe UI Emoji", "Feeling Emoji", var(--font-hand);
+  /* System emoji only: the site's subset emoji font has no glyph for some of them on iOS. */
+  font: 15px/1 "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
 }
 .me-profile__edit { align-self: start; }
 

@@ -5,6 +5,7 @@ import { api } from "../../lib/api.js";
 import { useIsAdmin } from "../../lib/session.js";
 import { useDailyStyle } from "../../shared/DailyStyle.jsx";
 import { AdminEdit, EditField, EditSheet } from "../../shared/admin/AdminEdit.jsx";
+import { MeIcon } from "./parts.jsx";
 
 // The top of her tab: her little world at a glance (server/routes/meSection.js `glance`). On Josh's
 // phone it's the same card she sees, with a pencil for the things only he sets.
@@ -103,7 +104,7 @@ export default function ProfileCard() {
           {allowed && (
             <button type="button" className="me-profile__feeling" onClick={openCorner}>
               <span className="me-profile__feeling-face" aria-hidden="true">
-                {current?.feeling?.emoji ?? "♡"}
+                {current?.feeling?.emoji ?? <MeIcon name="heart" size={14} />}
               </span>
               <span>{current ? `${current.label.toLowerCase()} · ${current.feeling?.label?.toLowerCase() ?? "feeling it out"}` : "how are you feeling?"}</span>
             </button>
