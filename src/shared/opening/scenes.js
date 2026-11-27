@@ -1,11 +1,18 @@
 // The ten opening scenes (index.js plays one per launch). Original art, drawn here in the app's lilac.
 //
-// Every scene starts on the native splash's own frame: the lilac backdrop, the "kiriya" wordmark and
-// its sparkle exactly where the launch image has them (wordmark.js), so the hand-over is invisible.
-// Pieces live on a square stage the size of the launch image drawn aspect-fill (opening.css), and are
-// placed in % of it: the word spans 35–65% across and 41–59% down; a phone shows roughly 27–73% across.
-// Each piece is an HTML box holding a still SVG, moved only by transform and opacity (the Web
-// Animations API), so every movement runs on the compositor while the app loads underneath.
+// Josh (round 3): "more broader, like stars, love, moon and other stuff, not big icons, it should all
+// compliment the kiriya logo". So the "kiriya" wordmark is the centrepiece of every scene, and each is
+// a light, airy scene around it: many small, delicate things spread across the whole screen at
+// different depths (smaller, softer and slower behind; a little bigger in front), framing the word,
+// which glows, shimmers or is re-inked by them.
+//
+// Every scene starts on the native splash's own frame: the lilac backdrop, the wordmark and its
+// sparkle exactly where the launch image has them (wordmark.js); everything else starts invisible,
+// so the hand-over is seamless. Pieces live on a square stage the size of the launch image drawn
+// aspect-fill (opening.css) and are placed in % of it: the word spans 35–65% across and 41–59%
+// down; a phone shows roughly 25–75% across and all of it down. Each piece is a small HTML box
+// holding a still SVG, moved only by transform and opacity (Web Animations API), so it all runs on
+// the compositor while the app loads underneath. 14–28 pieces a scene.
 import { LETTERS, SPARKLE, SPLASH, WORD } from "./wordmark.js";
 
 const INK = "#4e2f63";
@@ -16,486 +23,515 @@ const LILAC_D = "#a27cc7";
 const PINK = "#f6cfe0";
 const PINK_D = "#e597bd";
 const ROSE = "#c46d98";
-const CREAM = "#fbefcf";
-const MINT = "#c9ebe1";
 const GOLD = "#f3d58c";
+const GOLD_D = "#d9b15c";
 
 const r = (n) => Math.round(n * 1000) / 1000;
 /** Launch-image units (0–2732) to % of the stage. */
 const S = (n) => (n / SPLASH) * 100;
 /** A box centred on (cx, cy), all in % of the stage. */
-const at = (cx, cy, w, h) => `left:${r(cx - w / 2)}%;top:${r(cy - h / 2)}%;width:${r(w)}%;height:${r(h)}%;`;
+const at = (cx, cy, w, h = w) => `left:${r(cx - w / 2)}%;top:${r(cy - h / 2)}%;width:${r(w)}%;height:${r(h)}%;`;
 const piece = (name, place, inner, style = "") => `<div class="opening__piece opening__${name}" style="${place}${style}">${inner}</div>`;
 const svg = (viewBox, inner) => `<svg viewBox="${viewBox}" aria-hidden="true">${inner}</svg>`;
 
 const HEART = "M0 9C-7 4-10 0-10-4-10-7.5-7.5-10-4.6-10-2.6-10-1-8.9 0-7.3 1-8.9 2.6-10 4.6-10 7.5-10 10-7.5 10-4 10 0 7 4 0 9Z";
 const STAR4 = "M0-10Q1.8-1.8 10 0 1.8 1.8 0 10-1.8 1.8-10 0-1.8-1.8 0-10Z";
-const heartSvg = (fill, stroke = ROSE) => svg("-12 -12 24 23", `<path d="${HEART}" fill="${fill}" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/>`);
-const starSvg = (fill) => svg("-11 -11 22 22", `<path d="${STAR4}" fill="${fill}"/>`);
+const PETAL = "M0-10C-4-6-4.5 2 0 10 4.5 2 4-6 0-10Z";
+const shape = {
+  star: (fill) => svg("-11 -11 22 22", `<path d="${STAR4}" fill="${fill}"/>`),
+  dot: (fill) => svg("-5 -5 10 10", `<circle r="3.2" fill="${fill}"/>`),
+  heart: (fill, stroke) => svg("-12 -12 24 23", `<path d="${HEART}" fill="${fill}"${stroke ? ` stroke="${stroke}" stroke-width="1.8" stroke-linejoin="round"` : ""}/>`),
+  heartLine: (stroke) => svg("-12 -12 24 23", `<path d="${HEART}" fill="none" stroke="${stroke}" stroke-width="2" stroke-linejoin="round"/>`),
+  petal: (fill, stroke) => svg("-11 -11 22 22", `<path d="${PETAL}" fill="${fill}" stroke="${stroke}" stroke-width="1.2"/><path d="M0-6v11" stroke="${stroke}" stroke-width=".8" opacity=".5"/>`),
+};
+
+/** A seeded random (the same every launch), so each scene's scatter is a composed one. */
+function seeded(seed) {
+  let t = seed >>> 0;
+  return () => {
+    t = (t + 0x6d2b79f5) | 0;
+    let x = Math.imul(t ^ (t >>> 15), 1 | t);
+    x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  };
+}
+// Around the word, kept clear (in % of the stage).
+const WORD_ZONE = { x0: 32, x1: 68, y0: 38, y1: 62 };
+const inWord = (x, y) => x > WORD_ZONE.x0 && x < WORD_ZONE.x1 && y > WORD_ZONE.y0 && y < WORD_ZONE.y1;
+/** Points spread evenly over an area (never closer than `gap`), off the word unless allowed. */
+function scatter(seed, count, { x0 = 26, x1 = 74, y0 = 4, y1 = 96, gap = 7, word = false } = {}) {
+  const rand = seeded(seed);
+  const out = [];
+  for (let tries = 0; out.length < count && tries < count * 60; tries++) {
+    const x = x0 + rand() * (x1 - x0);
+    const y = y0 + rand() * (y1 - y0);
+    if (!word && inWord(x, y)) continue;
+    if (out.some((p) => Math.hypot(p.x - x, p.y - y) < gap)) continue;
+    out.push({ x, y, k: rand(), j: rand() });
+  }
+  return out;
+}
 
 // ---------- the splash's own frame ----------
 
 const B = WORD.box;
 const WORD_CX = S(B.x + B.w / 2);
 const WORD_CY = S(B.y + B.h / 2);
-
-function wordSvg(letters, box) {
-  const paths = letters.map((l) => `<path transform="translate(${l.ox} ${l.oy})" d="${l.d}"/>`).join("");
-  return `<svg viewBox="${r(box.x)} ${r(box.y)} ${r(box.w)} ${r(box.h)}" preserveAspectRatio="none" aria-hidden="true"><g fill="${INK}" stroke="${INK}" stroke-width="${WORD.stroke}" stroke-linejoin="round" transform="translate(${WORD.tx} ${WORD.ty}) scale(${WORD.scale} ${-WORD.scale})">${paths}</g></svg>`;
-}
+const glyphs = (letters) => letters.map((l) => `<path transform="translate(${l.ox} ${l.oy})" d="${l.d}"/>`).join("");
+const wordGroup = (letters, colour = INK, stroke = WORD.stroke) =>
+  `<g fill="${colour}" stroke="${colour}" stroke-width="${stroke}" stroke-linejoin="round" transform="translate(${WORD.tx} ${WORD.ty}) scale(${WORD.scale} ${-WORD.scale})">${glyphs(letters)}</g>`;
+const box = (b) => `${r(b.x)} ${r(b.y)} ${r(b.w)} ${r(b.h)}`;
+const wordSvg = (letters, b) => `<svg viewBox="${box(b)}" preserveAspectRatio="none" aria-hidden="true">${wordGroup(letters)}</svg>`;
 const wordPiece = () => piece("word", at(WORD_CX, WORD_CY, S(B.w), S(B.h)), wordSvg(LETTERS, B));
-/** The word as six boxes, one per letter (all as tall as the word, so one hop height suits each). */
+/** The word as six boxes, one per letter (all as tall as the word). */
 const letterPieces = () =>
   LETTERS.map((l, i) => piece(`letter opening__letter--${i}`, at(S(l.x + l.w / 2), WORD_CY, S(l.w), S(B.h)), wordSvg([l], { x: l.x, y: B.y, w: l.w, h: B.h }))).join("");
+/** A soft light behind the word (drawn once, blurred once; only its opacity moves). */
+const GLOW = { x: B.x - 90, y: B.y - 90, w: B.w + 180, h: B.h + 180 };
+const glowPiece = () =>
+  piece(
+    "glow",
+    at(WORD_CX, WORD_CY, S(GLOW.w), S(GLOW.h)),
+    `<svg viewBox="${box(GLOW)}" preserveAspectRatio="none" aria-hidden="true"><defs><filter id="opening-glow-blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="26"/></filter></defs><g filter="url(#opening-glow-blur)" opacity=".95">${wordGroup(LETTERS, "#fff6fc", 300)}</g></svg>`,
+  );
 const SPARKLE_SIZE = S(100 * SPARKLE.unit);
-const sparklePiece = () => piece("sparkle", at(S(SPARKLE.x), S(SPARKLE.y), SPARKLE_SIZE, SPARKLE_SIZE), svg("-50 -50 100 100", `<path fill="${SPARK}" d="${SPARKLE.d}"/>`));
+const sparklePiece = () => piece("sparkle", at(S(SPARKLE.x), S(SPARKLE.y), SPARKLE_SIZE), svg("-50 -50 100 100", `<path fill="${SPARK}" d="${SPARKLE.d}"/>`));
+/** Where the letters are, for things that land on them. */
+const LETTER_POINTS = LETTERS.map((l) => ({ x: S(l.x + l.w / 2), y: S(l.y + l.h * 0.5) }));
 
 /** The launch image's backdrop (scripts/make-app-icon.mjs, the lilac theme), drawn the same way. */
 export function backdropMarkup() {
   return `<svg class="opening__backdrop" viewBox="0 0 ${SPLASH} ${SPLASH}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="opening-bg" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#f3e9fa"/><stop offset="0.55" stop-color="#e2cff0"/><stop offset="1" stop-color="#cfb2e4"/></linearGradient><radialGradient id="opening-glow" cx="0.78" cy="0.18" r="0.55"><stop offset="0" stop-color="#ffe6f1" stop-opacity="0.85"/><stop offset="1" stop-color="#ffe6f1" stop-opacity="0"/></radialGradient></defs><rect width="${SPLASH}" height="${SPLASH}" fill="url(#opening-bg)"/><rect width="${SPLASH}" height="${SPLASH}" fill="url(#opening-glow)"/></svg>`;
 }
 
-/** The scene's pieces, with the word and sparkle on top (or the word in letters, for the hop). */
+/** Back layer, the word's glow, the word (or its letters), its sparkle, then the front layer. */
 export function sceneMarkup(scene) {
-  const word = scene?.letters ? letterPieces() : wordPiece();
-  return `${scene ? scene.back?.() ?? "" : ""}${word}${sparklePiece()}${scene ? scene.front?.() ?? "" : ""}`;
+  if (!scene) return wordPiece() + sparklePiece();
+  const word = scene.letters ? letterPieces() : wordPiece();
+  return `${scene.back?.() ?? ""}${glowPiece()}${word}${sparklePiece()}${scene.front?.() ?? ""}`;
 }
 
 // ---------- a little motion kit ----------
+
+const SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
+const SOFT = "cubic-bezier(0.25, 0.8, 0.3, 1)";
+const SWAY = "cubic-bezier(0.45, 0, 0.55, 1)";
 
 function animator(root) {
   const list = [];
   const moved = new Set();
   // A piece's first animation also holds its first frame until it starts (so pieces that arrive
-  // later are hidden until then); any later one on the same piece only takes over when it starts.
-  const run = (selector, frames, duration, delay = 0, easing = "cubic-bezier(0.25, 0.8, 0.3, 1)", options = {}) => {
-    root.querySelectorAll(`.opening__${selector}`).forEach((node) => {
-      const fill = moved.has(node) ? "forwards" : "both";
-      moved.add(node);
-      list.push(node.animate(frames, { duration, delay, easing, fill, ...options }));
-    });
+  // later are hidden until then); a later one on the same piece only takes over when it starts.
+  const play = (node, frames, timing) => {
+    const fill = moved.has(node) ? "forwards" : "both";
+    moved.add(node);
+    list.push(node.animate(frames, { fill, ...timing }));
   };
-  return { run, list };
+  const run = (selector, frames, duration, delay = 0, easing = SOFT, options = {}) =>
+    root.querySelectorAll(`.opening__${selector}`).forEach((node) => play(node, frames, { duration, delay, easing, ...options }));
+  /** One animation per matching piece, from (index, piece) → [frames, timing]. */
+  const each = (selector, make) =>
+    root.querySelectorAll(`.opening__${selector}`).forEach((node, i) => {
+      const [frames, timing] = make(i, node);
+      play(node, frames, { easing: SOFT, ...timing });
+    });
+  return { run, each, list };
 }
-const SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
-const SOFT = "cubic-bezier(0.25, 0.8, 0.3, 1)";
-const pop = (scale = 1.25) => [
+const appear = (scale = 1.3) => [
   { transform: "scale(0)", opacity: 0 },
-  { transform: `scale(${scale})`, opacity: 1, offset: 0.6 },
+  { transform: `scale(${scale})`, opacity: 1, offset: 0.55 },
   { transform: "scale(1)", opacity: 1 },
 ];
-const twinkle = [
+const twinkleLoop = [
+  { transform: "scale(1)", opacity: 1 },
+  { transform: "scale(0.7)", opacity: 0.55 },
+];
+const sparkleTwinkle = [
   { transform: "scale(1) rotate(0deg)" },
   { transform: "scale(1.45) rotate(45deg)", offset: 0.45 },
   { transform: "scale(1) rotate(90deg)" },
 ];
-const happyBounce = [
-  { transform: "scale(1)" },
-  { transform: "scale(1.045)", offset: 0.4 },
-  { transform: "scale(0.99)", offset: 0.75 },
-  { transform: "scale(1)" },
+/** The word's glow coming up and settling. */
+const glowIn = (run, delay, peak = 1, rest = 0.7) =>
+  run("glow", [{ opacity: 0 }, { opacity: peak, offset: 0.55 }, { opacity: rest }], 900, delay, "ease-out");
+const lift = [
+  { transform: "translateY(0) scale(1)" },
+  { transform: "translateY(-1.6%) scale(1.025)", offset: 0.5 },
+  { transform: "translateY(0) scale(1)" },
+];
+/** Depth from a 0–1 draw: 0 far (small, soft), 1 near. */
+const depth = (k) => (k < 0.45 ? 0 : k < 0.8 ? 1 : 2);
+const DEPTH = [
+  { size: 0.7, opacity: 0.55 },
+  { size: 1, opacity: 0.8 },
+  { size: 1.35, opacity: 1 },
 ];
 
-// ---------- the scenes ----------
-
-const ENVELOPE = {
-  id: "letter",
-  beat: 1350,
-  back: () => "",
-  front: () =>
-    piece(
-      "env",
-      at(50, 75, 15, 10.4),
-      piece("env-open", "inset:0;", svg("0 0 110 76", `<path d="M5 6 L55 42 L105 6Z" fill="#f1e4f8" stroke="${LILAC_D}" stroke-width="3" stroke-linejoin="round"/>`), "transform-origin:50% 7.9%;") +
-        piece("env-back", "inset:0;", svg("0 0 110 76", `<rect x="4" y="5" width="102" height="67" rx="9" fill="#efe0f7" stroke="${LILAC_D}" stroke-width="3"/>`)) +
-        piece("env-heart", "left:31%;top:12%;width:38%;height:52%;", heartSvg(PINK_D)) +
-        piece(
-          "env-front",
-          "inset:0;",
-          svg("0 0 110 76", `<path d="M4 26 L55 54 L106 26 V63a9 9 0 0 1-9 9H13a9 9 0 0 1-9-9Z" fill="${PAPER}" stroke="${LILAC_D}" stroke-width="3" stroke-linejoin="round"/><path d="M8 68 L40 46M102 68 L70 46" stroke="${LILAC}" stroke-width="2.5" stroke-linecap="round"/>`),
-        ) +
-        piece(
-          "env-flap",
-          "inset:0;",
-          svg("0 0 110 76", `<path d="M5 6 L55 44 L105 6Z" fill="#f7eefb" stroke="${LILAC_D}" stroke-width="3" stroke-linejoin="round"/><g transform="translate(55 40) scale(.62)"><path d="${HEART}" fill="${ROSE}"/></g>`),
-          "transform-origin:50% 7.9%;",
-        ),
-    ) +
-    piece("env-spark opening__env-spark--a", at(40, 63, 2.8, 2.8), starSvg(GOLD)) +
-    piece("env-spark opening__env-spark--b", at(60.5, 62, 2.4, 2.4), starSvg(PINK_D)) +
-    piece("env-spark opening__env-spark--c", at(57, 68.5, 1.8, 1.8), starSvg(LILAC_D)),
-  play(root) {
-    const { run, list } = animator(root);
-    run("env", [{ transform: "translateY(55%)", opacity: 0 }, { transform: "translateY(-4%)", opacity: 1, offset: 0.7 }, { transform: "none", opacity: 1 }], 420, 0, SOFT);
-    run("env-flap", [{ transform: "scaleY(1)" }, { transform: "scaleY(0)" }], 150, 430, "ease-in");
-    run("env-open", [{ transform: "scaleY(0)" }, { transform: "scaleY(-1)" }], 170, 580, "ease-out");
-    run(
-      "env-heart",
-      [
-        { transform: "translateY(30%) scale(0.4)", opacity: 0 },
-        { transform: "translateY(-120%) scale(1.25)", opacity: 1, offset: 0.45 },
-        { transform: "translateY(-170%) scale(1.05)", opacity: 1, offset: 0.75 },
-        { transform: "translateY(-160%) scale(1.1)", opacity: 1 },
-      ],
-      620,
-      640,
-      SOFT,
-    );
-    run("env-spark", pop(1.4), 420, 1010, SPRING);
-    run("word", happyBounce, 520, 980, "ease-out");
-    run("sparkle", twinkle, 600, 1050, "ease-in-out");
-    return list;
-  },
-};
-
-const JAR = {
-  id: "jar",
-  beat: 1400,
-  front: () =>
-    piece("note opening__note--a", at(50, 66, 3.2, 2.5), svg("0 0 26 20", `<rect x="2" y="2" width="22" height="16" rx="3" fill="${PINK}" stroke="${ROSE}" stroke-width="1.6"/><path d="M6 8h12M6 12h8" stroke="${ROSE}" stroke-width="1.4" stroke-linecap="round"/>`)) +
-    piece("note opening__note--b", at(50, 66, 3, 2.3), svg("0 0 26 20", `<rect x="2" y="2" width="22" height="16" rx="3" fill="${CREAM}" stroke="#c4a45e" stroke-width="1.6"/><path d="M6 8h12M6 12h9" stroke="#c4a45e" stroke-width="1.4" stroke-linecap="round"/>`)) +
-    piece("jar-star", at(50, 66, 4, 4), starSvg(GOLD)) +
-    piece(
-      "jar",
-      at(50, 75, 10.4, 15.6),
-      svg(
-        "0 0 80 120",
-        `<path d="M14 42h52q7 0 7 9v53q0 13-13 13H20Q7 117 7 104V51q0-9 7-9z" fill="#f8f1fc" fill-opacity=".92" stroke="${LILAC_D}" stroke-width="3"/>` +
-          `<rect x="15" y="86" width="17" height="13" rx="3" fill="${PINK}" transform="rotate(-14 23 92)"/><rect x="33" y="90" width="17" height="13" rx="3" fill="${CREAM}" transform="rotate(9 41 96)"/><rect x="48" y="84" width="16" height="13" rx="3" fill="${MINT}" transform="rotate(-6 56 90)"/><rect x="24" y="100" width="17" height="12" rx="3" fill="${LILAC}" transform="rotate(5 32 106)"/><rect x="44" y="102" width="16" height="11" rx="3" fill="${PINK}" transform="rotate(-10 52 107)"/>` +
-          `<g transform="translate(40 66) scale(.85)"><path d="${HEART}" fill="${PINK_D}"/></g><path d="M15 54v30" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".85"/>`,
-      ) + piece("jar-lid", "left:4%;top:18%;width:92%;height:21%;", svg("0 0 74 26", `<rect x="6" y="2" width="62" height="13" rx="5" fill="${LILAC_D}"/><rect x="2" y="12" width="70" height="11" rx="5" fill="${LILAC}" stroke="${LILAC_D}" stroke-width="2"/>`), "transform-origin:20% 100%;"),
-      "transform-origin:50% 100%;",
-    ),
-  play(root) {
-    const { run, list } = animator(root);
-    run("jar", [{ transform: "translateY(30%) scale(0.6)", opacity: 0 }, { transform: "scale(1.06)", opacity: 1, offset: 0.65 }, { transform: "none", opacity: 1 }], 380, 0, SOFT);
-    const shake = [
-      { transform: "rotate(0deg)" },
-      { transform: "rotate(-9deg)", offset: 0.15 },
-      { transform: "rotate(8deg)", offset: 0.33 },
-      { transform: "rotate(-7deg)", offset: 0.5 },
-      { transform: "rotate(6deg)", offset: 0.67 },
-      { transform: "rotate(-3deg)", offset: 0.84 },
-      { transform: "rotate(0deg)" },
-    ];
-    run("jar", shake, 480, 380, "ease-in-out");
-    run("jar-lid", [{ transform: "none" }, { transform: "translateY(-80%) rotate(-18deg)", offset: 0.45 }, { transform: "none" }], 320, 790, "ease-out");
-    // The star flies out in an arc and becomes the wordmark's own sparkle.
-    const dx = ((S(SPARKLE.x) - 50) / 4) * 100;
-    const dy = ((S(SPARKLE.y) - 66) / 4) * 100;
-    run(
-      "jar-star",
-      [
-        { transform: "translate(0, 0) scale(0.5) rotate(0deg)", opacity: 0 },
-        { transform: `translate(${r(dx * 0.12)}%, -230%) scale(1.15) rotate(90deg)`, opacity: 1, offset: 0.28 },
-        { transform: `translate(${r(dx * 0.6)}%, ${r(dy * 1.22)}%) scale(1.2) rotate(240deg)`, opacity: 1, offset: 0.7 },
-        { transform: `translate(${r(dx)}%, ${r(dy)}%) scale(0.7) rotate(360deg)`, opacity: 0 },
-      ],
-      580,
-      820,
-      "cubic-bezier(0.3, 0.6, 0.5, 1)",
-    );
-    run("note--a", [{ transform: "none", opacity: 0 }, { transform: "translate(-170%, -190%) rotate(-24deg)", opacity: 1, offset: 0.4 }, { transform: "translate(-280%, -140%) rotate(-40deg)", opacity: 0 }], 650, 850, SOFT);
-    run("note--b", [{ transform: "none", opacity: 0 }, { transform: "translate(180%, -220%) rotate(20deg)", opacity: 1, offset: 0.4 }, { transform: "translate(290%, -170%) rotate(38deg)", opacity: 0 }], 650, 890, SOFT);
-    run("sparkle", twinkle, 520, 1330, "ease-in-out");
-    return list;
-  },
-};
-
-const BOW = {
-  id: "bow",
+// ---------- 1. a sky of stars twinkling on ----------
+const STARFIELD = scatter(11, 26, { gap: 6.5 });
+const STARS = {
+  id: "stars",
   beat: 1300,
-  front: () => {
-    const loop = (flip) =>
-      svg(
-        "0 0 120 80",
-        `<g ${flip ? 'transform="translate(120 0) scale(-1 1)"' : ""}><path d="M58 35C44 10 12 4 9 26 6 48 38 54 58 40Z" fill="${PINK_D}" stroke="${ROSE}" stroke-width="3" stroke-linejoin="round"/><path d="M50 33C38 20 22 16 18 26" fill="none" stroke="${PINK}" stroke-width="4" stroke-linecap="round"/></g>`,
-      );
-    return piece(
-      "bow",
-      at(50, 72, 17, 11.3),
-      piece("bow-tails", "inset:0;", svg("0 0 120 80", `<path d="M56 40 41 76l9-3 6 6 3-36Z" fill="${PINK_D}" stroke="${ROSE}" stroke-width="3" stroke-linejoin="round"/><path d="M64 40l15 36-9-3-6 6-3-36Z" fill="${PINK_D}" stroke="${ROSE}" stroke-width="3" stroke-linejoin="round"/>`), "transform-origin:50% 48%;") +
-        piece("bow-left", "inset:0;", loop(false), "transform-origin:50% 45%;") +
-        piece("bow-right", "inset:0;", loop(true), "transform-origin:50% 45%;") +
-        piece("bow-knot", "left:42%;top:33%;width:16%;height:24%;", svg("0 0 20 20", `<rect x="2" y="2" width="16" height="16" rx="6" fill="${ROSE}" stroke="#a24f7c" stroke-width="2"/><path d="M6 7q4-3 8 0" stroke="${PINK}" stroke-width="2" fill="none" stroke-linecap="round"/>`)),
-      "transform-origin:50% 45%;",
-    ) +
-      piece("bow-heart opening__bow-heart--a", at(42, 65, 2.6, 2.5), heartSvg(PINK)) +
-      piece("bow-heart opening__bow-heart--b", at(58.5, 64.5, 2.2, 2.1), heartSvg(LILAC, LILAC_D));
-  },
+  back: () =>
+    STARFIELD.map((p, i) => {
+      const d = DEPTH[depth(p.k)];
+      const size = (i % 4 === 0 ? 1.1 : 1.9 + p.j * 1.4) * d.size;
+      const fill = [GOLD, PAPER, LILAC_D, PINK_D][i % 4];
+      return piece(`sky opening__sky--${depth(p.k)}`, at(p.x, p.y, size), i % 4 === 0 ? shape.dot(fill) : shape.star(fill), `opacity:${d.opacity};`);
+    }).join(""),
   play(root) {
-    const { run, list } = animator(root);
-    run("bow-left", [{ transform: "translateX(-60%) rotate(-50deg) scale(0.5)", opacity: 0 }, { transform: "translateX(3%) rotate(8deg) scale(1.05)", opacity: 1, offset: 0.7 }, { transform: "none", opacity: 1 }], 460, 0, SOFT);
-    run("bow-right", [{ transform: "translateX(60%) rotate(50deg) scale(0.5)", opacity: 0 }, { transform: "translateX(-3%) rotate(-8deg) scale(1.05)", opacity: 1, offset: 0.7 }, { transform: "none", opacity: 1 }], 460, 80, SOFT);
-    run("bow-knot", pop(1.45), 300, 470, SPRING);
-    run("bow-tails", [{ transform: "scaleY(0)", opacity: 0 }, { transform: "scaleY(1.1)", opacity: 1, offset: 0.7 }, { transform: "scaleY(1)", opacity: 1 }], 320, 600, SOFT);
-    run("bow", [{ transform: "rotate(0deg)" }, { transform: "rotate(-9deg)", offset: 0.3 }, { transform: "rotate(7deg)", offset: 0.62 }, { transform: "rotate(-2deg)", offset: 0.85 }, { transform: "rotate(0deg)" }], 520, 820, "ease-in-out");
-    run("bow-heart", [{ transform: "translateY(60%) scale(0)", opacity: 0 }, { transform: "translateY(-40%) scale(1.2)", opacity: 1, offset: 0.5 }, { transform: "translateY(-120%) scale(1)", opacity: 1 }], 600, 760, SOFT);
-    run("word", happyBounce, 480, 640, "ease-out");
-    run("sparkle", twinkle, 560, 900, "ease-in-out");
+    const { run, each, list } = animator(root);
+    each("sky", (i) => [appear(1.5), { duration: 420, delay: 80 + ((i * 7) % 26) * 34, easing: SPRING }]);
+    each("sky", (i) => [twinkleLoop, { duration: 900 + (i % 5) * 160, delay: 1100 + (i % 7) * 90, iterations: Infinity, direction: "alternate", easing: SWAY }]);
+    glowIn(run, 500);
+    run("word", lift, 900, 600, SWAY);
+    run("sparkle", sparkleTwinkle, 600, 900, SWAY);
     return list;
   },
 };
 
-// Five petals fly in from all around and gather into a flower under the word.
-const PETAL = "M0-6C-13-18-12-42 0-46 12-42 13-18 0-6Z";
-const PETAL_FROM = [
-  [-330, -260, -160],
-  [300, -300, 140],
-  [360, 120, 200],
-  [-60, 330, -220],
-  [-360, 150, -120],
-];
-const PETALS = {
-  id: "petals",
-  beat: 1400,
-  front: () =>
-    piece(
-      "flower",
-      at(50, 73, 13, 13),
-      PETAL_FROM.map((_, i) =>
-        piece(`petal opening__petal--${i}`, "inset:0;", svg("-50 -50 100 100", `<path d="${PETAL}" transform="rotate(${i * 72})" fill="${i % 2 ? LILAC : PINK}" stroke="${i % 2 ? LILAC_D : ROSE}" stroke-width="3" stroke-linejoin="round"/>`)),
-      ).join("") + piece("flower-heart", "left:38%;top:38%;width:24%;height:24%;", svg("-12 -12 24 23", `<circle r="9" fill="${GOLD}" stroke="#c79a3c" stroke-width="2"/>`)),
-      "transform-origin:50% 50%;",
-    ) +
-    piece("drift opening__drift--a", at(35, 30, 3.4, 3.4), svg("-50 -50 100 100", `<path d="${PETAL}" fill="${PINK}" stroke="${ROSE}" stroke-width="5"/>`)) +
-    piece("drift opening__drift--b", at(63, 22, 2.8, 2.8), svg("-50 -50 100 100", `<path d="${PETAL}" fill="${LILAC}" stroke="${LILAC_D}" stroke-width="5"/>`)),
-  play(root) {
-    const { run, list } = animator(root);
-    PETAL_FROM.forEach(([x, y, turn], i) =>
-      run(
-        `petal--${i}`,
-        [
-          { transform: `translate(${x}%, ${y}%) rotate(${turn}deg) scale(0.6)`, opacity: 0 },
-          { transform: `translate(${r(x * 0.35)}%, ${r(y * 0.35 - 30)}%) rotate(${r(turn * 0.3)}deg) scale(0.9)`, opacity: 1, offset: 0.55 },
-          { transform: "none", opacity: 1 },
-        ],
-        720,
-        i * 90,
-        "cubic-bezier(0.3, 0.7, 0.3, 1)",
-      ),
-    );
-    run("flower-heart", pop(1.5), 340, 820, SPRING);
-    run("flower", [{ transform: "rotate(0deg) scale(1)" }, { transform: "rotate(14deg) scale(1.08)", offset: 0.5 }, { transform: "rotate(18deg) scale(1)" }], 520, 880, "ease-out");
-    run("drift", [{ transform: "translate(0, -200%) rotate(0deg)", opacity: 0 }, { transform: "translate(60%, 150%) rotate(120deg)", opacity: 0.9, offset: 0.5 }, { transform: "translate(120%, 420%) rotate(220deg)", opacity: 0 }], 1300, 100, "linear");
-    run("word", happyBounce, 480, 860, "ease-out");
-    run("sparkle", twinkle, 560, 950, "ease-in-out");
-    return list;
-  },
-};
-
-const PAW = {
-  id: "paw",
-  beat: 1300,
-  front: () =>
-    piece(
-      "paw",
-      at(50, 83, 12, 34),
-      svg(
-        "0 0 100 340",
-        `<rect x="22" y="40" width="56" height="320" rx="28" fill="${LILAC}" stroke="${LILAC_D}" stroke-width="4"/><path d="M34 120v40M50 128v40M66 120v40" stroke="${LILAC_D}" stroke-width="3" stroke-linecap="round" opacity=".45"/>` +
-          `<ellipse cx="50" cy="46" rx="40" ry="34" fill="${PAPER}" stroke="${LILAC_D}" stroke-width="4"/>` +
-          `<ellipse cx="50" cy="58" rx="16" ry="12" fill="${PINK_D}"/><ellipse cx="25" cy="34" rx="7.5" ry="9" fill="${PINK_D}"/><ellipse cx="41" cy="22" rx="7.5" ry="9" fill="${PINK_D}"/><ellipse cx="59" cy="22" rx="7.5" ry="9" fill="${PINK_D}"/><ellipse cx="75" cy="34" rx="7.5" ry="9" fill="${PINK_D}"/>`,
-      ),
-    ) +
-    piece("paw-heart", at(56, 62, 2.8, 2.7), heartSvg(PINK_D)) +
-    piece("paw-star opening__paw-star--a", at(43, 61.5, 1.8, 1.8), starSvg(GOLD)) +
-    piece("paw-star opening__paw-star--b", at(58, 59.5, 1.5, 1.5), starSvg(LILAC_D)),
-  play(root) {
-    const { run, list } = animator(root);
-    run(
-      "paw",
-      [
-        { transform: "translateY(100%)" },
-        { transform: "translateY(6%)", offset: 0.34 },
-        { transform: "translateY(6%)", offset: 0.4 },
-        { transform: "translateY(-17%)", offset: 0.5 },
-        { transform: "translateY(4%)", offset: 0.62 },
-        { transform: "translateY(4%)", offset: 0.7 },
-        { transform: "translateY(105%)" },
-      ],
-      1250,
-      0,
-      "ease-in-out",
-    );
-    // The tap: the word squishes and springs back.
-    root.querySelector(".opening__word").style.transformOrigin = "50% 100%";
-    run(
-      "word",
-      [
-        { transform: "scale(1, 1)" },
-        { transform: "scale(1.05, 0.93)", offset: 0.25 },
-        { transform: "scale(0.97, 1.04)", offset: 0.55 },
-        { transform: "scale(1.01, 0.99)", offset: 0.8 },
-        { transform: "scale(1, 1)" },
-      ],
-      520,
-      600,
-      "ease-out",
-    );
-    run("paw-heart", [{ transform: "translate(-80%, 40%) scale(0)", opacity: 0 }, { transform: "translate(0, -40%) scale(1.25)", opacity: 1, offset: 0.4 }, { transform: "translate(40%, -150%) scale(1)", opacity: 1 }], 700, 640, SOFT);
-    run("paw-star", pop(1.5), 360, 650, SPRING);
-    run("sparkle", twinkle, 560, 760, "ease-in-out");
-    return list;
-  },
-};
-
-const MOON_STARS = [
-  [32, 22, 2.8, 380],
-  [57, 17, 2.4, 480],
-  [64, 30, 3, 560],
-  [46, 12, 2, 640],
-  [68, 20, 2.2, 720],
-  [35, 36, 1.9, 800],
-];
+// ---------- 2. a crescent moon drifting in, stars around it ----------
+const MOON_STARS = scatter(23, 16, { y1: 36, gap: 6 });
+const MOON_LOW = scatter(29, 7, { y0: 66, y1: 94, gap: 8 });
 const MOON = {
   id: "moon",
   beat: 1400,
-  back: () => piece("moon-glow", at(40, 30, 34, 34), svg("-50 -50 100 100", `<defs><radialGradient id="opening-moon-glow"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><circle r="50" fill="url(#opening-moon-glow)"/>`)),
-  front: () =>
-    piece("moon", at(40, 30, 11, 11), svg("-50 -50 100 100", `<path d="M14-42A44 44 0 1 0 40 18 36 36 0 1 1 14-42Z" fill="${GOLD}" stroke="#c79a3c" stroke-width="4" stroke-linejoin="round"/><circle cx="-14" cy="6" r="4" fill="#e9bf63" opacity=".7"/><circle cx="-2" cy="24" r="3" fill="#e9bf63" opacity=".6"/><path d="M-26-6q3 3 6 0M-14 8q3 3 6 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="-30" cy="6" rx="4" ry="2.5" fill="${PINK_D}" opacity=".7"/>`), "transform-origin:50% 50%;") +
-    MOON_STARS.map(([x, y, size], i) => piece(`mstar opening__mstar--${i}`, at(x, y, size, size), starSvg(i % 3 === 0 ? GOLD : i % 3 === 1 ? LILAC_D : PINK_D))).join("") +
-    piece("cloud", at(35, 38.5, 12, 5), svg("0 0 120 50", `<path d="M14 44h88a14 14 0 0 0 2-28 20 20 0 0 0-36-8 18 18 0 0 0-32 6 15 15 0 0 0-22 30Z" fill="${PAPER}" stroke="${LILAC}" stroke-width="3" stroke-linejoin="round"/>`)),
-  play(root) {
-    const { run, list } = animator(root);
-    run("moon-glow", [{ opacity: 0 }, { opacity: 1 }], 700, 200, "ease-out");
-    run("moon", [{ transform: "translateY(160%) rotate(-30deg) scale(0.7)", opacity: 0 }, { transform: "translateY(-6%) rotate(4deg) scale(1.02)", opacity: 1, offset: 0.75 }, { transform: "none", opacity: 1 }], 760, 0, SOFT);
-    MOON_STARS.forEach(([, , , delay], i) => run(`mstar--${i}`, pop(1.6), 380, delay, SPRING));
-    run("cloud", [{ transform: "translateX(-90%)", opacity: 0 }, { transform: "translateX(6%)", opacity: 1, offset: 0.8 }, { transform: "none", opacity: 1 }], 900, 250, SOFT);
-    run("moon", [{ transform: "rotate(0deg)" }, { transform: "rotate(-8deg)", offset: 0.5 }, { transform: "rotate(0deg)" }], 600, 800, "ease-in-out");
-    run("sparkle", twinkle, 600, 900, "ease-in-out");
-    return list;
-  },
-};
-
-const BALLOON_SET = [
-  [39, PINK_D, ROSE, 0],
-  [61, LILAC, LILAC_D, 160],
-  [50, CREAM, "#c4a45e", 330],
-];
-const BALLOONS = {
-  id: "balloons",
-  beat: 1300,
   back: () =>
-    BALLOON_SET.map(([x, fill, stroke], i) =>
-      piece(
-        `balloon opening__balloon--${i}`,
-        at(x, 114, 10, 21),
-        piece("balloon-sway", "inset:0;", svg("0 0 80 170", `<path d="M40 70C14 52 4 36 4 22 4 10 13 2 24 2c7 0 12 4 16 10 4-6 9-10 16-10 11 0 20 8 20 20 0 14-10 30-36 48Z" fill="${fill}" stroke="${stroke}" stroke-width="3.5" stroke-linejoin="round"/><path d="M18 16q4-6 11-6" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/><path d="M40 72c-7 18 7 30 0 48s6 30 0 48" stroke="${stroke}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`), "transform-origin:50% 0%;"),
-      ),
-    ).join(""),
-  front: () => piece("bheart opening__bheart--a", at(41, 38, 2, 1.9), heartSvg(PINK)) + piece("bheart opening__bheart--b", at(60, 37, 1.6, 1.5), heartSvg(PINK_D)),
+    piece("moon", at(37, 24, 7.2), svg("-50 -50 100 100", `<path d="M16-44A46 46 0 1 0 44 18 38 38 0 1 1 16-44Z" fill="${GOLD}" stroke="${GOLD_D}" stroke-width="3.5" stroke-linejoin="round"/>`), "filter:drop-shadow(0 0 0.6em #fff5d6);") +
+    [...MOON_STARS, ...MOON_LOW]
+      .map((p, i) => piece("mstar", at(p.x, p.y, (i % 3 === 0 ? 1 : 1.6 + p.j) * DEPTH[depth(p.k)].size), i % 3 === 0 ? shape.dot(i % 2 ? PAPER : GOLD) : shape.star(i % 2 ? GOLD : LILAC_D), `opacity:${DEPTH[depth(p.k)].opacity};`))
+      .join(""),
   play(root) {
-    const { run, list } = animator(root);
-    BALLOON_SET.forEach(([, , , delay], i) => {
-      run(`balloon--${i}`, [{ transform: "translateY(0)" }, { transform: "translateY(-760%)" }], 1900, delay, "cubic-bezier(0.35, 0.15, 0.55, 1)");
-      run(`balloon--${i} .opening__balloon-sway`, [{ transform: "rotate(-7deg)" }, { transform: "rotate(7deg)" }], 620, delay, "ease-in-out", { iterations: 4, direction: "alternate" });
-    });
-    run("word", [{ transform: "translateY(0)" }, { transform: "translateY(-4%)", offset: 0.35 }, { transform: "translateY(1.5%)", offset: 0.7 }, { transform: "translateY(0)" }], 600, 640, "ease-in-out");
-    run("bheart", pop(1.4), 380, 900, SPRING);
-    run("sparkle", twinkle, 560, 760, "ease-in-out");
+    const { run, each, list } = animator(root);
+    run("moon", [{ transform: "translate(-160%, 90%) rotate(-40deg) scale(0.6)", opacity: 0 }, { transform: "translate(8%, -6%) rotate(6deg) scale(1.04)", opacity: 1, offset: 0.75 }, { transform: "none", opacity: 1 }], 1000, 0, SOFT);
+    each("mstar", (i) => [appear(1.6), { duration: 380, delay: 300 + i * 42, easing: SPRING }]);
+    each("mstar", (i) => [twinkleLoop, { duration: 800 + (i % 4) * 200, delay: 1300 + (i % 6) * 80, iterations: Infinity, direction: "alternate", easing: SWAY }]);
+    glowIn(run, 700);
+    run("sparkle", sparkleTwinkle, 600, 1000, SWAY);
     return list;
   },
 };
 
-const HOP = {
-  id: "hop",
-  beat: 1250,
-  letters: true,
-  front: () =>
-    piece("hheart opening__hheart--0", at(41, 36.5, 2.2, 2.1), heartSvg(PINK_D)) +
-    piece("hheart opening__hheart--1", at(50, 34, 2.8, 2.6), heartSvg(PINK)) +
-    piece("hheart opening__hheart--2", at(59, 36.5, 2.2, 2.1), heartSvg(LILAC, LILAC_D)),
+// ---------- 3. little hearts floating up across the whole screen ----------
+const HEART_SET = scatter(37, 22, { x0: 25, x1: 75, y0: 66, y1: 106, gap: 6.5, word: true });
+const HEARTS = {
+  id: "hearts",
+  beat: 1350,
+  back: () =>
+    HEART_SET.map((p, i) => {
+      const d = depth(p.k);
+      const size = (1.3 + p.j * 1.6) * DEPTH[d].size;
+      const art = i % 3 === 0 ? shape.heartLine(i % 2 ? ROSE : LILAC_D) : shape.heart(i % 2 ? PINK : LILAC, i % 2 ? PINK_D : LILAC_D);
+      return piece(`fheart opening__fheart--${d}`, at(p.x, p.y, size), art, `opacity:${DEPTH[d].opacity};`);
+    }).join(""),
   play(root) {
-    const { run, list } = animator(root);
-    LETTERS.forEach((_, i) => {
-      root.querySelector(`.opening__letter--${i}`).style.transformOrigin = "50% 100%";
-      run(
-        `letter--${i}`,
+    const { run, each, list } = animator(root);
+    each("fheart", (i, node) => {
+      const d = Number(node.className.match(/fheart--(\d)/)[1]);
+      const size = (1.3 + HEART_SET[i].j * 1.6) * DEPTH[d].size;
+      // Up the whole screen (a share of it, turned into the heart's own heights); nearer ones faster.
+      const rise = r(((78 + d * 10) / size) * 100);
+      const sway = r(((i % 2 ? 1 : -1) * (2.5 + (i % 3) * 1.5) / size) * 100);
+      return [
         [
-          { transform: "translateY(0) scale(1, 1)" },
-          { transform: "translateY(0) scale(1.05, 0.95)", offset: 0.12 },
-          { transform: "translateY(-13%) scale(0.97, 1.04)", offset: 0.45 },
-          { transform: "translateY(0) scale(1.05, 0.95)", offset: 0.78 },
-          { transform: "translateY(0) scale(1, 1)" },
+          { transform: "translate(0, 0) rotate(0deg)", opacity: 0 },
+          { transform: `translate(${sway}%, ${-rise * 0.35}%) rotate(${sway / 6}deg)`, opacity: 1, offset: 0.25 },
+          { transform: `translate(${-sway * 0.6}%, ${-rise * 0.7}%) rotate(${-sway / 8}deg)`, opacity: 1, offset: 0.65 },
+          { transform: `translate(${sway * 0.4}%, ${-rise}%) rotate(0deg)`, opacity: 0 },
         ],
-        480,
-        60 + i * 85,
-        "ease-in-out",
-      );
+        { duration: 2600 - d * 300, delay: (i * 97) % 900, easing: "linear", iterations: Infinity },
+      ];
     });
-    [0, 1, 2].forEach((i) => run(`hheart--${i}`, [{ transform: "translateY(60%) scale(0)", opacity: 0 }, { transform: "translateY(-20%) scale(1.25)", opacity: 1, offset: 0.55 }, { transform: "translateY(-40%) scale(1)", opacity: 1 }], 460, 700 + i * 90, SOFT));
-    run("sparkle", twinkle, 560, 640, "ease-in-out");
+    glowIn(run, 450, 0.95, 0.75);
+    run("word", lift, 1000, 500, SWAY);
+    run("sparkle", sparkleTwinkle, 600, 950, SWAY);
     return list;
   },
 };
 
-// A star loops once around the word, leaving sparkles, and settles as the wordmark's own sparkle.
-const LOOP = { rx: 19, ry: 12.5, start: -36 };
-const loopPoint = (deg) => [50 + LOOP.rx * Math.cos((deg * Math.PI) / 180), 50 + LOOP.ry * Math.sin((deg * Math.PI) / 180)];
-const TRAIL = Array.from({ length: 11 }, (_, i) => LOOP.start + 30 + i * 30);
-const SHOOTING = {
-  id: "shooting-star",
+// ---------- 4. a shower of tiny sparkles settling into the letters ----------
+const SHOWER = Array.from({ length: 22 }, (_, i) => {
+  const rand = seeded(53 + i);
+  const target = LETTER_POINTS[i % LETTER_POINTS.length];
+  return { x: 27 + rand() * 46, y: 2 + rand() * 20, tx: target.x + (rand() - 0.5) * 3, ty: target.y + (rand() - 0.5) * 6, k: rand() };
+});
+const SHOWERS = {
+  id: "shower",
   beat: 1400,
   front: () =>
-    TRAIL.map((deg, i) => {
-      const [x, y] = loopPoint(deg);
-      return piece(`trail opening__trail--${i}`, at(x, y, 1.8, 1.8), starSvg(i % 3 === 0 ? GOLD : i % 3 === 1 ? LILAC_D : PINK_D));
-    }).join("") + piece("comet", at(50, 50, 5, 5), svg("-11 -11 22 22", `<circle r="9" fill="#fff6d6" opacity=".55"/><path d="${STAR4}" fill="${GOLD}" stroke="#c79a3c" stroke-width=".8"/>`)),
+    SHOWER.map((p, i) => piece("drop", at(p.x, p.y, i % 3 === 0 ? 1.2 : 1.8 + p.k), i % 3 === 0 ? shape.dot(i % 2 ? PAPER : GOLD) : shape.star([GOLD, PAPER, PINK_D][i % 3]))).join("") +
+    scatter(61, 10, { gap: 9 })
+      .map((p) => piece("glint", at(p.x, p.y, 1.3), shape.star(LILAC_D), "opacity:.6;"))
+      .join(""),
   play(root) {
-    const { run, list } = animator(root);
-    const frames = [];
-    for (let k = 0; k <= 12; k++) {
-      const deg = LOOP.start + k * 30;
-      const [x, y] = loopPoint(deg);
-      frames.push({ transform: `translate(${r(((x - 50) / 5) * 100)}%, ${r(((y - 50) / 5) * 100)}%) rotate(${k * 45}deg) scale(${k === 0 ? 0.4 : k === 12 ? 0.7 : 1})`, opacity: k === 0 ? 0 : k === 12 ? 0 : 1 });
-    }
-    run("comet", frames, 1100, 60, "cubic-bezier(0.45, 0.05, 0.55, 0.95)");
-    TRAIL.forEach((_, i) => run(`trail--${i}`, [{ transform: "scale(0)", opacity: 0 }, { transform: "scale(1.4)", opacity: 1, offset: 0.4 }, { transform: "scale(0.8)", opacity: 0.75 }], 420, 60 + ((i + 1) / 12) * 1100 - 60, SPRING));
-    run("sparkle", [{ transform: "scale(1) rotate(0deg)" }, { transform: "scale(1.6) rotate(60deg)", offset: 0.45 }, { transform: "scale(1) rotate(90deg)" }], 560, 1100, "ease-in-out");
-    run("word", happyBounce, 480, 1120, "ease-out");
+    const { run, each, list } = animator(root);
+    each("drop", (i) => {
+      const p = SHOWER[i];
+      const size = i % 3 === 0 ? 1.2 : 1.8 + p.k;
+      const dx = ((p.tx - p.x) / size) * 100;
+      const dy = ((p.ty - p.y) / size) * 100;
+      return [
+        [
+          { transform: "translate(0, 0) scale(0.6) rotate(0deg)", opacity: 0 },
+          { transform: `translate(${r(dx * 0.25)}%, ${r(dy * 0.3)}%) scale(1) rotate(60deg)`, opacity: 1, offset: 0.2 },
+          { transform: `translate(${r(dx)}%, ${r(dy)}%) scale(1.3) rotate(200deg)`, opacity: 1, offset: 0.85 },
+          { transform: `translate(${r(dx)}%, ${r(dy)}%) scale(0) rotate(240deg)`, opacity: 0 },
+        ],
+        { duration: 900 + (i % 5) * 70, delay: (i * 37) % 420, easing: "cubic-bezier(0.5, 0, 0.75, 0.6)" },
+      ];
+    });
+    each("glint", (i) => [appear(1.5), { duration: 400, delay: 200 + i * 80, easing: SPRING }]);
+    // The word drinks the light in: a glow that swells as the sparkles land.
+    glowIn(run, 650, 1, 0.75);
+    run("word", lift, 700, 900, SWAY);
+    run("sparkle", sparkleTwinkle, 600, 1100, SWAY);
     return list;
   },
 };
 
-const QUILL = {
-  id: "quill",
-  beat: 1350,
+// ---------- 5. a gust of petals sweeping across ----------
+const PETAL_SET = scatter(71, 20, { x0: 8, x1: 34, y0: 4, y1: 96, gap: 5.5, word: true });
+const petalSize = (p) => (2.4 + p.j * 1.4) * DEPTH[depth(p.k)].size;
+const PETALS = {
+  id: "petals",
+  beat: 1400,
+  back: () =>
+    PETAL_SET.map((p, i) => {
+      const d = depth(p.k);
+      return piece(
+        `gust opening__gust--${d}`,
+        at(p.x, p.y, petalSize(p)),
+        i % 2 ? shape.petal(PINK, PINK_D) : shape.petal(LILAC, LILAC_D),
+        `opacity:${Math.min(1, DEPTH[d].opacity + 0.15)};`,
+      );
+    }).join(""),
+  play(root) {
+    const { run, each, list } = animator(root);
+    each("gust", (i) => {
+      const p = PETAL_SET[i];
+      const size = petalSize(p);
+      const across = ((84 - p.x) / size) * 100; // to past the right edge, in its own widths
+      const wave = (i % 2 ? 1 : -1) * (90 + (i % 4) * 45);
+      const turn = Math.round(p.j * 180); // its own angle, turned after it moves (so it never steers it)
+      return [
+        [
+          { transform: `translate(0, 0) rotate(${turn}deg)`, opacity: 0 },
+          { transform: `translate(${r(across * 0.3)}%, ${wave}%) rotate(${turn + 160}deg)`, opacity: 1, offset: 0.25 },
+          { transform: `translate(${r(across * 0.65)}%, ${-wave * 0.6}%) rotate(${turn + 320}deg)`, opacity: 1, offset: 0.65 },
+          { transform: `translate(${r(across)}%, ${wave * 0.5}%) rotate(${turn + 480}deg)`, opacity: 0 },
+        ],
+        { duration: 1500 + (i % 4) * 180, delay: (i * 53) % 600, easing: "cubic-bezier(0.3, 0.1, 0.6, 1)" },
+      ];
+    });
+    run("word", [{ transform: "rotate(0deg)" }, { transform: "rotate(-1.4deg) translateY(-0.8%)", offset: 0.4 }, { transform: "rotate(0.6deg)", offset: 0.75 }, { transform: "rotate(0deg)" }], 1100, 350, SWAY);
+    glowIn(run, 600, 0.85, 0.6);
+    run("sparkle", sparkleTwinkle, 600, 1000, SWAY);
+    return list;
+  },
+};
+
+// ---------- 6. silk ribbons sweeping across ----------
+const RIBBONS_AT = [
+  [18, PINK_D, PINK],
+  [69, LILAC_D, LILAC],
+  [86, ROSE, PINK],
+];
+const RIBBON_WAVE = "M0 30C60 6 110 6 170 30S280 54 340 30 450 6 510 30 620 54 680 30";
+const RIBBONS = {
+  id: "ribbons",
+  beat: 1400,
+  back: () =>
+    RIBBONS_AT.map(([y, edge, face], i) =>
+      piece(
+        `ribbon opening__ribbon--${i}`,
+        at(50, y, 58, 5.2),
+        svg("0 0 680 60", `<path d="${RIBBON_WAVE}" fill="none" stroke="${edge}" stroke-width="13" stroke-linecap="round"/><path d="${RIBBON_WAVE}" fill="none" stroke="${face}" stroke-width="7" stroke-linecap="round"/><path d="${RIBBON_WAVE}" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".7" transform="translate(0 -2)"/>`),
+        `opacity:${i === 1 ? 0.95 : 0.75};`,
+      ),
+    ).join("") +
+    scatter(83, 14, { gap: 8 })
+      .map((p, i) => piece("rspark", at(p.x, p.y, i % 3 === 0 ? 1.1 : 1.6), i % 3 === 0 ? shape.dot(GOLD) : i % 3 === 1 ? shape.heart(PINK, PINK_D) : shape.star(LILAC_D)))
+      .join(""),
+  play(root) {
+    const { run, each, list } = animator(root);
+    each("ribbon", (i) => {
+      const from = i % 2 ? 110 : -110;
+      return [
+        [
+          { transform: `translateX(${from}%) translateY(0) rotate(${i % 2 ? 4 : -4}deg)`, opacity: 0 },
+          { transform: `translateX(${from * 0.45}%) translateY(-18%) rotate(0deg)`, opacity: 1, offset: 0.35 },
+          { transform: `translateX(${-from * 0.2}%) translateY(12%) rotate(${i % 2 ? -3 : 3}deg)`, opacity: 1, offset: 0.75 },
+          { transform: `translateX(${-from}%) translateY(0) rotate(0deg)`, opacity: 0 },
+        ],
+        { duration: 1900, delay: i * 160, easing: "cubic-bezier(0.35, 0.1, 0.55, 1)" },
+      ];
+    });
+    each("rspark", (i) => [appear(1.5), { duration: 420, delay: 350 + i * 55, easing: SPRING }]);
+    each("rspark", (i) => [twinkleLoop, { duration: 900 + (i % 4) * 150, delay: 1200 + (i % 5) * 90, iterations: Infinity, direction: "alternate", easing: SWAY }]);
+    glowIn(run, 550, 0.9, 0.65);
+    run("word", lift, 1000, 450, SWAY);
+    run("sparkle", sparkleTwinkle, 600, 1000, SWAY);
+    return list;
+  },
+};
+
+// ---------- 7. a soft night sky, and a shooting star underlining her name ----------
+const NIGHT_STARS = scatter(97, 22, { gap: 6.5, y1: 92 });
+const LINE_Y = 61.6;
+const NIGHT = {
+  id: "night",
+  beat: 1450,
+  back: () =>
+    piece("dusk", "inset:0;", "", "background:linear-gradient(180deg, #4b3478 0%, #7b5ea8cc 30%, #b79bd640 62%, #b79bd600 80%);") +
+    NIGHT_STARS.map((p, i) => piece("nstar", at(p.x, p.y, (i % 3 === 0 ? 0.9 : 1.4 + p.j * 1.1) * DEPTH[depth(p.k)].size), i % 3 === 0 ? shape.dot(PAPER) : shape.star(i % 2 ? "#fff6d6" : PAPER), `opacity:${DEPTH[depth(p.k)].opacity};`)).join(""),
   front: () =>
-    piece("line", at(50, 64, 30, 3), svg("0 0 300 30", `<path d="M4 18C40 6 70 26 108 16S170 6 206 16 268 22 296 12" fill="none" stroke="${SPARK}" stroke-width="5" stroke-linecap="round"/>`), "transform-origin:0% 50%;") +
-    piece("line-heart", at(66.5, 62.4, 2.6, 2.5), heartSvg(PINK_D)) +
-    piece(
-      "quill",
-      at(37.4, 59, 7, 10.5),
-      svg("0 0 60 90", `<path d="M6 86 14 64C22 36 38 14 58 4 54 28 44 52 24 70Z" fill="${PAPER}" stroke="${LILAC_D}" stroke-width="3" stroke-linejoin="round"/><path d="M14 66C26 48 38 30 52 12" stroke="${LILAC}" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M6 86l5-14 6 4Z" fill="${INK}"/>`),
-      "transform-origin:10% 95%;",
-    ) +
-    piece("ink opening__ink--a", at(45, 60, 1.4, 1.4), starSvg(GOLD)) +
-    piece("ink opening__ink--b", at(57, 60.5, 1.2, 1.2), starSvg(PINK_D)),
+    piece("trail", at(50, LINE_Y, 36, 0.9), svg("0 0 360 10", `<defs><linearGradient id="opening-trail"><stop offset="0" stop-color="${LILAC_D}" stop-opacity="0"/><stop offset=".55" stop-color="${PINK_D}"/><stop offset="1" stop-color="#fff6d6"/></linearGradient></defs><rect x="0" y="3.5" width="360" height="3" rx="1.5" fill="url(#opening-trail)"/>`), "transform-origin:0% 50%;") +
+    piece("comet", at(32, LINE_Y, 3.6), svg("-11 -11 22 22", `<circle r="8" fill="#fff6d6" opacity=".55"/><path d="${STAR4}" fill="${GOLD}"/>`)),
   play(root) {
-    const { run, list } = animator(root);
-    run("quill", [{ transform: "translate(-60%, -80%) rotate(-20deg)", opacity: 0 }, { transform: "none", opacity: 1 }], 260, 0, SOFT);
-    const travel = (30 / 7) * 100;
-    run(
-      "quill",
-      [
-        { transform: "translate(0, 0) rotate(0deg)" },
-        { transform: `translate(${r(travel * 0.25)}%, 6%) rotate(5deg)`, offset: 0.25 },
-        { transform: `translate(${r(travel * 0.5)}%, -4%) rotate(-4deg)`, offset: 0.5 },
-        { transform: `translate(${r(travel * 0.75)}%, 5%) rotate(4deg)`, offset: 0.75 },
-        { transform: `translate(${r(travel)}%, -6%) rotate(0deg)` },
-      ],
-      700,
-      260,
-      "ease-in-out",
-    );
-    run("line", [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 700, 260, "ease-in-out");
-    run("quill", [{ transform: `translate(${r(travel)}%, -6%) rotate(0deg)`, opacity: 1 }, { transform: `translate(${r(travel + 90)}%, -150%) rotate(25deg)`, opacity: 0 }], 360, 980, "ease-in");
-    run("line-heart", pop(1.5), 360, 940, SPRING);
-    run("ink", pop(1.4), 340, 620, SPRING);
-    run("sparkle", twinkle, 560, 1000, "ease-in-out");
+    const { run, each, list } = animator(root);
+    run("dusk", [{ opacity: 0 }, { opacity: 0.75 }], 700, 0, "ease-out");
+    each("nstar", (i) => [appear(1.5), { duration: 380, delay: 150 + ((i * 5) % 22) * 30, easing: SPRING }]);
+    each("nstar", (i) => [twinkleLoop, { duration: 800 + (i % 5) * 170, delay: 1000 + (i % 6) * 80, iterations: Infinity, direction: "alternate", easing: SWAY }]);
+    const travel = (36 / 3.6) * 100;
+    run("comet", [{ transform: "translateX(-60%) scale(0.5)", opacity: 0 }, { transform: "translateX(0) scale(1)", opacity: 1, offset: 0.12 }, { transform: `translateX(${travel}%) scale(1)`, opacity: 1, offset: 0.85 }, { transform: `translateX(${travel + 30}%) scale(0.4)`, opacity: 0 }], 760, 550, "cubic-bezier(0.45, 0, 0.3, 1)");
+    run("trail", [{ transform: "scaleX(0)", opacity: 1 }, { transform: "scaleX(1)", opacity: 1, offset: 0.8 }, { transform: "scaleX(1)", opacity: 0.6 }], 820, 600, "cubic-bezier(0.45, 0, 0.3, 1)");
+    glowIn(run, 300, 1, 0.85);
+    run("sparkle", sparkleTwinkle, 600, 1250, SWAY);
     return list;
   },
 };
 
-export const SCENES = [ENVELOPE, JAR, BOW, PETALS, PAW, MOON, BALLOONS, HOP, SHOOTING, QUILL];
+// ---------- 8. a constellation joining into a heart above her name ----------
+const HEART_POINTS = [0, 0.5, 1.05, 1.65, 2.3, 2.8, Math.PI, 3.48, 3.98, 4.63, 5.23, 5.78].map((t) => {
+  const x = 16 * Math.sin(t) ** 3;
+  const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+  return { x: 50 + x * 0.6, y: 22 + y * 0.6 };
+});
+const CONSTELLATION_LINES = HEART_POINTS.map((p, i) => {
+  const q = HEART_POINTS[(i + 1) % HEART_POINTS.length];
+  return { x: p.x, y: p.y, len: Math.hypot(q.x - p.x, q.y - p.y), angle: (Math.atan2(q.y - p.y, q.x - p.x) * 180) / Math.PI };
+});
+const CONSTELLATION = {
+  id: "constellation",
+  beat: 1450,
+  back: () =>
+    scatter(109, 16, { gap: 7 })
+      .filter((p) => Math.hypot(p.x - 50, p.y - 25) > 14)
+      .map((p, i) => piece("cstar", at(p.x, p.y, (i % 3 === 0 ? 0.9 : 1.3 + p.j) * DEPTH[depth(p.k)].size), i % 3 === 0 ? shape.dot(PAPER) : shape.star(i % 2 ? LILAC_D : PAPER), `opacity:${DEPTH[depth(p.k)].opacity * 0.85};`))
+      .join("") +
+    CONSTELLATION_LINES.map((l) => piece("cline", `left:${r(l.x)}%;top:${r(l.y - 0.12)}%;width:${r(l.len)}%;height:0.24%;`, "", `transform-origin:0% 50%;rotate:${r(l.angle)}deg;background:linear-gradient(90deg, #fff6fc, ${PINK_D});border-radius:1px;opacity:.9;`)).join("") +
+    HEART_POINTS.map((p, i) => piece("cpoint", at(p.x, p.y, i === 0 || i === 6 ? 2.6 : 1.9), shape.star(i === 0 || i === 6 ? GOLD : PAPER), "filter:drop-shadow(0 0 0.3em #fff6fc);")).join(""),
+  play(root) {
+    const { run, each, list } = animator(root);
+    each("cstar", (i) => [appear(1.4), { duration: 380, delay: 60 + i * 40, easing: SPRING }]);
+    each("cpoint", (i) => [appear(1.6), { duration: 340, delay: 200 + i * 75, easing: SPRING }]);
+    each("cline", (i) => [[{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], { duration: 110, delay: 270 + i * 75, easing: "ease-out" }]);
+    each("cpoint", (i) => [twinkleLoop, { duration: 900 + (i % 3) * 200, delay: 1350 + i * 40, iterations: Infinity, direction: "alternate", easing: SWAY }]);
+    glowIn(run, 800, 1, 0.75);
+    run("word", lift, 900, 1000, SWAY);
+    run("sparkle", sparkleTwinkle, 600, 1150, SWAY);
+    return list;
+  },
+};
+
+// ---------- 9. soft dreamy lights rising behind and around ----------
+const GLINT_SET = scatter(127, 16, { gap: 9, word: true });
+const LIGHTS = {
+  id: "lights",
+  beat: 1300,
+  back: () =>
+    GLINT_SET.map((p, i) => {
+      const d = depth(p.k);
+      const size = (3.4 + p.j * 4.6) * (d === 0 ? 1.25 : d === 1 ? 0.9 : 0.65);
+      const tint = ["#ffffff", "#ffd9ec", "#e6d4fb", "#fff3d6"][i % 4];
+      return piece("bokeh", at(p.x, p.y, size), "", `border-radius:50%;background:radial-gradient(circle, ${tint} 0%, ${tint}cc 38%, ${tint}00 70%);opacity:${d === 0 ? 0.55 : 0.8};`);
+    }).join(""),
+  front: () =>
+    scatter(131, 12, { gap: 8 })
+      .map((p, i) => piece("lspark", at(p.x, p.y, i % 2 ? 1.2 : 1.7), i % 2 ? shape.dot(PAPER) : shape.star(i % 4 === 0 ? GOLD : PINK_D)))
+      .join(""),
+  play(root) {
+    const { run, each, list } = animator(root);
+    each("bokeh", (i) => [
+      [
+        { transform: "translateY(30%) scale(0.6)", opacity: 0 },
+        { transform: "translateY(0) scale(1)", opacity: 1, offset: 0.35 },
+        { transform: "translateY(-45%) scale(1.08)", opacity: 1, offset: 0.75 },
+        { transform: "translateY(-70%) scale(1.1)", opacity: 0.85 },
+      ],
+      { duration: 1800 + (i % 4) * 250, delay: (i * 61) % 500, easing: "ease-out" },
+    ]);
+    each("lspark", (i) => [appear(1.5), { duration: 400, delay: 300 + i * 70, easing: SPRING }]);
+    each("lspark", (i) => [twinkleLoop, { duration: 850 + (i % 4) * 160, delay: 1200 + (i % 5) * 80, iterations: Infinity, direction: "alternate", easing: SWAY }]);
+    glowIn(run, 300, 1, 0.8);
+    run("word", lift, 1000, 350, SWAY);
+    run("sparkle", sparkleTwinkle, 600, 850, SWAY);
+    return list;
+  },
+};
+
+// ---------- 10. a sparkle re-inking her name, letter by letter ----------
+const PEN_PATH = LETTER_POINTS.map((p, i) => ({ x: p.x, y: p.y + (i % 2 ? -3 : 2.5) }));
+const WRITE = {
+  id: "write",
+  beat: 1500,
+  letters: true,
+  back: () =>
+    scatter(149, 14, { gap: 8 })
+      .map((p, i) => piece("wstar", at(p.x, p.y, (i % 3 === 0 ? 1 : 1.5 + p.j) * DEPTH[depth(p.k)].size), i % 3 === 0 ? shape.dot(GOLD) : shape.star(i % 2 ? LILAC_D : PINK_D), `opacity:${DEPTH[depth(p.k)].opacity};`))
+      .join(""),
+  front: () =>
+    PEN_PATH.map((p, i) => piece("ink", at(p.x, p.y + 4, 1.2), shape.star(i % 2 ? GOLD : PINK_D))).join("") +
+    piece("pen", at(PEN_PATH[0].x, PEN_PATH[0].y, 3.4), svg("-11 -11 22 22", `<circle r="8" fill="#fff6d6" opacity=".6"/><path d="${STAR4}" fill="${GOLD}"/>`)),
+  play(root) {
+    const { run, each, list } = animator(root);
+    const step = 150;
+    const start = 260;
+    // Her name goes faint, then the sparkle writes it back in, one letter at a time.
+    each("letter", (i) => {
+      const total = start + 260 + i * step + 300;
+      const back = (start + 260 + i * step) / total;
+      return [
+        [
+          { opacity: 1, transform: "translateY(0) scale(1)" },
+          { opacity: 0.14, transform: "translateY(0) scale(1)", offset: Math.min(0.2, back * 0.5) },
+          { opacity: 0.14, transform: "translateY(2%) scale(0.97)", offset: back },
+          { opacity: 1, transform: "translateY(-2%) scale(1.03)", offset: back + (1 - back) * 0.55 },
+          { opacity: 1, transform: "translateY(0) scale(1)" },
+        ],
+        { duration: total, delay: 0, easing: "linear" },
+      ];
+    });
+    // The pen reaches each letter just as it comes back, then flies up to become the sparkle.
+    const size = 3.4;
+    const reach = (i) => start + 260 + i * step;
+    const total = reach(PEN_PATH.length - 1) + 320;
+    const frames = PEN_PATH.map((p, i) => ({
+      transform: `translate(${r(((p.x - PEN_PATH[0].x) / size) * 100)}%, ${r(((p.y - PEN_PATH[0].y) / size) * 100)}%) rotate(${i * 50}deg)`,
+      opacity: 1,
+      offset: r(reach(i) / total),
+    }));
+    const sx = ((S(SPARKLE.x) - PEN_PATH[0].x) / size) * 100;
+    const sy = ((S(SPARKLE.y) - PEN_PATH[0].y) / size) * 100;
+    run(
+      "pen",
+      [
+        { transform: "translate(-80%, 0) scale(0.4)", opacity: 0, offset: 0 },
+        { transform: "translate(-40%, 0) scale(0.8)", opacity: 1, offset: r(start / total) },
+        ...frames,
+        { transform: `translate(${r(sx)}%, ${r(sy)}%) rotate(360deg) scale(0.6)`, opacity: 0, offset: 1 },
+      ],
+      total,
+      0,
+      "linear",
+    );
+    each("ink", (i) => [appear(1.6), { duration: 380, delay: start + 260 + i * step, easing: SPRING }]);
+    each("wstar", (i) => [appear(1.4), { duration: 380, delay: 200 + i * 60, easing: SPRING }]);
+    each("wstar", (i) => [twinkleLoop, { duration: 850 + (i % 4) * 170, delay: 1300 + (i % 5) * 90, iterations: Infinity, direction: "alternate", easing: SWAY }]);
+    glowIn(run, start + PEN_PATH.length * step, 1, 0.75);
+    run("sparkle", sparkleTwinkle, 600, start + PEN_PATH.length * step + 400, SWAY);
+    return list;
+  },
+};
+
+export const SCENES = [STARS, MOON, HEARTS, SHOWERS, PETALS, RIBBONS, NIGHT, CONSTELLATION, LIGHTS, WRITE];
