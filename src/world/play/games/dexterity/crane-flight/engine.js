@@ -109,7 +109,7 @@ export function createEngine({ ctx, hud, end }) {
       // far hills drift slowly; the meadow moves with the flight
       const hillShift = (state.scroll * 0.22) % width;
       ctx.drawImage(hills, -hillShift, ground - 120, width, 150);
-      ctx.drawImage(hills, width - hillShift, ground - 120, width, 150);
+      ctx.drawImage(hills, width - hillShift - 1, ground - 120, width + 1, 150);
       if (!sprites) return;
       ctx.save();
       if (shake > 0) ctx.translate(0, Math.sin(shake * 60) * shake * 10);
@@ -124,7 +124,7 @@ export function createEngine({ ctx, hud, end }) {
         if (o.star) drawSprite(ctx, sprites.star, o.x, o.starY + Math.sin(state.time * 3 + i) * 4, Math.sin(state.time * 2 + i) * 0.2);
       }
       const meadowShift = state.scroll % MEADOW_TILE;
-      for (let x = -meadowShift; x < width; x += MEADOW_TILE) ctx.drawImage(meadow, x, ground - 8, MEADOW_TILE, 70);
+      for (let x = -meadowShift; x < width; x += MEADOW_TILE) ctx.drawImage(meadow, x, ground - 8, MEADOW_TILE + 1, 70);
       const crane = state.crane;
       const blink = state.hurt > 0 && Math.floor(state.hurt * 10) % 2 === 0;
       drawSprite(ctx, crane.flap > 0.4 ? sprites.craneDown : sprites.craneUp, crane.x, crane.y, crane.rot * 0.6, 1, 1, blink ? 0.4 : 1);

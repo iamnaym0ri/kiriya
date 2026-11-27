@@ -59,18 +59,23 @@ export function paintHills(ctx, width, height) {
   ctx.fillStyle = "#dccbf0";
   ctx.strokeStyle = "#cbb6e6";
   ctx.lineWidth = 2;
+  const ridge = () => {
+    ctx.moveTo(0, height * 0.55);
+    const bumps = 4;
+    for (let i = 0; i < bumps; i++) {
+      const x0 = (i * width) / bumps;
+      const x1 = ((i + 1) * width) / bumps;
+      ctx.quadraticCurveTo((x0 + x1) / 2, height * (i % 2 ? 0.05 : 0.25), x1, height * 0.55);
+    }
+  };
   ctx.beginPath();
-  ctx.moveTo(0, height);
-  ctx.lineTo(0, height * 0.55);
-  const bumps = 4;
-  for (let i = 0; i < bumps; i++) {
-    const x0 = (i * width) / bumps;
-    const x1 = ((i + 1) * width) / bumps;
-    ctx.quadraticCurveTo((x0 + x1) / 2, height * (i % 2 ? 0.05 : 0.25), x1, height * 0.55);
-  }
+  ridge();
   ctx.lineTo(width, height);
+  ctx.lineTo(0, height);
   ctx.closePath();
   ctx.fill();
+  ctx.beginPath();
+  ridge(); // only the ridge gets a line, so the copies join without a seam
   ctx.stroke();
 }
 
