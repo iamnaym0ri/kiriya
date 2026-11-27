@@ -128,8 +128,14 @@ time.
 ### Admin in place
 
 Josh changes what she sees where she sees it. Next to anything editable, render
-`<AdminEdit label="…" onClick={…} />` (`src/shared/admin/AdminEdit.jsx`; nothing on her phone) and
-edit in an `<EditSheet>` bottom sheet. Admin API routes go under `/api/admin/...` (the existing
+`<AdminEdit label="…" onClick={…} />` (`src/shared/admin/AdminEdit.jsx`; nothing on her phone;
+`compact` for a pencil only) and edit in an `<EditSheet>` bottom sheet, with `<EditField label hint>`
+around each input. `onSave` may return a promise: the sheet shows "Saving…", closes when it resolves
+(resolve `false` to stay open) and shows the error when it rejects, so
+`onSave={() => save.mutateAsync(draft)}` is all you need. Optional: `subtitle`, `saveDisabled`,
+`dirty` (asks before throwing changes away), `onDelete` + `deleteLabel`.
+Shortcuts into Josh's in-place composers: `/world/mail?compose=note`, `?compose=letter`,
+`?compose=jar` (the mail agent opens the sheet on arrival). Admin API routes go under `/api/admin/...` (the existing
 `adminRoutes` guard) or your own router with the same `requireRole("admin")` check. Every edit
 shows on her phone the next time she opens the app (invalidate or refetch on focus); new content
 can carry a small "new" mark until she has seen it.
@@ -175,7 +181,13 @@ Names every character uses (agreed 2026-11-26): shared poses `idle`, `walk`, `ju
 `land`, `sit`, `wave`, `react`, `sleep`, `held` (picked up, dangling), plus their own (Maomao's rest
 pose is `ponder`). Line topics: `greet` (fallback) and `greetMorning` / `greetAfternoon` /
 `greetEvening` / `greetNight`, `idle`, `tapped`, `picked`, `putDown`, `birthday`, `sweet`, plus
-their own; visits in `visit.with.<id>`. Every line (in `lines` and `visit`) is either a string or
+their own; visits in `visit.with.<id>` as pairs `[mine, theirs]`: the first line is this
+character's, the second is the other one's reply, so a pair lives in the file of whoever speaks
+first. Sitting poses may hang legs below the feet line over the cloud's front edge, so the engine
+draws `Body` above `Platform`. The engine anchors the `Platform` box's top centre at the feet
+point (the bottom centre of the body box), letting puffs overflow upward a little; a character may
+set `Platform.surface` (px from the top of the platform box to where the feet stand, default 0) to
+sink its feet into a fluffier cloud. Every line (in `lines` and `visit`) is either a string or
 `{ text, expression }`: the engine passes that expression to `Body` while the bubble shows. Her
 pick can also be `"none"` (a quiet home): the engine then shows nobody, visits included.
 
@@ -199,6 +211,12 @@ export default {
   credit: "adapted from <project> (MIT)",
 };
 ```
+
+**Layout:** the play hub opens a game in its own full-screen sheet (above the header and the tab
+bar, safe areas padded, a 44 pt top bar with "‹ play" and the game's title). `Game.jsx` fills its
+container (`height: 100%`, `position: relative`; measure the container, not the window) and does
+not draw its own back button or fixed full-screen layer; it calls `onExit()` only for its own "done"
+flows. The dev game lab mimics the sheet exactly.
 
 `Game.jsx` gets `({ onExit, onReward })`. A reward is `onReward({ sticker: "st-…", game: "<game-id>",
 reason: "first garden cleared" })`, with a sticker id from her collection's catalogue
