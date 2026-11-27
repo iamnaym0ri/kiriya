@@ -12,12 +12,13 @@ const check = (where, entry) => {
   const text = typeof entry === "string" ? entry : entry?.text;
   assert.ok(typeof text === "string" && text.trim(), `${where}: empty line`);
   assert.ok(text.length <= 120, `${where}: too long for a bubble: ${text}`);
-  assert.ok(!text.includes("{name}"), `${where}: unfilled name: ${text}`);
+  assert.ok(!/\{(?!name\})/.test(text), `${where}: unknown placeholder: ${text}`);
+  assert.ok(!/kiriya/i.test(text), `${where}: say {name}, the engine fills it: ${text}`);
   if (typeof entry !== "string") assert.ok(drawable.has(entry.expression), `${where}: no face for ${entry.expression}`);
 };
 
 test("Every topic the engine asks for is there, and each is deep enough not to repeat soon", () => {
-  for (const topic of ["greet", "greetMorning", "greetAfternoon", "greetEvening", "greetNight", "idle", "tapped", "picked", "putDown", "birthday", "sweet", "visit"]) {
+  for (const topic of ["greet", "greetMorning", "greetAfternoon", "greetEvening", "greetNight", "idle", "tapped", "pester", "picked", "putDown", "birthday", "sweet", "visit", "bye"]) {
     assert.ok(lines[topic]?.length >= 6, `${topic} has ${lines[topic]?.length ?? 0} lines`);
   }
 });

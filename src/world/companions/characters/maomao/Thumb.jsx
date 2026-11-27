@@ -8,12 +8,13 @@ import {
 } from "../../../mascot/MaomaoMascot.jsx";
 import { COLLAR, INNER, ROBE, ROBE_DARK } from "./palette.js";
 import { Sprig } from "./props.jsx";
+import "./Body.css";
 
 /** Her portrait for the picker in settings: head and shoulders on a soft sage circle. */
 export default function Thumb({ size = 64, expression = "pleased" }) {
   const uid = `mmt${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   return (
-    <svg viewBox="22 6 156 156" width={size} height={size} aria-hidden="true" focusable="false" style={{ display: "block" }}>
+    <svg className="mm-thumb" viewBox="22 6 156 156" width={size} height={size} aria-hidden="true" focusable="false" style={{ display: "block" }}>
       <MaomaoDefs id={uid} />
       <clipPath id={`${uid}-round`}>
         <circle cx="100" cy="84" r="78" />

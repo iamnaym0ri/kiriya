@@ -1,7 +1,4 @@
-import {
-  addressRemark,
-  MAOMAO_REMARKS,
-} from "../../../../shared/play/maomaoDialogue.js";
+import { MAOMAO_REMARKS } from "../../../../shared/play/maomaoDialogue.js";
 
 // Maomao's lines for the app's companion engine (docs/refactor/RENOVATION.md, "Companions").
 //
@@ -12,21 +9,12 @@ import {
 //
 // Voice (docs/redesign/MAOMAO-CHARACTER-RESEARCH.md): dry and short by default; real enthusiasm
 // only for herbs, poisons and specimens; warmth shown through small practical acts, then
-// undercut. Original lines, PG, no medical advice or doses. The reader is Kiriya.
+// undercut. Original lines, PG, no medical advice or doses. The reader is Kiriya; lines say {name}, which the engine fills.
 
 const line = (expression, text) => ({ expression, text });
-const NAME = "Kiriya";
-/** The website's pools, with "{name}" filled in: in the app she always knows who's reading. */
-const shared = (...topics) =>
-  topics.flatMap((topic) =>
-    MAOMAO_REMARKS[topic].map(({ expression, text }) =>
-      line(expression, addressRemark(text, NAME)),
-    ),
-  );
-const hour = (index) => {
-  const { expression, text } = MAOMAO_REMARKS.hour[index];
-  return line(expression, addressRemark(text, NAME));
-};
+/** The website's pools as they are; the engine fills "{name}" with her name. */
+const shared = (...topics) => topics.flatMap((topic) => MAOMAO_REMARKS[topic].map(({ expression, text }) => line(expression, text)));
+const hour = (index) => line(MAOMAO_REMARKS.hour[index].expression, MAOMAO_REMARKS.hour[index].text);
 
 export const lines = {
   // Arriving, whatever the time.
@@ -35,11 +23,11 @@ export const lines = {
   greetMorning: [
     hour(0),
     hour(1),
-    line("sleepy", "Morning, Kiriya. The kettle's on. Talk to me once it boils."),
+    line("sleepy", "Morning, {name}. The kettle's on. Talk to me once it boils."),
     line("deadpan", "You're up. Good. The dew's still on the leaves, so I'm busy."),
     line("pleased", "Morning. I picked the mint before the sun got to it. You can have some."),
     line("thinking", "Early light is the honest kind. Everything looks like what it is."),
-    line("fond", "Morning, Kiriya. Did you eat? Something, I mean. Not only tea."),
+    line("fond", "Morning, {name}. Did you eat? Something, I mean. Not only tea."),
     line("unimpressed", "You looked at your phone before you sat up. I could tell from here."),
     line("happy", "Good morning. I kept the warm side of the cloud for you."),
     line("focused", "Morning. Water first. Then whatever you were about to do."),
@@ -47,7 +35,7 @@ export const lines = {
   greetAfternoon: [
     hour(2),
     line("pleased", "There you are. I was about to start arguing with the jars."),
-    line("thinking", "Afternoon, Kiriya. If you've had lunch, nod. If not, go."),
+    line("thinking", "Afternoon, {name}. If you've had lunch, nod. If not, go."),
     line("curious", "Back already? Hm. Was it a good morning, or a long one?"),
     line("focused", "Sit a while. I'm nearly done drying these."),
     line("smug", "Afternoon. I sorted the whole shelf while you were out. Admire it."),
@@ -56,7 +44,7 @@ export const lines = {
   ],
   greetEvening: [
     hour(3),
-    line("pleased", "Evening, Kiriya. You got through the day. That counts."),
+    line("pleased", "Evening, {name}. You got through the day. That counts."),
     line("fond", "Evening. I lit the lantern. It seemed like a night for it."),
     line("curious", "Tell me one good thing about today. Just one. I'll write it down."),
     line("happy", "Evening. The tea's the calming kind. You may have some."),
@@ -69,7 +57,7 @@ export const lines = {
     hour(5),
     hour(6),
     line("unimpressed", "Your eyes are doing the thing they do before you fall asleep on your phone."),
-    line("fond", "Go to sleep, Kiriya. I'll keep watch over the jars. And you."),
+    line("fond", "Go to sleep, {name}. I'll keep watch over the jars. And you."),
     line("thinking", "Sleep is the cheapest remedy there is, and you're not taking it."),
     line("sleepy", "If you're staying up, at least have a blanket. I'm not arguing about it."),
     line("deadpan", "Night owls and apothecaries. At least one of us is paid for this."),
@@ -119,7 +107,7 @@ export const lines = {
   birthday: [
     ...shared("birthday"),
     line("party", "The seventeenth of September. I wrote it in three notebooks so I couldn't forget."),
-    line("shy", "Happy birthday, Kiriya. I dried you some flowers. Properly, so they'll keep."),
+    line("shy", "Happy birthday, {name}. I dried you some flowers. Properly, so they'll keep."),
     line("party", "Another year older. In medicine, we call that a good result."),
     line("pleased", "No errands today. I've told the jars. They took it well."),
     line("herb", "I found you a four-leaf clover. I examined it thoroughly. It's very lucky."),
@@ -128,7 +116,7 @@ export const lines = {
 
   // The things she means and would rather not repeat.
   sweet: [
-    line("shy", "I don't say this often. You're good company, Kiriya. That's all."),
+    line("shy", "I don't say this often. You're good company, {name}. That's all."),
     line("fond", "Of everyone who wanders in here, you're the one I don't mind."),
     line("deadpan", "You remembered a label I wrote last week. Nobody remembers my labels."),
     line("smug", "I've seen the photos. Freckles, braids, the lot. You did your research."),
@@ -141,7 +129,7 @@ export const lines = {
     line("smug", "If anyone's unkind to you today, tell me. I know which leaves make people sneeze."),
     line("pleased", "You came back. I like it better when you do."),
     line("deadpan", "You're not a bother. If you were, I'd say so. At length."),
-    line("fond", "Drink some water, Kiriya. I'm fond of your kidneys. And the rest of you."),
+    line("fond", "Drink some water, {name}. I'm fond of your kidneys. And the rest of you."),
     line("shy", "I wrote your name in my notebook, under 'important'. It's a short list."),
     line("happy", "It's quieter when you're not here. I've decided I don't like it."),
   ],
@@ -154,6 +142,16 @@ export const lines = {
     line("skeptical", "You've come a long way for a cup of tea. I'll make one anyway."),
     line("deadpan", "Hello. If you're here for gossip, I'm out."),
     line("fond", "Visitors on a quiet day. Fine. You can stay a while."),
+  ],
+
+  // Leaving after a visit to someone else's cloud.
+  bye: [
+    line("deadpan", "Right. The herbs won't sort themselves."),
+    line("pleased", "That was pleasant. Don't tell anyone I said so."),
+    line("thinking", "I've left something steeping. Probably. I should check."),
+    line("fond", "I'll come by again. Keep an eye on {name} for me."),
+    line("unimpressed", "If anyone asks, I was never here. I was working."),
+    line("smug", "Bring something interesting next time. A rash, ideally."),
   ],
 
   // Extra pools the engine may use when it knows more (a song playing, an offer of an herb or a vial).
@@ -173,13 +171,13 @@ export const visit = {
       [line("thinking", "Your glasses are fogged. Are you blushing or just warm?"), "b-both. mostly the first one. please don't ask why~"],
       [line("deadpan", "Go on, then. Confess. What did you do?"), "i stayed up till three drawing kaito and his ice cream. i'm so sorry. i'd do it again."],
       [line("unimpressed", "That's the fourth sketchbook today."), "it's the fifth. the fourth one is… classified~"],
-      [line("amused", "You keep calling Kiriya your muse."), "because she IS. have you seen her cosplay?? i had to lie down."],
+      [line("amused", "You keep calling {name} your muse."), "because she IS. have you seen her cosplay?? i had to lie down."],
       [line("curious", "Hm. You ship herbs now?"), "mint and lemon balm. they grew up in the same pot. it's FATE."],
     ],
     bambi: [
       [line("deadpan", "You're bouncing again. Do you ever stand still?"), "nope! shuung~ that was a spin. did you see? one more!"],
       [line("curious", "There's a pigeon on the next cloud."), "WHERE. maomao-ssi, hide me!! behind the lantern, quick!"],
-      [line("pleased", "I brought peaches. They're for Kiriya, but you can have one."), "peaches!! daebak. you're my favourite apothecary now~"],
+      [line("pleased", "I brought peaches. They're for {name}, but you can have one."), "peaches!! daebak. you're my favourite apothecary now~"],
       [line("focused", "Count the steps properly. One, two, three, four."), "ssukguk-ssukguk, tung-tung! …that's how I count. it works!"],
       [line("startled", "Are you crying? It was only a cup of tea."), "it was a REALLY nice cup of tea… aigoo, don't look~"],
       [line("amused", "You lost the game, and you're still smiling."), "lost, but I did my best! rematch tomorrow. I'm practising tonight."],
@@ -191,13 +189,13 @@ export const visit = {
       [line("smug", "Leeks are good for a cold, you know. Mildly."), "see?? healthy AND fun to wave! thank you, maomao~ 39!"],
       [line("skeptical", "Your hair is longer than your cloud."), "it's a feature! it swishes when I dance~"],
       [line("focused", "Sing a little quieter. I'm grinding."), "okay, okay~ ♪ this is the quiet version ♪"],
-      [line("pleased", "Kiriya was humming one of your songs earlier."), "really?! that's the best thing anyone's told me all week!"],
+      [line("pleased", "{name} was humming one of your songs earlier."), "really?! that's the best thing anyone's told me all week!"],
     ],
     kaito: [
       [line("unimpressed", "Ice cream again? It's barely morning."), "ahaha… it's never too early for ice cream. want a spoon?"],
       [line("thinking", "You'll catch cold. Wear the scarf properly."), "hm-hm, I am wearing it! it's just… very long."],
-      [line("ew", "Your ice cream is melting onto my cloud."), "ah, sorry, sorry! the lilac scoop is safe, though. that one's for Kiriya."],
-      [line("curious", "You keep a scoop for Kiriya? Where?"), "in a little cooler. and in my heart. both, really~"],
+      [line("ew", "Your ice cream is melting onto my cloud."), "ah, sorry, sorry! the lilac scoop is safe, though. that one's for {name}."],
+      [line("curious", "You keep a scoop for {name}? Where?"), "in a little cooler. and in my heart. both, really~"],
       [line("smug", "Mint is an herb, you know. Your mint ice cream counts as medicine."), "really?! then I'm very healthy. ahaha~"],
       [line("fond", "Has she eaten today, do you know?"), "I was going to ask you the same thing! we're both worriers, hm?"],
     ],
