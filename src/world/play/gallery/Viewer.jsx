@@ -28,15 +28,19 @@ export default function Viewer({ art, index, count, onPrev, onNext, onClose, onR
   const kind = KINDS.find((each) => each.id === artKind(art)) ?? KINDS[0];
 
   // While it's open the page underneath stays put, and Escape closes it (keyboards, the Simulator).
+  // The keys always reach the newest handlers (they change as she steps through her things).
+  const handlers = useRef({ onClose, onNext, onPrev });
+  handlers.current = { onClose, onNext, onPrev };
   useEffect(() => {
     const root = document.documentElement;
     root.classList.add("gallery-viewer-open");
     const previous = document.activeElement;
     panel.current?.focus({ preventScroll: true });
     const onKey = (event) => {
-      if (event.key === "Escape") onClose();
-      if (event.key === "ArrowRight") onNext?.();
-      if (event.key === "ArrowLeft") onPrev?.();
+      const { onClose: close, onNext: next, onPrev: prev } = handlers.current;
+      if (event.key === "Escape") close();
+      if (event.key === "ArrowRight") next?.();
+      if (event.key === "ArrowLeft") prev?.();
     };
     document.addEventListener("keydown", onKey);
     return () => {
