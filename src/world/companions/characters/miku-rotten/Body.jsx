@@ -16,6 +16,9 @@ export const VIEW = { width: 220, height: 240 };
 export const SIZE = { width: 110, height: 120 }; // same aspect as VIEW, so she fills the box exactly
 
 const SEATED = new Set(["sit", "sleep", "sketch"]);
+// Her skirt's plaid, inside the skirt's outline (M85 186h50l11 26q-36 10-72 0Z).
+const PLAID_CHECK = "M75 210.8V211.1M87 187.2V213.8M99 187.2V215.3M111 187.2V215.8M123 187.2V215.1M135 187.2V213.4M82.4 195H137.6M77.3 207H142.7";
+const PLAID_RED = "M81.5 195.5V212.7M93.5 187.2V214.7M105.5 187.2V215.7M117.5 187.2V215.6M129.5 187.2V214.3M141.5 202.6V212.0M84.7 189.5H135.3M79.6 201.5H140.4";
 // Which arms to swap in when the engine hands her a prop for a pose that doesn't carry it.
 const PROP_ARMS = { paddle: { stand: "behind", seat: "leaning" }, phone: { stand: "phone", seat: "phone" } };
 const ALIASES = { picked: "held", dangle: "held", carried: "held", stand: "idle", hop: "jump" };
@@ -471,11 +474,6 @@ export function Figure({ pose, expression, prop = null, facing = 1, moving }) {
           <stop stopColor={C.shirt} />
           <stop offset="1" stopColor={C.shirtShade} />
         </linearGradient>
-        <pattern id={`${id}-plaid`} width="12" height="12" patternUnits="userSpaceOnUse">
-          <rect width="12" height="12" fill={C.skirt} />
-          <path d="M0 3h12M3 0v12" stroke={C.skirtCheck} strokeWidth="2.2" opacity=".55" />
-          <path d="M0 9.5h12M9.5 0v12" stroke={C.skirtRed} strokeWidth=".9" opacity=".8" />
-        </pattern>
         <radialGradient id={`${id}-ground`} cx=".5" cy=".5" r=".5">
           <stop stopColor="#5d4a7a" stopOpacity=".28" />
           <stop offset="1" stopColor="#5d4a7a" stopOpacity="0" />
@@ -514,7 +512,11 @@ export function Figure({ pose, expression, prop = null, facing = 1, moving }) {
                 <g className="mr-torso">
                   {/* Skirt: navy plaid, pleated, a little A-line. */}
                   <g className="mr-skirt">
-                    <path d="M85 186h50l11 26q-36 10-72 0Z" fill={`url(#${id}-plaid)`} stroke={C.skirtDark} strokeWidth="1.5" strokeLinejoin="round" />
+                    {/* The plaid as plain lines, not a <pattern>: a pattern fill made every frame of her
+                        CSS animation repaint far slower in WebKit (.lab bench, 2026-11-27). */}
+                    <path d="M85 186h50l11 26q-36 10-72 0Z" fill={C.skirt} stroke={C.skirtDark} strokeWidth="1.5" strokeLinejoin="round" />
+                    <path d={PLAID_CHECK} stroke={C.skirtCheck} strokeWidth="2.2" opacity=".55" />
+                    <path d={PLAID_RED} stroke={C.skirtRed} strokeWidth=".9" opacity=".8" />
                     <path d="M96 189l-6 25m14-25-1 27m13-27 2 27m12-26 6 24" stroke={C.skirtDark} strokeWidth="1.3" opacity=".7" />
                   </g>
                   {/* Blouse with short puffed sleeves. */}
