@@ -1,3 +1,6 @@
+// RETIRED 2026-11-26 (phase 6, docs/refactor/PLAN.md §6): nothing imports this stage any more and its
+// Sunday cron is gone; the Railway events worker (worker/**, server/lib/events/**) does this job with
+// Claude. Kept only for its tested helpers (upsertEvent, seedVerifiedEvents, duplicatesDatedEdition).
 // Weekly events stage: verified event pages (conditional reads, structured data, grounded extraction
 // with verbatim date evidence), bounded next-edition probes, the weekly web-search scout (≤5 tool
 // calls), lexicon refresh, and expiry. Dates are accepted only when the exact date text, including
