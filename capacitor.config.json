@@ -8,9 +8,9 @@
   },
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration": 500,
+      "launchShowDuration": 3000,
       "launchAutoHide": true,
-      "backgroundColor": "#e3d2f0",
+      "backgroundColor": "#e2cff0",
       "showSpinner": false
     },
     "PushNotifications": {

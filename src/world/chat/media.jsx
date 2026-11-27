@@ -4,35 +4,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMediaUrl } from "../../lib/chatCrypto.js";
 import { ChatIcon } from "./parts.jsx";
+import { mosaic, soloRatio } from "./layout.js";
+
+export { mosaic };
 
 export const clock = (seconds = 0) => {
   const s = Math.max(0, Math.round(seconds));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
-
-/**
- * Discord's multi-image arrangement: one, two side by side, a big one beside two stacked, a 2 × 2
- * grid, then rows of three with whatever doesn't fit a row of three on top (one wide, or two).
- * Returns rows as tile counts; "feature" is the 3-photo layout.
- */
-export function mosaic(count) {
-  switch (count) {
-    case 0:
-      return [];
-    case 1:
-      return [1];
-    case 2:
-      return [2];
-    case 3:
-      return "feature";
-    case 4:
-      return [2, 2];
-    default: {
-      const top = count % 3;
-      return [...(top ? [top] : []), ...Array.from({ length: Math.floor(count / 3) }, () => 3)];
-    }
-  }
-}
 
 /** A finished picture fades in over its reserved space (and over this phone's own preview). */
 function useLoaded(src) {
@@ -173,7 +152,7 @@ export function Album({ items, onOpen }) {
   const layout = mosaic(items.length);
   if (items.length === 1) {
     const [item] = items;
-    const ratio = item.width && item.height ? Math.min(3, Math.max(0.42, item.width / item.height)) : 1;
+    const ratio = soloRatio(item.width, item.height);
     return (
       <div className="album album--solo" style={{ "--ar": ratio }}>
         <Tile item={item} index={0} solo onOpen={open} register={register} />
@@ -251,7 +230,19 @@ export function GifMedia({ media }) {
   return (
     <div ref={box} className="gif" style={{ "--ar": ratio }} onClick={() => reduced && setPaused((p) => !p)}>
       {mp4 && !failed ? (
-        <video ref={video} src={onScreen || video.current ? mp4 : undefined} poster={still ?? undefined} muted loop playsInline preload="metadata" aria-label={media.alt ?? "a GIF"} onError={() => setFailed(true)} />
+        <video
+          ref={video}
+          src={onScreen || video.current ? mp4 : undefined}
+          poster={still ?? undefined}
+          muted
+          loop
+          playsInline
+          autoPlay={!paused}
+          preload="metadata"
+          aria-label={media.alt ?? "a GIF"}
+          onError={() => setFailed(true)}
+          onCanPlay={(event) => onScreen && !paused && event.currentTarget.play?.()?.catch?.(() => {})}
+        />
       ) : (
         (image || still) && <img src={image ?? still} alt={media.alt ?? "a GIF"} loading="lazy" decoding="async" />
       )}

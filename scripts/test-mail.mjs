@@ -121,6 +121,53 @@ try {
     assert.equal(view.test.find((n) => n.id === test.note.id).title, "a try");
     assert.equal(typeof view.unread, "number");
   });
+
+  await test("The jar's API: the next note comes ready, pulls keep it, reactions are hers, Josh sees them", async () => {
+    const empty = await json(await request("me/note-jar", { cookie: kiriya }));
+    assert.equal(empty.next, null, "an empty jar has nothing ready");
+    for (const text of ["one", "two", "three"]) {
+      const added = await json(await request("admin/note-jar", { method: "POST", cookie: admin, body: { text } }), 201);
+      await json(await request(`admin/note-jar/${added.id}`, { method: "PATCH", cookie: admin, body: { releaseNow: true } }));
+    }
+    let jar = await json(await request("me/note-jar", { cookie: kiriya }));
+    assert.equal(jar.total, 3);
+    assert.equal(jar.next.note.text, "one", "new notes first, oldest first");
+    // As often as she likes: each pull keeps the note she was shown and brings the next one.
+    let pull;
+    for (let i = 0; i < 7; i++) {
+      const shown = jar.next.note;
+      pull = await json(await request("me/note-jar/pull", { method: "POST", cookie: kiriya, body: { requestId: crypto.randomUUID(), prefer: shown.id } }));
+      assert.equal(pull.note.id, shown.id);
+      assert.ok(pull.jar.next.note.id);
+      jar = pull.jar;
+    }
+    assert.equal(pull.jar.fresh, 0);
+    assert.equal(pull.jar.pulled, 7);
+    assert.equal((await request("me/note-jar/pull", { method: "POST", cookie: kiriya, body: { requestId: "nope" } })).status, 400);
+
+    // Her reaction, and Josh can't give one for her.
+    const reacted = await json(await request(`me/note-jar/${pull.id}/reaction`, { method: "PUT", cookie: kiriya, body: { reaction: "🥰" } }));
+    assert.equal(reacted.reaction, "🥰");
+    assert.equal((await request(`me/note-jar/${pull.id}/reaction`, { method: "PUT", cookie: kiriya, body: { reaction: "not one" } })).status, 400);
+    assert.equal((await request(`me/note-jar/${pull.id}/reaction`, { method: "PUT", cookie: admin, body: { reaction: "heart" } })).status, 403);
+    assert.equal((await request(`me/note-jar/${crypto.randomUUID()}/reaction`, { method: "PUT", cookie: kiriya, body: { reaction: "heart" } })).status, 404);
+
+    // Josh: his jar notes say how they went with her, and his own pulls are previews with her marks.
+    const desk = await json(await request("admin/note-jar", { cookie: admin }));
+    assert.equal(desk.notes.find((n) => n.id === pull.note.id).her.reaction, "🥰");
+    const his = await json(await request("me/note-jar", { cookie: admin }));
+    assert.equal(his.her.reacted, 1, "his island counts the notes she reacted to");
+    assert.equal((await json(await request("me/note-jar", { cookie: kiriya }))).her, undefined, "hers doesn't carry that");
+    const peek = await json(await request("me/note-jar/pull", { method: "POST", cookie: admin, body: { requestId: crypto.randomUUID(), prefer: his.next.note.id } }));
+    assert.equal(peek.preview, true);
+    assert.equal(peek.note.id, his.next.note.id);
+    assert.equal(typeof peek.her.pulls, "number");
+    assert.notEqual(peek.jar.next.note.id, peek.note.id, "his next preview is a different note");
+    assert.equal((await json(await request("me/note-jar", { cookie: kiriya }))).pulled, 7, "his previews change nothing for her");
+    // Saving one of her pulls to our memories works from its pull id.
+    const memory = await json(await request("me/memories", { method: "POST", cookie: kiriya, body: { kind: "jar", sourceId: pull.id } }), 201);
+    assert.equal(memory.snapshot.text, pull.note.text);
+  });
 } finally {
   await client.close();
 }

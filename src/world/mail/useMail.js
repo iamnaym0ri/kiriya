@@ -4,7 +4,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api.js";
 import { notesKey, useNotes } from "../../lib/notes.js";
-import { useIsAdmin } from "../../lib/session.js";
+import { useSession } from "../../lib/session.js";
 import { todayKey } from "../../lib/world.js";
 
 export const lettersKey = ["me", "letters"];
@@ -50,7 +50,8 @@ export function useJarSummary({ enabled = true } = {}) {
  * his own test notes (which he can open and react to, to try them out).
  */
 export function useMail() {
-  const admin = useIsAdmin();
+  const session = useSession();
+  const admin = session.data?.role === "admin";
   const letters = useLetters();
   const mine = useNotes();
   const hers = useQuery({
@@ -61,7 +62,9 @@ export function useMail() {
     refetchOnWindowFocus: true,
   });
   const inbox = admin ? hers : mine;
-  const pending = letters.isPending || inbox.isPending;
+  // Until the session is known, "whose mailbox" isn't either (a notification can open the app here).
+  const pending = !session.data || letters.isPending || inbox.isPending;
+  const fetching = letters.isFetching || inbox.isFetching;
   const error = letters.isError || inbox.isError;
 
   const allLetters = letters.data?.letters ?? [];
@@ -75,6 +78,7 @@ export function useMail() {
   return {
     admin,
     pending,
+    fetching,
     error,
     refetch: () => Promise.all([letters.refetch(), inbox.refetch(), admin ? mine.refetch() : null]),
     signature: nameOf(letters.data?.signature),

@@ -66,7 +66,7 @@ export async function interceptTestSend(db, role, data, { after = (task) => task
   const channel = shortcutChannel(data.clientId);
   if (!channel || !(await testMode(db, now)).on) return null;
 
-  const what = data.kind === "tap" ? `${tapByKey[data.body]?.emoji ?? "♡"} ${tapByKey[data.body]?.label ?? data.body}` : `“${notificationPreview(data.body, 80)}”`;
+  const what = data.enc ? "a sealed message 🔒" : data.kind === "tap" ? `${tapByKey[data.body]?.emoji ?? "♡"} ${tapByKey[data.body]?.label ?? data.body}` : `“${notificationPreview(data.body, 80)}”`;
   const entry = { at: now.toISOString(), channel, kind: data.kind, what, replyTo: data.replyTo ?? null };
   const entries = [entry, ...(await testLog(db))].slice(0, LOG_SIZE);
   await writeSetting(db, LOG_KEY, { entries });

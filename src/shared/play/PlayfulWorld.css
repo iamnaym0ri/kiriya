@@ -11,7 +11,7 @@
   z-index: 150;
 }
 /*
-  The drifting charms behind the page, in today's mood's weather (shapes and colours are set with the
+  The drifting charms (behind the page on the website, above everything in the app), in today's mood's weather (shapes and colours are set with the
   palettes in daily-style.css). Smooth on an iPhone 11:
   - Each charm is one small layer with two animations of different transform properties, which
     WebKit runs on the compositor side by side: `translate` only travels (down, or up for embers and
@@ -24,8 +24,7 @@
     pixel per frame; each is its own layer up front (will-change: transform, seven layers), so it
     is composited at sub-pixel positions from the very first frame.
   - Only transforms and opacity move; fixed vh/px distances; no filters (the misty mood's softness is
-    a text-shadow, painted once). Fades happen only at the edges: in the app a charm slides behind
-    the tab bar fully visible, instead of fading out mid-screen.
+    a text-shadow, painted once). Fades happen only at the top and bottom edges of the screen.
   - Starts are spread evenly through the fall (--k, set in PlayfulWorld.jsx), so they never clump.
   - Seven on a phone (nine on wide screens), four in the "overwhelmed" mood.
   - Paused in place (not restarted) while the app is in the background or she is in chat; gone with
@@ -154,28 +153,51 @@
   50% { transform: translateY(-14px) scale(0.94, 1.06); }
 }
 
-/* In the app the charms are the background: behind every card (above the lilac wash), and only
-   between the compact top bar's place and the tab bar, so nothing ever moves under a frosted bar
-   (the status-bar strip, the compact bar that fades in on scroll, the tab bar) and makes it blur
-   again on every frame. They fade in over their first ~100 pt anyway, so the top edge never shows. */
+/* In the app the charms fall above everything (round 3): over the cards, the header, the tab bar,
+   the characters, sheets and dialogs. PlayfulWorld.jsx puts the layer straight in <body> and in the
+   top layer as a manual popover; here it loses the popover's own look and stays displayed while it
+   steps back on top, so the falls never restart. Never a tap: pointer-events none, as always.
+   Smooth: still seven small layers, each moved by transform and opacity only, and nothing paints
+   above them, so nothing else has to become a layer because of them (behind the page, every card
+   they slid under had to). A little softer on top of text. */
 html.app-shell .ambient-charms {
-  z-index: -1;
-  top: calc(var(--app-safe-top, env(safe-area-inset-top)) + var(--app-bar-h, 44px));
-  bottom: var(--app-tabs-h, 0px);
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: hidden;
+  pointer-events: none;
 }
-html.app-shell #root::after {
-  z-index: -2;
+html.app-shell .ambient-charms[popover] {
+  display: block;
 }
-/* The chat covers the whole screen with its own wallpaper: nothing to show, so nothing to draw. They
-   wait where they are (paused, not removed), so leaving chat doesn't restart them. */
-html.app-shell body[data-tab="chat"] .ambient-charms {
+html.app-shell .ambient-charms::backdrop {
+  display: none;
+}
+html.app-shell .ambient-charms > span::before {
+  opacity: min(var(--charm-peak, 0.34), 0.62);
+}
+/* The chat has its own wallpaper and a game its own world: the charms wait where they are (paused,
+   not removed), so leaving doesn't restart them. */
+html.app-shell body[data-tab="chat"] .ambient-charms,
+html.app-shell.game-sheet-open .ambient-charms {
   visibility: hidden;
 }
-html.app-shell body[data-tab="chat"] .ambient-charms > span {
+html.app-shell body[data-tab="chat"] .ambient-charms > span,
+html.app-shell.game-sheet-open .ambient-charms > span {
   animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce) {
-  .ambient-charms {
+  .ambient-charms,
+  html.app-shell .ambient-charms[popover] {
     display: none;
   }
 }
@@ -386,7 +408,8 @@ html[data-little-motion="off"] *::after {
   transition-duration: 0s !important;
   scroll-behavior: auto !important;
 }
-html[data-little-motion="off"] .ambient-charms {
+html[data-little-motion="off"] .ambient-charms,
+html.app-shell[data-little-motion="off"] .ambient-charms[popover] {
   display: none;
 }
 html[data-little-motion="off"] .birthday-ribbon__track {

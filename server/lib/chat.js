@@ -9,6 +9,8 @@ import { notificationPreview } from "./loveNotes.js";
 import { publish } from "./realtime.js";
 import { sendToSubscribers } from "../push/webpush.js";
 import { interceptTestSend } from "./appTestMode.js";
+import { forgetUploads, refusePlain, sealedNotification } from "./chatKeys.js";
+import { previewText } from "../../shared/chatPreview.js";
 
 // The private chat between Kiriya ("kiriya") and Josh ("admin"), docs/refactor/PLAN.md phase 4.
 
@@ -18,10 +20,24 @@ export const TEXT_MAX = 4000;
 const PAGE = 40;
 const TAPS_PER_HOUR = 30;
 
+// Each person's look for the chat (src/world/chat/theme): a whole-chat theme, a bubble design, a
+// background (her own photo placed, zoomed, dimmed or blurred), the typing indicator, and the
+// chat lock (src/world/chat/lock).
+export const THEMES = ["lilac", "white", "cream", "dark", "love", "miku", "herbal", "sky"];
 export const BUBBLES = ["lilac", "paper", "pixel", "kawaii", "cat", "flowers", "fairy", "gothic", "lovey"];
-export const BACKGROUNDS = ["petals", "night", "notebook", "photo", "miku", "maomao"];
+export const BACKGROUNDS = ["theme", "plain", "petals", "hearts", "clouds", "notebook", "night", "photo", "miku", "maomao"];
 export const TYPING = ["hearts", "maomao", "pencil", "dots"];
-export const DEFAULT_PREFS = { bubble: "lilac", background: "petals", backgroundUrl: null, typing: "hearts" };
+export const LOCK_AFTER = [0, 60, 300];
+export const DEFAULT_PREFS = {
+  theme: "lilac",
+  bubble: "lilac",
+  background: "theme",
+  backgroundUrl: null,
+  backgroundKey: null,
+  photo: { x: 50, y: 50, zoom: 1, dim: 0.35, blur: 0 },
+  typing: "hearts",
+  lock: { on: false, after: 60, previews: false },
+};
 
 async function settingValue(db, key) {
   const [row] = await db.select({ value: schema.settings.value }).from(schema.settings).where(eq(schema.settings.key, key));
@@ -247,18 +263,14 @@ export async function chatSummary(db, role) {
 // ---------- writing ----------
 
 export function chatNotification(message, from) {
-  const preview = {
-    text: notificationPreview(message.body, 140),
-    image: "📷 sent you a photo",
-    gif: "sent you a GIF",
-    sticker: "sent you a sticker",
-    voice: "🎙️ sent you a voice note",
-  };
+  // Sealed (end to end): the words are only on the phones; the notification carries them sealed.
+  if (message.enc && message.kind !== "tap") return sealedNotification(message, from);
   if (message.kind === "tap") {
     const tap = tapByKey[message.body];
     return { title: tap.push.replace("{from}", from), body: `${tap.kaomoji}  ${tap.note}`, navigate: "/world/chat", kind: "tap", tap: tap.key, threadId: "chat", messageId: message.id };
   }
-  const body = message.kind === "text" ? preview.text : message.body ? `${preview[message.kind]}: ${notificationPreview(message.body, 100)}` : preview[message.kind];
+  // From before both of them had keys: "📷 4 photos: look!!", "🎬 a video", or the words of a text.
+  const body = message.kind === "text" ? notificationPreview(message.body, 140) : previewText({ kind: message.kind, body: notificationPreview(message.body, 100), media: message.media });
   return { title: from, body, navigate: "/world/chat", kind: "chat", threadId: "chat", messageId: message.id };
 }
 
@@ -282,6 +294,7 @@ export async function sendMessage(db, role, input, { after = (task) => task(), n
   // Josh trying the app's buttons in test mode: checked like a real send, but never saved or sent to her.
   const test = await interceptTestSend(db, role, data, { after, now });
   if (test) return test;
+  await refusePlain(db, data);
   const [inserted] = await db
     .insert(schema.chatMessages)
     .values({
@@ -323,6 +336,7 @@ export async function editMessage(db, role, id, input, { now = new Date() } = {}
   const data = editSchema.parse(input);
   const [row] = await db.select().from(schema.chatMessages).where(eq(schema.chatMessages.id, id));
   if (!row || row.sender !== role || row.deletedAt || !EDITABLE.includes(row.kind)) return null;
+  await refusePlain(db, { kind: row.kind, enc: data.enc });
   const isSealed = data.enc !== undefined;
   const body = row.kind === "text" && !isSealed ? data.body.trim() : data.body;
   if (row.kind === "text" && !body.trim()) throw Object.assign(new Error("A message can’t be empty. Delete it instead?"), { status: 400 });
@@ -426,14 +440,53 @@ export async function typingOf(db, role, now = new Date()) {
   return Boolean(row && now.getTime() - Date.parse(row.value.at) < 6000);
 }
 
+// ---------- presence: active, inactive or asleep ----------
+// Each phone checks in while the app is open (the chat summary the tab bar polls about every
+// minute), with its time zone, so the other one's chat header can say "active", "inactive" or,
+// at night where they are, "sleep". Josh previewing her side never checks in as her.
+
+export const ACTIVE_FOR_MS = 150_000;
+const presenceKey = (role) => `chat:presence:${role}`;
+const knownZone = (tz) => {
+  if (typeof tz !== "string" || !tz || tz.length > 64) return false;
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export async function notePresence(db, role, { tz = null, now = new Date() } = {}) {
+  const [row] = await db.select().from(schema.kv).where(eq(schema.kv.key, presenceKey(role)));
+  const zone = knownZone(tz) ? tz : (row?.value?.tz ?? null);
+  // At most one write every 30 s per person.
+  if (row && now.getTime() - Date.parse(row.value.at) < 30_000 && row.value.tz === zone) return;
+  const value = { at: now.toISOString(), tz: zone };
+  await db.insert(schema.kv).values({ key: presenceKey(role), value }).onConflictDoUpdate({ target: schema.kv.key, set: { value, updatedAt: now } });
+}
+
+export async function presenceOf(db, role) {
+  const [row] = await db.select().from(schema.kv).where(eq(schema.kv.key, presenceKey(role)));
+  return { seenAt: row?.value?.at ?? null, tz: row?.value?.tz ?? null };
+}
+
 // ---------- preferences ----------
 
 const prefsSchema = z
   .object({
+    theme: z.enum(THEMES).optional(),
     bubble: z.enum(BUBBLES).optional(),
     background: z.enum(BACKGROUNDS).optional(),
-    backgroundUrl: z.string().refine((u) => isUploadUrl(u, ["backgrounds"])).nullable().optional(),
+    // Her own photo; sealed end to end once the chat is (its file key, sealed, in backgroundKey).
+    backgroundUrl: z.string().refine((u) => isUploadUrl(u, ["backgrounds", "chat"])).nullable().optional(),
+    backgroundKey: z.object({ k: z.string().regex(/^[\w-]{1,24}$/), sealed: z.string().regex(/^[\w-]{38,1024}$/) }).strict().nullable().optional(),
+    photo: z
+      .object({ x: z.number().min(0).max(100), y: z.number().min(0).max(100), zoom: z.number().min(1).max(3), dim: z.number().min(0).max(0.85), blur: z.number().min(0).max(16) })
+      .strict()
+      .optional(),
     typing: z.enum(TYPING).optional(),
+    lock: z.object({ on: z.boolean(), after: z.union(LOCK_AFTER.map((n) => z.literal(n))), previews: z.boolean() }).strict().optional(),
   })
   .strict();
 export async function readPrefs(db, role) {
@@ -469,7 +522,8 @@ export async function removeSticker(db, id) {
 async function snapshotOf(db, role, kind, sourceId) {
   if (kind === "message") {
     const [row] = await db.select().from(schema.chatMessages).where(and(eq(schema.chatMessages.id, sourceId), isNull(schema.chatMessages.deletedAt)));
-    return row && { sender: row.sender, kind: row.kind, body: row.body, media: row.media, at: row.createdAt.toISOString() };
+    // Sealed messages stay sealed in the copy (with what the phones need to open it again).
+    return row && { sender: row.sender, kind: row.kind, clientId: row.clientId, body: row.body, media: row.media, enc: row.enc ?? null, at: row.createdAt.toISOString() };
   }
   if (kind === "note") {
     // Little notes: only ones delivered to whoever is saving it (or sent by Josh, when he saves).
@@ -503,17 +557,37 @@ export async function addMemory(db, role, { kind, sourceId, caption = "" }) {
   const [existing] = await db.select().from(schema.memories).where(and(eq(schema.memories.kind, kind), eq(schema.memories.sourceId, sourceId)));
   return existing;
 }
-export async function listMemories(db, { before = null, limit = 30 } = {}) {
+// The memories page's shelves (src/world/chat/memories): what a saved message is, by its kind.
+export const MEMORY_SHELVES = {
+  messages: sql`${schema.memories.kind} = 'message' AND ${schema.memories.snapshot}->>'kind' IN ('text', 'tap')`,
+  pictures: sql`${schema.memories.kind} = 'message' AND ${schema.memories.snapshot}->>'kind' IN ('image', 'gif', 'sticker')`,
+  voice: sql`${schema.memories.kind} = 'message' AND ${schema.memories.snapshot}->>'kind' = 'voice'`,
+  letters: sql`${schema.memories.kind} IN ('note', 'letter', 'jar')`,
+};
+export async function listMemories(db, { before = null, shelf = null, limit = 30 } = {}) {
+  const filters = [before ? lt(schema.memories.createdAt, new Date(before)) : undefined, shelf ? MEMORY_SHELVES[shelf] : undefined].filter(Boolean);
   const rows = await db
     .select()
     .from(schema.memories)
-    .where(before ? lt(schema.memories.createdAt, new Date(before)) : undefined)
+    .where(filters.length ? and(...filters) : undefined)
     .orderBy(desc(schema.memories.createdAt))
     .limit(limit + 1);
   return { items: rows.slice(0, limit), next: rows.length > limit ? rows[limit - 1].createdAt.toISOString() : null };
 }
-export async function removeMemory(db, id) {
-  const [row] = await db.delete(schema.memories).where(eq(schema.memories.id, id)).returning({ id: schema.memories.id });
+/** How many memories sit on each shelf, for the page's tabs. */
+export async function memoryCounts(db) {
+  const entries = await Promise.all(
+    Object.entries(MEMORY_SHELVES).map(async ([shelf, where]) => [shelf, (await db.select({ n: count() }).from(schema.memories).where(where))[0].n]),
+  );
+  return Object.fromEntries(entries);
+}
+export async function removeMemory(db, id, { after = (task) => task() } = {}) {
+  const [row] = await db.delete(schema.memories).where(eq(schema.memories.id, id)).returning();
+  // A photo kept only for this memory (its message was deleted) goes with it.
+  if (row?.kind === "message") {
+    const links = mediaUrls(row.snapshot?.media);
+    if (links.length) await after(() => forgetUploads(db, links));
+  }
   return Boolean(row);
 }
 

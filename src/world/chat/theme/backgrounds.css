@@ -1,0 +1,171 @@
+/* The chat's background (round 3): the theme's own, a few drawn presets that take the theme's
+   colours, the official Miku and Maomao wallpapers, or her own photo with its position, zoom, dim
+   and blur (theme/index.js chatLook sets --photo-*). Drawn in .chat__backdrop, which sits behind
+   everything; patterns are masks filled with the theme's accent, so they always match. */
+
+.chat[data-theme] > .chat__backdrop,
+.chat-preview .chat__backdrop {
+  background: var(--chat-bg);
+  overflow: hidden;
+}
+.chat[data-theme] > .chat__backdrop::before,
+.chat[data-theme] > .chat__backdrop::after,
+.chat-preview .chat__backdrop::before,
+.chat-preview .chat__backdrop::after {
+  content: none;
+  animation: none;
+}
+
+/* the theme's own */
+.chat[data-theme][data-background="theme"] > .chat__backdrop,
+.chat-preview[data-background="theme"] .chat__backdrop {
+  background: var(--chat-backdrop, var(--chat-bg));
+}
+
+/* plain: just the theme's colour */
+.chat[data-theme][data-background="plain"] > .chat__backdrop,
+.chat-preview[data-background="plain"] .chat__backdrop {
+  background: var(--chat-bg);
+}
+
+/* lilac petals: the site's flowering branches, washed in the theme */
+.chat[data-theme][data-background="petals"] > .chat__backdrop,
+.chat-preview[data-background="petals"] .chat__backdrop {
+  background: url("/images/branches.webp") center / cover no-repeat, var(--chat-bg);
+}
+.chat[data-theme][data-background="petals"] > .chat__backdrop::after,
+.chat-preview[data-background="petals"] .chat__backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--chat-bg);
+  opacity: 0.66;
+}
+
+/* night sky: stars on deep plum, whatever the theme (the theme's ink still reads on its bubbles) */
+.chat[data-theme][data-background="night"] > .chat__backdrop,
+.chat-preview[data-background="night"] .chat__backdrop {
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 32% 42%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 58% 12%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 76% 34%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 88% 68%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 22% 78%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 46% 88%, #fff 50%, transparent 51%),
+    radial-gradient(circle at 70% 120%, #6b3f8f 0, transparent 60%),
+    linear-gradient(165deg, #2a1640 0%, #1a0d2b 60%, #120820 100%);
+}
+.chat[data-theme][data-background="night"] > .chat__backdrop::before,
+.chat-preview[data-background="night"] .chat__backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1.5px 1.5px at 40% 25%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 66% 58%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 18% 52%, #fff 50%, transparent 51%);
+  animation: backdrop-twinkle 3.4s ease-in-out infinite;
+}
+
+/* notebook: ruled paper with a margin line */
+.chat[data-theme][data-background="notebook"] > .chat__backdrop,
+.chat-preview[data-background="notebook"] .chat__backdrop {
+  background:
+    linear-gradient(90deg, transparent 46px, color-mix(in srgb, var(--chat-accent) 40%, #f0a9c3) 46px 48px, transparent 48px),
+    repeating-linear-gradient(transparent 0 27px, color-mix(in srgb, var(--chat-line) 85%, #9fb6d8) 27px 28px),
+    color-mix(in srgb, var(--chat-bg) 70%, #fffdf6);
+}
+
+/* hearts and clouds: little drawn shapes in the theme's accent */
+.chat[data-theme][data-background="hearts"] > .chat__backdrop::before,
+.chat-preview[data-background="hearts"] .chat__backdrop::before,
+.chat[data-theme][data-background="clouds"] > .chat__backdrop::before,
+.chat-preview[data-background="clouds"] .chat__backdrop::before {
+  content: "";
+  position: absolute;
+  inset: -40px;
+  background: var(--chat-accent);
+  opacity: 0.12;
+  -webkit-mask: var(--pattern) 0 0 / var(--pattern-size) repeat;
+  mask: var(--pattern) 0 0 / var(--pattern-size) repeat;
+}
+.chat[data-theme][data-background="hearts"] > .chat__backdrop,
+.chat-preview[data-background="hearts"] .chat__backdrop {
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cpath d='M16 26c-6-5-10-8-10-13a5 5 0 0 1 10-1 5 5 0 0 1 10 1c0 5-4 8-10 13z'/%3E%3Cpath transform='translate(34 34) scale(.7)' d='M16 26c-6-5-10-8-10-13a5 5 0 0 1 10-1 5 5 0 0 1 10 1c0 5-4 8-10 13z'/%3E%3C/svg%3E");
+  --pattern-size: 64px 64px;
+  background: radial-gradient(80% 60% at 50% 0%, var(--chat-glow), transparent 70%), var(--chat-bg);
+}
+.chat[data-theme][data-background="clouds"] > .chat__backdrop,
+.chat-preview[data-background="clouds"] .chat__backdrop {
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='120'%3E%3Cpath d='M30 50a14 14 0 0 1 26-8 12 12 0 0 1 22 6 10 10 0 0 1 0 20H32a9 9 0 0 1-2-18z'/%3E%3Cpath transform='translate(80 62) scale(.75)' d='M30 50a14 14 0 0 1 26-8 12 12 0 0 1 22 6 10 10 0 0 1 0 20H32a9 9 0 0 1-2-18z'/%3E%3C/svg%3E");
+  --pattern-size: 160px 120px;
+  background: linear-gradient(color-mix(in srgb, var(--chat-glow) 70%, var(--chat-bg)), var(--chat-bg));
+}
+
+/* the official wallpapers (wallpapers.js), softened so the words stay easy to read */
+.chat[data-theme][data-background="miku"] > .chat__backdrop,
+.chat[data-theme][data-background="maomao"] > .chat__backdrop,
+.chat-preview[data-background="miku"] .chat__backdrop,
+.chat-preview[data-background="maomao"] .chat__backdrop {
+  background: var(--chat-wallpaper) center / cover no-repeat, var(--chat-bg);
+}
+.chat[data-theme][data-background="miku"] > .chat__backdrop::after,
+.chat[data-theme][data-background="maomao"] > .chat__backdrop::after,
+.chat-preview[data-background="miku"] .chat__backdrop::after,
+.chat-preview[data-background="maomao"] .chat__backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--chat-bg);
+  opacity: 0.55;
+}
+
+/* her own photo: placed and zoomed where she chose, with a dim and a blur for the words */
+.chat[data-theme][data-background="photo"] > .chat__backdrop,
+.chat-preview[data-background="photo"] .chat__backdrop {
+  background: var(--chat-bg);
+}
+.chat[data-theme][data-background="photo"] > .chat__backdrop::before,
+.chat-preview[data-background="photo"] .chat__backdrop::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--photo-blur, 0px) * -2);
+  background: var(--chat-photo) var(--photo-x, 50%) var(--photo-y, 50%) / cover no-repeat;
+  transform: scale(var(--photo-zoom, 1));
+  transform-origin: var(--photo-x, 50%) var(--photo-y, 50%);
+  filter: blur(var(--photo-blur, 0px));
+}
+.chat[data-theme][data-background="photo"] > .chat__backdrop::after,
+.chat-preview[data-background="photo"] .chat__backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--chat-bg);
+  opacity: var(--photo-dim, 0.35);
+}
+
+/* Words that sit straight on the background (the day, "seen ♡") get a soft pill on busy ones. */
+.chat[data-theme]:is([data-background="photo"], [data-background="miku"], [data-background="maomao"], [data-background="night"], [data-background="petals"]) .msg__status:not(.chat-preview *) {
+  justify-self: end;
+  width: fit-content;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--chat-bar) 82%, transparent);
+}
+
+@keyframes backdrop-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat[data-theme] > .chat__backdrop::before,
+  .chat-preview .chat__backdrop::before {
+    animation: none !important;
+  }
+}

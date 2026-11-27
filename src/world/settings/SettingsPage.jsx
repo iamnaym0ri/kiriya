@@ -11,6 +11,7 @@ import MaomaoMascot from "../mascot/MaomaoMascot.jsx";
 import SongShelf from "../stage/SongShelf.jsx";
 import MyFaves from "./MyFaves.jsx";
 import "./SettingsPage.css";
+import { rewrapForPassphraseChange } from "../../lib/chatCrypto.js";
 
 function InstallGuide() {
   return (
@@ -113,10 +114,10 @@ export function Passphrase() {
   const status = useQuery({ queryKey: ["me", "passphrase"], queryFn: () => api("/me/passphrase") });
   const [draft, setDraft] = useState({ current: "", next: "", confirm: "", signOutOthers: true });
   const change = useMutation({
-    mutationFn: () =>
+    mutationFn: async () =>
       api("/me/passphrase", {
         method: "PUT",
-        body: { current: draft.current, next: draft.next, signOutOthers: draft.signOutOthers },
+        body: { current: draft.current, next: draft.next, signOutOthers: draft.signOutOthers, chatKey: await rewrapForPassphraseChange(draft.current, draft.next) },
       }),
     onSuccess: () => {
       setDraft({ current: "", next: "", confirm: "", signOutOthers: true });

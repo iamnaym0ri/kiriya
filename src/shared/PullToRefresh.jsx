@@ -20,7 +20,9 @@ export default function PullToRefresh({ enabled = true }) {
     if (!enabled) return undefined;
     const down = (event) => {
       if (window.scrollY > 0 || document.body.dataset.page === "chat" || event.touches.length !== 1) return;
-      if (event.target.closest?.("input, textarea, [contenteditable], canvas, .native-lock, [role=dialog], .game-sheet, .app-tabs")) return;
+      // Nothing behind an open sheet refreshes: not its panel, and not the dimmed area around it.
+      if (document.documentElement.classList.contains("edit-sheet-open")) return;
+      if (event.target.closest?.("input, textarea, [contenteditable], canvas, .native-lock, [role=dialog], .edit-sheet, .game-sheet, .app-tabs")) return;
       start.current = event.touches[0].clientY;
       armed.current = false;
     };

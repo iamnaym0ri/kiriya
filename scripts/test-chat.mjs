@@ -65,6 +65,30 @@ try {
     assert.deepEqual([page.messages, page.me, page.live, page.unread], [[], "kiriya", false, 0]);
   });
 
+  await test("Each phone's check-in shows the other one as active, and when it's night there", async () => {
+    // Nobody has checked in yet.
+    const before = await json(await request("me/chat/summary", { cookie: josh }));
+    assert.deepEqual(before.presence, { seenAt: null, tz: null });
+    // Her phone checks in with its time zone; Josh sees her seen just now, in Singapore.
+    await json(await request("me/chat/summary?tz=Asia%2FSingapore", { cookie: her }));
+    const seen = await json(await request("me/chat/summary", { cookie: josh }));
+    assert.equal(seen.presence.tz, "Asia/Singapore");
+    assert(Date.now() - Date.parse(seen.presence.seenAt) < 5000);
+    // A made-up zone is ignored, and the known one is kept.
+    await json(await request("me/chat/summary?tz=Not%2FAZone", { cookie: her }));
+    assert.equal((await chat.presenceOf(db, "kiriya")).tz, "Asia/Singapore");
+    // Josh previewing her side never checks in as her.
+    const earlier = new Date(Date.now() - 3600e3).toISOString();
+    await db.update(schema.kv).set({ value: { at: earlier, tz: "Asia/Singapore" } }).where(eq(schema.kv.key, "chat:presence:kiriya"));
+    const original = new URL("/api/me/chat/summary?tz=America%2FChicago", "https://kiriya.love");
+    const rewritten = new URL("/api", original);
+    rewritten.search = original.search;
+    rewritten.searchParams.set("__route", "me/chat/summary");
+    const previewed = await handlers.GET(new Request(rewritten, { headers: { "x-kw": "1", cookie: josh, "x-view-as": "kiriya" } }));
+    assert.equal(previewed.status, 200);
+    assert.deepEqual(await chat.presenceOf(db, "kiriya"), { seenAt: earlier, tz: "Asia/Singapore" });
+  });
+
   await test("Messages send once even when a flaky connection retries them", async () => {
     const clientId = randomUUID();
     hello = await json(await request("me/chat/messages", { method: "POST", cookie: josh, body: { clientId, kind: "text", body: "  hi baby ♡  " } }), 201);
@@ -261,7 +285,9 @@ try {
     const push = chat.chatNotification({ kind: "tap", body: "thinking" }, "Josh");
     assert.equal(push.title, "Josh is thinking of you ♡");
     assert.equal(push.kind, "tap");
-    assert.equal(chat.chatNotification({ kind: "voice", body: "" }, "Kiriya").body, "🎙️ sent you a voice note");
+    assert.equal(chat.chatNotification({ kind: "voice", body: "" }, "Kiriya").body, "🎙️ a voice note");
+    assert.equal(chat.chatNotification({ kind: "image", body: "us!", media: { items: [{ type: "image" }, { type: "image" }, { type: "image" }, { type: "video" }] } }, "Kiriya").body, "📷 3 photos and a video: us!");
+    assert.equal(chat.chatNotification({ kind: "image", body: "", media: { items: [{ type: "video" }] } }, "Kiriya").body, "🎬 a video");
   });
 
   await test("Each of them keeps their own look; only known themes and their own uploads are accepted", async () => {
