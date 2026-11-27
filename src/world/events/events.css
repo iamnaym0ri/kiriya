@@ -597,7 +597,7 @@ html.app-shell .ev-soon > .app-card__head {
 .ev-drops__all::after {
   content: "";
   position: absolute;
-  inset: -14px -8px;
+  inset: -15px -8px;
 }
 .ev-drops__strip {
   display: flex;
@@ -887,7 +887,6 @@ html.app-shell .mx-page__title {
   font-size: 38px;
   line-height: 1.05;
   overflow-wrap: anywhere;
-  hyphens: auto;
 }
 html.app-shell .ev-page__title[data-length="long"],
 html.app-shell .mx-page__title[data-length="long"] {
@@ -2370,4 +2369,12 @@ html.app-shell .ev-more__icon {
   content: "";
   position: absolute;
   inset: -9px -4px;
+}
+.ev-card-link {
+  position: relative;
+}
+.ev-card-link::after {
+  content: "";
+  position: absolute;
+  inset: -5px -6px;
 }

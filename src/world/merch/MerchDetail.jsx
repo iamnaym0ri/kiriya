@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { useAppBack } from "../../shared/AppFrame.jsx";
-import { MERCH_KIND, MERCH_STATUS, displayName, mapsLinks, merchChips, siteOf, titleLength } from "../events/eventFormat.js";
+import { MERCH_KIND, MERCH_STATUS, displayName, handSafe, mapsLinks, merchChips, siteOf, titleLength } from "../events/eventFormat.js";
 import { MERCH_LIST, eventPath, useMerchItem } from "../events/eventsData.js";
 import { Chips, KindDoodle, MerchCard, SaveButton, Toaster } from "../events/EventPieces.jsx";
 import Glyph from "../events/Glyph.jsx";
@@ -148,7 +148,7 @@ export default function MerchDetail() {
     if (movedTo) navigate(`/world/events/merch/${encodeURIComponent(movedTo)}`, { replace: true, state: location.state });
   }, [movedTo, navigate, location.state]);
 
-  const title = item?.name ?? (isPending ? "" : "not found");
+  const title = item?.name ? handSafe(item.name) : isPending ? "" : "not found";
   return (
     <div className="app-screen mx-page">
       <header className="app-section__head">

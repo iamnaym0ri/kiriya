@@ -4,7 +4,7 @@
 import { useEffect, useMemo } from "react";
 import { Link, useLocation, useSearchParams } from "react-router";
 import { useAppBack } from "../../shared/AppFrame.jsx";
-import { displayName } from "../events/eventFormat.js";
+import { displayName, handSafe } from "../events/eventFormat.js";
 import { eventPath, useIsSaved, useMerchList } from "../events/eventsData.js";
 import { KindDoodle, MerchCard, Toaster } from "../events/EventPieces.jsx";
 import "../events/events.css";
@@ -87,7 +87,7 @@ export default function MerchList() {
               {g.event?.id ? (
                 <Link className="mx-group__head" to={eventPath(g.event.id)} state={{ from: "merch" }}>
                   <span className="mx-group__text">
-                    <strong>{displayName(g.event.name)}</strong>
+                    <strong>{handSafe(displayName(g.event.name))}</strong>
                     <small>{[g.event.dateLabel, g.event.venueName].filter(Boolean).join(" · ")}</small>
                   </span>
                   <span className="mx-group__go">

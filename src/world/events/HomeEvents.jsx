@@ -4,7 +4,7 @@
 // list inside the home tab.
 import { useEffect, useId, useMemo, useRef } from "react";
 import { Link } from "react-router";
-import { ago, dateRange, displayName, kindLabel, phaseOf, timeOf, whenLabel } from "./eventFormat.js";
+import { ago, dateRange, displayName, handSafe, kindLabel, phaseOf, timeOf, whenLabel } from "./eventFormat.js";
 import { MERCH_LIST, eventPath, markLooked, useEventsHome, useFreshSnapshot, useSeenNow } from "./eventsData.js";
 import { Countdown, EventRow, ItemChips, KindDoodle, MerchCard, NewMark, Toaster, useNow } from "./EventPieces.jsx";
 import PasteLink from "./PasteLink.jsx";
@@ -71,7 +71,7 @@ function Hero({ item, now }) {
       <span className="ev-hero__art" aria-hidden="true">
         {item.image?.url ? <img src={item.image.url} alt="" decoding="async" /> : <KindDoodle kind={item.kind} size={50} />}
       </span>
-      <strong className="ev-hero__name">{displayName(item.name)}</strong>
+      <strong className="ev-hero__name">{handSafe(displayName(item.name))}</strong>
       <span className="ev-hero__meta">
         {dateRange(item, { now })}
         {where && <> · {where}</>}
@@ -114,7 +114,7 @@ function NewSince({ fresh, total }) {
         </h3>
         {total > fresh.length && (
           <div className="app-card__action">
-            <Link to="/world/events?show=new">see all</Link>
+            <Link className="ev-card-link" to="/world/events?show=new">see all</Link>
           </div>
         )}
       </header>
@@ -214,7 +214,7 @@ export default function HomeEvents() {
               <header className="app-card__head">
                 <h3 className="app-card__title">on now & coming up</h3>
                 <div className="app-card__action">
-                  <Link to="/world/events">all {data?.counts?.upcoming ?? ""}</Link>
+                  <Link className="ev-card-link" to="/world/events">all {data?.counts?.upcoming ?? ""}</Link>
                 </div>
               </header>
               <ul className="app-list">

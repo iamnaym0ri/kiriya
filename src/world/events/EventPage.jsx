@@ -14,6 +14,7 @@ import {
   dayNumber,
   dayWeather,
   displayName,
+  handSafe,
   hours,
   kindLabel,
   mapsLinks,
@@ -156,7 +157,7 @@ function Glance({ item, now }) {
           href={maps?.place}
           action={maps ? <span className="ev-pill">map</span> : null}
         />
-        <GlanceRow icon="ticket" label="tickets" title={t.title} detail={t.detail} tone={t.tone} href={buy} action={buy ? <span className="ev-pill ev-pill--strong">{item.tickets?.status === "on_sale" ? "buy" : "page"}</span> : null} />
+        <GlanceRow icon="ticket" label="tickets" title={t.title} detail={t.detail} tone={t.tone} href={buy} action={buy ? <span className="ev-pill ev-pill--strong">{item.tickets?.status === "on_sale" ? "buy" : "view"}</span> : null} />
         {w ? (
           <GlanceRow icon={w.icon} label="weather" title={`${w.tempHigh}° / ${w.tempLow}°${w.rainChance != null ? ` · ${w.rainChance}% rain` : ""}`} detail={[dayLabel(w.date), w.summary?.toLowerCase()].filter(Boolean).join(" · ")} />
         ) : item.startsOn && !item.datesTbc && phaseOf(item, now).phase !== "ended" ? (
@@ -451,7 +452,7 @@ function Guests({ item }) {
   );
 }
 
-function Bullets({ item, list }) {
+function Bullets({ item, list, sourced = true }) {
   return (
     <>
       <ul className="ev-tips">
@@ -461,7 +462,7 @@ function Bullets({ item, list }) {
           </li>
         ))}
       </ul>
-      <Sourced item={item} ids={list.flatMap(ids)} />
+      {sourced && <Sourced item={item} ids={list.flatMap(ids)} />}
     </>
   );
 }
@@ -600,10 +601,10 @@ function Folded({ item, now, unseen, openId }) {
       <More key="about" id="about" icon="info" title="what it’s like" openId={openId}>
         {item.like?.text && <p className="ev-prose">{item.like.text}</p>}
         {item.popup?.about?.text && <p className="ev-prose">{item.popup.about.text}</p>}
-        {item.popup?.sold?.length > 0 && <Bullets item={item} list={item.popup.sold} />}
-        {item.highlights?.length > HIGHLIGHTS_SHOWN && <Bullets item={item} list={item.highlights.slice(HIGHLIGHTS_SHOWN)} />}
+        {item.popup?.sold?.length > 0 && <Bullets item={item} list={item.popup.sold} sourced={false} />}
+        {item.highlights?.length > HIGHLIGHTS_SHOWN && <Bullets item={item} list={item.highlights.slice(HIGHLIGHTS_SHOWN)} sourced={false} />}
         {item.size?.text && <p className="ev-prose ev-prose--small">{item.size.text}</p>}
-        <Sourced item={item} ids={[...ids(item.like), ...ids(item.size)]} />
+        <Sourced item={item} ids={[...ids(item.like), ...ids(item.popup?.about), ...(item.popup?.sold ?? []).flatMap(ids), ...(item.highlights ?? []).slice(HIGHLIGHTS_SHOWN).flatMap(ids), ...ids(item.size)]} />
       </More>,
     );
   if (item.days?.length > 1 || item.datesNote?.text || item.days?.some((d) => d.note))
@@ -698,7 +699,7 @@ export default function EventPage() {
     else setOpenId({ id: hash, at: Date.now() });
   }, [item?.full, location.hash]);
 
-  const name = item ? displayName(item.name) : "";
+  const name = item ? handSafe(displayName(item.name)) : "";
   const head = (title) => (
     <header className="app-section__head">
       <button type="button" className="app-screen__back" onClick={back}>

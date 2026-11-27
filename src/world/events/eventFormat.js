@@ -349,3 +349,9 @@ export function ticketFacts(tickets) {
 /** A merch piece's availability in words. */
 export const MERCH_STATUS = { revealed: "revealed", preorder: "pre-order open", on_sale: "on sale", sold_out: "sold out" };
 export const MERCH_KIND = { exclusive: "exclusive: only sold here", merch: "event merch", collab: "collab goods", limited: "limited run", freebie: "freebie" };
+
+/**
+ * Text for the hand-lettered font: it has no "×" (iOS draws a box), so collabs read "AFA x Miku"
+ * there. Other fonts keep the real character.
+ */
+export const handSafe = (text) => String(text ?? "").replace(/\s*×\s*/g, " x ");
