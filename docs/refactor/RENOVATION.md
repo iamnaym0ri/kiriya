@@ -325,3 +325,70 @@ is fine; tidy later), then `git merge connection-refactor`. Never run `git check
   Co-Authored-By lines). Never push. Never merge into `connection-refactor` yourself.
 - Your final report: what you built, where, what you checked and how (with screenshot paths), what
   is left or uncertain, any key Josh must provide, and any change you made outside what you own.
+
+## Round 2 (Josh's review, 2026-11-27)
+
+Josh tested the first build on his iPhone. What he asked for, and who does it:
+
+| Agent | Branch / worktree, dev port | Does |
+| --- | --- | --- |
+| r2-events | `r2/events`, `~/kiriya-wt/r2-events`, 5311 | Events and merch, engine and screens (`worker/**`, `server/routes/events*.js`, `server/lib/events/**`, the events tables, `src/world/events/**`, `src/world/merch/**`, `src/world/home/EventsBlock.jsx`). |
+| r2-stage | `r2/stage`, `~/kiriya-wt/r2-stage`, 5312 | The companion engine (tap menu, "stay"), plus refining **Maomao**, **Hatsune Miku** and **KAITO** (`src/world/companions/**` except `characters/miku-rotten` and `characters/bambi`; `shared/companions.js`). |
+| r2-chars | `r2/chars`, `~/kiriya-wt/r2-chars`, 5313 | Refining **Rotten Girl Miku** and **Bambi** (`src/world/companions/characters/miku-rotten/**`, `characters/bambi/**`). |
+| r2-play | `r2/play`, `~/kiriya-wt/r2-play`, 5314 | Play: paper doll, a new game in place of the sticker scene, kaleidoscope, a dedicated doodle gallery (`src/world/play/**` except quizzes, `src/world/studio/**`). |
+| r2-home | `r2/home`, `~/kiriya-wt/r2-home`, 5315 | Home layout and header, the background animation's smoothness, the note jar, and the spacing/overflow pass over home, chat, notes & letters and the last tab (`src/world/home/**` except `EventsBlock.jsx`, `src/world/WorldShell.*`, `src/styles/**`, `src/shared/AppTabBar.*`, `src/shared/play/PlayfulWorld.*`, `src/world/mail/**`, `src/world/notes/**`, `src/world/letters/**`, `src/world/chat/**` (layout), `src/world/me/**` (layout)). |
+| coordinator | `connection-refactor` | Chat not loading (fixed d0ae76c: Vercel's rewrite echoes `route=`), the "see it as kiriya" preview for Josh, merging, the iPhone and simulator pass, the deploy. |
+
+Same ground rules, testing and git rules as round 1 (above). Agents first run `git merge
+connection-refactor` in their worktree if it is behind.
+
+### Companion contract, round 2: the tap menu and "stay"
+
+Josh: every character gets interactions like the website's Maomao (tap her, choose something to
+show her). A tap always shows **two** choices next to the character: one of its own, and **stay**.
+
+```js
+// characters/<id>/index.js, new optional field
+action: {
+  id: "herb",                    // unique within the character
+  label: "show her an herb",     // the chip's words: lowercase, at most ~20 characters
+  icon: "🌿",                    // one emoji, or a tiny component ({ size }) drawn in the chip
+  pose: "inspect",               // a pose from `poses`, held while it plays
+  prop: "herb",                  // optional: Body gets `prop="herb"` while it plays
+  expression: "curious",         // optional
+  seconds: [3, 5],               // how long it lasts
+  topic: "action",               // the lines topic said as it starts (default "action")
+  steps: [ /* optional: a little sequence of { pose, prop, expression, seconds, topic } */ ],
+}
+```
+
+- **Body** gets one new prop, `prop` (string or `null`): the running action's prop, for a
+  character to draw in its hand (Rotten Girl's paddle, Miku's leek, KAITO's ice cream…). Characters
+  may also hold a prop in their own behaviours by their own means.
+- **Lines**, new topics: `action` (default for the custom action), `stay` (told to stay), `wander`
+  (let go again), optional `stayIdle` (idle lines while staying; falls back to `idle`).
+- **The menu** (engine): a tap keeps today's `react` pose and `tapped` line, and opens a small
+  frosted menu beside the character with exactly two 44 pt chips: `[icon label]` and `[📍 stay]`
+  (while staying, the second reads `[🌸 wander]`). Always fully on screen, never under the status
+  bar or tab bar. A chip runs its choice; a tap elsewhere, a scroll, a drag or 5 s of nothing
+  closes it. Three quick taps still give `pester`.
+- **Stay** (engine): the character stops travelling: no walks, jumps, level changes, roaming,
+  "somewhere clearer" moves or visit choreography that moves it (visitors still come and go). It
+  keeps doing everything it can do in place, chosen from behaviours without `roam` or `level`,
+  all treated as `stay: true`. Picked up and dropped while staying, it lands where it was dropped
+  (the level below the drop point) and that becomes its spot. Kept per character in
+  `localStorage` `kiriya:companion-stay` (`{ [id]: { x: 0..1 share of the width, level: index from
+  the bottom } }`, wrapped in try/catch), restored on the next visit to home. **wander** lets it go.
+- Each character needs **at least three in-place behaviours** (a little dance or fidget, a
+  pondering or humming moment, something of its own), so staying looks alive.
+
+### Character writing, round 2
+
+Josh wants each character much closer to the original in looks, speech and behaviour, after deep
+research (official profiles, wikis, the source works, fan consensus; looking at official art for
+reference is fine, but everything drawn is original SVG, nothing traced or embedded). Lines don't
+have to be SFW where the character would go there: **Rotten Girl Miku** is a fujoshi, so BL
+shipping, seme/uke talk, fanfic and doujin jokes, nosebleeds, flustered yelling and her paddle are
+in character. Keep it to innuendo and comedy, never explicit sexual description. **Bambi** is the
+avatar of a real performer: playful and flirty-cute is fine, nothing sexual. Nothing may name
+real people other than the characters themselves.
