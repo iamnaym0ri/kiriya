@@ -15,6 +15,7 @@ import { adminLoveNoteRoutes } from "./routes/loveNotes.js";
 import { adminNoteJarRoutes } from "./routes/noteJarAdmin.js";
 import { widgetRoutes } from "./routes/widget.js";
 import { appRoutes, appSessionRoutes } from "./routes/app.js";
+import { gamesLuckRoutes } from "./routes/gamesLuck.js";
 
 const app = new Hono().basePath("/api");
 
@@ -75,6 +76,7 @@ app.route("/session", sessionRoutes);
 app.route("/public", publicRoutes);
 
 app.use("/me/*", requireRole("kiriya", "admin"));
+app.route("/me/games/luck", gamesLuckRoutes);
 app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
 

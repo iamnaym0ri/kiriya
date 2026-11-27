@@ -1,0 +1,176 @@
+/* The luck shelf's shared look: lilac paper, plum ink, hand-written labels. Every game fills the
+   hub's sheet (.luck-stage); nothing here reaches outside it. */
+.luck-stage {
+  --luck-ink: #54385f;
+  --luck-ink-soft: #7e6689;
+  --luck-plum: #755180;
+  --luck-plum-deep: #51375f;
+  --luck-paper: #fff9fd;
+  --luck-cream: #fffaf2;
+  --luck-lilac: #e9dcf3;
+  --luck-lilac-deep: #d9c3ea;
+  --luck-line: #ba97c9;
+  --luck-hand: #9b6091;
+  --luck-pink: #f6c1da;
+  --luck-gold: #ffd166;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--luck-ink);
+  font-family: var(--font-ui);
+  touch-action: manipulation;
+  overscroll-behavior: contain;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.luck-stage button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.luck-stage :focus-visible { outline: 3px solid #b589ff; outline-offset: 2px; }
+
+.luck-status {
+  position: relative;
+  z-index: 3;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 12px 0 14px;
+  min-height: 48px;
+}
+.luck-status__chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; }
+.luck-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 3px 11px 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--luck-paper) 82%, transparent);
+  border: 1.5px solid var(--luck-lilac-deep);
+  font: 700 18px/1 var(--font-hand);
+  color: var(--luck-ink);
+  white-space: nowrap;
+}
+.luck-chip small { font: 10px/1 var(--font-pixel); color: var(--luck-ink-soft); letter-spacing: .04em; }
+button.luck-chip { min-height: 44px; padding-inline: 14px; cursor: pointer; }
+button.luck-chip:active { transform: translateY(1px); }
+
+.luck-round {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--luck-lilac-deep);
+  background: color-mix(in srgb, var(--luck-paper) 85%, transparent);
+  color: var(--luck-plum);
+  cursor: pointer;
+}
+.luck-round:active { transform: scale(.94); }
+.luck-round[aria-pressed="false"] { color: #a991b4; }
+
+.luck-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 6px 24px 8px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--luck-plum);
+  color: #fff9ff;
+  font: 700 23px/1 var(--font-hand);
+  letter-spacing: .01em;
+  box-shadow: 0 4px 0 var(--luck-plum-deep);
+  cursor: pointer;
+  transition: transform .12s, box-shadow .12s, background .2s;
+}
+.luck-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--luck-plum-deep); }
+.luck-btn:disabled { opacity: .55; cursor: default; box-shadow: 0 4px 0 #8f7899; }
+.luck-btn--soft {
+  background: var(--luck-paper);
+  color: var(--luck-plum);
+  border: 1.5px solid var(--luck-line);
+  box-shadow: 0 4px 0 var(--luck-lilac-deep);
+}
+.luck-btn--soft:active:not(:disabled) { box-shadow: 0 1px 0 var(--luck-lilac-deep); }
+
+.luck-hand { font-family: var(--font-hand); }
+.luck-pixel { font: 10px/1.6 var(--font-pixel); letter-spacing: .1em; color: var(--luck-ink-soft); text-transform: uppercase; }
+.luck-sparkle { display: inline-block; vertical-align: middle; }
+
+.luck-confetti {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 8;
+}
+
+/* A panel that slides up inside the stage. */
+.luck-panel-layer { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+.luck-panel-layer[data-open="true"] { pointer-events: auto; }
+.luck-panel-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: #3a2346;
+  opacity: 0;
+  transition: opacity .25s;
+}
+.luck-panel-layer[data-open="true"] .luck-panel-backdrop { opacity: .32; }
+.luck-panel {
+  position: absolute;
+  inset: auto 0 0 0;
+  max-height: 86%;
+  display: flex;
+  flex-direction: column;
+  background: var(--luck-paper);
+  border-radius: 22px 22px 0 0;
+  border-top: 1.5px solid var(--luck-line);
+  box-shadow: 0 -10px 30px #49365322;
+  transform: translateY(104%);
+  transition: transform .34s cubic-bezier(.2, .9, .25, 1);
+}
+.luck-panel-layer[data-open="true"] .luck-panel { transform: none; }
+.luck-panel::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 38px;
+  height: 5px;
+  margin-left: -19px;
+  border-radius: 3px;
+  background: var(--luck-lilac-deep);
+}
+.luck-panel__head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 12px 6px 20px;
+}
+.luck-panel__head h2 { font: 700 30px/1 var(--font-hand); letter-spacing: -.02em; color: var(--luck-ink); margin: 0; }
+.luck-panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 16px 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .luck-panel, .luck-panel-backdrop, .luck-btn { transition: none; }
+}
+html[data-little-motion="off"] .luck-panel, html[data-little-motion="off"] .luck-panel-backdrop { transition: none; }
