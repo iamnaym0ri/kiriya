@@ -2,12 +2,17 @@
 // stroke makes, colour palettes, tidy points, and which saved snapshot an undo can start from.
 export const SIZE = 1000; // drawings live in a 1000 × 1000 square, centred on (500, 500)
 export const FOLDS = [6, 8, 12, 2, 3, 4, 5];
+/** The slice counts her picker offers, in order. */
+export const SLICE_CHOICES = [2, 3, 4, 5, 6, 8, 12];
 
 export const PALETTES = [
   { id: "dusk", name: "lilac dusk", colors: ["#c9b1ee", "#9a6cc8", "#f6a9c7", "#fff4e3", "#6e4fa3", "#ffd6e8"] },
   { id: "sakura", name: "sakura milk", colors: ["#ffd1e3", "#f59ac0", "#e8577f", "#fff1d9", "#c7b2f0", "#a9dcc8"] },
   { id: "soda", name: "mint soda", colors: ["#a9dcc8", "#5fbfae", "#d8f3ea", "#c9b1ee", "#fff8e0", "#8fb3e8"] },
   { id: "glow", name: "midnight glow", colors: ["#fff0b8", "#ffcf6b", "#f6a9c7", "#b589ff", "#8fe3d0", "#ffffff"] },
+  { id: "peach", name: "peach fizz", colors: ["#ffcfb8", "#ff9f8a", "#ffe6a6", "#f6a9c7", "#fff6ec", "#c99be8"] },
+  { id: "berry", name: "berry jam", colors: ["#7b2d5b", "#c03d75", "#f07aa6", "#ffd1e3", "#5d3f78", "#fff1d9"] },
+  { id: "sea", name: "sea glass", colors: ["#2f6f8a", "#5fb3c8", "#a9e4e8", "#e8fbf7", "#8fa3e8", "#f3d9ff"] },
 ];
 
 export const PAPERS = [
@@ -17,12 +22,13 @@ export const PAPERS = [
 ];
 
 export const BRUSHES = [
-  { id: "ink", name: "ink" },
-  { id: "glow", name: "glow" },
-  { id: "beads", name: "beads" },
-  { id: "eraser", name: "eraser" },
+  { id: "ink", name: "ink", line: "smooth and soft" },
+  { id: "glow", name: "glow", line: "a halo of light" },
+  { id: "beads", name: "beads", line: "little pearls" },
+  { id: "eraser", name: "eraser", line: "tidy a slice" },
 ];
 export const SIZES = [6, 12, 22];
+export const SIZE_NAMES = ["fine", "medium", "bold"];
 
 /** The turns (radians) and flips a stroke is copied with: `n` around the centre, mirrored or not. */
 export function symmetry(n, mirror) {
@@ -82,3 +88,20 @@ export function nearestCheckpoint(checkpoints, count) {
 
 /** The next fold count when she taps the symmetry chip. */
 export const nextFold = (n) => FOLDS[(FOLDS.indexOf(n) + 1) % FOLDS.length] ?? FOLDS[0];
+
+/** Strokes on the page now: everything after the last "fresh page". */
+export const visibleStrokes = (all) => all.slice(all.findLastIndex((stroke) => stroke.tool === "clear") + 1);
+
+/** True when nothing is on the page (no strokes, or a "fresh page" was the last thing). */
+export const isBlank = (all) => !all.length || all.at(-1).tool === "clear";
+
+/**
+ * The colour a new stroke takes: her chosen swatch, or in rainbow mode the next colour along the
+ * palette (counting only the strokes on the page now, so a fresh page starts at the first colour).
+ */
+export function strokeColour({ turns, colour }, palette, strokes) {
+  const colours = palette.colors;
+  if (!turns) return colours[colour] ?? colours[0];
+  const drawn = visibleStrokes(strokes).filter((stroke) => stroke.tool !== "eraser").length;
+  return colours[drawn % colours.length];
+}
