@@ -20,7 +20,7 @@ const prefsSchema = z.object({
   pins: z.array(z.object({ id: z.string().uuid(), at: z.string().datetime() })).max(MAX_PINS).optional(),
   motion: z.enum(["lively", "quiet"]).optional(),
   cornerSmall: z.boolean().optional(),
-  // Who keeps her company on home in the app (shared/companions.js), or "none".
+  // Who walks her home screen in the app ("none": nobody), shared/companions.js.
   companion: z.enum([...COMPANION_IDS, "none"]).optional(),
   hints: z.partialRecord(z.enum(HINT_KEYS), z.boolean()).optional(),
   // What the public page says about this person. Unset parts fall back to the site's profile.
