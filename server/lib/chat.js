@@ -426,6 +426,37 @@ export async function typingOf(db, role, now = new Date()) {
   return Boolean(row && now.getTime() - Date.parse(row.value.at) < 6000);
 }
 
+// ---------- presence: active, inactive or asleep ----------
+// Each phone checks in while the app is open (the chat summary the tab bar polls about every
+// minute), with its time zone, so the other one's chat header can say "active", "inactive" or,
+// at night where they are, "sleep". Josh previewing her side never checks in as her.
+
+export const ACTIVE_FOR_MS = 150_000;
+const presenceKey = (role) => `chat:presence:${role}`;
+const knownZone = (tz) => {
+  if (typeof tz !== "string" || !tz || tz.length > 64) return false;
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export async function notePresence(db, role, { tz = null, now = new Date() } = {}) {
+  const [row] = await db.select().from(schema.kv).where(eq(schema.kv.key, presenceKey(role)));
+  const zone = knownZone(tz) ? tz : (row?.value?.tz ?? null);
+  // At most one write every 30 s per person.
+  if (row && now.getTime() - Date.parse(row.value.at) < 30_000 && row.value.tz === zone) return;
+  const value = { at: now.toISOString(), tz: zone };
+  await db.insert(schema.kv).values({ key: presenceKey(role), value }).onConflictDoUpdate({ target: schema.kv.key, set: { value, updatedAt: now } });
+}
+
+export async function presenceOf(db, role) {
+  const [row] = await db.select().from(schema.kv).where(eq(schema.kv.key, presenceKey(role)));
+  return { seenAt: row?.value?.at ?? null, tz: row?.value?.tz ?? null };
+}
+
 // ---------- preferences ----------
 
 const prefsSchema = z

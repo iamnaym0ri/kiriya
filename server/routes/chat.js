@@ -15,7 +15,9 @@ import {
   listMessages,
   listStickers,
   markRead,
+  notePresence,
   other,
+  presenceOf,
   react,
   readPrefs,
   readState,
@@ -66,7 +68,11 @@ chatRoutes.get("/messages", async (c) => {
 
 chatRoutes.get("/summary", async (c) => {
   const db = await getDb();
-  return c.json({ ...(await chatSummary(db, role(c))), me: role(c), names: await names(db) });
+  // This phone is open: note it (and its time zone) for the other one's "active" dot. Never while
+  // Josh is previewing her side, or he'd show up as her.
+  if (!c.get("session").previewBy) await notePresence(db, role(c), { tz: c.req.query("tz") ?? null }).catch(() => {});
+  const [summary, who, presence] = await Promise.all([chatSummary(db, role(c)), names(db), presenceOf(db, other(role(c)))]);
+  return c.json({ ...summary, me: role(c), names: who, presence });
 });
 
 chatRoutes.post("/messages", async (c) => {

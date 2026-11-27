@@ -16,6 +16,7 @@ import {
   useChatLive,
   useChatMessages,
   useChatPrefs,
+  useChatSummary,
   useDeleteMessage,
   useDiscardMessage,
   useEditMessage,
@@ -223,7 +224,36 @@ function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loading
 }
 
 /** Their name and whether they're here right now; memories and the design sheet on the right. */
+// How long a check-in counts as "here", and the hours that count as night where they are.
+const ACTIVE_MS = 150_000;
+const hourIn = (tz, now) => {
+  try {
+    return Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: tz }).format(now));
+  } catch {
+    return null;
+  }
+};
+
+/** "typing", "active" (green), "sleep" (amber crescent: away, and it's night where they are) or "inactive" (grey). */
+export function presenceState({ online, typing, seenAt, tz, now = Date.now() }) {
+  if (typing) return "typing";
+  if (online || (seenAt && now - Date.parse(seenAt) < ACTIVE_MS)) return "active";
+  const hour = tz ? hourIn(tz, now) : null;
+  if (hour !== null && (hour >= 23 || hour < 7)) return "sleep";
+  return "inactive";
+}
+
+const STATE_WORDS = { typing: "typing…", active: "active", sleep: "sleep", inactive: "inactive" };
+
 function ChatHeader({ name, online, typing, app, onOpenDesign }) {
+  // Fresher while the chat is open: the other phone's check-in and time zone come with the summary.
+  const presence = useChatSummary({ every: 30_000 }).data?.presence;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const tick = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(tick);
+  }, []);
+  const state = presenceState({ online, typing, seenAt: presence?.seenAt, tz: presence?.tz, now });
   return (
     <header className="chat__head">
       {!app && (
@@ -233,7 +263,16 @@ function ChatHeader({ name, online, typing, app, onOpenDesign }) {
       )}
       <h1 className="chat__who">
         <span className="chat__name">{name}</span>
-        <i className="chat__dot" data-online={online || undefined} data-typing={typing || undefined} role="img" aria-label={typing ? "typing" : online ? "here now" : "away"} />
+        <span className="chat__status" data-state={state} role="status">
+          {state === "sleep" ? (
+            <svg className="chat__moon" viewBox="0 0 12 12" aria-hidden="true">
+              <path d="M8.6 1.2a5 5 0 1 0 2.2 7.9A4.2 4.2 0 0 1 8.6 1.2Z" />
+            </svg>
+          ) : (
+            <i className="chat__dot" aria-hidden="true" />
+          )}
+          <span className="chat__state">{STATE_WORDS[state]}</span>
+        </span>
       </h1>
       <div className="chat__actions">
         <Link className="chat__icon-button" to="/world/memories" aria-label="Our memories">
