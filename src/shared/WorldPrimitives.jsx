@@ -222,7 +222,7 @@ export function Credits({ onClose }) {
         <a href="https://vocadb.net" target="_blank" rel="noreferrer">
           VocaDB
         </a>
-        . Music belongs to its credited creators and plays through the original
+        . Song details read with music-metadata (MIT); album covers found through MusicBrainz and the Cover Art Archive. Music belongs to its credited creators and plays through the original
         providers. The small mascot and stickers are fan-inspired illustrations.
       </p>
       <h3>Daily feeds</h3>

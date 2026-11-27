@@ -66,6 +66,7 @@
     "idb-keyval": "^6.3.0",
     "mixbox": "^2.0.0",
     "motion": "^13.3.0",
+    "music-metadata": "12.4.0",
     "openai": "^7.15.0",
     "perfect-freehand": "^1.2.3",
     "pitchy": "^4.1.0",

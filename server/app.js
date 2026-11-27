@@ -16,6 +16,7 @@ import { adminLoveNoteRoutes } from "./routes/loveNotes.js";
 import { adminNoteJarRoutes } from "./routes/noteJarAdmin.js";
 import { widgetRoutes } from "./routes/widget.js";
 import { appRoutes, appSessionRoutes } from "./routes/app.js";
+import { homeEmbedRoutes, homeRoutes } from "./routes/home.js";
 
 const app = new Hono().basePath("/api");
 
@@ -76,6 +77,7 @@ app.route("/session", sessionRoutes);
 app.route("/public", publicRoutes);
 
 app.use("/me/*", requireRole("kiriya", "admin"));
+app.route("/me/home", homeRoutes);
 app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
 app.route("/me", playRoutes);
@@ -96,6 +98,7 @@ app.route("/jobs/feeds", feedJobRoutes);
 app.route("/jobs", jobRoutes);
 app.route("/uploads", uploadRoutes);
 app.route("/widget", widgetRoutes);
+app.route("/embed", homeEmbedRoutes);
 
 app.notFound((c) => c.json({ error: "not_found", message: "Nothing lives at this address." }, 404));
 app.onError((error, c) => {
