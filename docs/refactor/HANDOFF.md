@@ -216,8 +216,9 @@ merged, what still needs Josh's phone, and the keys still to come.
 
 - **The website is closed temporarily (2026-11-27)** so Kiriya doesn't see the new features before
   Josh gives her the app. Browsers get `src/public/ClosedPage.jsx`; the app, `/api`, `/app-bundle`
-  and `/install` keep working. Reopen only when Josh says: `WEBSITE_CLOSED = false` in
-  `src/lib/siteClosed.js`, then deploy.
+  and `/install` keep working. The same switch holds every notification to her (chat, notes,
+  letters, note jar, quizzes, scheduled surprises; `server/push/webpush.js`). Reopen only when Josh
+  says: `WEBSITE_CLOSED = false` in `shared/siteClosed.js`, then deploy.
 
 ## 6. Conventions that kept things working
 
