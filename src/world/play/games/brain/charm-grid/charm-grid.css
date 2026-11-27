@@ -1,0 +1,116 @@
+/* Charm grid: a paper board with thicker lines round the boxes; charms instead of digits. */
+.cg {
+  --board: min(calc(100cqw - 28px), calc(100cqh - 262px), 470px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  gap: 10px;
+  padding: 10px 14px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.cg-clock { font-variant-numeric: tabular-nums; }
+.cg-tiers { width: 100%; max-width: 470px; flex: none; }
+.cg-board-wrap { flex: none; }
+.cg-board {
+  width: var(--board);
+  height: var(--board);
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  grid-template-rows: repeat(var(--n), 1fr);
+  border: 3px solid #8e6aa3;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fffafd;
+  box-shadow: 0 5px 0 #e2d2ea;
+  touch-action: manipulation;
+}
+.cg-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid #e3d3eb;
+  border-bottom: 1px solid #e3d3eb;
+  background: #fffafd;
+  cursor: pointer;
+}
+.cg-cell[data-last-col] { border-right: 0; }
+.cg-cell[data-last-row] { border-bottom: 0; }
+.cg-cell[data-box-right] { border-right: 2.5px solid #a684b8; }
+.cg-cell[data-box-bottom] { border-bottom: 2.5px solid #a684b8; }
+.cg-cell[data-given] { background: #f1e7f6; }
+.cg-cell[data-related] { background: #f6eefa; }
+.cg-cell[data-given][data-related] { background: #ebdff2; }
+.cg-cell[data-same] { background: #f9e3ef; }
+.cg-cell[data-selected] { background: #ead8f4; box-shadow: inset 0 0 0 3px #8e6aa3; }
+.cg-cell:focus-visible { outline: none; box-shadow: inset 0 0 0 3px #51375f; }
+.cg-cell .charm { width: 72%; height: 72%; }
+.cg-cell:not([data-given]) .charm { animation: brain-pop 0.25s ease-out; }
+.cg-cell[data-given] .charm { filter: saturate(0.9); }
+.cg-cell[data-clash]::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 2px dashed #d0457f;
+  border-radius: 10px;
+  pointer-events: none;
+}
+.cg-cell[data-flash="wrong"] { animation: brain-shake 0.35s ease 2; background: #fbdbe8; }
+.cg-cell[data-flash="nudge"] { background: #fff2c9; }
+.cg-notes {
+  position: absolute;
+  inset: 3px;
+  display: grid;
+  grid-template-columns: repeat(var(--bc), 1fr);
+  grid-template-rows: repeat(var(--br), 1fr);
+  place-items: center;
+}
+.cg-notes > span { width: 100%; height: 100%; display: grid; place-items: center; }
+.cg-notes .charm { width: 82%; height: 82%; animation: none !important; opacity: 0.85; }
+
+.cg[data-solved] .cg-cell .charm { animation: cg-wave 0.6s ease-in-out both; animation-delay: calc(var(--i) * 28ms); }
+@keyframes cg-wave { 40% { transform: translateY(-14%) scale(1.12); } }
+
+.cg-controls { width: 100%; max-width: 470px; flex: none; display: grid; gap: 8px; }
+.cg-palette { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 7px; }
+.cg-charm-key {
+  display: grid;
+  place-items: center;
+  height: 54px;
+  padding: 0;
+  border: 1.5px solid #d6c2e1;
+  border-radius: 14px 12px 15px 12px;
+  background: #fffafd;
+  box-shadow: 0 3px 0 #ddcbe7;
+  cursor: pointer;
+}
+.cg-charm-key:active { transform: translateY(2px); box-shadow: 0 1px 0 #ddcbe7; }
+.cg-charm-key .charm { width: 36px; height: 36px; }
+.cg-palette[data-noting] .cg-charm-key { border-style: dashed; background: #fbf6fd; }
+.cg-palette[data-noting] .charm { transform: scale(0.75); opacity: 0.85; }
+.cg-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.cg-action {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: #6f4f7c;
+  font: 700 17px/1 var(--font-hand) !important;
+  cursor: pointer;
+}
+.cg-action:active { background: #efe3f5; }
+.cg-action[aria-pressed="true"] { background: #e6d4f0; color: #4e2f5c; }
+.cg-action:disabled { opacity: 0.4; }
+.cg-tip { min-height: 20px; text-align: center; font: 700 17px/1.2 var(--font-hand); color: #9a6d9e; }
+.cg-done { width: 100%; max-width: 470px; animation: brain-rise 0.35s 0.4s ease-out both; }

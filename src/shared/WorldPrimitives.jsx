@@ -210,6 +210,7 @@ export function Credits({ onClose }) {
         </a>{" "}
         (Creative Commons and public domain), each credited on its quiz card.
       </p>
+      <p>Brain games: guess words from the ENABLE2K list (public domain); colour maths after Björn Ottosson’s Oklab (public domain); picture-stitch line solving adapted from nonogram-solver by Thomas Rosenau (Apache-2.0).</p>
       <h3>Reference collection</h3>
       <p>
         Maomao portraits and botanical images are from the supplied reference

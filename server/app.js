@@ -16,6 +16,7 @@ import { adminLoveNoteRoutes } from "./routes/loveNotes.js";
 import { adminNoteJarRoutes } from "./routes/noteJarAdmin.js";
 import { widgetRoutes } from "./routes/widget.js";
 import { appRoutes, appSessionRoutes } from "./routes/app.js";
+import { secretWordRoutes, secretWordAdminRoutes } from "./routes/secretWord.js";
 import { homeEmbedRoutes, homeRoutes } from "./routes/home.js";
 import { glanceRoutes, hubRoutes } from "./routes/meSection.js";
 import { pastimeRoutes } from "./routes/gamesPastime.js";
@@ -80,6 +81,7 @@ app.route("/session", sessionRoutes);
 app.route("/public", publicRoutes);
 
 app.use("/me/*", requireRole("kiriya", "admin"));
+app.route("/me/games/secret-word", secretWordRoutes);
 app.route("/me/home", homeRoutes);
 app.route("/me/glance", glanceRoutes);
 app.route("/me/quizzes", quizRoutes);
@@ -98,6 +100,7 @@ app.use("/admin/*", requireRole("admin"));
 app.route("/admin/feeds", feedAdminRoutes);
 app.route("/admin/love-notes", adminLoveNoteRoutes);
 app.route("/admin/note-jar", adminNoteJarRoutes);
+app.route("/admin/games/secret-word", secretWordAdminRoutes);
 app.route("/admin/hub", hubRoutes);
 app.route("/admin", adminRoutes);
 
