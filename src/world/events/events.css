@@ -1680,3 +1680,8 @@ html.app-shell .ev-good .ev-save {
   justify-self: start;
   margin-top: 3px;
 }
+/* A list straight inside a flush card already runs edge to edge (the frame's rule pulls lists out
+   of a padded card's gutter, which a flush card doesn't have). */
+html.app-shell .ev-home .app-card--flush > .app-list {
+  margin-inline: 0;
+}
