@@ -7,6 +7,7 @@ import { configuredKeyVersion, issueSession, keyVersion, passphraseHashes } from
 import { newSessionKey, readCredential, writeCredential } from "../auth/credentials.js";
 import { revokeAllDeviceKeys } from "../lib/deviceKeys.js";
 import { renewWidgetKey } from "../lib/appDevices.js";
+import { rewrapIdentity, wrappedSchema } from "../lib/chatKeys.js";
 import { and, eq, isNull } from "drizzle-orm";
 
 export const MIN_PASSPHRASE_LENGTH = 8;
@@ -42,12 +43,15 @@ const changeBody = z.object({
   next: z.string().max(200),
   signOutOthers: z.boolean().default(true),
   keepDevice,
+  // The chat key wrapped under the new passphrase (src/lib/chatCrypto/keyring.js), so a fresh
+  // device opens the messages with the new one. Stored together with the change.
+  chatKey: z.object({ wrapped: wrappedSchema }).strict().nullable().optional(),
 });
 
 passphraseRoutes.put("/", async (c) => {
   const parsed = changeBody.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: "bad_passphrase", message: "Fill in both passphrases and try again." }, 400);
-  const { current, next, signOutOthers, keepDevice: deviceId } = parsed.data;
+  const { current, next, signOutOthers, keepDevice: deviceId, chatKey } = parsed.data;
   const role = c.get("session").role;
   const db = await getDb();
   const ipHash = clientIpHash(c);
@@ -75,6 +79,7 @@ passphraseRoutes.put("/", async (c) => {
     hash: await hashPassphrase(next),
     sessionKey: signOutOthers ? newSessionKey() : (stored?.sessionKey ?? configuredKeyVersion(role)),
   });
+  if (chatKey) await rewrapIdentity(db, role, chatKey.wrapped);
   // A lost phone may also hold a widget key; signing out elsewhere turns those off too.
   if (signOutOthers) await revokeAllDeviceKeys(db, role);
   const kept = signOutOthers && deviceId ? await keepAppDevice(db, deviceId, role) : null;

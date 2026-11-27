@@ -8,6 +8,7 @@ import { Address, PublicProfile, Sharing } from "../settings/SettingsPage.jsx";
 import MyFaves from "../settings/MyFaves.jsx";
 import SongShelf from "../stage/SongShelf.jsx";
 import { Group, Note, Row, Screen, SwitchRow } from "./parts.jsx";
+import { rewrapForPassphraseChange } from "../../lib/chatCrypto.js";
 
 // Her settings, one pushed screen each. The bigger forms (public page, songs, faves, sharing,
 // address) are the website's own settings pieces, dressed for the app by MeSection.css.
@@ -159,10 +160,11 @@ export function PassphraseForm() {
   const empty = { current: "", next: "", confirm: "", signOutOthers: true };
   const [draft, setDraft] = useState(empty);
   const change = useMutation({
-    mutationFn: () =>
+    mutationFn: async () =>
       api("/me/passphrase", {
         method: "PUT",
-        body: { current: draft.current, next: draft.next, signOutOthers: draft.signOutOthers, keepDevice: enrolledDevice() },
+        // The chat's key goes with it, wrapped under the new passphrase (src/lib/chatCrypto/keyring.js).
+        body: { current: draft.current, next: draft.next, signOutOthers: draft.signOutOthers, keepDevice: enrolledDevice(), chatKey: await rewrapForPassphraseChange(draft.current, draft.next) },
       }),
     onSuccess: async (data) => {
       setDraft(empty);

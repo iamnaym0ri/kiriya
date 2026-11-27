@@ -69,8 +69,10 @@ export function useUnlock() {
   return useMutation({
     mutationFn: (passphrase) =>
       api("/session/unlock", { method: "POST", body: { passphrase } }),
-    onSuccess: (data) => {
+    onSuccess: (data, passphrase) => {
       queryClient.setQueryData(sessionKey, { role: data.role });
+      // The chat's key on this device opens with it once; it's dropped right after (lib/chatCrypto).
+      import("./chatCrypto.js").then(({ rememberPassphrase }) => rememberPassphrase(passphrase)).catch(() => {});
     },
   });
 }
