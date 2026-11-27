@@ -507,6 +507,10 @@ try {
     assert.match((await store.getEventRow(db, "ev-pictures")).image.url, /^\/api\/uploads\/media\?path=events/);
     const second = await images.refreshPictures(db, [await store.getEventRow(db, "ev-pictures")], { fetcher, store: store_, postsFor: async () => [], save, now: new Date(NOW.getTime() + 3600_000) });
     assert.equal(second.looked, 0, "not again within three days when nothing changed");
+    const post = { url: "https://www.instagram.com/p/NEW1/", account: "cosfest", caption: "Mystery charm revealed", images: ["/api/uploads/media?path=events%2Fnew1.jpg"] };
+    const third = await images.refreshPictures(db, [await store.getEventRow(db, "ev-pictures")], { fetcher, store: store_, postsFor: async () => [post], save, now: new Date(NOW.getTime() + 7200_000) });
+    assert.deepEqual([third.looked, third.merch], [1, 1], "a new post with pictures is used at once");
+    assert.deepEqual((await store.getEventRow(db, "ev-pictures")).dossier.merch[0].images, ["/api/uploads/media?path=events%2Fnew1.jpg"]);
     assert.equal((await images.refreshPictures(db, [], { store: null })).ran, false);
     // Keep the push test below about Konbini's news only.
     await db.update(schema.eventLog).set({ push: "none" }).where(sql`${schema.eventLog.eventId} <> 'ev-konbini-6-0-2027'`);

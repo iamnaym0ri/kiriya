@@ -305,10 +305,10 @@ export function carryMerchImages(next = [], previous = []) {
 
 const RETRY_MS = 3 * 86400_000;
 
-/** A short fingerprint of what an event's pictures depend on (sources and merch names). */
-const pictureKey = (row) =>
+/** A short fingerprint of what an event's pictures depend on (sources, merch, its posts' pictures). */
+const pictureKey = (row, posts = []) =>
   createHash("sha256")
-    .update(JSON.stringify([row.url, (row.dossier?.sources ?? []).map((s) => s.url), (row.dossier?.merch ?? []).map((m) => [m.name, m.image ?? null, (m.images ?? []).length])]))
+    .update(JSON.stringify([row.url, (row.dossier?.sources ?? []).map((s) => s.url), (row.dossier?.merch ?? []).map((m) => [m.name, m.image ?? null, (m.images ?? []).length]), posts.map((p) => [p.url, p.images?.length ?? 0])]))
     .digest("hex")
     .slice(0, 16);
 
@@ -328,10 +328,11 @@ export async function refreshPictures(db, rows, { fetcher, store, postsFor, save
     if (!needsPictures(row)) continue;
     const key = `events:pictures:${row.id}`;
     const last = await readKv(db, key, null);
-    const fingerprint = pictureKey(row);
+    // New Instagram pictures for this event change the fingerprint, so they're used at once.
+    const posts = await postsFor(row.id);
+    const fingerprint = pictureKey(row, posts);
     if (last && last.key === fingerprint && now - new Date(last.at) < RETRY_MS) continue;
     out.looked++;
-    const posts = await postsFor(row.id);
     const result = await picturesFor(row, { posts, fetcher, store });
     if (result.changed) {
       const before = (row.dossier?.merch ?? []).filter((m) => m.images?.length).length;
@@ -340,7 +341,7 @@ export async function refreshPictures(db, rows, { fetcher, store, postsFor, save
       out.merch += after - before;
       const patched = { ...row, image: result.image, dossier: { ...row.dossier, merch: result.merch } };
       await save(row, { image: result.image, dossier: patched.dossier });
-      await writeKv(db, key, { at: now.toISOString(), key: pictureKey(patched) });
+      await writeKv(db, key, { at: now.toISOString(), key: pictureKey(patched, posts) });
     } else await writeKv(db, key, { at: now.toISOString(), key: fingerprint });
   }
   return out;
