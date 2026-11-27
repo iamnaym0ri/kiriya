@@ -1,48 +1,37 @@
 // The events & merch block on the app's home (docs/refactor/RENOVATION.md; the home agent places
-// it). The next big thing with a live countdown, what's new since she last looked, a few things
-// coming up, merch drops, and her saves; "see all" opens the full list inside the home tab.
+// it). The next big thing with a live countdown (or, while it's on, how long it stays open), what's
+// new since she last looked, a few things coming up, merch, and her saves. "see all" opens the full
+// list inside the home tab.
 import { useEffect, useId, useMemo, useRef } from "react";
 import { Link } from "react-router";
-import {
-  dateRange,
-  kindLabel,
-  phaseOf,
-  price,
-  timeOf,
-  whenLabel,
-} from "./eventFormat.js";
-import { eventPath, latestChange, markLooked, useEventsList, useEventsPersonal } from "./eventsData.js";
-import { Countdown, EventRow, ItemChips, KindDoodle, NewMark, useNow } from "./EventPieces.jsx";
+import { ago, dateRange, kindLabel, merchChips, phaseOf, timeOf, whenLabel } from "./eventFormat.js";
+import { eventPath, markLooked, useEventsHome, useFreshSnapshot } from "./eventsData.js";
+import { Chips, Countdown, EventRow, ItemChips, KindDoodle, NewMark, SaveButton, Toaster, useNow } from "./EventPieces.jsx";
 import PasteLink from "./PasteLink.jsx";
 import "./events.css";
 
-const live = (item, now) => !["ended", "sold_out", "cancelled"].includes(phaseOf(item, now).phase);
+const isLive = (item, now) => ["open", "between", "today"].includes(phaseOf(item, now).phase);
 
-/** Picks what the block shows. Pure, so it's easy to reason about. */
-export function homePicks(items, now = new Date()) {
-  const current = items.filter((item) => live(item, now));
-  const events = current.filter((item) => item.kind !== "merch" && phaseOf(item, now).phase !== "tbc");
-  // The next big thing: the soonest big con or something from her fandoms, else the soonest event.
-  const hero = events.find((item) => item.big && item.kind !== "cafe") ?? events.find((item) => item.hers) ?? events[0] ?? null;
-  const soon = events.filter((item) => item !== hero).slice(0, 3);
-  const merch = current
-    .filter((item) => item.kind === "merch")
-    .sort((a, b) => {
-      // Open now (closing soonest first), then the ones still to drop.
-      const pa = phaseOf(a, now);
-      const pb = phaseOf(b, now);
-      if (pa.phase !== pb.phase) return pa.phase === "open" ? -1 : 1;
-      return (pa.closesAt ?? pa.next ?? Infinity) - (pb.closesAt ?? pb.next ?? Infinity);
-    })
-    .slice(0, 6);
-  return { hero, soon, merch };
+/** What the block shows, from the API's home answer. Pure. */
+export function homePicks(home, now = new Date()) {
+  if (!home) return { hero: null, soon: [] };
+  // A big con that's on right now leads; otherwise the next big thing that's hers.
+  const bigNow = home.onNow.find((item) => (item.big || item.hers) && !["popup", "cafe"].includes(item.kind) && isLive(item, now));
+  const hero = bigNow ?? home.next ?? home.onNow[0] ?? null;
+  const seen = new Set([hero?.id]);
+  const soon = [...(bigNow && home.next ? [home.next] : []), ...home.onNow, ...home.upcoming].filter((item) => {
+    if (!item || seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+  return { hero, soon: soon.slice(0, 4) };
 }
 
-/** Marks the section as looked at once at least a third of it has been on screen for two seconds. */
-function useLookedOnView(ref) {
+/** Marks the section as looked at once a third of it has been on screen for two seconds. */
+function useLookedOnView(ref, enabled) {
   useEffect(() => {
     const node = ref.current;
-    if (!node || typeof IntersectionObserver === "undefined") return undefined;
+    if (!enabled || !node || typeof IntersectionObserver === "undefined") return undefined;
     let timer = null;
     let done = false;
     const observer = new IntersectionObserver(
@@ -61,40 +50,42 @@ function useLookedOnView(ref) {
       clearTimeout(timer);
       observer.disconnect();
     };
-  }, [ref]);
+  }, [ref, enabled]);
 }
 
 function Hero({ item, now }) {
   const p = phaseOf(item, now);
-  const eyebrow = ["the next big thing", kindLabel(item.kind), item.hers ? "ur fandom" : null].filter(Boolean).join(" · ");
-  const where = [item.venue?.name].filter(Boolean).join("");
-  let clock;
-  if (p.phase === "open")
-    clock = (
-      <p className="ev-hero__live">
-        <span className="ev-live-dot" aria-hidden="true" />
-        {p.run ? whenLabel(item, now) : `on right now${p.of > 1 ? ` · day ${p.day} of ${p.of}` : ""}`}
-        {p.closesAt && ` · open till ${timeOf(p.closesAt)}`}
-      </p>
-    );
-  else if (p.next) clock = <Countdown to={p.next} label={p.phase === "between" ? `day ${p.day} opens in` : "starts in"} />;
+  const open = p.phase === "open";
+  const eyebrow = [open ? "on right now" : "the next big thing", kindLabel(item.kind), item.hers ? "ur fandom" : null].filter(Boolean).join(" · ");
+  const where = item.venue?.name;
+  let label = null;
+  let to = null;
+  if (open && p.closesAt && !p.run) (label = `day ${p.day} of ${p.of} · doors close in`), (to = p.closesAt);
+  else if (p.next) (label = p.phase === "between" ? `day ${p.day} opens in` : p.phase === "today" ? "doors open in" : "starts in"), (to = p.next);
   return (
-    <Link className="ev-hero" to={eventPath(item.id)} aria-label={`${item.name}, ${dateRange(item, { now })}${where ? `, ${where}` : ""}`}>
-      <span className="ev-hero__eyebrow">{eyebrow}</span>
-      <span className="ev-hero__doodle" aria-hidden="true">
-        <KindDoodle kind={item.kind} size={52} />
+    <Link className="ev-hero" data-live={open ? "" : undefined} to={eventPath(item.id)} state={{ from: "home" }} aria-label={`${item.name}, ${dateRange(item, { now })}${where ? `, ${where}` : ""}`}>
+      <span className="ev-hero__eyebrow">
+        {open && <span className="ev-live-dot" aria-hidden="true" />}
+        {eyebrow}
+      </span>
+      <span className="ev-hero__art" aria-hidden="true">
+        {item.image?.url ? <img src={item.image.url} alt="" decoding="async" /> : <KindDoodle kind={item.kind} size={50} />}
       </span>
       <strong className="ev-hero__name">{item.name}</strong>
       <span className="ev-hero__meta">
         {dateRange(item, { now })}
         {where && <> · {where}</>}
       </span>
-      {p.next && p.phase !== "open" && (
-        <span className="ev-hero__count-label">{p.phase === "between" ? `day ${p.day} opens in` : p.phase === "today" ? "doors open in" : "starts in"}</span>
-      )}
-      {clock}
+      {to ? (
+        <>
+          <span className="ev-hero__count-label">{label}</span>
+          <Countdown to={to} label={label} />
+        </>
+      ) : open ? (
+        <p className="ev-hero__live">{whenLabel(item, now)}{p.closesAt ? ` · open till ${timeOf(p.closesAt)}` : ""}</p>
+      ) : null}
       <span className="ev-hero__stub">
-        <ItemChips item={item} now={now} />
+        <ItemChips item={item} now={now} live={false} />
         <span className="ev-hero__open">
           everything about it
           <span className="ev-chevron" aria-hidden="true" />
@@ -104,18 +95,13 @@ function Hero({ item, now }) {
   );
 }
 
-function NewSince({ items, mine }) {
-  const fresh = items
-    .map((item) => ({ item, newness: mine.newness(item) }))
-    .filter((x) => x.newness)
-    .sort((a, b) => latestChange(b.item) - latestChange(a.item));
+function NewSince({ fresh, total }) {
   if (!fresh.length)
     return (
       <p className="ev-caught-up">
         <span aria-hidden="true">✓</span> all caught up · nothing new since you last looked
       </p>
     );
-  const shown = fresh.slice(0, 3);
   return (
     <section className="app-card app-card--flush ev-newsince" aria-label="New since you last looked">
       <header className="app-card__head">
@@ -125,56 +111,52 @@ function NewSince({ items, mine }) {
           </span>{" "}
           new since you last looked
         </h3>
-        {fresh.length > 3 && (
+        {total > fresh.length && (
           <div className="app-card__action">
-            <Link to="/world/events?show=new">all {fresh.length}</Link>
+            <Link to="/world/events?show=new">all {total}</Link>
           </div>
         )}
       </header>
       <ul className="app-list">
-        {shown.map(({ item, newness }) => {
-          const update = newness === "updated" ? mine.unseenUpdates(item)[0] : null;
-          return (
-            <li key={item.id} className="app-row ev-newsince__row">
-              <Link to={`${eventPath(item.id)}${update ? "#updates" : ""}`}>
-                <span className="ev-newsince__icon" aria-hidden="true">
-                  <KindDoodle kind={item.kind} size={22} />
+        {fresh.map((entry) => (
+          <li key={entry.id} className="app-row ev-newsince__row">
+            <Link to={`${eventPath(entry.event.id)}${entry.kind === "new" ? "" : "#updates"}`} state={{ from: "home" }}>
+              <span className="ev-newsince__icon" aria-hidden="true">
+                <KindDoodle kind={entry.event.kind} size={22} />
+              </span>
+              <span className="app-row__text">
+                <span className="ev-newsince__what">
+                  {entry.kind === "new" ? "just announced" : entry.title}
+                  {entry.big && <NewMark newness="new" />}
                 </span>
-                <span className="app-row__text">
-                  <span className="ev-newsince__what">
-                    {update ? update.title : newness === "new" ? `just announced` : "updated"}
-                    <NewMark newness={newness} />
-                  </span>
-                  <small>{item.name}</small>
-                </span>
-                <span className="ev-chevron" aria-hidden="true" />
-              </Link>
-            </li>
-          );
-        })}
+                <small>
+                  {entry.event.name}
+                  {entry.at ? ` · ${ago(entry.at)}` : ""}
+                </small>
+              </span>
+              <span className="ev-chevron" aria-hidden="true" />
+            </Link>
+          </li>
+        ))}
       </ul>
     </section>
   );
 }
 
-function MerchCard({ item, now, mine }) {
-  const drop = item.drop ?? {};
-  const where = drop.where?.[0]?.name;
-  const cost = price(drop.price);
+function MerchTile({ item }) {
+  const event = item.event ?? {};
   return (
     <li className="ev-merch">
-      <Link className="ev-merch__link" to={eventPath(item.id)}>
+      <Link className="ev-merch__link" to={`${eventPath(event.id)}#merch`} state={{ from: "home" }}>
         <span className="ev-merch__art" aria-hidden="true">
-          {item.image?.url ? <img src={item.image.url} alt="" loading="lazy" decoding="async" /> : <KindDoodle kind="merch" size={40} />}
+          {item.image ? <img src={item.image} alt="" loading="lazy" decoding="async" /> : <KindDoodle kind="merch" size={40} />}
         </span>
-        <span className="ev-merch__name">
-          {item.name}
-          <NewMark newness={mine.newness(item)} />
-        </span>
-        <span className="ev-merch__meta">{[cost && `${drop.price?.from ? "from " : ""}${cost}`, where].filter(Boolean).join(" · ")}</span>
-        <span className="ev-merch__when">{whenLabel(item, now)}</span>
-        <ItemChips item={item} now={now} />
+        <span className="ev-merch__name">{item.name}</span>
+        <span className="ev-merch__meta">{[item.priceLabel, event.name].filter(Boolean).join(" · ")}</span>
+        <span className="ev-merch__when">{item.when ?? event.dateLabel}</span>
+        <Chips chips={merchChips(item).slice(0, 2)} />
       </Link>
+      <SaveButton item={item} merch className="ev-merch__save" />
     </li>
   );
 }
@@ -194,13 +176,15 @@ function Skeleton() {
 
 export default function HomeEvents() {
   const titleId = useId();
-  const list = useEventsList();
-  const mine = useEventsPersonal();
+  const home = useEventsHome();
   const now = useNow(60_000);
   const block = useRef(null);
-  useLookedOnView(block);
-  const { hero, soon, merch } = useMemo(() => homePicks(list.items, now), [list.items, now]);
-  const savedCount = mine.savedCount;
+  useLookedOnView(block, home.isSuccess);
+  const data = home.data;
+  const { hero, soon } = useMemo(() => homePicks(data, now), [data, now]);
+  const fresh = useFreshSnapshot(data?.fresh);
+  const merch = data?.merch ?? [];
+  const saved = data?.counts?.saved ?? 0;
 
   return (
     <section ref={block} className="ev-home" id="events" aria-labelledby={titleId}>
@@ -219,12 +203,12 @@ export default function HomeEvents() {
         </div>
       </header>
 
-      {list.isPending && !list.items.length ? (
+      {home.isPending && !data ? (
         <Skeleton />
-      ) : list.isError && !list.items.length ? (
+      ) : home.isError && !data ? (
         <div className="app-card ev-trouble">
           <p>the events list couldn’t load just now.</p>
-          <button type="button" className="ev-pill-link" onClick={() => list.refetch()}>
+          <button type="button" className="ev-pill-link" onClick={() => home.refetch()}>
             try again
           </button>
         </div>
@@ -236,14 +220,14 @@ export default function HomeEvents() {
         </div>
       ) : (
         <>
-          <NewSince items={list.items} mine={mine} />
+          <NewSince fresh={fresh} total={data?.counts?.unseenUpdates ?? 0} />
           {hero && <Hero item={hero} now={now} />}
           {soon.length > 0 && (
             <section className="app-card app-card--flush ev-soon" aria-label="Coming up">
               <header className="app-card__head">
-                <h3 className="app-card__title">coming up</h3>
+                <h3 className="app-card__title">on now & coming up</h3>
                 <div className="app-card__action">
-                  <Link to="/world/events">all events</Link>
+                  <Link to="/world/events">all {data?.counts?.upcoming ?? ""}</Link>
                 </div>
               </header>
               <ul className="app-list">
@@ -254,16 +238,16 @@ export default function HomeEvents() {
             </section>
           )}
           {merch.length > 0 && (
-            <section className="ev-drops" aria-label="Merch drops">
+            <section className="ev-drops" aria-label="Merch">
               <header className="ev-drops__head">
-                <h3 className="ev-drops__title">merch drops</h3>
+                <h3 className="ev-drops__title">merch & exclusives</h3>
                 <Link className="ev-drops__all" to="/world/events?kind=merch">
                   all merch
                 </Link>
               </header>
               <ul className="ev-drops__strip app-bleed">
                 {merch.map((item) => (
-                  <MerchCard key={item.id} item={item} now={now} mine={mine} />
+                  <MerchTile key={item.id} item={item} />
                 ))}
               </ul>
             </section>
@@ -282,10 +266,11 @@ export default function HomeEvents() {
             <span className="app-row__text">
               <span>events and merch i saved</span>
             </span>
-            <span className="app-row__detail">{savedCount || ""}</span>
+            {saved > 0 && <span className="app-row__detail">{saved}</span>}
           </Link>
         </li>
       </ul>
+      <Toaster />
     </section>
   );
 }

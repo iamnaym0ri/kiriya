@@ -1,18 +1,19 @@
 // Small pieces every events & merch screen shares: the hand-drawn kind doodles, date tiles,
 // status chips, the save heart, "new" marks, source links and the live countdown.
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState, useSyncExternalStore } from "react";
 import { Link, useLocation } from "react-router";
 import {
   chipsFor,
   dayNumber,
   kindLabel,
+  merchChips,
   monthShort,
   phaseOf,
   siteOf,
   splitDuration,
   whenLabel,
 } from "./eventFormat.js";
-import { eventPath, useEventsPersonal, useToggleSave } from "./eventsData.js";
+import { eventPath, useIsSaved, useNewness, useToggleSave } from "./eventsData.js";
 
 // ---------- the clock ----------
 /** The time now, refreshed every `ms` while the page is visible (and at once when it comes back). */
@@ -143,8 +144,8 @@ export function Chips({ chips, className = "" }) {
   );
 }
 
-export function ItemChips({ item, now, extra = [] }) {
-  return <Chips chips={[...extra, ...chipsFor(item, now)].slice(0, 3)} />;
+export function ItemChips({ item, now, live = true, max = 2 }) {
+  return <Chips chips={chipsFor(item, now, { live }).slice(0, max)} />;
 }
 
 /** "new" or "updated", as a small rosy tag. */
@@ -153,14 +154,40 @@ export function NewMark({ newness }) {
   return <span className="ev-new">{newness === "new" ? "new" : "updated"}</span>;
 }
 
+// ---------- a small toast above the tab bar ----------
+const toast = { text: null, listeners: new Set(), timer: null };
+export function showToast(text, ms = 2600) {
+  clearTimeout(toast.timer);
+  toast.text = text;
+  toast.listeners.forEach((l) => l());
+  toast.timer = setTimeout(() => {
+    toast.text = null;
+    toast.listeners.forEach((l) => l());
+  }, ms);
+}
+const subscribeToast = (l) => (toast.listeners.add(l), () => toast.listeners.delete(l));
+/** Mounted once per screen; shows whatever showToast() said last. */
+export function Toaster() {
+  const text = useSyncExternalStore(subscribeToast, () => toast.text, () => null);
+  return (
+    <div className="ev-toast" role="status" aria-live="polite" data-shown={text ? "" : undefined}>
+      {text}
+    </div>
+  );
+}
+
 // ---------- save ----------
 const HEART = "M12 20.3s-7.6-4.7-8.6-9.6C2.7 7.4 4.6 4.8 7.4 4.6c2-.2 3.6 1 4.6 2.6 1-1.6 2.6-2.8 4.6-2.6 2.8.2 4.7 2.8 4 6.1-1 4.9-8.6 9.6-8.6 9.6z";
+const onPreview = () => showToast("her saves are hers: this is a preview ♡");
 
-/** The save heart. `labelled` adds a word under it (event page actions); otherwise a round button. */
-export function SaveButton({ item, labelled = false, className = "" }) {
-  const mine = useEventsPersonal();
-  const toggle = useToggleSave();
-  const saved = mine.isSaved(item.id);
+/**
+ * The save heart for an event, or a merch piece with `merch`. `labelled` adds a word under it (the
+ * event page's actions); otherwise it's a round 44pt button.
+ */
+export function SaveButton({ item, merch = false, labelled = false, className = "" }) {
+  const isSaved = useIsSaved();
+  const toggle = useToggleSave({ onPreview });
+  const saved = isSaved(item);
   const [pop, setPop] = useState(false);
   const label = saved ? `Saved: ${item.name}. Tap to unsave` : `Save ${item.name}`;
   return (
@@ -175,7 +202,7 @@ export function SaveButton({ item, labelled = false, className = "" }) {
         event.preventDefault();
         event.stopPropagation();
         if (!saved) setPop(true);
-        toggle.mutate({ item, saved: !saved });
+        toggle.mutate({ thing: item, saved: !saved, merch });
       }}
     >
       <span className="ev-save__icon">
@@ -247,13 +274,18 @@ export function Countdown({ to, label, compact = false }) {
 }
 
 // ---------- rows ----------
-/** One event or drop as a row: date tile, name, where and when, chips; opens its page. */
-export function EventRow({ item, now, save = false, showNew = true }) {
-  const mine = useEventsPersonal();
+/** Where a pushed event page should say "back" to. */
+export function useFrom() {
   const { pathname } = useLocation();
-  const from = pathname.startsWith("/world/events") ? "events" : pathname.startsWith("/world/saves") ? "saved" : "home";
-  const newness = showNew ? mine.newness(item) : null;
-  const where = item.kind === "merch" ? item.drop?.where?.[0]?.name : item.venue?.name;
+  return pathname.startsWith("/world/events") ? "events" : pathname.startsWith("/world/saves") ? "saved" : "home";
+}
+
+/** One event as a row: date tile, name, where and when, chips; opens its page. */
+export function EventRow({ item, now, save = false, showNew = true }) {
+  const newness = useNewness();
+  const from = useFrom();
+  const fresh = showNew ? newness(item) : null;
+  const where = item.venue?.name;
   return (
     <li className="app-row ev-row" data-ended={["ended", "sold_out", "cancelled"].includes(phaseOf(item, now).phase) ? "" : undefined}>
       <Link className="ev-row__link" to={eventPath(item.id)} state={{ from }}>
@@ -261,19 +293,42 @@ export function EventRow({ item, now, save = false, showNew = true }) {
         <span className="ev-row__text">
           <span className="ev-row__name">
             {item.name}
-            {newness && <NewMark newness={newness} />}
+            {fresh && <NewMark newness={fresh} />}
           </span>
-          <small className="ev-row__meta">
-            {[where, kindLabel(item.kind)].filter(Boolean).join(" · ")}
-          </small>
+          <small className="ev-row__meta">{[where, kindLabel(item.kind)].filter(Boolean).join(" · ")}</small>
           <span className="ev-row__foot">
             <span className="ev-row__when">{whenLabel(item, now)}</span>
-            <ItemChips item={item} now={now} />
+            <ItemChips item={item} now={now} live={false} />
           </span>
         </span>
         {!save && <span className="ev-chevron" aria-hidden="true" />}
       </Link>
       {save && <SaveButton item={item} />}
+    </li>
+  );
+}
+
+/** A merch piece as a row: picture or doodle, name, price, which event; opens the event at its merch. */
+export function MerchRow({ item, save = true }) {
+  const from = useFrom();
+  const event = item.event ?? {};
+  return (
+    <li className="app-row ev-row ev-merch-row">
+      <Link className="ev-row__link" to={`${eventPath(event.id)}#merch`} state={{ from }}>
+        <span className="ev-merch-row__art" aria-hidden="true">
+          {item.image ? <img src={item.image} alt="" loading="lazy" decoding="async" /> : <KindDoodle kind="merch" size={26} />}
+        </span>
+        <span className="ev-row__text">
+          <span className="ev-row__name">{item.name}</span>
+          <small className="ev-row__meta">{[event.name, event.dateLabel].filter(Boolean).join(" · ")}</small>
+          <span className="ev-row__foot">
+            {item.priceLabel && <span className="ev-row__when">{item.priceLabel}</span>}
+            <Chips chips={merchChips(item).slice(0, 2)} />
+          </span>
+        </span>
+        {!save && <span className="ev-chevron" aria-hidden="true" />}
+      </Link>
+      {save && <SaveButton item={item} merch />}
     </li>
   );
 }
