@@ -7,42 +7,48 @@ import "./kaito.css";
 //
 // The box is `width` × HEIGHT px; the engine anchors its top centre at his feet minus `surface`,
 // so the tops of the scoops rise around his boots like soft-serve.
-const HEIGHT = 30;
-const SURFACE = 8;
-const SCOOPS = [
-  { fill: "#fff4da", line: "#dcbd8a", glint: "#ffffff" },
-  { fill: "#bfe6fa", line: "#73b3db", glint: "#effaff" },
-  { fill: "#fff4da", line: "#dcbd8a", glint: "#ffffff" },
-  { fill: "#bfe6fa", line: "#73b3db", glint: "#effaff" },
-];
+const HEIGHT = 34;
+const SURFACE = 9;
+const VANILLA = { fill: "#fff4da", line: "#d9b984", glint: "#ffffff" };
+const SODA = { fill: "#bfe6fa", line: "#6fafd8", glint: "#effaff" };
+const MINT = { fill: "#cdf1e2", line: "#7cc2a5", glint: "#f2fffa" };
 const LILAC = { fill: "#e2d0f8", line: "#a98ad1", glint: "#f8f2ff" };
+const CYCLE = [VANILLA, SODA, VANILLA, MINT, SODA];
 
 /** Where the scoops, drips and sparkles go for a given width: the same width always looks the same. */
 function layout(width) {
-  const w = Math.max(40, width);
-  const inset = 9;
-  const n = Math.max(3, Math.round((w - inset * 2) / 15) + 1);
-  const step = (w - inset * 2) / (n - 1);
+  const w = Math.max(40, Math.round(width));
+  const n = Math.max(3, Math.round((w - 14) / 12) + 1);
+  const step = (w - 14) / (n - 1);
   const middle = Math.floor(n / 2);
   const scoops = Array.from({ length: n }, (_, i) => {
-    const r = [7.2, 6.2, 7.8, 6.6, 7][i % 5];
-    const colour = i === middle ? LILAC : SCOOPS[i % SCOOPS.length];
-    // Pop in from the middle outwards: that's where his feet are.
-    const order = Math.abs(i - middle);
-    return { x: inset + i * step, y: 10.5 - (i % 2) * 1.2, r, colour, order };
+    const r = [7.4, 6.6, 7.8, 6.8, 7.2][i % 5];
+    const colour = i === middle ? LILAC : CYCLE[i % CYCLE.length];
+    return { x: 7 + i * step, y: 11.5 + (i % 2) * 1.6, r, colour, back: i % 2 === 0, order: Math.abs(i - middle) };
   });
-  const dripCount = Math.max(2, Math.round(w / 26));
-  const drips = Array.from({ length: dripCount }, (_, i) => {
-    const x = (w / (dripCount + 1)) * (i + 1) + (i % 2 ? 3 : -2);
-    const long = [6.5, 4, 8, 5, 7][i % 5];
-    return { x, long, wide: 2.6 + (i % 3) * 0.6 };
-  });
+  // Back row first, front row over it: a little heap rather than a fence.
+  scoops.sort((p, q) => Number(q.back) - Number(p.back));
+  const bumps = Math.max(3, Math.round((w - 6) / 13));
+  const span = (w - 6) / bumps;
+  let underside = `M${w - 3} 17`;
+  for (let i = 0; i < bumps; i += 1) {
+    const x0 = w - 3 - i * span;
+    const x1 = x0 - span;
+    underside += `Q${(x0 + x1) / 2} ${23.5 + (i % 2)} ${x1} 19.2`;
+  }
+  const base = `M6 9.5H${w - 6}Q${w - 1} 9.5 ${w - 1.5} 13.5Q${w - 1.6} 16 ${w - 3} 17${underside.slice(underside.indexOf("Q"))}Q1.4 16 1.5 13.5Q1 9.5 6 9.5Z`;
+  const drips = [];
+  for (let i = 0; i < bumps; i += 1) {
+    if (i % 2 === (bumps > 4 ? 1 : 0)) continue;
+    const x = w - 3 - (i + 0.5) * span + (i % 3) - 1;
+    drips.push({ x, top: 21.35 + (i % 2) * 0.5, long: [5.5, 3.5, 7, 4.5][i % 4] });
+  }
   const sparkles = [
-    { x: w * 0.22, y: 5, s: 2.6 },
-    { x: w * 0.7, y: 3.5, s: 2.1 },
-    { x: w * 0.9, y: 12, s: 1.8 },
+    { x: w * 0.2, y: 4.5, s: 2.4 },
+    { x: w * 0.68, y: 3, s: 2 },
+    { x: w * 0.9, y: 14.5, s: 1.7 },
   ];
-  return { w, scoops, drips, sparkles };
+  return { w, scoops, base, drips, sparkles };
 }
 
 function Sparkle({ x, y, s, className }) {
@@ -59,7 +65,7 @@ function Sparkle({ x, y, s, className }) {
 
 function KaitoPlatform({ width = 100, state = "steady" }) {
   const id = useId();
-  const { w, scoops, drips, sparkles } = layout(width);
+  const { w, scoops, base, drips, sparkles } = layout(width);
   return (
     <div className="kaito-cloud" data-state={state} style={{ width: w, height: HEIGHT }} aria-hidden="true">
       <svg viewBox={`0 0 ${w} ${HEIGHT}`} width={w} height={HEIGHT} overflow="visible">
@@ -71,27 +77,21 @@ function KaitoPlatform({ width = 100, state = "steady" }) {
           </linearGradient>
         </defs>
         <g className="kaito-cloud__base">
-          {/* Drips first, so the rim of the base covers where they start. */}
           {drips.map((d) => (
             <path
               key={d.x}
               className="kaito-cloud__drip"
-              d={`M${d.x - d.wide} 18C${d.x - d.wide} ${20 + d.long * 0.5} ${d.x - d.wide * 0.8} ${19 + d.long} ${d.x} ${19 + d.long}S${d.x + d.wide} ${20 + d.long * 0.5} ${d.x + d.wide} 18Z`}
-              fill="#e2eefc"
-              stroke="#a9c4e8"
+              d={`M${d.x - 1.5} ${d.top - 3}C${d.x - 1.5} ${d.top + d.long * 0.45} ${d.x - 3} ${d.top + d.long * 0.6} ${d.x - 3} ${d.top + d.long}A3 3 0 0 0 ${d.x + 3} ${d.top + d.long}C${d.x + 3} ${d.top + d.long * 0.6} ${d.x + 1.5} ${d.top + d.long * 0.45} ${d.x + 1.5} ${d.top - 3}Z`}
+              fill="#e3effc"
+              stroke="#a7c2e6"
               strokeWidth=".9"
             />
           ))}
-          <path
-            d={`M7 8.5H${w - 7}Q${w - 1} 8.5 ${w - 1.5} 14.5Q${w - 2.5} 20.5 ${w - 9} 20.5H9Q2.5 20.5 1.5 14.5Q1 8.5 7 8.5Z`}
-            fill={`url(#${id}-base)`}
-            stroke="#a9c4e8"
-            strokeWidth="1"
-          />
+          <path d={base} fill={`url(#${id}-base)`} stroke="#a7c2e6" strokeWidth="1" strokeLinejoin="round" />
           {drips.map((d) => (
-            <path key={d.x} d={`M${d.x - d.wide + 0.6} 19.6h${d.wide * 2 - 1.2}`} stroke="#e2eefc" strokeWidth="1.6" />
+            <path key={d.x} d={`M${d.x - 1.1} ${d.top}h2.2`} stroke="#e3effc" strokeWidth="2.2" />
           ))}
-          <path d={`M10 17.6H${w - 10}`} stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" opacity=".7" />
+          <path d={`M9 16.4H${w - 9}`} stroke="#ffffff" strokeWidth="1.3" strokeLinecap="round" opacity=".75" />
         </g>
         {scoops.map((s) => (
           <g
@@ -100,16 +100,16 @@ function KaitoPlatform({ width = 100, state = "steady" }) {
             style={{ transformOrigin: `${s.x}px ${s.y + s.r}px`, animationDelay: `${s.order * 45}ms` }}
           >
             <path
-              d={`M${s.x - s.r} ${s.y + 2}C${s.x - s.r} ${s.y - s.r * 1.1} ${s.x + s.r} ${s.y - s.r * 1.1} ${s.x + s.r} ${s.y + 2}C${s.x + s.r * 0.6} ${s.y + 4} ${s.x + s.r * 0.3} ${s.y + 2} ${s.x} ${s.y + 3.6}C${s.x - s.r * 0.3} ${s.y + 2} ${s.x - s.r * 0.6} ${s.y + 4} ${s.x - s.r} ${s.y + 2}Z`}
+              d={`M${s.x - s.r} ${s.y + 2}C${s.x - s.r} ${s.y - s.r * 1.15} ${s.x + s.r} ${s.y - s.r * 1.15} ${s.x + s.r} ${s.y + 2}q${-s.r / 3} 3 ${(-s.r * 2) / 3} 0q${-s.r / 3} 3 ${(-s.r * 2) / 3} 0q${-s.r / 3} 3 ${(-s.r * 2) / 3} 0Z`}
               fill={s.colour.fill}
               stroke={s.colour.line}
               strokeWidth="1"
               strokeLinejoin="round"
             />
             <path
-              d={`M${s.x - s.r * 0.55} ${s.y - s.r * 0.25}q${s.r * 0.25} -${s.r * 0.45} ${s.r * 0.65} -${s.r * 0.5}`}
+              d={`M${s.x - s.r * 0.55} ${s.y - s.r * 0.2}q${s.r * 0.22} ${-s.r * 0.45} ${s.r * 0.62} ${-s.r * 0.52}`}
               stroke={s.colour.glint}
-              strokeWidth="1.5"
+              strokeWidth="1.6"
               strokeLinecap="round"
               fill="none"
             />

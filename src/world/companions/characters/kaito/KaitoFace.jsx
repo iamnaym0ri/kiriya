@@ -272,7 +272,7 @@ function useFace(expression, moving) {
 }
 
 const LID = "#27304f";
-const BROW = "#1f2f78";
+const BROW = "#2a3d9a";
 
 function Star({ x, y, r }) {
   return <path d={`M${x} ${y - r}L${x + r * 0.32} ${y - r * 0.32} ${x + r} ${y} ${x + r * 0.32} ${y + r * 0.32} ${x} ${y + r} ${x - r * 0.32} ${y + r * 0.32} ${x - r} ${y} ${x - r * 0.32} ${y - r * 0.32}Z`} fill="#fff" />;
@@ -295,6 +295,9 @@ export function KaitoFace({ expression, moving }) {
           <stop offset=".5" stopColor="#3a5cd0" />
           <stop offset="1" stopColor="#92d2f7" />
         </linearGradient>
+        <clipPath id={`${id}-mouth`}>
+          <path d={mouth} />
+        </clipPath>
         <radialGradient id={`${id}-blush`}>
           <stop stopColor="#ec95ad" stopOpacity=".95" />
           <stop offset="1" stopColor="#ec95ad" stopOpacity="0" />
@@ -355,7 +358,7 @@ export function KaitoFace({ expression, moving }) {
                 </g>
                 <path className="kaito__upper-lid" d={lidLine} stroke={LID} strokeWidth="3" fill="none" strokeLinecap="round" />
                 <path
-                  d={i ? `m${x + 13} ${tr}2 -2` : `m${x - 13} ${tl}-2 -2`}
+                  d={i ? `m${x + 13} ${tr} 2 -2` : `m${x - 13} ${tl} -2 -2`}
                   stroke={LID}
                   strokeWidth="1.7"
                   strokeLinecap="round"
@@ -393,14 +396,18 @@ export function KaitoFace({ expression, moving }) {
       <path d="m99 125 2 1.5-2 1" fill="none" stroke="#d9ae98" strokeWidth="1.15" strokeLinecap="round" />
       <g className="kaito__mouth">
         <path d={mouth} fill="#a4566f" opacity={Math.min(1, f.mouthOpen)} />
-        <path
-          d={`M${100 - f.mouthWidth * 0.55} ${mouthY + f.mouthOpen * 1.25 + f.smile * 0.6}q${f.mouthWidth * 0.55} -3 ${f.mouthWidth * 1.1} 0`}
-          stroke="#ef8ea4"
-          strokeWidth={Math.max(0, f.mouthOpen * 0.45)}
-          strokeLinecap="round"
-          fill="none"
-          opacity={Math.min(1, Math.max(0, (f.mouthOpen - 4) / 3))}
-        />
+        {f.mouthOpen > 4 && (
+          <g clipPath={`url(#${id}-mouth)`}>
+            <ellipse
+              cx="101"
+              cy={mouthY + f.smile * 0.7 + f.mouthOpen * 1.45}
+              rx={f.mouthWidth * 0.62}
+              ry={f.mouthOpen * 0.5}
+              fill="#ef8ea4"
+              opacity={Math.min(1, (f.mouthOpen - 4) / 3)}
+            />
+          </g>
+        )}
         <path d={topMouth} fill="none" stroke="#8f4f68" strokeWidth="2" strokeLinecap="round" />
         {f.tongue > 0.01 && (
           <path
@@ -428,12 +435,12 @@ export function KaitoBrows({ expression, moving }) {
         return (
           <path
             key={x}
-            d={i ? `M${x - 12} ${y - t}q12 ${-f.browArch - t / 2} 24 ${t}` : `M${x - 12} ${y}q12 ${-f.browArch - t / 2} 24 ${-t}`}
+            d={i ? `M${x - 9} ${y - t}q10 ${-f.browArch - t / 2} 20 ${t}` : `M${x - 11} ${y}q10 ${-f.browArch - t / 2} 20 ${-t}`}
             fill="none"
             stroke={BROW}
-            strokeWidth="1.8"
+            strokeWidth="1.5"
             strokeLinecap="round"
-            opacity=".9"
+            opacity=".78"
           />
         );
       })}
