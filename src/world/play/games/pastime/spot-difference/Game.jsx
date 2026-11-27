@@ -153,7 +153,7 @@ export default function SpotDifference({ onReward }) {
             <span className="pastime-stat__label">time</span>
             <span className="pastime-stat__value">{clock(state.seconds)}</span>
           </div>
-          <button type="button" className="pastime-button spot-hint-button" onClick={hint} disabled={done}>a hint ✧</button>
+          <button type="button" className="pastime-button spot-hint-button" onClick={hint} disabled={done} aria-label="a hint">hint ✧</button>
         </div>
         <div className="spot-stage" ref={stage}>
           <div className="spot-pics" style={{ width: picWidth, gap }}>

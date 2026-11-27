@@ -5,11 +5,13 @@
   flex-direction: column;
 }
 .spot .pastime-stats { flex: none; }
-.spot-found { flex: 1.3; }
-.spot-dots { display: flex; gap: 3px; font-size: 20px; line-height: 1; }
+.spot .pastime-stats { gap: 6px; }
+.spot .pastime-stat { padding: 6px 8px; }
+.spot-found { flex: 1.25; }
+.spot-dots { display: flex; gap: 2px; font-size: 18px; line-height: 1; }
 .spot-dots [data-on="true"] { color: #e5579a; }
 .spot-dots [data-on="false"] { color: #dccbe4; }
-.spot-hint-button { flex: none; align-self: stretch; }
+.spot-hint-button { flex: none; align-self: stretch; padding-inline: 12px; }
 
 .spot-stage {
   flex: 1;
