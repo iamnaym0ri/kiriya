@@ -37,8 +37,10 @@ const FLAG = /^(data-|aria-|class$|role$|tabindex$|focusable$)/;
 /**
  * Called while the DOM still shows the old pose (React's getSnapshotBeforeUpdate): a copy of `el`,
  * where each of its running CSS animations and transitions was, and a watch on what changes next.
+ * `look`: also note how each styled part looks, so the parts that jump can glide (a new pose; not
+ * needed when only the expression changes, which is the commonest change and so kept cheapest).
  */
-export function snapshot(el) {
+export function snapshot(el, { look = true } = {}) {
   if (!el || typeof el.cloneNode !== "function") return null;
   const all = [el, ...el.querySelectorAll("*")];
   const index = new Map(all.map((node, i) => [node, i]));
@@ -64,7 +66,7 @@ export function snapshot(el) {
   }
   // How each styled part (the ones CSS poses) looks right now.
   const styled = [];
-  for (let i = 1; i < all.length; i++) if (all[i].hasAttribute("class")) styled.push({ i, look: readLook(all[i]) });
+  if (look) for (let i = 1; i < all.length; i++) if (all[i].hasAttribute("class")) styled.push({ i, look: readLook(all[i]) });
   let observer = null;
   if (typeof MutationObserver === "function") {
     observer = new MutationObserver(() => {});
@@ -156,7 +158,7 @@ export function playGhost(snap, layer, live, { ms = 160, only = false, glide = t
 
   // Parts whose look jumped with the new pose (and that no CSS transition is easing): they glide.
   const glides = [];
-  if (glide && !replaced && liveRoot) {
+  if (glide && !replaced && liveRoot && snap.styled.length) {
     const easing = new Set(gliding.map(({ i, a }) => `${i}|${a.transitionProperty}`));
     for (const { i, look } of snap.styled) {
       const node = snap.all[i];

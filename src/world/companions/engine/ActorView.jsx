@@ -25,7 +25,7 @@ class PoseBlend extends Component {
     const pose = prev.pose !== p.pose;
     const look = prev.expression !== p.expression || prev.prop !== p.prop;
     if (!pose && !look) return null;
-    const snap = snapshot(this.live.current?.firstElementChild);
+    const snap = snapshot(this.live.current?.firstElementChild, { look: pose && p.playing });
     if (!snap) return null;
     const ms = pose ? p.blendMs : p.playing ? BLEND_MS.face : BLEND_MS.quiet;
     // Only the expression or prop changed: the copy holds just what React removed or redrew, so a

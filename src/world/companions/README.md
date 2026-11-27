@@ -106,13 +106,12 @@ export default {
   (the engine memoises on these props).
 - The engine owns a wrapper around the body (taps, dragging, focus): don't add your own click
   handlers.
-- Changes of pose, expression and prop are cross-faded by the engine (see "Transitions"): draw
-  each pose as it should look and let the engine blend. Give parts that stay on screen but move
-  between poses (the upper body lowering to sit, an arm's resting angle) a CSS `transition` on
-  their `translate` / `rotate` / `scale` so they glide; switch it off with your animations
-  (`transition-duration: 0s` when not `playing` and under reduced motion). Mark a prop or a mark
-  that should pop into the hand with `data-cs-pop` on a plain wrapper `<g>` (optionally
-  `--cs-pop-origin`). `Body.blend = false` opts out (a Body that blends its own poses).
+- Changes of pose, expression and prop are blended by the engine (see "Transitions"): draw each
+  pose as it should look, give the parts CSS poses a `class`, and let the engine blend. Parts that
+  move between poses by CSS (the upper body lowering to sit, an arm's angle, a walk cycle ending)
+  glide on their own; your own CSS transitions keep working too. Mark a prop that should pop into
+  the hand with `data-cs-pop` on a plain wrapper `<g>` (optionally `--cs-pop-origin`, default
+  `50% 80%` of the prop). `Body.blend = false` opts out (a Body that blends its own poses).
 
 ### Platform
 
@@ -270,13 +269,16 @@ every character, whatever way its Body draws poses.
   a MutationObserver notes what React changes. The copy is laid over the live body with its CSS
   clocks set to where the old ones were (a walk keeps stepping as it fades) and fades out; what
   React removed or redrew (an arm group, a path, a prop) fades out of it, and the new parts fade in
-  on the live body. Parts that now glide by their own CSS transition are left out of the copy, so
-  they move without a double. When only the expression or the prop changed, the copy holds only
+  on the live body. Styled parts (anything with a `class`) whose transform or opacity would jump
+  with the new pose (an animation swapped for another or for a still value) are animated from where
+  they were into whatever their CSS now says, still or moving, and the copy glides in step; parts
+  with a CSS transition of their own glide in the copy too. So nothing doubles and nothing jumps.
+  When only the expression or the prop changed, the copy holds only
   what React removed or redrew, so the faces that ease between expressions by themselves (Maomao,
   both Mikus, KAITO) show their own easing with nothing over them, and a face drawn per
-  expression (Bamby) cross-fades. The live body is never made see-through. Cost: one `cloneNode`,
-  one observer and a few short opacity animations per change, nothing per frame; at most two
-  ghosts at once.
+  expression (Bamby) cross-fades. The live body is never made see-through. Cost per change: one
+  `cloneNode`, one observer, a read of 20–50 styled parts' transform and opacity, a few short
+  Web Animations (opacity and transforms, composited); nothing per frame; at most two ghosts.
 - **Timing** (`engine/blend.js`, `BLEND_MS`): quick (90 ms) for a reaction, a crouch, take-off, the
   top of a jump, landing and being picked up; 120 ms setting off, 160 ms stopping, 150 ms a
   behaviour or a step starting, 200 ms easing into the rest pose, sitting or lying down; 150 ms a

@@ -1,4 +1,5 @@
-import { memo, useId, useSyncExternalStore } from "react";
+import { memo, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import { animate } from "motion";
 import { KaitoBrows, KaitoFace, resolveExpression } from "./KaitoFace.jsx";
 import { IceCone, IceCup, Spoon } from "./props.jsx";
 import "./kaito.css";
@@ -367,9 +368,49 @@ const POSE_ARMS = {
   snow: "palms",
 };
 const armsFor = (pose) => ARMS[POSE_ARMS[pose] ?? "rest"];
+const mixArms = (a, b, t) => a.map((arm, i) => arm.map((p, j) => [p[0] + (b[i][j][0] - p[0]) * t, p[1] + (b[i][j][1] - p[1]) * t]));
 
-function Sleeves({ pose }) {
-  const [l, r] = armsFor(pose);
+/**
+ * His arms for this pose, swept there from the last pose's (round 3, README.md "Transitions"): the
+ * shoulder, elbow and wrist points ease across in 0.24 s instead of jumping, with whatever the hand
+ * holds riding along. Sleeves and Hands each run one (in step: same start, same clock), so only the
+ * arms re-render while they move. Still when `moving` is off.
+ */
+function useArms(pose, moving) {
+  const [arms, setArms] = useState(() => armsFor(pose));
+  const latest = useRef(arms);
+  useLayoutEffect(() => {
+    const target = armsFor(pose);
+    const update = (next) => {
+      latest.current = next;
+      setArms(next);
+    };
+    const from = latest.current;
+    if (from === target) return undefined;
+    if (!moving) {
+      update(target);
+      return undefined;
+    }
+    const controls = animate(0, 1, {
+      duration: 0.24,
+      ease: [0.3, 0.8, 0.3, 1],
+      onUpdate: (t) => update(mixArms(from, target, t)),
+      onComplete: () => update(target),
+    });
+    return () => controls.stop();
+  }, [pose, moving]);
+  return arms;
+}
+
+/** How far a hand still is from where this pose puts it (so a held cone rides with the hand). */
+function lag(arm, target) {
+  const [hx, hy] = handPoint(arm[1], arm[2]);
+  const [tx, ty] = handPoint(target[1], target[2]);
+  return hx === tx && hy === ty ? null : `translate(${(hx - tx).toFixed(1)} ${(hy - ty).toFixed(1)})`;
+}
+
+function Sleeves({ pose, motion }) {
+  const [l, r] = useArms(pose, motion);
   return (
     <g className="kaito__sleeves">
       <Sleeve arm={l} className="kaito__arm--l" />
@@ -382,16 +423,21 @@ function Sleeves({ pose }) {
 const OWN_TREAT = new Set(["icecream", "offer", "brainfreeze", "treat", "snuggle", "sleep", "held", "slip"]);
 
 /** Hands and whatever they're holding: always in front of the scarf. */
-function Hands({ pose, prop }) {
-  const [l, r] = armsFor(pose);
+function Hands({ pose, prop, motion }) {
+  const [l, r] = useArms(pose, motion);
+  const [tl, tr] = armsFor(pose);
+  // Mid-sweep, what this pose draws at the hand's final place rides along with the hand.
+  const ride = lag(r, tr);
   const carried = prop === "icecream" && !OWN_TREAT.has(pose) ? handPoint(r[1], r[2]) : null;
   if (pose === "offer") {
     return (
       <g className="kaito__hands">
-        <IceCone x={100} y={180} flavour="lilac" className="kaito__cone kaito__cone--offer" />
+        <g transform={ride ?? undefined}>
+          <IceCone x={100} y={180} flavour="lilac" className="kaito__cone kaito__cone--offer" />
+        </g>
         <g fill={SKIN} stroke={SKIN_LINE} strokeWidth=".9">
-          <ellipse cx="94.5" cy="188" rx="5.8" ry="5.4" />
-          <ellipse cx="105.5" cy="188" rx="5.8" ry="5.4" />
+          <ellipse cx="94.5" cy="188" rx="5.8" ry="5.4" transform={lag(l, tl) ?? undefined} />
+          <ellipse cx="105.5" cy="188" rx="5.8" ry="5.4" transform={ride ?? undefined} />
         </g>
       </g>
     );
@@ -399,11 +445,17 @@ function Hands({ pose, prop }) {
   return (
     <g className="kaito__hands">
       <ArmHand arm={l} className="kaito__arm--l" />
-      {pose === "treat" && <IceCup x={88} y={196} />}
+      {pose === "treat" && (
+        <g transform={lag(l, tl) ?? undefined}>
+          <IceCup x={88} y={196} />
+        </g>
+      )}
       <ArmHand arm={r} className="kaito__arm--r" open={pose === "wave"}>
-        {pose === "icecream" && <IceCone x={122} y={170} flavour="soda" />}
-        {pose === "brainfreeze" && <IceCone x={142} y={203} flavour="soda" />}
-        {pose === "treat" && <Spoon x={118} y={159} angle={-24} />}
+        <g transform={ride ?? undefined}>
+          {pose === "icecream" && <IceCone x={122} y={170} flavour="soda" />}
+          {pose === "brainfreeze" && <IceCone x={142} y={203} flavour="soda" />}
+          {pose === "treat" && <Spoon x={118} y={159} angle={-24} />}
+        </g>
         {carried && (
           <g data-cs-pop="">
             <IceCone x={carried[0]} y={carried[1] - 1} flavour="soda" />
@@ -576,9 +628,9 @@ export function Figure({ id, pose, face, motion, prop = null }) {
               <KaitoBrows expression={face} moving={motion} />
               {(pose === "snuggle" || pose === "sleep") && <ScarfUp />}
             </g>
-            <Sleeves pose={pose} />
+            <Sleeves pose={pose} motion={motion} />
             <ScarfRoll />
-            <Hands pose={pose} prop={prop} />
+            <Hands pose={pose} prop={prop} motion={motion} />
           </g>
         </g>
       </g>
