@@ -273,12 +273,18 @@ every character, whatever way its Body draws poses.
   with the new pose (an animation swapped for another or for a still value) are animated from where
   they were into whatever their CSS now says, still or moving, and the copy glides in step; parts
   with a CSS transition of their own glide in the copy too. So nothing doubles and nothing jumps.
-  When only the expression or the prop changed, the copy holds only
-  what React removed or redrew, so the faces that ease between expressions by themselves (Maomao,
-  both Mikus, KAITO) show their own easing with nothing over them, and a face drawn per
-  expression (Bamby) cross-fades. The live body is never made see-through. Cost per change: one
-  `cloneNode`, one observer, a read of 20–50 styled parts' transform and opacity, a few short
-  Web Animations (opacity and transforms, composited); nothing per frame; at most two ghosts.
+  In quiet mode and reduced motion nothing glides: the copy is a plain short cross-fade.
+- **Expression or prop only**: the copy holds just what React removed or redrew (everything else
+  is pruned from it before it is styled), so the faces that ease between expressions by
+  themselves (Maomao, both Mikus, KAITO: a JS morph of the face's numbers, which can't be CSS on
+  the iPhone because WebKit has no CSS `d` for path shapes) keep their own easing with nothing over
+  them, and a face drawn per expression (Bamby) cross-fades.
+- **Cost** per change: one `cloneNode`, one observer, for a new pose a read of 20–50 styled parts'
+  transform and opacity, a few short Web Animations (opacity and transforms); nothing per frame;
+  at most two ghosts. The biggest share is the browser styling the copied SVG (a few ms in
+  WebKit on the iMac per change of pose). The live body is never made see-through.
+- **KAITO's arms** are three points per pose, so his Body sweeps them from pose to pose (0.24 s)
+  instead of cross-fading, with what the hand holds riding along.
 - **Timing** (`engine/blend.js`, `BLEND_MS`): quick (90 ms) for a reaction, a crouch, take-off, the
   top of a jump, landing and being picked up; 120 ms setting off, 160 ms stopping, 150 ms a
   behaviour or a step starting, 200 ms easing into the rest pose, sitting or lying down; 150 ms a
