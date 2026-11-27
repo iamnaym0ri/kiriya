@@ -23,6 +23,9 @@ const MemoriesPage = lazy(() => import("./chat/MemoriesPage.jsx"));
 const MailSection = lazy(() => import("./mail/MailSection.jsx"));
 const PlaySection = lazy(() => import("./play/PlaySection.jsx"));
 const MeSection = lazy(() => import("./me/MeSection.jsx"));
+// Dev-only labs for building characters and games (docs/refactor/RENOVATION.md).
+const CompanionLab = import.meta.env.DEV ? lazy(() => import("./companions/Lab.jsx")) : null;
+const GameLab = import.meta.env.DEV ? lazy(() => import("./play/games/GameLab.jsx")) : null;
 
 const lazyPage = (Page) => (
   <Suspense fallback={<PageLoader />}>
@@ -65,6 +68,8 @@ export default function World() {
         <Route path="mail" element={lazyPage(MailSection)} />
         <Route path="play" element={lazyPage(PlaySection)} />
         <Route path="me" element={lazyPage(MeSection)} />
+        {CompanionLab && <Route path="companion-lab" element={lazyPage(CompanionLab)} />}
+        {GameLab && <Route path="game-lab" element={lazyPage(GameLab)} />}
         <Route path="*" element={<Home />} />
       </Route>
     </Routes>

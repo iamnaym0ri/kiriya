@@ -127,6 +127,10 @@ export default {
 };
 ```
 
+`src/world/companions/registry.js` finds every character by folder, so adding one needs no shared
+file. Until the engine lands, the dev-only lab `/world/companion-lab?c=<id>` shows a character's
+poses, its platform and a simple walk.
+
 The **stage agent** builds the engine that runs any character to this contract and documents every
 engine option in `src/world/companions/README.md` (it may extend the contract; tell the character
 agents through the coordinator). Until the engine lands, character agents build and test their
@@ -149,9 +153,9 @@ export default {
 ```
 
 `Game.jsx` gets `({ onExit, onReward })`: `onReward({ sticker })` ties into the existing sticker
-collection. The **frame agent** owns `src/world/play/games/registry.js` and the play hub; game
-agents export their games from `src/world/play/games/<shelf>/index.js` as an array, and the
-registry imports the five shelves.
+collection. `src/world/play/games/registry.js` finds every game by folder (`import.meta.glob`), so
+adding a game needs no shared file. The **frame agent** owns the registry and the play hub. Until
+the hub lands, open a game in the dev-only lab: `/world/game-lab?g=<id>`.
 
 ## Testing without clashing (the iMac has 4 cores)
 
