@@ -1,88 +1,110 @@
-/* The iPhone app's tab bar: frosted lilac paper under her thumb, hidden while typing and in the chat. */
-:root {
-  --app-tabs-h: calc(58px + env(safe-area-inset-bottom));
-}
+/* The iPhone app's tab bar (AppTabBar.jsx): frosted lilac paper under her thumb, hand-drawn icons that
+   fill in when their tab is open, hidden while the keyboard is up. Variables: app-shell.css. */
 .app-tabs {
   position: fixed;
   z-index: 120;
   inset: auto 0 0 0;
   height: var(--app-tabs-h);
-  padding: 4px max(10px, env(safe-area-inset-left)) env(safe-area-inset-bottom) max(10px, env(safe-area-inset-right));
+  padding: 0 max(4px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(4px, env(safe-area-inset-left));
+  box-sizing: border-box;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  background: color-mix(in srgb, var(--theme-paper, #fbf6fd) 84%, transparent);
-  -webkit-backdrop-filter: saturate(1.4) blur(18px);
-  backdrop-filter: saturate(1.4) blur(18px);
-  border-top: 1px solid color-mix(in srgb, var(--theme-line, #d9c8e4) 80%, transparent);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  background: color-mix(in srgb, var(--theme-paper, #fbf6fd) 90%, transparent);
+  -webkit-backdrop-filter: saturate(1.5) blur(20px);
+  backdrop-filter: saturate(1.5) blur(20px);
+  border-top: 0.5px solid color-mix(in srgb, var(--theme-line, #d9c8e4) 90%, transparent);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
-  transition: transform 220ms ease;
+  -webkit-touch-callout: none;
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s;
 }
 .app-tabs__tab {
+  position: relative;
   display: grid;
+  grid-template-rows: 30px auto;
   justify-items: center;
-  align-content: center;
-  gap: 2px;
-  color: color-mix(in srgb, var(--theme-ink, #4e2f63) 55%, transparent);
+  align-content: start;
+  padding-top: 5px;
+  min-width: 0;
+  color: color-mix(in srgb, var(--theme-ink, #54385f) 52%, transparent);
   text-decoration: none;
-  font: 500 10.5px/1.2 -apple-system, system-ui, sans-serif;
-  letter-spacing: 0;
+  outline-offset: -4px;
+}
+.app-tabs__label {
+  /* Labels are centred on their tab and may run a little past it ("notes & letters"): the tabs
+     beside it have short names, so they never meet. */
+  justify-self: center;
   white-space: nowrap;
+  font: 600 10.5px/1.25 -apple-system, "SF Pro Text", system-ui, sans-serif;
+  letter-spacing: 0.01em;
 }
 .app-tabs__tab[aria-current="page"] {
-  color: var(--theme-accent, #7d4f9c);
-}
-.app-tabs__tab[aria-current="page"] .app-tabs__icon svg {
-  stroke-width: 2.1;
-}
-.app-tabs__tab:active .app-tabs__icon {
-  transform: scale(0.88);
+  color: var(--theme-accent, #785383);
 }
 .app-tabs__icon {
   position: relative;
   display: grid;
   place-items: center;
-  transition: transform 120ms ease;
+  width: 30px;
+  height: 30px;
+  transition: transform 140ms ease;
+}
+.app-tabs__icon svg {
+  overflow: visible;
+}
+.app-tabs__fill {
+  fill: transparent;
+  transition: fill 160ms ease;
+}
+.app-tabs__tab[aria-current="page"] .app-tabs__fill {
+  fill: color-mix(in srgb, var(--theme-accent, #785383) 20%, var(--theme-paper, #fff9fd));
+}
+.app-tabs__tab[aria-current="page"] svg {
+  stroke-width: 2;
+}
+.app-tabs__tab:active .app-tabs__icon {
+  transform: scale(0.86);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .app-tabs__tab[aria-current="page"] .app-tabs__icon {
+    animation: app-tab-pop 300ms cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+}
+@keyframes app-tab-pop {
+  40% {
+    transform: scale(1.14) rotate(-4deg);
+  }
 }
 .app-tabs__count {
   position: absolute;
-  top: -4px;
-  right: -9px;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
+  top: -1px;
+  left: calc(50% + 6px);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
   border-radius: 9px;
-  background: #e5484d;
+  background: #e0457b;
   color: #fff;
-  font: 600 10.5px/17px system-ui, sans-serif;
+  font: 700 11px/18px -apple-system, system-ui, sans-serif;
   text-align: center;
   box-shadow: 0 0 0 2px var(--theme-paper, #fbf6fd);
 }
-body.keyboard-open .app-tabs,
-body[data-page="chat"] .app-tabs {
-  transform: translateY(110%);
+body.keyboard-open .app-tabs {
+  transform: translateY(105%);
+  visibility: hidden;
+  transition: transform 200ms ease, visibility 0s linear 200ms;
 }
-/* Room for the bar under everything that sits at the bottom of the screen. */
-body[data-app-tabs] .world-content {
-  padding-bottom: calc(var(--app-tabs-h) + 12px);
-}
-body[data-app-tabs] .world-footer {
-  padding-bottom: calc(var(--app-tabs-h) + 8px);
-}
-body[data-app-tabs] .daily-style-corner {
-  bottom: calc(14px + var(--app-tabs-h));
-}
+/* Fixed things that sit at the bottom of the screen keep clear of the bar. */
+body[data-app-tabs] .daily-style-corner,
 body[data-app-tabs] .listening-room {
-  bottom: calc(14px + var(--app-tabs-h));
-}
-/* The tab bar stands in for the bookmarks in the top bar (the menu keeps its extra links). */
-body[data-app-tabs] .world-bookmarks {
-  display: none;
+  bottom: calc(14px + var(--app-bottom, var(--app-tabs-h)));
 }
 @media (prefers-reduced-motion: reduce) {
-  .app-tabs {
+  .app-tabs,
+  body.keyboard-open .app-tabs {
     transition: none;
   }
 }
