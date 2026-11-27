@@ -28,7 +28,7 @@ export default function GalleryCard({ onOpen, onOpenArt, onStart }) {
             {title}
           </h2>
           <span className="play-gallery__count">
-            {query.isPending ? "opening…" : artworks.length ? `${artworks.length} little ${artworks.length === 1 ? "thing" : "things"} ${admin ? "she’s" : "you’ve"} made` : "doodles, kaleidoscopes, dolls & bouquets"}
+            {query.isPending ? "opening…" : artworks.length ? `${artworks.length} little ${artworks.length === 1 ? "thing" : "things"} ${admin ? "she’s" : "you’ve"} made` : "doodles, dolls & bouquets"}
           </span>
         </span>
         <span className="play-gallery__all" aria-hidden="true">

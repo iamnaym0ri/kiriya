@@ -1,13 +1,12 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { useIsAdmin } from "../../lib/session.js";
 import { tabDepth } from "../../shared/AppFrame.jsx";
 import PageLoader from "../../shared/PageLoader.jsx";
 import { GAMES, SHELVES, gameById } from "./games/registry.js";
 import GameSheet from "./games/GameSheet.jsx";
 import DoodleCard from "./DoodleCard.jsx";
 import GalleryCard from "./gallery/GalleryCard.jsx";
-import { StickerBook, StickerMoment } from "./Stickers.jsx";
+import { StickerMoment } from "./Stickers.jsx";
 import { useMarkPlayed, usePlayState, useReward } from "./playState.js";
 import "./PlaySection.css";
 
@@ -31,11 +30,9 @@ const SKETCH_PARAMS = ["paint"];
 export default function PlaySection() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const admin = useIsAdmin();
   const state = usePlayState();
   const markPlayed = useMarkPlayed();
   const reward = useReward();
-  const [book, setBook] = useState(false);
   const [moment, setMoment] = useState(null);
   const endMoment = useCallback(() => setMoment(null), []);
 
@@ -114,12 +111,6 @@ export default function PlaySection() {
     <div className="app-section app-section--play">
       <header className="app-section__head">
         <h1 className="app-section__title">play</h1>
-        <div className="app-section__actions">
-          <button type="button" className="app-action play-stickers-button" onClick={() => setBook(true)} aria-label={admin ? "Her sticker book" : `Your sticker book, ${state.data?.collected?.length ?? 0} stickers`}>
-            <StickerBookIcon />
-            {state.data?.collected?.length > 0 && <span className="play-stickers-button__count">{state.data.collected.length}</span>}
-          </button>
-        </div>
       </header>
       <div className="app-section__body">
         <DoodleCard onOpenSketchbook={() => open({ sketchbook: 1 })} />
@@ -135,7 +126,6 @@ export default function PlaySection() {
         </Suspense>
       </GameSheet>
       <StickerMoment moment={moment} onDone={endMoment} />
-      <StickerBook open={book} onClose={() => setBook(false)} state={state.data} admin={admin} />
     </div>
   );
 }
@@ -233,16 +223,5 @@ function Shelf({ shelf, seen, ready, onOpen }) {
         })}
       </ul>
     </section>
-  );
-}
-
-function StickerBookIcon() {
-  // A die-cut sticker with its corner peeling up.
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M14.6 19.6c-2.9.2-5.6.2-8.4-.1-1.2-.1-1.8-.8-1.9-2-.3-3.6-.3-7.3 0-10.9.1-1.2.8-1.9 2-2 3.7-.3 7.4-.3 11.1 0 1.2.1 1.9.8 2 2 .2 2.8.2 5.5 0 8.3Z" />
-      <path d="M14.6 19.6c.1-1.7.2-2.9.9-3.7.8-.8 2-1 4-1.1" />
-      <path d="M11.9 14.3c-2.1-1.4-3-2.5-2.8-3.7.2-1.2 1.8-1.5 2.8-.4 1-1.1 2.6-.8 2.8.4.2 1.2-.7 2.3-2.8 3.7Z" fill="currentColor" stroke="none" />
-    </svg>
   );
 }
