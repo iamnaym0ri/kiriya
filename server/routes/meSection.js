@@ -8,11 +8,13 @@ import { names } from "../lib/chat.js";
 import { publicProfileDefaults } from "../content/publicProfile.js";
 import { stickers as stickerCatalogue } from "../content/birthday.js";
 import { appSnapshot } from "./widget.js";
+import { MEET_ZONE_IDS } from "../../shared/meetCountdown.js";
 
 // The app's last tab (docs/refactor/RENOVATION.md, owner: the me agent). Mounted at /api/me/glance
 // behind a kiriya/admin session, and at /api/admin/hub behind the admin one.
 
 const TOGETHER = "together_since"; // settings key: "YYYY-MM-DD", the day they count from
+const MEET = "next_meeting"; // settings key: { at, zone, since, setAt } (instants as ISO strings)
 
 async function setting(db, key) {
   const [row] = await db.select({ value: schema.settings.value }).from(schema.settings).where(eq(schema.settings.key, key));
@@ -98,3 +100,51 @@ hubRoutes.put("/together", async (c) => {
 
 // What her Home Screen widgets show right now (the same snapshot her phone's widgets read).
 hubRoutes.get("/widgets", async (c) => c.json(await appSnapshot(await getDb(), "kiriya")));
+
+// ---------- until we meet ----------
+
+/** When they next meet, for the countdown on both their tabs; null until Josh sets it. */
+export async function readMeeting(db) {
+  const value = await setting(db, MEET);
+  if (!value?.at || !MEET_ZONE_IDS.includes(value.zone)) return null;
+  // The bar fills from the last time they were together, or else from when he set the date.
+  return { at: value.at, zone: value.zone, since: value.since ?? null, start: value.since ?? value.setAt ?? value.at };
+}
+
+export const meetRoutes = new Hono();
+meetRoutes.get("/", async (c) => c.json({ meeting: await readMeeting(await getDb()) }));
+
+const instant = z.string().datetime({ offset: true });
+const meetBody = z
+  .object({
+    at: instant,
+    zone: z.enum(MEET_ZONE_IDS),
+    since: instant.nullable().optional(),
+  })
+  .strict();
+
+hubRoutes.put("/meet", async (c) => {
+  const parsed = meetBody.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "bad_meeting", message: "Pick a day and a time for it." }, 400);
+  const now = Date.now();
+  const at = Date.parse(parsed.data.at);
+  const since = parsed.data.since ? Date.parse(parsed.data.since) : null;
+  if (at <= now) return c.json({ error: "past_meeting", message: "Pick a moment that’s still to come ♡" }, 400);
+  if (since !== null && (since >= now || since >= at)) return c.json({ error: "bad_since", message: "The last time you were together has to be in the past." }, 400);
+  const db = await getDb();
+  const previous = await setting(db, MEET);
+  // Moving only "the last time" (or saving again) keeps the bar's starting point.
+  const setAt = previous?.at && Date.parse(previous.at) === at && previous.setAt ? previous.setAt : new Date(now).toISOString();
+  const value = { at: new Date(at).toISOString(), zone: parsed.data.zone, since: since === null ? null : new Date(since).toISOString(), setAt };
+  await db
+    .insert(schema.settings)
+    .values({ key: MEET, value })
+    .onConflictDoUpdate({ target: schema.settings.key, set: { value, updatedAt: sql`now()` } });
+  return c.json({ meeting: await readMeeting(db) });
+});
+
+hubRoutes.delete("/meet", async (c) => {
+  const db = await getDb();
+  await db.delete(schema.settings).where(eq(schema.settings.key, MEET));
+  return c.json({ meeting: null });
+});

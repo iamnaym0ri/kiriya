@@ -66,7 +66,7 @@ const cookieFrom = (response, fallback) => response.headers.get("set-cookie")?.s
 const roleOf = async (headers) => (await json(await request("session", headers))).role;
 
 let kiriya = await unlock(phrases.kiriya);
-const admin = await unlock(phrases.admin);
+let admin = await unlock(phrases.admin);
 
 await test("Her companion pick is saved, survives a fresh read, and can be nobody", async () => {
   assert.equal((await json(await request("me/prefs", { cookie: kiriya }))).companion, "maomao", "Maomao until she picks");
@@ -188,4 +188,38 @@ await test("Without signing out elsewhere nothing else changes; a website change
   kiriya = cookieFrom(response, kiriya);
   assert.equal(await roleOf({ cookie: kiriya }), "kiriya");
   forgetCredential("kiriya");
+});
+
+await test("Until we meet: both of them read it, only Josh sets or clears it", async () => {
+  admin = await unlock(phrases.admin); // his sign-out-others test above retired the old cookie
+  const hour = 3_600_000;
+  const iso = (ms) => new Date(ms).toISOString();
+  assert.deepEqual(await json(await request("me/meet", { cookie: kiriya })), { meeting: null });
+  assert.equal((await request("me/meet")).status, 401);
+  const at = iso(Date.now() + 40 * 24 * hour);
+  assert.equal((await request("admin/hub/meet", { method: "PUT", cookie: kiriya, body: { at, zone: "Asia/Singapore" } })).status, 401);
+  assert.equal((await request("admin/hub/meet", { method: "DELETE", cookie: kiriya })).status, 401);
+  for (const body of [
+    { at: iso(Date.now() - hour), zone: "Asia/Singapore" },
+    { at, zone: "Europe/London" },
+    { at: "next tuesday", zone: "Asia/Singapore" },
+    { at, zone: "America/Chicago", since: iso(Date.now() + hour) },
+  ])
+    assert.equal((await request("admin/hub/meet", { method: "PUT", cookie: admin, body })).status, 400, JSON.stringify(body));
+
+  const set = await json(await request("admin/hub/meet", { method: "PUT", cookie: admin, body: { at, zone: "America/Chicago" } }));
+  assert.equal(set.meeting.at, at);
+  assert.equal(set.meeting.zone, "America/Chicago");
+  assert.ok(Math.abs(Date.parse(set.meeting.start) - Date.now()) < 60_000, "Without a last time, the bar starts when he set it");
+  const seen = await json(await request("me/meet", { cookie: kiriya }));
+  assert.deepEqual(seen, set, "She sees the same countdown");
+
+  const since = iso(Date.now() - 20 * 24 * hour);
+  const withSince = await json(await request("admin/hub/meet", { method: "PUT", cookie: admin, body: { at, zone: "America/Chicago", since } }));
+  assert.equal(withSince.meeting.start, since, "The last time they were together starts the bar");
+  const stored = (await db.select().from(schema.settings).where(eq(schema.settings.key, "next_meeting")))[0].value;
+  assert.equal(stored.setAt, set.meeting.start, "Saving the same date again keeps when it was set");
+
+  assert.deepEqual(await json(await request("admin/hub/meet", { method: "DELETE", cookie: admin })), { meeting: null });
+  assert.deepEqual(await json(await request("me/meet", { cookie: kiriya })), { meeting: null });
 });
