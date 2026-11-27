@@ -216,3 +216,59 @@ test("artsy rewards: stickers from her catalogue or a game's own stickers.js, ea
   assert.deepEqual(got, [{ sticker: "st-mirror", reason: "kept a first kaleidoscope" }]);
   assert.deepEqual([countMade("bouquet", store), countMade("bouquet", store), countMade("kaleidoscope", store)], [1, 2, 1]);
 });
+
+// ---------------------------------------------------------------- Maomao's colour club (the app's version)
+const club = await import("../src/world/play/games/artsy/palette-party/club.js");
+const mixbox = (await import("mixbox")).default;
+
+test("colour club: every colour is made from its own pots, and its recipe matches it exactly", () => {
+  const ids = new Set();
+  for (const colour of club.COLOURS) {
+    assert.ok(!ids.has(colour.id), `${colour.id} is unique`);
+    ids.add(colour.id);
+    for (const paint of Object.keys(colour.recipe)) assert.ok(club.PAINTS[paint], `${colour.id}: ${paint} is a paint`);
+    const drops = Object.values(colour.recipe).reduce((sum, n) => sum + n, 0);
+    assert.ok(drops <= club.MAX_DROPS, `${colour.id} fits in the bowl`);
+    const target = club.targetOf(colour, mixbox);
+    assert.equal(club.closeness(club.mixDrops(colour.recipe, mixbox), target), 100);
+    // twice the drops in the same proportions is the same colour
+    const double = Object.fromEntries(Object.entries(colour.recipe).map(([paint, n]) => [paint, n * 2]));
+    if (drops * 2 <= club.MAX_DROPS) assert.ok(club.closeness(club.mixDrops(double, mixbox), target) >= club.PASS);
+  }
+});
+
+test("colour club: a palette is three different colours, each with its pots and one or two more", () => {
+  let seed = 7;
+  const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 40; i++) {
+    const palette = club.newPalette(random);
+    assert.equal(palette.length, club.ROUNDS);
+    assert.equal(new Set(palette.map((round) => round.id)).size, club.ROUNDS);
+    for (const round of palette) {
+      for (const paint of Object.keys(round.recipe)) assert.ok(round.pots.includes(paint));
+      assert.ok(round.pots.length >= Object.keys(round.recipe).length + 1 && round.pots.length <= 5, `${round.id}: ${round.pots.length} pots`);
+    }
+  }
+});
+
+test("colour club: a wrong mix doesn't pass, and following Maomao's tips always gets there", () => {
+  for (const colour of club.COLOURS) {
+    const round = { ...colour, pots: Object.keys(club.PAINTS) };
+    const target = club.targetOf(round, mixbox);
+    // start from a single drop of the wrong-est pot
+    const worst = round.pots.map((paint) => [paint, club.closeness(club.mixDrops({ [paint]: 1 }, mixbox), target)]).sort((a, b) => a[1] - b[1])[0][0];
+    let drops = { [worst]: 1 };
+    assert.ok(club.closeness(club.mixDrops(drops, mixbox), target) < club.PASS, `${colour.id}: one drop of ${worst} isn't it`);
+    let steps = 0;
+    while (club.closeness(club.mixDrops(drops, mixbox), target) < club.PASS && steps < 30) {
+      const step = club.nextStep(drops, round);
+      assert.ok(step, `${colour.id}: a tip after ${steps} steps (at ${JSON.stringify(drops)})`);
+      drops = { ...drops, [step.paint]: (drops[step.paint] ?? 0) + (step.more ? 1 : -1) };
+      steps++;
+    }
+    assert.ok(club.closeness(club.mixDrops(drops, mixbox), target) >= club.PASS, `${colour.id}: matched in ${steps} tips`);
+  }
+  assert.deepEqual([1, 2, 3, 6].map(club.starsFor), [3, 2, 1, 1]);
+  assert.equal(club.mixDrops({}, mixbox), null);
+  assert.equal(club.closeness("#ffffff", "#ffffff"), 100);
+});
