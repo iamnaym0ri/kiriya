@@ -145,7 +145,7 @@ function FinishedSheet({ picture, saved, onClose, onAgain }) {
           toChat={toChat}
           toDoodles={toDoodles}
           onChat={() => toChat.mutate({ make, alt: `a coloured-in picture: ${picture.name}` }, { onSuccess: () => showToast(`sent to ${partner} ♡`) })}
-          onKeep={() => toDoodles.mutate({ make, title: `colour by number: ${picture.name}` }, { onSuccess: () => showToast("tucked into your doodles ♡") })}
+          onKeep={() => toDoodles.mutate({ make, title: `colour by number: ${picture.name}` }, { onSuccess: () => showToast("tucked into your gallery ♡") })}
         />
         <button type="button" className="artsy-secondary cbn-finished__again" onClick={() => onAgain(picture.id)}>
           colour it again ↺
@@ -165,7 +165,7 @@ function ShareButtons({ partner, toChat, toDoodles, onChat, onKeep }) {
           {toChat.isPending ? "sending…" : toChat.isSuccess ? `sent to ${partner} ♡` : `send to ${partner} ♡`}
         </button>
         <button type="button" className="artsy-secondary" disabled={toDoodles.isPending || toDoodles.isSuccess} onClick={onKeep}>
-          {toDoodles.isPending ? "keeping…" : toDoodles.isSuccess ? "in your doodles ✓" : "keep in my doodles"}
+          {toDoodles.isPending ? "keeping…" : toDoodles.isSuccess ? "in your gallery ✓" : "keep in my gallery"}
         </button>
       </div>
       {error && <p className="artsy-error" role="alert">{error.message || "That didn’t go through. Try again?"}</p>}
@@ -485,7 +485,7 @@ function Finished({ picture, again, onAgain, onClose, showing }) {
         toChat={toChat}
         toDoodles={toDoodles}
         onChat={() => toChat.mutate({ make, alt: `a coloured-in picture: ${picture.name}` }, { onSuccess: () => showToast(`sent to ${partner} ♡`) })}
-        onKeep={() => toDoodles.mutate({ make, title: `colour by number: ${picture.name}` }, { onSuccess: () => showToast("tucked into your doodles ♡") })}
+        onKeep={() => toDoodles.mutate({ make, title: `colour by number: ${picture.name}` }, { onSuccess: () => showToast("tucked into your gallery ♡") })}
       />
       <div className="cbn-done__more">
         <button type="button" className="artsy-chip" onClick={onClose}>

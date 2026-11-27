@@ -27,13 +27,32 @@
   -webkit-user-drag: none;
 }
 .gallery-tile--ghost {
-  background: linear-gradient(110deg, #f3eaf8 30%, #fbf6fd 50%, #f3eaf8 70%) 0 0 / 300% 100%;
-  animation: gallery-shimmer 1.4s linear infinite;
+  background: #f3eaf8;
+  /* opacity only, so the phone doesn't repaint every frame while the gallery opens */
+  animation: gallery-pulse 1.1s ease-in-out infinite alternate;
   cursor: default;
 }
-@keyframes gallery-shimmer {
+@keyframes gallery-pulse {
+  from {
+    opacity: 1;
+  }
   to {
-    background-position: -150% 0;
+    opacity: 0.55;
+  }
+}
+/* A tile's picture (ArtThumb.jsx): soft paper until its small copy is ready, then a quick fade. */
+.art-thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #f6eefa;
+}
+.art-thumb img {
+  animation: art-thumb-in 0.22s ease-out;
+}
+@keyframes art-thumb-in {
+  from {
+    opacity: 0;
   }
 }
 .gallery-tile__kind,
@@ -588,7 +607,8 @@ html.gallery-viewer-open body {
   .gallery-tile,
   .gallery-viewer,
   .gallery-viewer__picture,
-  .gallery-tile--ghost {
+  .gallery-tile--ghost,
+  .art-thumb img {
     animation: none;
     transition: none;
   }

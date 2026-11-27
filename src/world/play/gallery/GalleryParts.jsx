@@ -18,6 +18,12 @@ const KIND_ICONS = {
       <path d="M9.6 11.6 6 20h12l-3.6-8.4M9 14.5h6" />
     </g>
   ),
+  colouring: (
+    <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+      <path d="M12 20.5C7 17 3.5 13.6 3.5 9.6 3.5 6.6 5.8 4.5 8.4 4.5c1.6 0 2.8.8 3.6 2 .8-1.2 2-2 3.6-2 2.6 0 4.9 2.1 4.9 5.1 0 4-3.5 7.4-8.5 10.9Z" />
+      <path d="M12 6.5c-.9 3 1.8 5.4.4 8.2-.6 1.4-.4 3.6-.4 5.8C7 17 3.5 13.6 3.5 9.6 3.5 6.6 5.8 4.5 8.4 4.5c1.6 0 2.8.8 3.6 2Z" fill="currentColor" opacity="0.55" />
+    </g>
+  ),
   bouquet: (
     <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="9" cy="7" r="2.6" />

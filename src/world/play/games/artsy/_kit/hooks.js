@@ -2,10 +2,10 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import { prefersLessMotion } from "../../../../../shared/effects.js";
 import { readJson, writeJson } from "./store.js";
 
-/** State that is read from the phone once and written back a moment after every change. */
-export function useSavedState(key, initial) {
+/** State that is read from the phone once and written back a moment after every change (`delay` ms). */
+export function useSavedState(key, initial, delay = 450) {
   const [value, setValue] = useState(() => readJson(key, typeof initial === "function" ? initial() : initial));
-  useAutosave(key, value);
+  useAutosave(key, value, delay);
   return [value, setValue];
 }
 

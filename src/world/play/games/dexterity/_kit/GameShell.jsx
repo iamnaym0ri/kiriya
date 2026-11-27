@@ -425,7 +425,7 @@ export default function GameShell({
                 ))}
               </ul>
             )}
-            <p className="dex__meta">{bestLabel(best)}</p>
+            <p className="dex__meta">{best > 0 ? bestLabel(best) : "no best yet, no pressure"}</p>
             <button type="button" className="dex__play" onClick={play}>again <span aria-hidden="true">↺</span></button>
             <button type="button" className="dex__quiet" onClick={onExit}>back to play</button>
           </section>

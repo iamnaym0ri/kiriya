@@ -106,22 +106,43 @@ export default function BouquetMaker({ onReward }) {
   };
   useEffect(() => placeRing(chosen));
 
+  // One finger moves a flower (or turns it by its handle); two fingers size and turn it. They keep
+  // separate notes, so a pinch that starts while the first finger is already dragging never loses
+  // its flower to the drag.
   const live = useRef(null);
+  const pinchLive = useRef(null);
   const toBouquet = (x, y) => {
     const rect = svgRef.current.getBoundingClientRect();
     return [((x - rect.left) / rect.width) * W, ((y - rect.top) / rect.height) * H];
   };
+  /** The flower a pinch is about: the chosen one when the fingers are around it, else the one under them. */
+  const pinchTarget = ([x, y]) => {
+    const current = draft.items.find((each) => each.id === selected);
+    if (current && svgRef.current) {
+      const [bx, by] = toBouquet(x, y);
+      if (Math.hypot(bx - current.x, by - current.y) < 30 * (current.s ?? 1) + 34) return current;
+    }
+    const under = document.elementFromPoint(x, y)?.closest?.("[data-flower]")?.dataset.flower;
+    return draft.items.find((each) => each.id === under) ?? current ?? null;
+  };
   useGesture(
     {
-      onDragStart: ({ event }) => {
+      onDragStart: ({ event, pinching, touches }) => {
+        if (pinching || touches > 1) {
+          live.current = null;
+          return;
+        }
         const handle = event.target.closest?.("[data-handle]");
         const id = handle ? selected : event.target.closest?.("[data-flower]")?.dataset.flower ?? null;
         const item = draft.items.find((each) => each.id === id);
         live.current = item ? { start: item, item, handle: Boolean(handle) } : null;
         if (item && id !== selected) setSelected(id);
       },
-      onDrag: ({ tap, movement: [mx, my], initial, xy, pinching, cancel, last, event }) => {
-        if (pinching) return cancel();
+      onDrag: ({ tap, movement: [mx, my], initial, xy, pinching, touches, canceled, cancel, last, event }) => {
+        if (pinching || touches > 1 || canceled) {
+          live.current = null;
+          return pinching && !canceled ? cancel() : undefined;
+        }
         if (tap) {
           const handle = event?.target?.closest?.("[data-handle]");
           const id = handle ? selected : event?.target?.closest?.("[data-flower]")?.dataset.flower ?? null;
@@ -142,21 +163,23 @@ export default function BouquetMaker({ onReward }) {
         }
       },
       onPinchStart: ({ origin }) => {
-        const under = document.elementFromPoint(...origin)?.closest?.("[data-flower]")?.dataset.flower;
-        const id = under ?? selected ?? null;
-        const item = draft.items.find((each) => each.id === id);
-        live.current = item ? { start: item, item } : null;
-        if (item && id !== selected) setSelected(id);
+        // A drag the first finger had begun stops here; its flower snaps back under the pinch.
+        const dragged = live.current;
+        live.current = null;
+        if (dragged) show(dragged.start);
+        const item = pinchTarget(origin);
+        pinchLive.current = item ? { start: item, item } : null;
+        if (item && item.id !== selected) setSelected(item.id);
       },
       onPinch: ({ movement: [ratio, turn], last }) => {
-        const current = live.current;
+        const current = pinchLive.current;
         if (!current) return;
         const next = pinchTo(current.start, ratio, turn);
         current.item = next;
         show(next);
         if (last) {
           change((old) => ({ items: updateItem(old.items, next.id, next) }));
-          live.current = null;
+          pinchLive.current = null;
         }
       },
     },
@@ -164,7 +187,8 @@ export default function BouquetMaker({ onReward }) {
       target: canvasRef,
       eventOptions: { passive: false },
       drag: { filterTaps: true, tapsThreshold: 6 },
-      pinch: { scaleBounds: { min: 0.2, max: 6 }, rubberband: false },
+      // Every pinch measures from 1 (not from where the last one ended), so sizing never gets stuck.
+      pinch: { from: () => [1, 0], scaleBounds: { min: 0.2, max: 6 }, rubberband: false },
     },
   );
 

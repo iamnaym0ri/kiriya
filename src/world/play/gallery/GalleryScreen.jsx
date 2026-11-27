@@ -10,6 +10,8 @@ import { DoodleNotesSheet } from "../DoodleCard.jsx";
 import { KINDS, artKind, artTitle, groupByMonth, kindsIn } from "./kinds.js";
 import { KindIcon, KindMark, LetterIcon } from "./GalleryParts.jsx";
 import { ARTWORKS_KEY, isHeart, reactionGlyph, useArtworks, useMarkNotesSeen, useSignature } from "./useArtworks.js";
+import ArtThumb from "./ArtThumb.jsx";
+import { keepOnly } from "./thumbs.js";
 import Viewer from "./Viewer.jsx";
 import "./gallery.css";
 
@@ -47,6 +49,11 @@ export default function GalleryScreen({ onStartDoodle }) {
   useEffect(() => {
     if (viewingId && query.isSuccess && !artworks.some((art) => art.id === viewingId)) navigate("/world/play?gallery=1", { replace: true });
   }, [viewingId, query.isSuccess, artworks, navigate]);
+
+  // Small copies of pieces she deleted (here or on another visit) are let go.
+  useEffect(() => {
+    if (query.isSuccess) keepOnly(artworks.map((art) => art.id));
+  }, [query.isSuccess, query.dataUpdatedAt]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Opening a piece marks Josh's notes on it seen; they still say "new" for the rest of this visit.
   const markSeen = useMarkNotesSeen();
@@ -140,7 +147,7 @@ export default function GalleryScreen({ onStartDoodle }) {
                   return (
                     <li key={art.id}>
                       <button type="button" className="gallery-tile" onClick={() => openArt(art.id)} aria-label={`open ${artTitle(art)}${art.reaction ? `, ${isHeart(art.reaction) ? "hearted" : `reacted ${art.reaction}`} by ${signature}` : ""}${art.notes?.length ? `, ${unread ? "a new note" : "a note"} from ${signature}` : ""}`}>
-                        <img src={art.url} alt="" loading="lazy" decoding="async" />
+                        <ArtThumb art={art} />
                         <KindMark kind={artKind(art)} />
                         {art.reaction && (
                           <span className="gallery-tile__heart" data-heart={isHeart(art.reaction) || undefined} aria-hidden="true">

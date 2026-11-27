@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 
-// Maomao's colour club (src/world/play/PaletteParty.jsx), on the artsy shelf of the app's library.
+// Maomao's colour club on the artsy shelf of the app's library: drop paint into a bowl to match her
+// sample (Game.jsx). The website keeps its slider version (src/world/play/PaletteParty.jsx).
 function PalettePartyIcon() {
   return h(
     "svg",
@@ -20,8 +21,8 @@ export default {
   shelf: "artsy",
   order: 10,
   title: "colour club",
-  blurb: "mix the paint to match maomao’s colour",
+  blurb: "drop by drop, mix maomao’s colours",
   Icon: PalettePartyIcon,
   load: () => import("./Game.jsx"),
-  credit: "Maomao’s colour club: our own game",
+  credit: "Maomao’s colour club: our own game; paint mixing by Mixbox, © Secret Weapons (CC BY-NC 4.0)",
 };

@@ -3,12 +3,14 @@
 //   kaleidoscope  "a little kaleidoscope" (any title with "kaleidoscope")
 //   paper doll    "paper doll · <look name>"
 //   bouquet       "bouquet · <name>"
+//   coloured in   "colour by number: <picture>"
 // Anything else is a doodle (the sketchbook's pages, and pictures she added herself).
 export const KINDS = [
   { id: "doodle", name: "doodles", one: "doodle" },
   { id: "kaleidoscope", name: "kaleidoscopes", one: "kaleidoscope" },
   { id: "doll", name: "paper dolls", one: "paper doll" },
   { id: "bouquet", name: "bouquets", one: "bouquet" },
+  { id: "colouring", name: "coloured in", one: "coloured-in picture" },
 ];
 
 export function artKind(art) {
@@ -16,6 +18,7 @@ export function artKind(art) {
   if (title.includes("kaleidoscope")) return "kaleidoscope";
   if (title.startsWith("paper doll")) return "doll";
   if (title.startsWith("bouquet")) return "bouquet";
+  if (title.startsWith("colour by number")) return "colouring";
   return "doodle";
 }
 
@@ -31,7 +34,9 @@ export function artTitle(art) {
   const title = String(art?.prompt ?? "").trim();
   if (!title) return "a little untitled thing";
   const parts = title.split(" · ");
-  return parts.length > 1 && /^(paper doll|bouquet)$/i.test(parts[0]) ? parts.slice(1).join(" · ") || title : title;
+  if (parts.length > 1 && /^(paper doll|bouquet)$/i.test(parts[0])) return parts.slice(1).join(" · ") || title;
+  const coloured = /^colour by number:\s*(.+)$/i.exec(title);
+  return coloured ? coloured[1] : title;
 }
 
 /** Artworks grouped by month, newest first: [{ key: "2026-11", label: "november 2026", artworks }]. */

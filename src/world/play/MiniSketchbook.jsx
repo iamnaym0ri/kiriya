@@ -1,8 +1,9 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import DrawingCanvas from "../studio/DrawingCanvas.jsx";
-import { BRUSHES, SHAPES, PAPERS, drawingHistory, downloadBlob } from "../studio/drawingTools.js";
+import { BRUSHES, SHAPES, PAPERS, INKS, PALETTE, drawingHistory, downloadBlob } from "../studio/drawingTools.js";
+import ToolMark from "../studio/ToolMark.jsx";
 import { useSketchPages } from "../studio/SketchbookState.jsx";
 import { uploadFile } from "../../lib/uploads.js";
 import { api } from "../../lib/api.js";
@@ -11,23 +12,18 @@ import { celebrate } from "../../shared/effects.js";
 import { Discovery } from "../collection/Collections.jsx";
 import DoodleGallery from "./DoodleGallery.jsx";
 import { isAppShell } from "../../lib/native.js";
-import { useArtworks } from "./gallery/useArtworks.js";
 import "./PlayDesk.css";
 import "./DoodleStudio.css";
 const PaintMixer = lazy(() => import("../studio/PaintMixer.jsx"));
-const INKS = ["#674c87", "#d185ad", "#39968e", "#493653", "#edba69"];
-const PALETTE = [...INKS, "#ffffff", "#f6b6cf", "#a7bf7c", "#995cf7", "#365dd7", "#e96675", "#6f6879"];
-function ToolMark({ tool }) {
-  return <svg viewBox="0 0 52 28" aria-hidden="true">
-    {tool === "heart" ? <path d="M26 25C21 19 7 13 14 6q6-6 12 3 6-9 12-3c7 7-7 13-12 19Z" fill="currentColor" />
-      : tool === "star" ? <path d="m26 2 4 8 9 1-7 6 2 9-8-4-8 4 2-9-7-6 9-1Z" fill="currentColor" />
-      : tool === "sparkle" ? <path d="m26 2 4 10 12 2-12 3-4 10-4-10-12-3 12-2Z" fill="currentColor" />
-      : tool === "rectangle" ? <rect x="13" y="5" width="26" height="18" rx="1" fill="none" stroke="currentColor" strokeWidth="2" />
-      : tool === "ellipse" ? <ellipse cx="26" cy="14" rx="13" ry="10" fill="none" stroke="currentColor" strokeWidth="2" />
-      : <path d={tool === "line" ? "m10 22 32-16" : "M7 20Q16 3 25 14T45 7"} fill="none" stroke="currentColor" strokeWidth={tool === "pencil" ? 1.3 : tool === "marker" ? 9 : tool === "crayon" ? 5 : 4} strokeLinecap="round" opacity={tool === "marker" ? .4 : 1} strokeDasharray={tool === "crayon" ? "2 2" : undefined} />}
-  </svg>;
-}
+const AppSketchbook = lazy(() => import("../studio/AppSketchbook.jsx"));
+
+/** The sketchbook: in the iPhone app a full-screen page with its tools (studio/AppSketchbook.jsx); on the website, the ring-bound notebook card. */
 export default function MiniSketchbook() {
+  if (isAppShell()) return <Suspense fallback={null}><AppSketchbook /></Suspense>;
+  return <WebSketchbook />;
+}
+
+function WebSketchbook() {
   const pages = useSketchPages(), [search] = useSearchParams();
   const initial = useRef(pages.current.doodle ?? pages.current.mini ?? pages.current.full ?? {}).current;
   const canvas = useRef(null), root = useRef(null), drawing = useRef(initial.drawing);
@@ -41,7 +37,6 @@ export default function MiniSketchbook() {
   const [gallery, setGallery] = useState(search.get("gallery") === "1"), [mixing, setMixing] = useState(false);
   const [status, setStatus] = useState(""), [kept, setKept] = useState(initial.kept ?? false), [more, setMore] = useState(false);
   const [paletteMessage, setPaletteMessage] = useState(false);
-  const [savedId, setSavedId] = useState(null);
   const client = useQueryClient(), { moving } = usePlayful();
   // A previous full-page draft keeps its original proportions when first brought here.
   const aspect = useRef(initial.aspect ?? (initial === pages.current.full ? 1.25 : 1)).current;
@@ -69,8 +64,7 @@ export default function MiniSketchbook() {
       const art = await api("/me/artworks", { method: "POST", body: { ...stored, width, height, prompt: title.trim() || "A little birthday doodle" } });
       return { version, id: art?.id ?? null };
     },
-    onSuccess: ({ version, id }) => {
-      setSavedId(id);
+    onSuccess: ({ version }) => {
       savedRevision.current = version;
       const unchanged = revision.current === version;
       setKept(unchanged); setGallery(true);
@@ -149,21 +143,6 @@ export default function MiniSketchbook() {
     </fieldset>
     <p className="doodle-status" role="status">{status}</p>
     {save.error && <p className="doodle-error" role="alert">{save.error.message} You can try keeping it again.</p>}
-    {isAppShell() ? <AppGalleryLink savedId={kept ? savedId : null} /> : <DoodleGallery open={gallery} onToggle={setGallery} />}
+    <DoodleGallery open={gallery} onToggle={setGallery} />
   </section>;
-}
-
-/**
- * In the app, her gallery is a screen of its own (gallery/GalleryScreen.jsx): the sketchbook just
- * points there, straight at the doodle she has just kept. Replacing the sketchbook's history entry
- * means back from the gallery returns to play.
- */
-function AppGalleryLink({ savedId }) {
-  const navigate = useNavigate();
-  const { artworks } = useArtworks();
-  const go = id => navigate(`/world/play?gallery=1${id ? `&doodle=${encodeURIComponent(id)}` : ""}`, { replace: true });
-  return <div className="doodle-app-gallery">
-    {savedId && <button type="button" className="button-plum" onClick={() => go(savedId)}>See it in your gallery ♡</button>}
-    <button type="button" className="doodle-link" onClick={() => go(null)}>♡ Your gallery{artworks.length ? ` · ${artworks.length}` : ""} <span aria-hidden="true">›</span></button>
-  </div>;
 }

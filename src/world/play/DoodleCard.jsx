@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api.js";
 import ReactionBar from "../../shared/ReactionBar.jsx";
 import { EditField, EditSheet } from "../../shared/admin/AdminEdit.jsx";
+import { artTitle } from "./gallery/kinds.js";
 
 // The doodle card at the top of the play hub: the way into her sketchbook. Her saved things, and
 // the notes Josh leaves on them, live in the gallery (gallery/GalleryCard.jsx, GalleryScreen.jsx);
@@ -101,7 +102,7 @@ export function DoodleNotesSheet({ artworks, openId, onChange }) {
       open={Boolean(art)}
       onClose={() => onChange(null)}
       title="her doodle"
-      subtitle={viewing ? `${viewing.prompt || "a little untitled thing"}${when ? ` · ${when}` : ""}` : undefined}
+      subtitle={viewing ? `${artTitle(viewing)}${when ? ` · ${when}` : ""}` : undefined}
       onSave={draft.trim() ? () => add.mutateAsync({ id: viewing.id, body: draft.trim() }).then(() => false) : undefined}
       saveLabel="Leave note"
       dirty={Boolean(draft.trim())}
@@ -109,7 +110,7 @@ export function DoodleNotesSheet({ artworks, openId, onChange }) {
       {viewing && (
         <div className="doodle-notes-sheet">
           <div className="doodle-notes-sheet__picture">
-            <img src={viewing.url} alt={viewing.prompt || "Her doodle"} />
+            <img src={viewing.url} alt={artTitle(viewing)} />
             {artworks.length > 1 && (
               <>
                 <button type="button" className="doodle-notes-sheet__step" data-side="left" onClick={() => step(-1)} aria-label="Newer doodle">
