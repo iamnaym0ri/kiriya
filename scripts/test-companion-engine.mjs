@@ -93,7 +93,7 @@ test("An action comes back with steps, a topic and props passed down", () => {
   assert.equal(a.id, "action");
   assert.equal(a.topic, "action");
   assert.equal(a.steps.length, 1);
-  assert.deepEqual(a.steps[0], { pose: "herb", prop: "herb", expression: undefined, seconds: [3, 5], topic: "action", bounce: null, turn: false });
+  assert.deepEqual(a.steps[0], { pose: "herb", prop: "herb", expression: undefined, seconds: [3, 5], topic: "action", bounce: null, turn: false, chance: 1 });
   const b = normaliseAction({ id: "leek", label: "a leek", pose: "hold", prop: "leek", topic: "leek", steps: [{ seconds: 1 }, { pose: "spin", seconds: [2, 3], bounce: 3 }, { prop: null }] });
   assert.equal(b.steps[0].topic, "leek");
   assert.equal(b.steps[0].prop, "leek");
@@ -102,6 +102,8 @@ test("An action comes back with steps, a topic and props passed down", () => {
   assert.equal(b.steps[1].bounce.count, 3);
   assert.equal(b.steps[2].prop, null);
   assert.equal(normaliseAction({ pose: "x" }), null, "no label, no action");
+  const c = normaliseAction({ label: "maybe", steps: [{ pose: "a" }, { pose: "b", chance: 0.3 }, { pose: "c", chance: 7 }] });
+  assert.deepEqual(c.steps.map((step) => step.chance), [1, 0.3, 1]);
   assert.equal(normaliseAction(null), null);
 });
 
@@ -192,14 +194,15 @@ test("A tap opens the menu for the host only, and it closes on its own", () => {
   tapHost(sim);
   assert.ok(host.view.get().menu, "menu open");
   assert.equal(host.view.get().bubble.text, "tapped");
-  run(sim, 3);
-  assert.ok(host.menu, "still open after 3 s");
+  run(sim, 2);
+  assert.ok(host.menu, "still open after 2 s");
   assert.equal(host.step.type, "hold", "it waits for her choice");
   const x = host.x;
-  host.menu.at -= MENU_MS;
-  run(sim, 0.1);
-  assert.equal(host.view.get().menu, null, "closed after 5 s of nothing");
+  run(sim, 2);
   assert.equal(host.x, x, "it didn't wander off while she was choosing");
+  host.menu.at -= MENU_MS;
+  sim.tick(1 / 60);
+  assert.equal(host.view.get().menu, null, "closed after 5 s of nothing");
 
   // A visitor only says something.
   const visitor = new host.constructor(sim, character({ id: "guest" }), { role: "visitor" });
@@ -356,6 +359,23 @@ test("Quiet mode: the menu, the action and stay still work, without hops", () =>
   assert.equal(host.hopY, 0);
   assert.equal(host.bounce, null);
   localStorage.clear();
+});
+
+test("A step with a chance plays only that often", () => {
+  const sim = makeStage();
+  sim.setHost(character({ action: { label: "sometimes", pose: "show", steps: [{ pose: "show", seconds: 0.2 }, { pose: "spin", seconds: 0.2, chance: 0 }, { pose: "dance", seconds: 0.2, chance: 0.5 }] } }));
+  run(sim, 1);
+  const host = sim.host;
+  let spins = 0;
+  let dances = 0;
+  for (let i = 0; i < 40; i++) {
+    host.runAction();
+    const poses = host.plan.filter((s) => s.type === "act").map((s) => s.s.pose);
+    if (poses.includes("spin")) spins++;
+    if (poses.includes("dance")) dances++;
+  }
+  assert.equal(spins, 0);
+  assert.ok(dances > 5 && dances < 35, `about half: ${dances}`);
 });
 
 test("Characters without an action still get stay", () => {

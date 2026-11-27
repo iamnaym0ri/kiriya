@@ -78,7 +78,8 @@ function normaliseBounce(value) {
 }
 
 /**
- * One step of an action or a behaviour: `{ pose, prop, expression, seconds, topic, bounce, turn }`.
+ * One step of an action or a behaviour: `{ pose, prop, expression, seconds, topic, bounce, turn,
+ * chance }` (`chance`: 0..1, the step only plays that often; default 1).
  * Anything left out comes from `base` (the action or behaviour it belongs to), except the topic.
  */
 export function normaliseStep(step = {}, base = {}, movement = MOVEMENT_DEFAULTS) {
@@ -90,6 +91,7 @@ export function normaliseStep(step = {}, base = {}, movement = MOVEMENT_DEFAULTS
     topic: step.topic ?? null,
     bounce: normaliseBounce(step.bounce),
     turn: Boolean(step.turn),
+    chance: step.chance == null ? 1 : Math.max(0, Math.min(1, Number(step.chance) || 0)),
   };
 }
 

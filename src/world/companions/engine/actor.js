@@ -459,7 +459,7 @@ export class Actor {
         if (b.steps && !step.resumed) {
           // A little sequence: each step is its own pose (and prop, and line) in turn.
           if (b.topic && Math.random() < b.say) this.sayAt = { topic: b.topic, at: this.time + 0.9 };
-          this.plan.unshift(...b.steps.map((s) => ({ type: "act", s, parent: b })));
+          this.plan.unshift(...b.steps.filter((s) => s.chance >= 1 || Math.random() < s.chance).map((s) => ({ type: "act", s, parent: b })));
           this.next();
           return;
         }
@@ -837,7 +837,7 @@ export class Actor {
     const action = this.c.action;
     if (!action || this.mode === "held") return false;
     this.moment = null;
-    const steps = action.steps.map((s) => ({ type: "act", s, solid: true, action: action.id }));
+    const steps = action.steps.filter((s) => s.chance >= 1 || Math.random() < s.chance).map((s) => ({ type: "act", s, solid: true, action: action.id }));
     const after = this.inVisit ? [{ type: "rest", seconds: [600, 600] }] : [{ type: "rest" }];
     // Mid-hop (the tap's little jump): it plays as soon as the feet are down.
     if (this.mode === "air" || this.mode === "crouch") this.plan = [...steps, ...after];

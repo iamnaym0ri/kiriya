@@ -178,7 +178,7 @@ twice in a row is less likely), maybe moves first, does it, then settles in `res
 | `quiet` [true] | false: never in quiet mode |
 | `prop` | a prop `Body` gets while it lasts (see "Steps") |
 | `bounce` | little hops on the spot as it starts: a count, or `{ count, height, every }` (see "Steps") |
-| `steps` | a little sequence instead of one pose: `[{ pose, prop, expression, seconds, topic, bounce, turn }]` |
+| `steps` | a little sequence instead of one pose: `[{ pose, prop, expression, seconds, topic, bounce, turn, chance }]` |
 
 Told to stay, it only picks behaviours **without `roam` or `level`**, and never moves first, so
 give it at least three of those (a dance or fidget, a humming or pondering moment, something of
@@ -197,6 +197,7 @@ Actions and behaviours can be a sequence of steps, played in order. Each step:
 | `topic` | a line topic said as the step starts. In an action it is said to her (a solid bubble, always); in a behaviour it is an aside, with the behaviour's `say` chance |
 | `bounce` | hops on the spot: `2`, or `{ count, height: 9, every: 0.36 }` (px at scale 1, seconds per hop). The feet leave the cloud and come back with a little squash; none in quiet mode |
 | `turn` | `true`: turns to face the other way as the step starts (looking round) |
+| `chance` | 0..1: the step only plays that often (default 1), e.g. a brain freeze one time in three |
 
 ```js
 { id: "routine", weight: 2, steps: [
