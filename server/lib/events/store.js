@@ -67,10 +67,17 @@ export async function writeKv(db, key, value) {
 // Events.
 // ---------------------------------------------------------------------------------------------
 
-/** Singapore events only (tier sg), newest first by start, hidden ones only for admin tooling. */
+/**
+ * Singapore events (tier sg) from the last ~13 months on, soonest first. Hidden, merged (aliases) and
+ * ruled-out rows only with `includeHidden` (the engine's own bookkeeping). The window, not the row
+ * limit, keeps this bounded: long-past events drop out before any upcoming one could be cut off.
+ */
 export async function listEventRows(db, { includeHidden = false } = {}) {
-  const where = includeHidden ? eq(schema.events.tier, "sg") : and(eq(schema.events.tier, "sg"), sql`${schema.events.status} <> 'hidden'`);
-  return db.select().from(schema.events).where(where).orderBy(asc(schema.events.startsOn), asc(schema.events.name)).limit(400);
+  const recent = sql`(coalesce(${schema.events.endsOn}, ${schema.events.startsOn}) IS NULL OR coalesce(${schema.events.endsOn}, ${schema.events.startsOn}) >= current_date - 400)`;
+  const where = includeHidden
+    ? and(eq(schema.events.tier, "sg"), recent)
+    : and(eq(schema.events.tier, "sg"), recent, sql`${schema.events.status} NOT IN ('hidden', 'merged', 'out_of_scope')`);
+  return db.select().from(schema.events).where(where).orderBy(asc(schema.events.startsOn), asc(schema.events.name)).limit(2000);
 }
 
 export async function getEventRow(db, id) {
@@ -153,7 +160,7 @@ export async function ruleOutOverseas(db, { now = new Date() } = {}) {
   const rows = await db
     .update(schema.events)
     .set({ status: "out_of_scope", updatedAt: now })
-    .where(and(sql`coalesce(${schema.events.tier}, '') <> 'sg'`, eq(schema.events.status, "upcoming")))
+    .where(and(sql`${schema.events.tier} IS NOT NULL AND ${schema.events.tier} <> 'sg'`, eq(schema.events.status, "upcoming")))
     .returning({ id: schema.events.id });
   return rows.length;
 }

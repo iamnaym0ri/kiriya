@@ -141,9 +141,15 @@ export function recordFromDraft(draft, { existing = null, id, origin, now = new 
   // announcement date taken for the event's): it keeps its dates until a later pass agrees.
   const today = localDay(now);
   const wasAhead = existing?.startsOn && (existing.endsOn ?? existing.startsOn) >= today;
+  let pastDatesSeen = null;
   if (wasAhead && startsOn && (endsOn ?? startsOn) < today && !e.cancelled) {
-    startsOn = existing.startsOn;
-    endsOn = existing.endsOn;
+    const seen = stored.pastDatesSeen;
+    const again = seen && seen.startsOn === startsOn && (seen.endsOn ?? null) === (endsOn ?? null);
+    if (!again) {
+      pastDatesSeen = { startsOn, endsOn: endsOn ?? null, at: now.toISOString() };
+      startsOn = existing.startsOn;
+      endsOn = existing.endsOn;
+    }
   }
   const fandoms = normaliseFandoms([...e.fandoms, ...(triage?.fandoms ?? []), ...fandomsIn(e.name, e.tagline, dossier.about.summary.text)]);
   const kind = e.kind;
@@ -169,7 +175,7 @@ export function recordFromDraft(draft, { existing = null, id, origin, now = new 
     fandoms,
     hers: Boolean(existing?.hers) || isHers({ kind, fandoms }),
     big: Boolean(existing?.big) || isBig({ kind, fandoms }) || triage?.importance === "big",
-    dossier: { ...dossier, datesTbc: e.datesTbc || !startsOn, sources, timeline: mergedTimeline },
+    dossier: { ...dossier, datesTbc: e.datesTbc || !startsOn, sources, timeline: mergedTimeline, ...(pastDatesSeen ? { pastDatesSeen } : {}) },
     origin: existing?.origin ?? origin,
     lastVerifiedAt: now,
     investigatedAt: now,
@@ -224,6 +230,8 @@ export async function processQueue(db, claude, { limit = 4, now = () => new Date
         }
         target = triage.eventId ? rows.find((r) => r.id === triage.eventId) ?? null : null;
       }
+      // A target that was folded into another event means that event (never revive an alias).
+      target = followMerges(rows, target);
       // One investigation per event per cooldown: later news is batched into a refresh.
       if (target?.investigatedAt && now() - new Date(target.investigatedAt) < COOLDOWN_HOURS * 3600_000 && signal.origin !== "link" && signal.origin !== "refresh") {
         const due = new Date(new Date(target.investigatedAt).getTime() + COOLDOWN_HOURS * 3600_000);
@@ -254,6 +262,12 @@ export async function processQueue(db, claude, { limit = 4, now = () => new Date
       // name/date/official-page match against everything we have.
       const fits = target ? draftFitsTarget(target, result.draft.event) : false;
       if (target && !fits) log("mismatch", { signal: signal.id, target: target.id, draft: result.draft.event.name });
+      if (target && !fits && signal.origin === "refresh") {
+        // Asked to update one event, the research came back about another: leave the page as it was.
+        await updateSignal(db, signal.id, { status: "skipped", eventId: target.id, message: "the research described a different event; the page was left as it was" });
+        summary.skipped++;
+        continue;
+      }
       const existing = (fits ? target : null) ?? findSameEvent(rows.filter((r) => r.id !== target?.id || fits), result.draft.event);
       const id = existing?.id ?? newEventId(result.draft.event, new Set(rows.map((r) => r.id)));
       const { record, entries } = recordFromDraft(result.draft, { existing: existing ? await getEventRow(db, existing.id) : null, id, origin: signal.origin === "refresh" ? "crawler" : signal.origin, now: now(), triage });
@@ -280,6 +294,13 @@ export async function processQueue(db, claude, { limit = 4, now = () => new Date
   return summary;
 }
 
+/** Follows `dossier.mergedInto` within `rows` (a few hops at most). */
+export function followMerges(rows, row) {
+  let out = row;
+  for (let n = 0; out?.status === "merged" && out.dossier?.mergedInto && n < 5; n++) out = rows.find((r) => r.id === out.dossier.mergedInto) ?? out;
+  return out?.status === "merged" ? null : out;
+}
+
 /**
  * Folds rows that are certainly the same event as `row` (same name or same official page, with
  * overlapping dates) into the one seen first. The others become aliases (status "merged"), so a page
@@ -301,7 +322,24 @@ export async function foldDuplicates(db, row, rows, { now = new Date(), log = ()
   // The survivor keeps its id and first sighting but takes the freshest research.
   if (survivor.id !== row.id) {
     const { id, firstSeenAt, origin, status, hers, big, confidence, ...fresh } = row;
-    await saveEvent(db, { ...survivor, ...fresh, id: survivor.id, hers: survivor.hers || hers, big: survivor.big || big, confidence: survivor.confidence === "owner_confirmed" ? survivor.confidence : confidence, status: survivor.status === "cancelled" || status === "cancelled" ? status : survivor.status }, { now });
+    const dossier = { ...(fresh.dossier ?? {}), merch: carryMerchImages(fresh.dossier?.merch ?? [], survivor.dossier?.merch ?? []) };
+    await saveEvent(
+      db,
+      {
+        ...survivor,
+        ...fresh,
+        id: survivor.id,
+        dossier,
+        image: fresh.image?.url ? fresh.image : survivor.image ?? null,
+        weather: fresh.weather ?? survivor.weather ?? null,
+        transit: fresh.transit ?? survivor.transit ?? null,
+        hers: survivor.hers || hers,
+        big: survivor.big || big,
+        confidence: survivor.confidence === "owner_confirmed" ? survivor.confidence : confidence,
+        status: survivor.status === "cancelled" || status === "cancelled" ? status : survivor.status,
+      },
+      { now },
+    );
   }
   for (const other of all.slice(1)) {
     await mergeEvent(db, other.id, survivor.id, { now, reason: "same event" });

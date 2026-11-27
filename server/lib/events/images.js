@@ -134,7 +134,7 @@ export async function copyRemoteImage(url, { fetcher, store }) {
 
 /** The share picture of a page, copied. */
 export async function pagePicture(pageUrl, { fetcher, store }) {
-  if (!pageUrl || !store) return null;
+  if (!pageUrl || !store || isSocial(pageUrl)) return null;
   try {
     const page = await fetcher.get(pageUrl, { types: ["text/html", "application/xhtml+xml"] });
     const image = shareImageOf(page.text, page.url ?? pageUrl);
@@ -151,6 +151,15 @@ export async function pagePicture(pageUrl, { fetcher, store }) {
 const STOP = new Set(["the", "and", "for", "with", "set", "of", "a", "an", "at", "in", "on", "by", "x", "sg", "singapore", "2026", "2027", "edition", "exclusive", "exclusives", "limited", "merch", "official", "sample"]);
 const words = (s) => String(s ?? "").normalize("NFKC").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 2 && !STOP.has(w));
 const isInstagramPost = (url) => /^https:\/\/(www\.)?instagram\.com\/(p|reel)\//i.test(url ?? "");
+// Social sites are never crawled (Instagram reaches us only through the Apify trigger).
+const SOCIAL = /(^|\.)(instagram\.com|facebook\.com|fb\.com|x\.com|twitter\.com|tiktok\.com|threads\.net|youtube\.com|t\.me|telegram\.me)$/i;
+const isSocial = (url) => {
+  try {
+    return SOCIAL.test(new URL(url).hostname);
+  } catch {
+    return true;
+  }
+};
 const normPost = (url) => String(url ?? "").replace(/^https:\/\/(www\.)?/i, "").replace(/[?#].*$/, "").replace(/\/$/, "").toLowerCase();
 
 /** An Instagram caption talks about this merch piece when most of its telling words appear in it. */
@@ -196,7 +205,7 @@ export async function picturesFor(row, { posts = [], fetcher, store, maxFetches 
   // The cover: the official page's share picture, else an Instagram post's, else a ticketing/news page's.
   let image = row.image?.url ? row.image : null;
   if (!image && store) {
-    const official = row.url && !/kiriya\.love/.test(row.url) ? row.url : null;
+    const official = row.url && !/kiriya\.love/.test(row.url) && !isSocial(row.url) ? row.url : null;
     if (official && budget()) {
       fetched++;
       const url = await pagePicture(official, { fetcher, store });
@@ -206,7 +215,7 @@ export async function picturesFor(row, { posts = [], fetcher, store, maxFetches 
       const post = posts.find((p) => p.images?.length);
       if (post) image = { url: post.images[0], alt: row.name, credit: post.account ? `@${post.account}` : "instagram" };
     }
-    for (const source of sources.filter((s) => ["ticketing", "venue", "news", "listing"].includes(s.kind) && !isInstagramPost(s.url))) {
+    for (const source of sources.filter((s) => ["ticketing", "venue", "news", "listing"].includes(s.kind) && !isSocial(s.url))) {
       if (image || !budget()) break;
       fetched++;
       const url = await pagePicture(source.url, { fetcher, store });
@@ -247,7 +256,7 @@ export async function picturesFor(row, { posts = [], fetcher, store, maxFetches 
       }
     }
     if (!found.length && store) {
-      for (const source of itemSources.filter((s) => merchPages.has(s.id) && !isInstagramPost(s.url) && s.url !== row.url)) {
+      for (const source of itemSources.filter((s) => merchPages.has(s.id) && !isSocial(s.url) && s.url !== row.url)) {
         if (!pageCache.has(source.url)) {
           if (!budget()) break;
           fetched++;

@@ -308,6 +308,10 @@ export function useEvent(id) {
   }, [query.data, queryClient, id]);
   const missing = query.error?.status === 404;
   const movedTo = query.data?.event && query.data.event.id !== id ? query.data.event.id : null;
+  // The event it became opens with what's already here, so nothing blanks while the address swaps.
+  useEffect(() => {
+    if (movedTo && query.data) queryClient.setQueryData([...eventsKey, "item", movedTo], (old) => old ?? { ...query.data, redirectedFrom: undefined });
+  }, [movedTo, query.data, queryClient]);
   return {
     item,
     me: query.data?.me ?? null,
@@ -339,6 +343,10 @@ export function useMerchItem(id) {
     return null;
   }, [query.data, queryClient, id]);
   const missing = query.error?.status === 404;
+  const movedTo = query.data?.merch && query.data.merch.id !== id ? query.data.merch.id : null;
+  useEffect(() => {
+    if (movedTo && query.data) queryClient.setQueryData([...eventsKey, "merch-item", movedTo], (old) => old ?? { ...query.data, redirectedFrom: undefined });
+  }, [movedTo, query.data, queryClient]);
   return {
     item,
     full: Boolean(query.data?.merch),
@@ -346,7 +354,7 @@ export function useMerchItem(id) {
     isError: query.isError && !missing,
     missing,
     gone: missing && Boolean(item),
-    movedTo: query.data?.merch && query.data.merch.id !== id ? query.data.merch.id : null,
+    movedTo,
     refetch: query.refetch,
   };
 }

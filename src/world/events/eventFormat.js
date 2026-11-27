@@ -286,6 +286,11 @@ export function ago(value, now = new Date()) {
 export function groupOf(item, now = new Date()) {
   const p = phaseOf(item, now);
   if (p.phase === "open" || p.phase === "between") return { key: "0-now", label: "on now" };
+  // Cancelled stays in its month (marked), where she last saw it, until its day has passed.
+  if (p.phase === "cancelled" && Number.isFinite(sortTime(item)) && sortTime(item) > now.getTime() - 86_400_000) {
+    const at = new Date(sortTime(item));
+    return { key: `1-${sgDay(at).slice(0, 7)}`, label: yearOf(at) === yearOf(now) ? monthLong(at) : `${monthLong(at)} ${yearOf(at)}` };
+  }
   if (p.phase === "ended" || p.phase === "sold_out" || p.phase === "cancelled") return { key: "9-ended", label: "just ended" };
   if (p.phase === "tbc") return { key: "8-tbc", label: "dates to be announced" };
   const at = p.next ?? new Date(sortTime(item));

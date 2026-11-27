@@ -358,6 +358,24 @@ try {
     assert.equal(renamed.startsOn, "2027-05-14", "never moved into the past on one pass");
     const listed = present.filterRows(await store.listEventRows(db), { when: "upcoming", today: "2026-11-27" }).rows.map((r) => r.id);
     assert.ok(listed.includes(ffId), "still on her list");
+    assert.equal(renamed.dossier.pastDatesSeen.startsOn, "2026-05-14", "the doubtful dates are remembered");
+
+    // Asked to refresh the concert, the research describes something else entirely: nothing changes.
+    const unrelated = draft({ event: { name: "Konbini 7.0", kind: "fair", tagline: "a market", startsOn: "2027-09-01", endsOn: "2027-09-02", officialUrl: "https://www.scape.sg/whats-on/konbini-7/" } });
+    await store.enqueueSignal(db, { origin: "refresh", eventId: ffId, url: lodestone, title: ffName, hash: store.sha("refresh-test-2", ffId) });
+    answers = [{ stop_reason: "tool_use", content: [tool(unrelated)], usage: usage(8000, 900) }];
+    const countBefore = (await store.listEventRows(db, { includeHidden: true })).length;
+    summary = await pipeline.processQueue(db, claudeFor(db, { responder: async () => answers.shift(), now: () => NOW }), { now: () => NOW });
+    assert.deepEqual([summary.skipped, summary.added, summary.updated], [1, 0, 0], JSON.stringify(summary));
+    assert.equal((await store.listEventRows(db, { includeHidden: true })).length, countBefore, "no stray event");
+    assert.equal((await store.getEventRow(db, ffId)).name, "Eorzean Symphony World Tour – Singapore");
+
+    // A second, independent pass that agrees on the earlier dates is believed (it really was then).
+    await store.enqueueSignal(db, { origin: "refresh", eventId: ffId, url: lodestone, title: ffName, hash: store.sha("refresh-test-3", ffId) });
+    answers = [{ stop_reason: "tool_use", content: [tool(misread)], usage: usage(8000, 900) }];
+    await pipeline.processQueue(db, claudeFor(db, { responder: async () => answers.shift(), now: () => NOW }), { now: () => NOW });
+    assert.equal((await store.getEventRow(db, ffId)).startsOn, "2026-05-14");
+    assert.equal(present.eventStatus(await store.getEventRow(db, ffId), "2026-11-27"), "past", "and only then does it leave, as over");
   });
 
   await test("Duplicates fold into the one first spotted; the old id keeps opening it and her saves follow", async () => {
@@ -380,6 +398,19 @@ try {
     assert.ok((await store.getEventRow(db, "ev-cosfest-xxv-2")), "nothing is deleted");
     const listed = present.filterRows(await store.listEventRows(db), { when: "all", today: "2026-11-27" }).rows.map((r) => r.id);
     assert.ok(listed.includes("ev-cosfest-xxv") && !listed.includes("ev-cosfest-xxv-2"));
+
+    // News that triage pins on the old id updates the event it became; the alias is never revived.
+    await store.enqueueSignal(db, { origin: "crawler", sourceId: "x", url: "https://cosfest.sg/news/tickets", title: "Cosfest tickets", excerpt: "Cosfest XXV tickets" });
+    const cosfest = draft({ event: { name: "Cosfest XXV", kind: "con", tagline: "cosplay festival, tickets out", startsOn: "2027-07-04", endsOn: "2027-07-05", officialUrl: "https://cosfest.sg/" } });
+    const answers = [
+      { stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify({ verdict: "update", eventId: "ev-cosfest-xxv-2", singapore: true, name: "Cosfest XXV", kind: "con", startsOn: null, fandoms: [], importance: "normal", change: "tickets", investigate: true, reason: "x" }) }], usage: usage(1500, 80) },
+      { stop_reason: "tool_use", content: [tool(cosfest)], usage: usage(8000, 900) },
+    ];
+    const summary = await pipeline.processQueue(db, claudeFor(db, { responder: async () => answers.shift(), now: () => NOW }), { now: () => NOW });
+    assert.equal(summary.updated, 1, JSON.stringify(summary));
+    assert.equal((await store.getEventRow(db, "ev-cosfest-xxv-2")).status, "merged");
+    assert.equal((await store.getEventRow(db, "ev-cosfest-xxv")).tagline, "cosplay festival, tickets out");
+    assert.ok(!triage.knownEventsBlock(await store.listEventRows(db, { includeHidden: true })).includes("ev-cosfest-xxv-2"), "aliases aren't offered to triage");
   });
 
   await test("Housekeeping rules out the old overseas rows explicitly and deletes nothing; statuses say why something left", async () => {
