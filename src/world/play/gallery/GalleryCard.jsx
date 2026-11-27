@@ -2,6 +2,7 @@ import { useIsAdmin } from "../../../lib/session.js";
 import { artKind, artTitle } from "./kinds.js";
 import { isHeart, reactionGlyph, useArtworks, useSignature } from "./useArtworks.js";
 import { KindMark, LetterIcon } from "./GalleryParts.jsx";
+import ArtThumb from "./ArtThumb.jsx";
 import "./gallery.css";
 
 // The gallery's own entry near the top of the play section: her latest things in a strip, Josh's
@@ -50,7 +51,7 @@ export default function GalleryCard({ onOpen, onOpenArt, onStart }) {
             return (
               <li key={art.id}>
                 <button type="button" className="gallery-tile gallery-tile--strip" onClick={() => onOpenArt(art.id)} aria-label={`open ${artTitle(art)}`}>
-                  <img src={art.url} alt="" loading="lazy" decoding="async" />
+                  <ArtThumb art={art} eager />
                   <KindMark kind={artKind(art)} />
                   {art.reaction && (
                     <span className="gallery-tile__heart" data-heart={isHeart(art.reaction) || undefined} aria-hidden="true">
