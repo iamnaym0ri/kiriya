@@ -60,6 +60,48 @@
   width: 100%;
   height: 100%;
 }
+/* The live drawing and, over it, the fading copies of the last one (ghost.js, README.md
+   "Transitions"). Both fill the body box exactly, so the two drawings line up to the pixel. */
+.cs-pose > *,
+.cs-ghost > * {
+  width: 100%;
+  height: 100%;
+}
+.cs-ghosts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.cs-ghost {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.cs-ghost * {
+  pointer-events: none !important;
+}
+/* A prop or mark a Body marks with data-cs-pop pops into its hand rather than blinking in. */
+.cs-pose [data-cs-pop] {
+  transform-box: fill-box;
+  transform-origin: var(--cs-pop-origin, 50% 80%);
+  animation: cs-pop-in 300ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes cs-pop-in {
+  from {
+    opacity: 0;
+    scale: 0.55;
+  }
+  45% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+.cs-stage:not([data-lively]) .cs-pose [data-cs-pop] {
+  animation: cs-fade-in 160ms ease-out both;
+}
 /* While the engine looks at what is under a spot, the bodies let hit-testing through. */
 .cs-stage[data-probing] .cs-body {
   pointer-events: none;
@@ -205,6 +247,21 @@
 }
 .cs-stage:not([data-lively]) .cs-bubble {
   animation: cs-fade-in 220ms ease-out both;
+}
+/* A line that has ended fades away (ActorView keeps it a moment for this) rather than vanishing. */
+.cs-bubble[data-leaving],
+.cs-stage:not([data-lively]) .cs-bubble[data-leaving] {
+  animation: cs-unsay 170ms ease-in both;
+}
+@keyframes cs-unsay {
+  from {
+    opacity: 1;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+    scale: 0.96;
+  }
 }
 
 /* The lab's level guides. */

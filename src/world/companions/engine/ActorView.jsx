@@ -1,4 +1,6 @@
-import { memo, useCallback, useEffect, useLayoutEffect, useRef, useSyncExternalStore } from "react";
+import { Component, createRef, memo, useCallback, useEffect, useLayoutEffect, useReducer, useRef, useSyncExternalStore } from "react";
+import { BLEND_MS } from "./blend.js";
+import { playGhost, snapshot } from "./ghost.js";
 
 // One character's DOM: its clouds, its body and its speech bubble. The actor (actor.js) moves these
 // nodes itself every frame; React only re-renders when the pose, expression, clouds or words change.
@@ -6,6 +8,47 @@ import { memo, useCallback, useEffect, useLayoutEffect, useRef, useSyncExternalS
 const BodySlot = memo(function BodySlot({ Body, pose, expression, facing, playing, frame, talking, prop }) {
   return <Body pose={pose} expression={expression} facing={facing} playing={playing} frame={frame} talking={talking} prop={prop} />;
 });
+
+/**
+ * The body, and the cross-fade between its drawings (README.md, "Transitions"; ghost.js). Just
+ * before React draws a new pose, expression or prop, the old drawing is copied and faded out over
+ * the new one; `blendMs` (from the actor, blend.js) says how long. `Body.blend === false` turns it
+ * off for a Body that blends its own poses.
+ */
+class PoseBlend extends Component {
+  live = createRef();
+  layer = createRef();
+
+  getSnapshotBeforeUpdate(prev) {
+    const p = this.props;
+    if (!p.blend) return null;
+    const pose = prev.pose !== p.pose;
+    const look = prev.expression !== p.expression || prev.prop !== p.prop;
+    if (!pose && !look) return null;
+    const snap = snapshot(this.live.current?.firstElementChild, { look: pose && p.playing });
+    if (!snap) return null;
+    const ms = pose ? p.blendMs : p.playing ? BLEND_MS.face : BLEND_MS.quiet;
+    // Only the expression or prop changed: the copy holds just what React removed or redrew, so a
+    // face that eases between expressions by itself shows that easing with nothing over it.
+    return { snap, ms, only: !pose, glide: p.playing };
+  }
+
+  componentDidUpdate(prevProps, prevState, info) {
+    if (info) playGhost(info.snap, this.layer.current, this.live.current, info);
+  }
+
+  render() {
+    const { Body, pose, expression, facing, playing, frame, talking, prop } = this.props;
+    return (
+      <>
+        <div className="cs-pose" ref={this.live}>
+          <BodySlot Body={Body} pose={pose} expression={expression} facing={facing} playing={playing} frame={frame} talking={talking} prop={prop} />
+        </div>
+        <div className="cs-ghosts" ref={this.layer} aria-hidden="true" />
+      </>
+    );
+  }
+}
 
 const PlatformSlot = memo(function PlatformSlot({ Platform, width, state, facing, riding, playing }) {
   return <Platform width={width} state={state} facing={facing} riding={riding} playing={playing} />;
@@ -128,6 +171,22 @@ export default function ActorView({ actor, playing }) {
   const { c, m } = actor;
   const { w, h, pw, surface } = actor;
   const bubbleRef = useRef(null);
+  // A line that has just ended stays a moment while it fades (data-leaving), then hides.
+  const lastBubble = useRef(null);
+  const [, bubbleGone] = useReducer((n) => n + 1, 0);
+  if (view.bubble) lastBubble.current = view.bubble;
+  const shownBubble = view.bubble ?? lastBubble.current;
+  const leaving = !view.bubble && Boolean(shownBubble);
+  // If its fade never runs (animations off), it still goes.
+  useEffect(() => {
+    if (!leaving) return undefined;
+    const timer = setTimeout(() => {
+      if (actor.view.get().bubble) return;
+      lastBubble.current = null;
+      bubbleGone();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [leaving, actor]);
 
   const root = useCallback((el) => actor.attach("root", el), [actor]);
   const sway = useCallback((el) => actor.attach("sway", el), [actor]);
@@ -224,7 +283,7 @@ export default function ActorView({ actor, playing }) {
               onKeyDown={onKeyDown}
               onContextMenu={(event) => event.preventDefault()}
             >
-              <BodySlot
+              <PoseBlend
                 Body={c.Body}
                 pose={view.pose}
                 expression={view.expression}
@@ -233,6 +292,8 @@ export default function ActorView({ actor, playing }) {
                 frame={actor.frame}
                 talking={view.talking}
                 prop={view.prop}
+                blend={actor.stage.options?.blend !== false && c.Body.blend !== false}
+                blendMs={view.blend}
               />
             </div>
           </div>
@@ -241,11 +302,17 @@ export default function ActorView({ actor, playing }) {
       <p
         ref={bubble}
         className="cs-bubble"
-        hidden={!view.bubble}
-        data-aside={view.bubble?.aside ? "" : undefined}
-        aria-live={view.bubble?.aside ? "off" : "polite"}
+        hidden={!shownBubble}
+        data-aside={shownBubble?.aside ? "" : undefined}
+        data-leaving={leaving ? "" : undefined}
+        aria-live={shownBubble?.aside ? "off" : "polite"}
+        onAnimationEnd={(event) => {
+          if (event.animationName !== "cs-unsay" || view.bubble) return;
+          lastBubble.current = null;
+          bubbleGone();
+        }}
       >
-        {view.bubble?.text}
+        {shownBubble?.text}
       </p>
       {view.menu && <Menu key={view.menu.id} actor={actor} menu={view.menu} staying={view.staying} />}
     </>
