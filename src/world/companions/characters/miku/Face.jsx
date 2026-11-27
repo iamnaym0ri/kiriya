@@ -193,7 +193,7 @@ function Eye({ x, i, f, uid }) {
   );
 }
 
-export default function MikuFace({ expression, moving, uid }) {
+export default function MikuFace({ expression, moving, talking, uid }) {
   const f = useFace(expression, moving);
   const left = 110 - f.mouthWidth;
   const right = 110 + f.mouthWidth;
@@ -259,6 +259,18 @@ export default function MikuFace({ expression, moving, uid }) {
         <path d="M106.5 143q3.5-3 7 0" fill="none" stroke="#9c4a5d" strokeWidth="2" strokeLinecap="round" opacity={f.pout} />
         <path d="M151 128q9 8 1 16" fill="none" stroke="#e9b6a6" strokeWidth="1.4" strokeLinecap="round" opacity={f.pout} />
       </g>
+      {talking && open < 3 && f.round < 0.5 && f.cat < 0.5 && (
+        // a little moving mouth while her bubble is up, for faces whose mouth is otherwise closed
+        <ellipse
+          className="hmiku__talk"
+          cx="110"
+          cy={y + 2.2 + f.smile * 0.4}
+          rx={Math.max(2.6, f.mouthWidth * 0.55)}
+          ry="2.8"
+          fill="#b84f67"
+          style={{ transformOrigin: `110px ${y + 1}px` }}
+        />
+      )}
       {f.sweat > 0.05 && (
         <path d="M158 102q7 10 0 12-7-2 0-12Z" fill="#a9dcf0" stroke="#7ab8d0" strokeWidth=".8" opacity={f.sweat} />
       )}

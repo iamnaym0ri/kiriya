@@ -26,7 +26,7 @@ function layout(width) {
   });
 }
 
-export default function MikuPlatform({ width = 110, state = "steady" }) {
+export default function MikuPlatform({ width = 92, state = "steady", playing = true }) {
   const raw = useId();
   const uid = `hmc${raw.replace(/[^a-zA-Z0-9]/g, "")}`;
   const w = Math.max(40, width);
@@ -44,6 +44,7 @@ export default function MikuPlatform({ width = 110, state = "steady" }) {
     <svg
       className="hmiku-cloud"
       data-state={state}
+      data-motion={playing ? "on" : "off"}
       width={w}
       height={HEIGHT}
       viewBox={`0 0 ${w} ${HEIGHT}`}
@@ -113,4 +114,4 @@ function puffStyle(p) {
 MikuPlatform.surface = SURFACE;
 MikuPlatform.height = HEIGHT;
 // How long the forming and fading animations take, for an engine that wants to wait for them.
-MikuPlatform.timing = { forming: 520, fading: 760 };
+MikuPlatform.timing = { forming: 520, fading: 760 }; // matches movement.platformForm / platformFade

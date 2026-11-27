@@ -54,6 +54,7 @@ const POSE_FACE = {
   leek: "joy",
   point: "proud",
   dance: "joy",
+  crouch: "determined",
 };
 
 export const MIKU_POSES = Object.keys(POSE_FACE);
@@ -294,7 +295,8 @@ function Glint({ x, y, r = 5, className = "" }) {
    The body
    ------------------------------------------------------------------------------------------------ */
 
-export default function MikuBody({ pose = "idle", expression, facing = 1, playing = true, scale = 1 }) {
+// Fills the box the engine gives it (size x scale); `scale` is only for standalone use (the thumb).
+export default function MikuBody({ pose = "idle", expression, facing = 1, playing = true, talking = false, scale }) {
   const raw = useId();
   const uid = `hm${raw.replace(/[^a-zA-Z0-9]/g, "")}`;
   const reduced = useSyncExternalStore(subscribeReduced, readReduced, () => true);
@@ -311,9 +313,10 @@ export default function MikuBody({ pose = "idle", expression, facing = 1, playin
       data-pose={known}
       data-face={face}
       data-motion={animate ? "on" : "off"}
+      data-talking={talking ? "1" : undefined}
       viewBox={`0 0 ${W} ${H}`}
-      width={110 * scale}
-      height={120 * scale}
+      width={scale ? 110 * scale : "100%"}
+      height={scale ? 120 * scale : "100%"}
       aria-hidden="true"
       focusable="false"
     >
@@ -422,7 +425,7 @@ export default function MikuBody({ pose = "idle", expression, facing = 1, playin
                     d="M52 100C52 70 76 52 110 52C144 52 168 70 168 100V120C166 148 144 161 110 162C76 161 54 148 52 120Z"
                     fill={`url(#${uid}-skin)`}
                   />
-                  <MikuFace expression={face} moving={animate} uid={uid} />
+                  <MikuFace expression={face} moving={animate} talking={talking} uid={uid} />
                   <Fringe uid={uid} />
                   <Mic />
                 </g>
@@ -454,8 +457,8 @@ export default function MikuBody({ pose = "idle", expression, facing = 1, playin
                   <Note className="hmiku__note--3" x={160} y={54} />
                 </g>
                 <g className="hmiku__zzz" fill="none" stroke="#8d7bb5" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path className="hmiku__z hmiku__z--1" d="M162 66h8l-8 9h8" />
-                  <path className="hmiku__z hmiku__z--2" d="M176 46h6l-6 7h6" />
+                  <path className="hmiku__z hmiku__z--1" d="M182 84h8l-8 9h8" />
+                  <path className="hmiku__z hmiku__z--2" d="M196 64h6l-6 7h6" />
                 </g>
                 <g className="hmiku__bang">
                   <path d="M180 50l-3 20" stroke={MAGENTA} strokeWidth="4" strokeLinecap="round" />

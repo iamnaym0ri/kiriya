@@ -5,11 +5,11 @@ const line = (expression, text) => ({ text, expression });
 
 export const lines = {
   greet: [
-    line("joy", "hi hi, kiriya! ♪"),
+    line("joy", "hi hi, {name}! ♪"),
     line("joy", "you're here! yay!"),
     line("happy", "welcome back! the stage is all ready"),
     line("wink", "hello hello! miku's here ♪"),
-    line("love", "kiriya! i was hoping you'd come"),
+    line("love", "{name}! i was hoping you'd come"),
     line("happy", "there you are ♪"),
     line("joy", "hiii! i saved you a spot on my cloud"),
   ],
@@ -223,13 +223,23 @@ export const lines = {
     line("joy", "yoo-hoo! over here!"),
     line("wink", "wave back! …yay ♪"),
   ],
-  // When she drops by someone else's home, and when she heads back.
+  // Three quick taps.
+  pester: [
+    line("flustered", "okay okay okay! i'm awake! i'm awake!"),
+    line("giggle", "tap tap tap! is this a drum solo? ♪"),
+    line("pout", "hey~! my headset's going to fall off!"),
+    line("joy", "combo! perfect! full combo! ♪"),
+    line("flustered", "waah, too many taps! my tails are spinning!"),
+    line("giggle", "you're keeping a really fast tempo, {name}!"),
+  ],
+  // A visit with nobody in visit.with: her hello as the visitor, or her answer as the host.
   visit: [
     line("joy", "knock knock! miku delivery ♪"),
     line("wink", "i heard there was a concert here?"),
     line("happy", "hi! i was just passing by on my cloud"),
   ],
-  leave: [
+  // Her goodbye as she leaves after a visit.
+  bye: [
     line("wink", "see you later! i'll bring a new song ♪"),
     line("joy", "bye bye! back to my cloud~"),
     line("happy", "that was fun! let's do it again soon"),
@@ -254,8 +264,14 @@ export const lines = {
   ],
 };
 
-// Call and response when she shares the screen with someone: [her line, their reply].
+// Call and response when she shares the screen with someone: [her line, their reply]. When B
+// visits A the engine picks among A's with.B and B's with.A, so each pair here is hers to open.
 export const visit = {
+  any: [
+    ["oh! a visitor! welcome to my cloud ♪", "thank you. it's very fluffy."],
+    ["want to hear a song? i've got a new one", "always."],
+    ["say hi to {name}! she's the best", "hi! you're right, she is."],
+  ],
   with: {
     maomao: [
       ["maomao! is a leek medicine? i carry one everywhere, just in case", "A spring onion. Good in soup for a cold. Less useful as a microphone."],
@@ -298,3 +314,20 @@ export const visit = {
     ],
   },
 };
+
+// Her own days and seasons, folded into the ordinary topics on the day the app opens, so no engine
+// support is needed: her birthday (31 August), Miku Day (9 March, "3-9" = mi-ku), winter and spring.
+export function linesForToday(date = new Date()) {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  let out = lines;
+  const own = month === 8 && day === 31 ? lines.mikuBirthday : month === 3 && day === 9 ? lines.mikuDay : null;
+  if (own) {
+    for (const topic of ["greet", "greetMorning", "greetAfternoon", "greetEvening", "greetNight", "idle"]) {
+      out = { ...out, [topic]: [...own, ...out[topic]] };
+    }
+  }
+  if ([12, 1, 2].includes(month)) out = { ...out, idle: [...out.idle, ...lines.winter] };
+  if ([3, 4].includes(month)) out = { ...out, idle: [...out.idle, ...lines.spring] };
+  return out;
+}

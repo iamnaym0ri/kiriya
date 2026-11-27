@@ -461,11 +461,10 @@
 }
 
 /* ---- held: picked up, dangling ------------------------------------------------------------------ */
+/* The engine swings her as she is carried; the body only adds a slight dangle of its own. */
 .hmiku[data-pose="held"] .hmiku__root {
   transform-origin: 110px 40px;
-  animation:
-    hmiku-dangle-in 1.5s cubic-bezier(0.33, 0.9, 0.3, 1) both,
-    hmiku-dangle 2.4s ease-in-out 1.5s infinite;
+  animation: hmiku-dangle 2.4s ease-in-out infinite;
 }
 .hmiku[data-pose="held"] .hmiku__arm--r {
   rotate: 124deg;
@@ -489,13 +488,6 @@
 .hmiku[data-pose="held"] .hmiku__tail--r {
   rotate: -5deg;
   animation: none;
-}
-@keyframes hmiku-dangle-in {
-  0% { rotate: -12deg; }
-  25% { rotate: 8deg; }
-  50% { rotate: -5deg; }
-  75% { rotate: 2.5deg; }
-  100% { rotate: -1.5deg; }
 }
 @keyframes hmiku-dangle {
   0%, 100% { rotate: -1.5deg; }
@@ -699,6 +691,46 @@
   50% { rotate: -118deg; }
 }
 
+/* ---- crouch: the wind-up before a hop ------------------------------------------------------------ */
+.hmiku[data-pose="crouch"] .hmiku__root {
+  scale: 1.07 0.91;
+  translate: 0 2px;
+  animation: hmiku-crouch 0.19s ease-out both;
+}
+.hmiku[data-pose="crouch"] .hmiku__arm--r {
+  rotate: 42deg;
+  animation: none;
+}
+.hmiku[data-pose="crouch"] .hmiku__arm--l {
+  rotate: -42deg;
+  animation: none;
+}
+.hmiku[data-pose="crouch"] .hmiku__tail--l,
+.hmiku[data-pose="crouch"] .hmiku__tail--r {
+  rotate: 4deg;
+  animation: none;
+}
+@keyframes hmiku-crouch {
+  from { scale: 1 1; translate: 0 0; }
+}
+
+/* ---- talking: the mouth moves while her bubble is up ---------------------------------------------- */
+.hmiku__talk {
+  opacity: 0.85;
+  scale: 1 0.6;
+}
+.hmiku[data-talking="1"] .hmiku__talk {
+  animation: hmiku-talk 0.34s ease-in-out infinite alternate;
+}
+.hmiku[data-talking="1"]:not([data-pose="sing"]) .hmiku__mouth-o {
+  animation: hmiku-sing-mouth 0.6s ease-in-out infinite;
+}
+@keyframes hmiku-talk {
+  0% { scale: 1 0.25; }
+  60% { scale: 1 1; }
+  100% { scale: 0.9 0.55; }
+}
+
 /* ---- notes and glints --------------------------------------------------------------------------- */
 .hmiku:is([data-pose="sing"], [data-pose="leek"], [data-pose="dance"], [data-face="hum"], [data-face="sing"]) .hmiku__notes {
   opacity: 1;
@@ -861,6 +893,12 @@
   transform-origin: 50% 100%;
 }
 
+.hmiku-cloud[data-motion="off"] * {
+  animation: none !important;
+}
+.hmiku-cloud[data-motion="off"][data-state="fading"] {
+  opacity: 0.5;
+}
 @media (prefers-reduced-motion: reduce) {
   .hmiku-cloud * {
     animation-duration: 0.01ms !important;
