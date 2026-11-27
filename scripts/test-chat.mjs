@@ -285,7 +285,9 @@ try {
     const push = chat.chatNotification({ kind: "tap", body: "thinking" }, "Josh");
     assert.equal(push.title, "Josh is thinking of you ♡");
     assert.equal(push.kind, "tap");
-    assert.equal(chat.chatNotification({ kind: "voice", body: "" }, "Kiriya").body, "🎙️ sent you a voice note");
+    assert.equal(chat.chatNotification({ kind: "voice", body: "" }, "Kiriya").body, "🎙️ a voice note");
+    assert.equal(chat.chatNotification({ kind: "image", body: "us!", media: { items: [{ type: "image" }, { type: "image" }, { type: "image" }, { type: "video" }] } }, "Kiriya").body, "📷 3 photos and a video: us!");
+    assert.equal(chat.chatNotification({ kind: "image", body: "", media: { items: [{ type: "video" }] } }, "Kiriya").body, "🎬 a video");
   });
 
   await test("Each of them keeps their own look; only known themes and their own uploads are accepted", async () => {

@@ -77,8 +77,9 @@ export function useUnlock() {
     gcTime: 0,
     onSuccess: (data, passphrase) => {
       queryClient.setQueryData(sessionKey, { role: data.role });
-      // ↓ Round 3 (r3-chat-room): hand `passphrase` to src/lib/chatCrypto.js here, in memory only,
-      //   before the reset below drops it.
+      // The chat's key on this device opens with it once; it's dropped right after (lib/chatCrypto),
+      // and the reset below drops it from this mutation's state.
+      import("./chatCrypto.js").then(({ rememberPassphrase }) => rememberPassphrase(passphrase)).catch(() => {});
     },
   });
   const { isSuccess, reset } = mutation;

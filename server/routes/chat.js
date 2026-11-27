@@ -12,6 +12,8 @@ import {
   deleteMessage,
   editMessage,
   listMemories,
+  MEMORY_SHELVES,
+  memoryCounts,
   listMessages,
   listStickers,
   markRead,
@@ -235,9 +237,11 @@ chatRoutes.get("/gifs", async (c) => {
 // ---------- our memories ----------
 
 memoryRoutes.get("/", async (c) => {
-  const query = z.object({ before: isoDate.optional() }).strict().safeParse(c.req.query());
+  const query = z.object({ before: isoDate.optional(), shelf: z.enum(Object.keys(MEMORY_SHELVES)).optional() }).strict().safeParse(c.req.query());
   if (!query.success) return c.json({ error: "bad_page", message: "That page couldn’t open." }, 400);
-  return c.json(await listMemories(await getDb(), query.data));
+  const db = await getDb();
+  const [page, counts] = await Promise.all([listMemories(db, query.data), query.data.before ? null : memoryCounts(db)]);
+  return c.json({ ...page, ...(counts ? { counts } : {}) });
 });
 memoryRoutes.post("/", async (c) => {
   try {
@@ -248,6 +252,6 @@ memoryRoutes.post("/", async (c) => {
 });
 memoryRoutes.delete("/:id", async (c) => {
   const id = uuid.safeParse(c.req.param("id"));
-  return id.success && (await removeMemory(await getDb(), id.data)) ? c.json({ ok: true }) : c.json({ error: "not_found", message: "That memory isn’t here." }, 404);
+  return id.success && (await removeMemory(await getDb(), id.data, { after: background })) ? c.json({ ok: true }) : c.json({ error: "not_found", message: "That memory isn’t here." }, 404);
 });
 

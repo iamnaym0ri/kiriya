@@ -34,10 +34,10 @@ import { HoldMenu } from "./HoldMenu.jsx";
 import { useKeyboardLift } from "./keyboard.js";
 import { Message } from "./Message.jsx";
 import { openViewer } from "./viewer.js";
-import { WALLPAPERS, wallpaperUrl } from "./wallpapers.js";
+import { useChatRoom } from "./lock/useChatRoom.jsx";
+import { WALLPAPERS } from "./wallpapers.js";
 import { ChatIcon, TypingIndicator } from "./parts.jsx";
 import "./Chat.css";
-import "./legacyLook.css";
 
 const GROUP_GAP_MS = 5 * 60 * 1000;
 const LEAVE_MS = 240;
@@ -295,6 +295,7 @@ export default function ChatPage() {
   const other = me === "kiriya" ? "admin" : "kiriya";
   const preview = Boolean(viewingAs());
   const prefs = useChatPrefs().data ?? { bubble: "lilac", background: "petals", typing: "hearts" };
+  const room = useChatRoom(prefs); // chat-room: its look, the Face ID lock, the keys (lock/useChatRoom.jsx)
   const live = useChatLive({ live: first?.live, me, enabled: Boolean(first) });
   const send = useSendMessage(me);
   const edit = useEditMessage();
@@ -449,14 +450,11 @@ export default function ChatPage() {
       </div>
     );
 
-  const background = prefs.background === "photo" && !prefs.backgroundUrl ? "petals" : WALLPAPERS[prefs.background] || ["petals", "night", "notebook", "photo"].includes(prefs.background) ? prefs.background : "petals";
-  const style = {
-    ...(background === "photo" ? { "--chat-photo": `url("${prefs.backgroundUrl}")` } : {}),
-    ...(WALLPAPERS[background] ? { "--chat-wallpaper": `url("${wallpaperUrl(background, prefs)}")` } : {}),
-  };
+  const background = room.look["data-background"];
 
   return (
-    <div ref={shell} className="chat" data-app={app || undefined} data-theme={prefs.theme ?? "lilac"} data-bubble={prefs.bubble} data-background={background} style={style}>
+    <div ref={shell} className="chat" data-app={app || undefined} {...room.look} data-locked={room.screen ? "" : undefined}>
+      {room.screen ?? room.overlay}
       <div className="chat__backdrop" aria-hidden="true" />
       <ChatHeader name={names[other]} online={live.online} typing={live.typing} app={app} onOpenDesign={() => setDesignOpen(true)} />
       <MessageScroller.Provider autoScroll defaultScrollPosition="end">

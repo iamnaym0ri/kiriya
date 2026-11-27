@@ -11,11 +11,13 @@ import WebKit
 ///   back on.
 /// - the notification delegate taken back from Capacitor's router, which claims it while the bridge
 ///   starts (KiriyaNotifications.swift). Taps and "Open" are still forwarded to that router.
-/// - the app's own small plugins (KiriyaKeychainPlugin below).
+/// - the app's own small plugins (KiriyaKeychainPlugin below, and the chat's keys and privacy cover
+///   in KiriyaChatPlugin.swift).
 class MainViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
         super.capacitorDidLoad()
         bridge?.registerPluginInstance(KiriyaKeychainPlugin())
+        bridge?.registerPluginInstance(KiriyaChatPlugin())
         webView?.allowsBackForwardNavigationGestures = true
         webView?.configuration.userContentController.add(SwipeBackSwitch(owner: self), name: SwipeBackSwitch.name)
         if let router = bridge?.notificationRouter {

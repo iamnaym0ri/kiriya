@@ -6,6 +6,7 @@ import { signMediaLinks, unsignMediaLinks } from "./lib/mediaLinks.js";
 import { sessionRoutes } from "./routes/session.js";
 import { publicRoutes } from "./routes/public.js";
 import { meRoutes } from "./routes/me.js";
+import { chatKeyRoutes } from "./routes/chatKeys.js";
 import { playRoutes } from "./routes/play.js";
 import { adminRoutes } from "./routes/admin.js";
 import { jobRoutes } from "./routes/jobs.js";
@@ -85,6 +86,7 @@ app.route("/public", publicRoutes);
 app.route("/events", eventRoutes);
 
 app.use("/me/*", requireRole("kiriya", "admin"));
+app.route("/me/chat/keys", chatKeyRoutes);
 app.route("/me/games/secret-word", secretWordRoutes);
 app.route("/me/home", homeRoutes);
 app.route("/me/glance", glanceRoutes);

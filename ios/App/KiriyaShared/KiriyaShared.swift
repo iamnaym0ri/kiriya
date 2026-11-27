@@ -33,7 +33,27 @@ struct KiriyaSnapshot: Codable {
     struct Unread: Codable { var notes: Int?; var chat: Int?; var jar: Int?; var total: Int? }
     struct Note: Codable { var title: String?; var preview: String?; var at: String?; var opened: Bool? }
     struct Jar: Codable { var fresh: Int? }
-    struct ChatLast: Codable { var from: String?; var preview: String?; var at: String?; var mine: Bool? }
+    /// The last message. Sealed end to end, `preview` is nil and `sealed` holds what this phone opens
+    /// with its chat key (server/lib/chatKeys.js sealedPreview); use `words` to show it.
+    struct ChatLast: Codable {
+        struct Sealed: Codable { var k: String?; var s: String?; var t: String?; var c: String?; var b: String? }
+        var from: String?; var preview: String?; var at: String?; var mine: Bool?; var kind: String?; var sealed: Sealed?
+
+        init(from: String? = nil, preview: String? = nil, at: String? = nil, mine: Bool? = nil, kind: String? = nil, sealed: Sealed? = nil) {
+            self.from = from; self.preview = preview; self.at = at; self.mine = mine; self.kind = kind; self.sealed = sealed
+        }
+
+        var words: String? {
+            if let preview { return preview }
+            guard let sealed, let b = sealed.b else { return nil }
+            var dict: [String: Any] = ["b": b]
+            if let k = sealed.k { dict["k"] = k }
+            if let s = sealed.s { dict["s"] = s }
+            if let t = sealed.t { dict["t"] = t }
+            if let c = sealed.c { dict["c"] = c }
+            return KiriyaChatCrypto.preview(dict)
+        }
+    }
     struct Chat: Codable { var last: ChatLast? }
     struct Event: Codable { var title: String?; var startsOn: String?; var daysAway: Int?; var venue: String? }
     struct Tap: Codable { var key: String; var emoji: String?; var label: String? }
@@ -216,11 +236,19 @@ enum KiriyaAPI {
         try await post("api/widget/tap", body)
     }
 
-    /// POST /api/widget/reply { text, replyTo?, clientId? }
+    /// POST /api/widget/reply { text, enc?, replyTo?, clientId? }. Once the chat is sealed end to end
+    /// (the app has put the chat key in the Keychain, KiriyaChatCrypto.swift), the reply is sealed
+    /// here, on the phone, before it goes; the server refuses a plain one then.
     static func reply(_ text: String, replyTo: String?, clientId: String?) async throws {
-        var body: [String: Any] = ["text": String(text.prefix(2000))]
+        let words = String(text.prefix(2000))
+        let id = clientId ?? Self.clientId("n", UUID().uuidString, "reply")
+        var body: [String: Any] = ["text": words, "clientId": id]
+        if let sender = KiriyaGroup.defaults?.string(forKey: KiriyaGroup.role), ["kiriya", "admin"].contains(sender),
+           let sealed = KiriyaChatCrypto.sealReply(words, clientId: id, sender: sender) {
+            body["text"] = sealed.body
+            body["enc"] = sealed.enc
+        }
         if let replyTo, UUID(uuidString: replyTo) != nil { body["replyTo"] = replyTo }
-        if let clientId { body["clientId"] = clientId }
         try await post("api/widget/reply", body)
     }
 
