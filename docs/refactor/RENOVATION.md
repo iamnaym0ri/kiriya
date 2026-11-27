@@ -178,7 +178,10 @@ pose is `ponder`). Line topics: `greet` (fallback) and `greetMorning` / `greetAf
 their own; visits in `visit.with.<id>` as pairs `[mine, theirs]`: the first line is this
 character's, the second is the other one's reply, so a pair lives in the file of whoever speaks
 first. Sitting poses may hang legs below the feet line over the cloud's front edge, so the engine
-draws `Body` above `Platform`. Every line (in `lines` and `visit`) is either a string or
+draws `Body` above `Platform`. The engine anchors the `Platform` box's top centre at the feet
+point (the bottom centre of the body box), letting puffs overflow upward a little; a character may
+set `Platform.surface` (px from the top of the platform box to where the feet stand, default 0) to
+sink its feet into a fluffier cloud. Every line (in `lines` and `visit`) is either a string or
 `{ text, expression }`: the engine passes that expression to `Body` while the bubble shows. Her
 pick can also be `"none"` (a quiet home): the engine then shows nobody, visits included.
 
