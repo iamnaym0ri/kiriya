@@ -384,7 +384,7 @@ export const visit = {
       ["wait, if you're me and i'm me… who's singing?", "you. i'm taking notes. musical research. purely."],
       ["can i see your sketchbook? one page!", "n-no! it's kaito and his ice cream. they're close. that's ALL."],
       ["do you ship me and my leek?", "since 2007. a classic. i repent. …i don't repent."],
-      ["why is your nose bleeding?! are you okay?", "kaito lent bamby his scarf. i'm fine. i'm FINE. i need a minute."],
+      ["why is your nose bleeding?! are you okay?", "kaito and gakupo shared ONE cone. two spoons. i'm fine. i'm FINE. i need a minute."],
     ],
     bambi: [
       ["bamby! we're both virtual singers, so we're basically coworkers ♪", "coworkers who dance better than everyone. yes."],
