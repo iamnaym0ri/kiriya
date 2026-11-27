@@ -110,26 +110,82 @@ time.
   </div>
   ```
 
+  **Styled by the frame** in `src/styles/app-shell.css` (imported by WorldShell),
+  all under `html.app-shell`. What each class gives you, so sections only style what is their own:
+
+  | Class | What the frame does |
+  | --- | --- |
+  | `.app-section`, `.app-screen` | The column: 16 pt gutters (or the safe area if wider), max 680 px, centred. |
+  | `.app-section__head` | Grid: back button row, then title + actions, then subtitle. 14 pt above, 18 pt below. |
+  | `.app-section__title` | Large title: Gaegu 700, 36 px, `--theme-ink`. `data-short="…"` sets the compact bar's text if the title is long. |
+  | `.app-section__subtitle` | 14 px, `--theme-muted`, 4 pt under the title. |
+  | `.app-section__actions` | Trailing row, 8 pt gaps, vertically centred on the title. Use `.app-action` for a round 40 pt button (paper, accent icon). |
+  | `.app-section__body` | One column, 16 pt between children, never wider than the screen (`minmax(0, 1fr)`). |
+  | `.app-group-title` | Optional small lowercase label between groups of cards (iOS grouped-list header). |
+  | `.app-card` | Paper card: 1 px `--theme-line`, `--app-card-radius` (20 px), soft purple shadow, 16 pt padding. `--tint` = soft lilac fill, `--flush` = no padding + clipped corners (photos, lists). |
+  | `.app-card__head` / `__title` / `__action` | Title row: Gaegu 700 22 px left, accent 14 px link/button right. `__body`: 15 px/1.5 body text. |
+  | `.app-list` / `.app-row` | Inset grouped rows: 52 pt min height, hairlines inset 16 pt. A row that is (or holds only) an `<a>`/`<button>` fills the row and highlights on press; add `.app-row--more` for a chevron. Parts: `.app-row__icon` (32 pt tinted tile), `.app-row__text` (with `<small>` second line), `.app-row__detail` (muted, right). A list inside a card runs to the card's edges. |
+  | `.app-empty` | Centred empty state: `<strong>` handwritten line + muted text. |
+  | `.app-bleed` | Cancels the gutter, for edge-to-edge strips (carousels, photo rows). |
+  | `.app-screen__back` | iOS back button: the frame draws the chevron, so put **only the parent's name** in it ("notes & letters"). |
+
   CSS variables the frame sets on `html.app-shell`: `--app-gutter` (16px), `--app-tabs-h` (tab bar
-  height including the home-indicator inset; pad the bottom of anything that scrolls to the end),
-  `--app-card-radius`. `body.keyboard-open` is set while the keyboard is up (Capacitor Keyboard, or
-  `visualViewport` in Safari); the tab bar hides then. The tab bar stays visible in chat.
-- **The website's top bar (`.world-mast`) shows on home only** in the app; every other tab starts
-  right under the status bar with its own `.app-section__head` (in-app.css already pads the body by
-  the status bar). The floating "little corner" (`.daily-style-corner`) is hidden in the app; the home
-  section shows it as a widget instead.
-- **Deep links in the app:** `/world/notes?open=<id>` → `/world/mail?note=<id>`,
-  `/world/letters?open=<id>` → `/world/mail?letter=<id>` (the mail agent redirects from its pages),
-  `/world#letters-hub` → `/world/mail`, `/world#note-jar` and the "pull a note" quick action →
-  `/world/mail#note-jar`, `/world?event=<id>#events` → that event's page (events-ui),
-  `/world#play-desk` → `/world/play`, `/world/settings` → `/world/me`. The frame agent implements the
-  mapping in one place and documents the full list here.
+  height including the home-indicator inset), `--app-bottom` (what the tab bar covers right now: it
+  becomes 0 while the keyboard is up; use it for `bottom:` of anything fixed and for the padding
+  under anything that scrolls on its own), `--app-card-radius`, `--app-safe-top`, `--app-bar-h` (44).
+  `.world-content` already pads its bottom by `--app-bottom` + 32 pt, so a normal section needs
+  nothing. `body.keyboard-open` is set while the keyboard is up (Capacitor Keyboard, or
+  `visualViewport`/focus in Safari); the tab bar hides then. The tab bar stays visible in chat.
+  `body[data-tab]` names the current tab.
+- **Frame behaviour (src/shared/AppFrame.jsx):**
+  - Each tab remembers its last page (pushed screen included) and its scroll position; switching tabs
+    replaces history instead of adding to it, so the edge swipe only ever goes back inside a tab.
+    Tapping the tab she's on pops to its first screen, then scrolls to the top, then fires
+    `document` event `app:tab-reselect` (`detail.tab`) for sections that want to do more.
+  - A small frosted bar fades in at the top once the section's `.app-section__title` (home: the
+    wordmark) scrolls under the status bar, showing that title (and the back button on a
+    `.app-screen`). Don't add your own sticky title bar.
+  - **Pushed screens** open with `navigate(url)` (a real history entry), so the iPhone's edge swipe
+    works. They slide in from the right (`html[data-nav="push"] .app-screen`; none with Reduce
+    Motion). For the back button use `const back = useAppBack(fallback)` from
+    `src/shared/AppFrame.jsx`: it goes back when she came from inside the tab and otherwise replaces
+    the screen with `fallback` (default: the tab's first screen), e.g. when a notification opened it.
+  - Pull to refresh (invalidates `["me"]` queries) is on in home and notes & letters only.
+- **The website's top bar (`.world-mast`) shows on home only** in the app, as a compact wordmark
+  (no buttons) with the daily ribbon under it; every other tab starts right under the status bar
+  with its own `.app-section__head`. No footer in the app. The floating "little corner"
+  (`.daily-style-corner`) is hidden in the app; the home section shows it as a widget instead.
+- **Deep links in the app** (`src/lib/appLinks.js` `appPath()`, applied by the shell to every
+  navigation and by NativeApp before it navigates; `tabOf()` says which tab a path belongs to):
+
+  | Old path (notifications, widgets, Siri, quick actions, links in content) | Lands on |
+  | --- | --- |
+  | `/world/notes?open=<id>` (note push, Little note widget) | `/world/mail?note=<id>` (mail opens it) |
+  | `/world/letters?open=<id>` (letter push) | `/world/mail?letter=<id>` (mail opens it) |
+  | `/world/notes`, `/world/letters` (bare) | stay; they are in the notes & letters tab |
+  | `/world#letters-hub` | `/world/mail` |
+  | `/world#note-jar` (jar push, reminder, Note jar widget, "pull a note" quick action) | `/world/mail#note-jar` |
+  | `/world?event=<id>#events` (event push) | `/world/events/<id>` (events-ui), pushed from home |
+  | `/world#events` (Next con widget) | `/world/events` (events-ui list), pushed from home |
+  | `/world/events/*`, `/world/saves`, `/world/merch` | stay; pushed screens of home |
+  | `/world#play-desk`, `/world?gallery=1&doodle=<id>#play-desk` (doodle note push), `?paint=` | `/world/play` keeping `doodle`, `gallery`, `paint` (the play hub opens the doodle) |
+  | `/world/settings[/…]` | `/world/me[/…]` |
+  | `/world/chat` (chat and tap pushes, chat quick action, Thinking of you widget) | stays (chat tab) |
+  | `/world/art`, `/world/studio` | stay; in the play tab |
+  | `/world?quick=status` (check-in shortcut) | stays; DailyStyle opens her corner's check-in |
+  | `/world/stage`, `/world/atelier`, `/world/apothecary` (retired) | `/world` (World.jsx) |
 
 ### Admin in place
 
 Josh changes what she sees where she sees it. Next to anything editable, render
-`<AdminEdit label="…" onClick={…} />` (`src/shared/admin/AdminEdit.jsx`; nothing on her phone) and
-edit in an `<EditSheet>` bottom sheet. Admin API routes go under `/api/admin/...` (the existing
+`<AdminEdit label="…" onClick={…} />` (`src/shared/admin/AdminEdit.jsx`; nothing on her phone;
+`compact` for a pencil only) and edit in an `<EditSheet>` bottom sheet, with `<EditField label hint>`
+around each input. `onSave` may return a promise: the sheet shows "Saving…", closes when it resolves
+(resolve `false` to stay open) and shows the error when it rejects, so
+`onSave={() => save.mutateAsync(draft)}` is all you need. Optional: `subtitle`, `saveDisabled`,
+`dirty` (asks before throwing changes away), `onDelete` + `deleteLabel`.
+Shortcuts into Josh's in-place composers: `/world/mail?compose=note`, `?compose=letter`,
+`?compose=jar` (the mail agent opens the sheet on arrival). Admin API routes go under `/api/admin/...` (the existing
 `adminRoutes` guard) or your own router with the same `requireRole("admin")` check. Every edit
 shows on her phone the next time she opens the app (invalidate or refetch on focus); new content
 can carry a small "new" mark until she has seen it.
@@ -210,7 +266,8 @@ export default {
 bar, safe areas padded, a 44 pt top bar with "‹ play" and the game's title). `Game.jsx` fills its
 container (`height: 100%`, `position: relative`; measure the container, not the window) and does
 not draw its own back button or fixed full-screen layer; it calls `onExit()` only for its own "done"
-flows. The dev game lab mimics the sheet exactly.
+flows. The dev game lab mimics the sheet exactly. The sheet is portalled to `<body>`
+(`createPortal`), because the page's content column is its own stacking context.
 
 `Game.jsx` gets `({ onExit, onReward })`. A reward is `onReward({ sticker: "st-…", game: "<game-id>",
 reason: "first garden cleared" })`, with a sticker id from her collection's catalogue
@@ -244,6 +301,14 @@ the hub lands, open a game in the dev-only lab: `/world/game-lab?g=<id>`.
 - **No Xcode builds and no real phone**: the coordinator builds the app and tests on Josh's iPhone.
 - Run the tests that cover what you touched (`node --test scripts/test-<area>.mjs`) and add tests
   for new server code.
+
+## Git in a shared repository
+
+All worktrees share one repository, so **`git stash` is shared between agents**: one agent's
+`stash pop` can take another's changes (it happened on 2026-11-26). **Never use `git stash`.**
+Commit your work in progress on your own branch before merging anything (`git commit -am "wip …"`
+is fine; tidy later), then `git merge connection-refactor`. Never run `git checkout`/`reset`/
+`clean` on paths outside your own work, and never touch another worktree.
 
 ## Finishing
 
