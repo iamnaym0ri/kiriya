@@ -189,6 +189,8 @@ export default function Face({ expression = "soft", moving, children }) {
         <path d={topMouth} fill="none" stroke={C.mouthLine} strokeWidth="1.9" strokeLinecap="round" opacity={plain} />
         <path d="M102 141q2-3 4 0t4 0 4 0 4 0" fill="none" stroke={C.mouthLine} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" opacity={f.wavy} />
         <path d="M103 139q3.5 4.5 7 0q3.5 4.5 7 0" fill="none" stroke={C.mouthLine} strokeWidth="1.9" strokeLinecap="round" opacity={f.cat * (1 - f.wavy)} />
+        {/* While her bubble is up the mouth opens and closes (CSS, data-talking). */}
+        <path className="mr-talk" d="M105.5 139.5q4.5-2 9 0q-1 6-4.5 6t-4.5-6Z" fill={C.mouth} stroke={C.mouthLine} strokeWidth="1.3" strokeLinejoin="round" />
       </g>
       <g className="mr-glasses">
         {EYES.map((x, i) => (

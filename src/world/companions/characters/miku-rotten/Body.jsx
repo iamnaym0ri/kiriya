@@ -13,15 +13,16 @@ import "./miku-rotten.css";
 // with her feet at (110, 238).
 
 export const VIEW = { width: 220, height: 240 };
-export const SIZE = { width: 106, height: 116 };
+export const SIZE = { width: 110, height: 120 }; // same aspect as VIEW, so she fills the box exactly
 
 const SEATED = new Set(["sit", "sleep", "sketch"]);
-const ALIASES = { picked: "held", dangle: "held", carried: "held", stand: "idle", hop: "jump", crouch: "land" };
+const ALIASES = { picked: "held", dangle: "held", carried: "held", stand: "idle", hop: "jump" };
 
 /** What each pose does with her arms and face when nobody asks for a particular expression. */
 const POSES = {
   idle: { arms: "hug", face: "soft" },
   walk: { arms: "hug", face: "soft" },
+  crouch: { arms: "hug", face: "focused" },
   jump: { arms: "up", face: "gasp" },
   fall: { arms: "up", face: "flustered" },
   land: { arms: "hug", face: "happy" },
@@ -311,33 +312,40 @@ export function useReducedMotion() {
   return useSyncExternalStore(subscribeReduced, readReduced, () => true);
 }
 
-export default function Body({ pose = "idle", expression, facing = 1, playing = true, frame, className, style }) {
+/**
+ * The engine's Body (src/world/companions/README.md, "Body"). She is drawn facing right and the
+ * engine mirrors her, so `facing` needs nothing here (she carries no text). `frame` from the engine
+ * is a set of Motion values that she doesn't need: her steps are timed to her own walkSpeed. A
+ * number `frame` (seconds) with `playing` off freezes every clock at that moment, for stills.
+ */
+export default function Body({ pose = "idle", expression, playing = true, frame, talking, className, style }) {
   const reduced = useReducedMotion();
   const { name, face, seated } = resolvePose(pose, expression);
   const still = typeof frame === "number";
-  // `frame` (seconds) with playing off freezes every clock at that moment, for stills.
   const motion = reduced ? "off" : playing ? "on" : still ? "still" : "off";
   return (
     <svg
       className={`mr${className ? ` ${className}` : ""}`}
       viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
-      width={SIZE.width}
-      height={SIZE.height}
+      width="100%"
+      height="100%"
+      preserveAspectRatio="xMidYMax meet"
       data-pose={name}
       data-expression={face}
       data-seated={seated ? "yes" : "no"}
       data-motion={motion}
+      data-talking={talking ? "yes" : "no"}
       style={still ? { "--mr-at": `${-frame}s`, ...style } : style}
       aria-hidden="true"
       overflow="visible"
     >
-      <Figure pose={name} expression={face} facing={facing} moving={motion === "on"} />
+      <Figure pose={name} expression={face} moving={motion === "on"} />
     </svg>
   );
 }
 
 /** Everything inside the SVG, so the thumb can frame the same drawing with its own viewBox. */
-export function Figure({ pose, expression, facing = 1, moving }) {
+export function Figure({ pose, expression, moving }) {
   const id = useId();
   const { name, face, arms, seated } = resolvePose(pose, expression);
   return (
@@ -376,7 +384,7 @@ export function Figure({ pose, expression, facing = 1, moving }) {
           <stop offset="1" stopColor="#5d4a7a" stopOpacity="0" />
         </radialGradient>
       </defs>
-      <g transform={facing < 0 ? `translate(${VIEW.width} 0) scale(-1 1)` : undefined}>
+      <g>
         <ellipse className="mr-shadow" cx="110" cy="237" rx="34" ry="5" fill={`url(#${id}-ground)`} />
         <g className="mr-root">
           <g className="mr-sway">

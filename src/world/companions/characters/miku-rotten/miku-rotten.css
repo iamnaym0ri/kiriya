@@ -176,6 +176,42 @@
   }
 }
 
+/* --- Crouch: the wind-up before a hop -------------------------------------------------------- */
+.mr[data-pose="crouch"] .mr-root {
+  animation: mr-crouch 0.18s ease-out both;
+}
+.mr[data-pose="crouch"] .mr-tail--l,
+.mr[data-pose="crouch"] .mr-tail--r {
+  rotate: -5deg;
+}
+@keyframes mr-crouch {
+  from {
+    scale: 1 1;
+  }
+  to {
+    scale: 1.08 0.9;
+  }
+}
+
+/* --- Talking: the mouth opens and closes while her bubble shows ------------------------------- */
+.mr-talk {
+  opacity: 0;
+  transform-origin: 110px 140px;
+}
+.mr[data-talking="yes"][data-motion="on"] .mr-talk {
+  animation: mr-talk 0.36s steps(2, jump-none) infinite;
+}
+@keyframes mr-talk {
+  0% {
+    opacity: 1;
+    scale: 1 1;
+  }
+  100% {
+    opacity: 0;
+    scale: 0.8 0.5;
+  }
+}
+
 /* --- Walk: small quick steps, a toddler bounce, a lean into the walk, tails trailing --------- */
 .mr[data-pose="walk"] .mr-root {
   rotate: 3deg;
