@@ -128,8 +128,14 @@ time.
 ### Admin in place
 
 Josh changes what she sees where she sees it. Next to anything editable, render
-`<AdminEdit label="…" onClick={…} />` (`src/shared/admin/AdminEdit.jsx`; nothing on her phone) and
-edit in an `<EditSheet>` bottom sheet. Admin API routes go under `/api/admin/...` (the existing
+`<AdminEdit label="…" onClick={…} />` (`src/shared/admin/AdminEdit.jsx`; nothing on her phone;
+`compact` for a pencil only) and edit in an `<EditSheet>` bottom sheet, with `<EditField label hint>`
+around each input. `onSave` may return a promise: the sheet shows "Saving…", closes when it resolves
+(resolve `false` to stay open) and shows the error when it rejects, so
+`onSave={() => save.mutateAsync(draft)}` is all you need. Optional: `subtitle`, `saveDisabled`,
+`dirty` (asks before throwing changes away), `onDelete` + `deleteLabel`.
+Shortcuts into Josh's in-place composers: `/world/mail?compose=note`, `?compose=letter`,
+`?compose=jar` (the mail agent opens the sheet on arrival). Admin API routes go under `/api/admin/...` (the existing
 `adminRoutes` guard) or your own router with the same `requireRole("admin")` check. Every edit
 shows on her phone the next time she opens the app (invalidate or refetch on focus); new content
 can carry a small "new" mark until she has seen it.
