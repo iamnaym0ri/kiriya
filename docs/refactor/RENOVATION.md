@@ -306,7 +306,12 @@ the hub lands, open a game in the dev-only lab: `/world/game-lab?g=<id>`.
   against your own dev server. Save screenshots under `~/kiriya-wt/<agent>/.lab/` (gitignored) and
   look at them: you are judged on what it looks like on a phone.
 - iOS Simulator (real iOS WebKit): `xcrun simctl openurl booted "http://localhost:<port>/world?app=1"`
-  then `xcrun simctl io booted screenshot <file>`, inside a `--sim` slot.
+  then `xcrun simctl io booted screenshot <file>`, inside a `--sim` slot. (Round 2: address the
+  kiriya simulator by its UDID, `C9144E09-A43A-4544-AA1C-BA92D68EBB59`; the other booted one
+  belongs to another project.) **Every `openurl` opens a new Safari tab that keeps animating**: end
+  each simulator run with `xcrun simctl terminate C9144E09-A43A-4544-AA1C-BA92D68EBB59
+  com.apple.mobilesafari`, inside the same slot. On 2026-11-27, 69 forgotten tabs pushed the
+  iMac's load average to ~970 and made every agent's frame-time measurement meaningless.
 - **No Xcode builds and no real phone**: the coordinator builds the app and tests on Josh's iPhone.
 - Run the tests that cover what you touched (`node --test scripts/test-<area>.mjs`) and add tests
   for new server code.
