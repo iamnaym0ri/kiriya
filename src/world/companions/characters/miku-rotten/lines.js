@@ -264,7 +264,7 @@ export const lines = {
     say("guilty", "i promised i'd stop shipping. then i shipped the promise."),
     say("pray", "i confess i bought six copies. one to read, one to keep, four to cry on."),
     say("pray", "forgive me, father. i bought the R-18 one. for the plot. there was some plot."),
-    say("pray", "i confess i shipped the P.E. teacher with the history teacher for an entire lesson. we did volleyball. i think."),
+    say("pray", "i confess i shipped the P.E. teacher and the history teacher all lesson. we did volleyball. i think."),
   ],
   giggle: [
     say("giggle", "hehe… nothing! nothing. hehe."),
