@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../../../lib/api.js";
 import { uploadFile } from "../../../../../lib/uploads.js";
-import { newClientId, useChatSummary, useSendMessage } from "../../../../../lib/chat.js";
+import { sendPhotoToChat, useChatSummary } from "../../../../../lib/chat.js";
 import { useSession } from "../../../../../lib/session.js";
 import { haptic } from "../../../../../lib/native.js";
 
@@ -21,13 +21,12 @@ export function usePartner() {
 
 export function useArtShare() {
   const client = useQueryClient();
-  const { me, partner } = usePartner();
-  const send = useSendMessage(me);
+  const { partner } = usePartner();
   const toChat = useMutation({
+    // The chat's own helper: sealed, uploaded and sent like a photo from the chat itself.
     mutationFn: async ({ make, caption = "", alt = "a little picture" }) => {
       const { file, width, height } = await make();
-      const stored = await uploadFile(file, { folder: "chat" });
-      return send.mutateAsync({ clientId: newClientId(), kind: "image", body: caption, media: { url: stored.url, width, height, alt } });
+      return sendPhotoToChat({ file, width, height, alt, caption }, client);
     },
     onSuccess: () => haptic("success"),
   });

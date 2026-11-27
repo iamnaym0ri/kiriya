@@ -71,6 +71,8 @@
     "music-metadata": "12.4.0",
     "openai": "^7.15.0",
     "perfect-freehand": "^1.2.3",
+    "photoswipe": "5.4.4",
+    "photoswipe-video-plugin": "1.0.2",
     "pitchy": "^4.1.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

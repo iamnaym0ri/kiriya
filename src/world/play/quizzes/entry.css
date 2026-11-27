@@ -38,6 +38,7 @@
   box-sizing: border-box;
 }
 .quiz-entry__art {
+  position: relative;
   width: 88px;
   height: 74px;
   margin-left: 6px;

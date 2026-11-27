@@ -1,22 +1,66 @@
-// The private chat's data on the phone (docs/refactor/PLAN.md phase 4). Messages are cached by
-// TanStack Query; sends show instantly (optimistic) and are idempotent by clientId; live events
-// come from Ably when configured, otherwise a light poll runs while the chat is open.
+// The private chat's data on the phone (docs/refactor/PLAN.md phase 4, RENOVATION.md round 3).
+// Messages are cached by TanStack Query; sends show at once (optimistic) and are idempotent by
+// clientId; live events come from Ably when configured, otherwise a light poll runs while the chat
+// is open. Everything that leaves the phone is sealed and everything that arrives is opened through
+// src/lib/chatCrypto.js (owned by the chat-room side); nothing here reads sealed data itself.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api.js";
+import { openIncoming, sealFile, sealOutgoing } from "./chatCrypto.js";
+import { uploadFile } from "./uploads.js";
 
 export const chatKey = ["me", "chat", "messages"];
 export const chatPrefsKey = ["me", "chat", "prefs"];
 export const chatSummaryKey = ["me", "chat", "summary"];
+export const ALBUM_MAX = 10;
 const CHANNEL = "kiriya-josh";
-const POLL_MS = 4000;
+const POLL_MS = 2500;
+const TYPING_EVERY_MS = 2500;
+const TYPING_SHOWN_MS = 6000;
 
 export const newClientId = () => `${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 13)}`;
+
+// Everything that arrives is opened (src/lib/chatCrypto.js) before anything renders it: pages,
+// catch-ups, a send's or edit's echo, and the summary's latest message.
+const openPage = async (page) => ({ ...page, messages: await Promise.all((page.messages ?? []).map((m) => openIncoming(m))) });
+
+/** The photos and videos of a message, whichever shape it was stored in (one photo, or an album). */
+export function mediaItems(message) {
+  const media = message?.media;
+  if (!media || (message.kind !== "image" && message.kind !== "video")) return [];
+  if (Array.isArray(media.items)) return media.items;
+  return [{ type: "image", ...media }];
+}
+
+/** Media as it is sent and stored: without the phone-only preview links and progress. */
+function cleanMedia(media) {
+  if (!media || typeof media !== "object") return media;
+  const clean = ({ localUrl, progress, ...entry }) => (entry.poster ? { ...entry, poster: clean(entry.poster) } : entry); // eslint-disable-line no-unused-vars
+  return Array.isArray(media.items) ? { ...media, items: media.items.map(clean) } : clean(media);
+}
+
+/** Keeps this phone's own previews of what it just sent, so the picture never flickers. */
+function keepLocal(saved, local) {
+  const savedItems = saved?.media?.items;
+  const localItems = local?.media?.items;
+  if (!Array.isArray(savedItems) || !Array.isArray(localItems)) return saved;
+  return {
+    ...saved,
+    media: {
+      ...saved.media,
+      items: savedItems.map((item, i) => {
+        const mine = localItems[i];
+        if (!mine?.localUrl) return item;
+        return { ...item, localUrl: mine.localUrl, ...(item.poster && mine.poster?.localUrl ? { poster: { ...item.poster, localUrl: mine.poster.localUrl } } : {}) };
+      }),
+    },
+  };
+}
 
 export function useChatMessages() {
   return useInfiniteQuery({
     queryKey: chatKey,
-    queryFn: ({ pageParam, signal }) => api(`/me/chat/messages${pageParam ? `?before=${encodeURIComponent(pageParam)}` : ""}`, { signal }),
+    queryFn: async ({ pageParam, signal }) => openPage(await api(`/me/chat/messages${pageParam ? `?before=${encodeURIComponent(pageParam)}` : ""}`, { signal })),
     initialPageParam: null,
     getNextPageParam: (page) => page.next ?? undefined,
     staleTime: 15_000,
@@ -30,22 +74,29 @@ export const newestServerAt = (data) =>
     .filter((m) => !m.pending)
     .reduce((latest, m) => (!latest || m.createdAt > latest ? m.createdAt : latest), null);
 
-/** Adds or replaces messages (matching id, or the optimistic copy by clientId) in the newest page. */
+/**
+ * Adds or replaces messages (matching id, or the optimistic copy by clientId). New ones join the
+ * newest page; a change to a message older than anything loaded is left for when it's scrolled to.
+ */
 export function mergeMessages(queryClient, incoming, extra = {}) {
   queryClient.setQueryData(chatKey, (data) => {
     if (!data?.pages?.length) return data;
     const pages = data.pages.map((page) => ({ ...page, messages: page.messages.slice() }));
+    const oldest = pages.at(-1).messages[0]?.createdAt;
+    const olderExists = Boolean(pages.at(-1).next);
     for (const message of incoming) {
       let placed = false;
       for (const page of pages) {
         const i = page.messages.findIndex((m) => m.id === message.id || (message.clientId && m.clientId === message.clientId));
         if (i >= 0) {
-          page.messages[i] = message;
+          page.messages[i] = keepLocal(message, page.messages[i]);
           placed = true;
           break;
         }
       }
-      if (!placed) pages[0].messages.push(message);
+      if (placed) continue;
+      if (olderExists && oldest && message.createdAt < oldest) continue;
+      pages[0].messages.push(message);
     }
     pages[0].messages.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     pages[0] = { ...pages[0], ...extra };
@@ -59,9 +110,15 @@ export function updateMessage(queryClient, id, change) {
   );
 }
 
+function removeMessage(queryClient, id) {
+  queryClient.setQueryData(chatKey, (data) => data && { ...data, pages: data.pages.map((page) => ({ ...page, messages: page.messages.filter((m) => m.id !== id) })) });
+}
+
 function setFirstPage(queryClient, change) {
   queryClient.setQueryData(chatKey, (data) => data?.pages?.length && { ...data, pages: [change(data.pages[0]), ...data.pages.slice(1)] });
 }
+
+const gone = (m) => ({ ...m, kind: "deleted", body: "", media: null, enc: null, reactions: {}, leaving: false });
 
 /**
  * Keeps an open chat live: Ably events when the server has a key, otherwise a poll every few
@@ -74,24 +131,25 @@ export function useChatLive({ live, me, enabled = true }) {
   const channel = useRef(null);
   const typingTimer = useRef(null);
   const lastTypingSent = useRef(0);
+  const typingOn = useRef(false);
 
   const catchUp = useCallback(async () => {
     const data = queryClient.getQueryData(chatKey);
     if (!data) return;
     const newest = newestServerAt(data);
-    // Live (Ably) events carry reactions, unsends and reads, so only new messages need fetching.
-    // Without Ably, re-read the latest page instead, which also picks those changes up.
+    // Live (Ably) events carry reactions and reads, so only what's new, edited or deleted since the
+    // newest message needs fetching. Without Ably, re-read the latest page, which has it all.
     const query = live && newest ? `?after=${encodeURIComponent(newest)}` : "";
-    const page = await api(`/me/chat/messages${query}`).catch(() => null);
+    const page = await api(`/me/chat/messages${query}`).then(openPage).catch(() => null);
     if (!page) return;
     mergeMessages(queryClient, page.messages, { reads: page.reads, unread: page.unread });
     if (!live) setTyping(Boolean(page.typing));
   }, [queryClient, live]);
 
-  const showTyping = useCallback(() => {
-    setTyping(true);
+  const showTyping = useCallback((on = true) => {
     clearTimeout(typingTimer.current);
-    typingTimer.current = setTimeout(() => setTyping(false), 5000);
+    setTyping(on);
+    if (on) typingTimer.current = setTimeout(() => setTyping(false), TYPING_SHOWN_MS);
   }, []);
 
   useEffect(() => {
@@ -113,12 +171,10 @@ export function useChatLive({ live, me, enabled = true }) {
           channel.current = ch;
           ch.subscribe("message", (event) => {
             // Their message arriving ends their "typing…".
-            if (event.data?.sender && event.data.sender !== me) {
-              clearTimeout(typingTimer.current);
-              setTyping(false);
-            }
+            if (event.data?.sender && event.data.sender !== me) showTyping(false);
             catchUp();
           });
+          ch.subscribe("edited", () => catchUp());
           ch.subscribe("reaction", ({ data }) =>
             updateMessage(queryClient, data.messageId, (m) => {
               const reactions = { ...m.reactions };
@@ -127,9 +183,9 @@ export function useChatLive({ live, me, enabled = true }) {
               return { ...m, reactions };
             }),
           );
-          ch.subscribe("deleted", ({ data }) => updateMessage(queryClient, data.id, (m) => ({ ...m, kind: "deleted", body: "", media: null })));
+          ch.subscribe("deleted", ({ data }) => updateMessage(queryClient, data.id, gone));
           ch.subscribe("read", ({ data }) => setFirstPage(queryClient, (page) => ({ ...page, reads: { ...page.reads, [data.role]: data.at } })));
-          ch.subscribe("typing", (message) => message.clientId !== me && showTyping());
+          ch.subscribe("typing", (message) => message.clientId !== me && showTyping(!message.data?.stop));
           const refreshPresence = () => ch.presence.get().then((members) => setOnline(members.some((m) => m.clientId !== me))).catch(() => {});
           ch.presence.subscribe(refreshPresence);
           ch.presence.enter().then(refreshPresence).catch(() => {});
@@ -150,33 +206,223 @@ export function useChatLive({ live, me, enabled = true }) {
     };
   }, [enabled, live, me, catchUp, queryClient, showTyping]);
 
-  /** Call on every keystroke; it sends at most one "typing" every 2.5 s. */
-  const notifyTyping = useCallback(() => {
+  /**
+   * Call with the field's text on every change: "typing" goes out at most every 2.5 s while there
+   * are words, and "stopped" goes out once when the field empties (or on send/blur, with "").
+   */
+  const notifyTyping = useCallback((text = "x") => {
     const now = Date.now();
-    if (now - lastTypingSent.current < 2500) return;
-    lastTypingSent.current = now;
-    if (channel.current) channel.current.publish("typing", {}).catch(() => {});
-    else api("/me/chat/typing", { method: "POST", body: {} }).catch(() => {});
+    const on = Boolean(text.trim());
+    if (on && now - lastTypingSent.current < TYPING_EVERY_MS) return;
+    if (!on && !typingOn.current) return;
+    lastTypingSent.current = on ? now : 0;
+    typingOn.current = on;
+    const data = on ? {} : { stop: true };
+    if (channel.current) channel.current.publish("typing", data).catch(() => {});
+    else api("/me/chat/typing", { method: "POST", body: data }).catch(() => {});
   }, []);
 
   return { typing, online, notifyTyping, catchUp };
 }
 
+// ---------- sending ----------
+
+/**
+ * Files waiting to go up, by the message's clientId, so a failed send can be tried again with the
+ * same photos. Each attachment: { file, type: "image"|"video", width, height, duration, mime,
+ * previewUrl, poster: { blob, width, height, previewUrl } }.
+ */
+const outbox = new Map();
+
+/** Seals and uploads one file; returns the stored media entry (without the phone-only fields). */
+async function storeFile(file, onProgress) {
+  const { blob, sealed } = await sealFile(file);
+  const stored = await uploadFile(blob, { folder: "chat", onProgress });
+  return { url: stored.url, ...(sealed ? { sealed } : {}) };
+}
+
+/** Uploads a message's photos and videos (three at a time) and returns its album. */
+async function uploadAlbum(attachments, onProgress) {
+  const items = new Array(attachments.length);
+  const progress = attachments.map(() => 0);
+  const report = (i, value) => {
+    progress[i] = value;
+    onProgress?.(progress.slice());
+  };
+  let next = 0;
+  async function worker() {
+    while (next < attachments.length) {
+      const i = next++;
+      const a = attachments[i];
+      const posterEntry = a.poster?.blob ? await storeFile(a.poster.blob) : null;
+      const stored = await storeFile(a.file, (pct) => report(i, Math.min(99, pct)));
+      report(i, 100);
+      items[i] = {
+        type: a.type,
+        ...stored,
+        ...(a.width ? { width: Math.round(a.width), height: Math.round(a.height) } : {}),
+        ...(a.mime ? { mime: a.mime } : {}),
+        ...(a.type === "video" ? { duration: Math.round((a.duration || 0) * 10) / 10 } : {}),
+        ...(posterEntry ? { poster: { ...posterEntry, width: a.poster.width, height: a.poster.height, mime: a.poster.blob.type } } : {}),
+      };
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(3, attachments.length) }, worker));
+  return { items };
+}
+
+/** What the phone shows for an album while it uploads: its own previews, with progress. */
+const localAlbum = (attachments) => ({
+  items: attachments.map((a) => ({
+    type: a.type,
+    url: a.previewUrl,
+    localUrl: a.previewUrl,
+    width: a.width,
+    height: a.height,
+    ...(a.type === "video" ? { duration: a.duration, ...(a.poster ? { poster: { url: a.poster.previewUrl, localUrl: a.poster.previewUrl, width: a.poster.width, height: a.poster.height } } : {}) } : {}),
+    progress: 0,
+  })),
+});
+
+async function postMessage(message) {
+  const body = await sealOutgoing({
+    clientId: message.clientId,
+    kind: message.kind,
+    body: message.body ?? "",
+    ...(message.media ? { media: cleanMedia(message.media) } : {}),
+    replyTo: message.replyTo?.id ?? null,
+  });
+  return openIncoming(await api("/me/chat/messages", { method: "POST", body }));
+}
+
+/**
+ * Sends a message. With `attachments` (photos/videos picked on the phone) the message shows at once
+ * with the phone's own previews and upload progress, then goes out once every file is up.
+ */
 export function useSendMessage(me) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (message) =>
-      api("/me/chat/messages", {
-        method: "POST",
-        body: { clientId: message.clientId, kind: message.kind, body: message.body ?? "", media: message.media, replyTo: message.replyTo?.id ?? null },
-      }),
-    onMutate: (message) =>
-      mergeMessages(queryClient, [{ reactions: {}, body: "", media: null, ...message, id: `pending-${message.clientId}`, sender: me, pending: true, failed: false, createdAt: new Date().toISOString() }]),
+    mutationFn: async (message) => {
+      const attachments = message.attachments ?? outbox.get(message.clientId);
+      let media = message.media;
+      if (attachments?.length) {
+        outbox.set(message.clientId, attachments);
+        let frame = 0;
+        media = await uploadAlbum(attachments, (progress) => {
+          cancelAnimationFrame(frame);
+          frame = requestAnimationFrame(() =>
+            updateMessage(queryClient, `pending-${message.clientId}`, (m) =>
+              m.media?.items ? { ...m, media: { ...m.media, items: m.media.items.map((item, i) => ({ ...item, progress: progress[i] })) } } : m,
+            ),
+          );
+        });
+        cancelAnimationFrame(frame);
+      }
+      const saved = await postMessage({ ...message, media });
+      outbox.delete(message.clientId);
+      return saved;
+    },
+    onMutate: (message) => {
+      const { attachments, ...rest } = message;
+      mergeMessages(queryClient, [
+        {
+          reactions: {},
+          body: "",
+          media: null,
+          ...rest,
+          ...(attachments?.length ? { media: localAlbum(attachments) } : {}),
+          id: `pending-${message.clientId}`,
+          sender: me,
+          pending: true,
+          failed: false,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+    },
     onSuccess: (saved) => {
       mergeMessages(queryClient, [saved]);
       queryClient.invalidateQueries({ queryKey: chatSummaryKey });
     },
-    onError: (_error, message) => updateMessage(queryClient, `pending-${message.clientId}`, (m) => ({ ...m, failed: true })),
+    onError: (error, message) =>
+      updateMessage(queryClient, `pending-${message.clientId}`, (m) => ({
+        ...m,
+        failed: true,
+        failure: error?.code === "chat_locked" ? "locked" : error?.status === 413 ? "too_big" : "failed",
+      })),
+  });
+}
+
+/** Whether a failed album still has its files on this phone (so "try again" can work). */
+export const canRetry = (message) => !mediaItems(message).some((item) => item.localUrl) || outbox.has(message.clientId);
+
+/** Forgets a message that never reached the server (a failed or stuck send). */
+export function useDiscardMessage() {
+  const queryClient = useQueryClient();
+  return useCallback(
+    (message) => {
+      outbox.delete(message.clientId);
+      removeMessage(queryClient, message.id);
+    },
+    [queryClient],
+  );
+}
+
+/**
+ * Sends one picture to the chat from elsewhere in the app (a game's "send to chat"): sealed,
+ * uploaded and sent exactly like the composer's photos. Returns the stored message.
+ */
+export async function sendPhotoToChat({ file, width, height, alt, caption = "" }, queryClient) {
+  const stored = await storeFile(file);
+  const item = { type: "image", ...stored, ...(width ? { width: Math.round(width), height: Math.round(height) } : {}), ...(alt ? { alt: alt.slice(0, 200) } : {}), ...(file.type ? { mime: file.type } : {}) };
+  const saved = await postMessage({ clientId: newClientId(), kind: "image", body: caption, media: { items: [item] } });
+  if (queryClient) {
+    mergeMessages(queryClient, [saved]);
+    queryClient.invalidateQueries({ queryKey: chatSummaryKey });
+  }
+  return saved;
+}
+
+// ---------- editing and deleting ----------
+
+/** Edits your own text or caption. Shows the new words at once; puts the old ones back if it fails. */
+export function useEditMessage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ message, body }) => {
+      // Sealed under the original message's identity (chat-room's rule), so it opens like the original.
+      const sealed = await sealOutgoing({ clientId: message.clientId, kind: message.kind, body, ...(message.media ? { media: cleanMedia(message.media) } : {}) });
+      const payload = { body: sealed.body, ...(sealed.enc ? { enc: sealed.enc, ...(sealed.media ? { media: sealed.media } : {}) } : {}) };
+      return openIncoming(await api(`/me/chat/messages/${message.id}`, { method: "PATCH", body: payload }));
+    },
+    onMutate: ({ message, body }) => {
+      updateMessage(queryClient, message.id, (m) => ({ ...m, body, editedAt: new Date().toISOString(), saving: true }));
+      return { previous: message };
+    },
+    onSuccess: (saved) => {
+      mergeMessages(queryClient, [saved]);
+      queryClient.invalidateQueries({ queryKey: chatSummaryKey });
+    },
+    onError: (_error, _vars, context) => context?.previous && updateMessage(queryClient, context.previous.id, () => context.previous),
+  });
+}
+
+/**
+ * Deletes your own message for both of you. The bubble first plays its goodbye (`leaving`), then
+ * the message is gone; if the server says no, it comes back.
+ */
+export function useDeleteMessage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (message) => api(`/me/chat/messages/${message.id}`, { method: "DELETE" }),
+    onMutate: (message) => {
+      updateMessage(queryClient, message.id, (m) => ({ ...m, leaving: true }));
+      return { previous: message };
+    },
+    onSuccess: (_r, message) => {
+      updateMessage(queryClient, message.id, gone);
+      queryClient.invalidateQueries({ queryKey: chatSummaryKey });
+    },
+    onError: (_error, _message, context) => context?.previous && updateMessage(queryClient, context.previous.id, () => ({ ...context.previous, leaving: false })),
   });
 }
 
@@ -191,14 +437,6 @@ export function useReact() {
         else delete reactions[me];
         return { ...m, reactions };
       }),
-  });
-}
-
-export function useUnsend() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id) => api(`/me/chat/messages/${id}`, { method: "DELETE" }),
-    onSuccess: (_r, id) => updateMessage(queryClient, id, (m) => ({ ...m, kind: "deleted", body: "", media: null })),
   });
 }
 
@@ -234,7 +472,16 @@ export function useSaveChatPrefs() {
 }
 
 export function useChatSummary({ enabled = true } = {}) {
-  return useQuery({ queryKey: chatSummaryKey, queryFn: () => api("/me/chat/summary"), staleTime: 30_000, enabled, refetchInterval: 60_000 });
+  return useQuery({
+    queryKey: chatSummaryKey,
+    queryFn: async () => {
+      const summary = await api("/me/chat/summary");
+      return summary.last ? { ...summary, last: await openIncoming(summary.last) } : summary;
+    },
+    staleTime: 30_000,
+    enabled,
+    refetchInterval: 60_000,
+  });
 }
 
 export function useSaveMemory() {

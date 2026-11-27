@@ -58,7 +58,16 @@ export const C = {
   paddleLight: "#ecca98",
   paddleDark: "#a2713f",
   paddleLine: "#7d5530",
-  paddleInk: "#b0283a",
+  paddleInk: "#b0283a", // SMACK!
+  paddleBurn: "#5a3119", // SINNER, burnt into the wood as in the MV
+  paddleBurnLight: "#e6bf86",
+  hymnal: "#6b2f2a",
+  hymnalDark: "#45191a",
+  gold: "#e2b94e",
+  mag: "#ff8cc0",
+  magDark: "#d24f8a",
+  halo: "#f7d66a",
+  haloLine: "#d9a93a",
   phone: "#3b3150",
   screen: "#fde7f3",
   blood: "#d8394f",

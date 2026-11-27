@@ -9,7 +9,13 @@ import { MAOMAO_REMARKS } from "../../../../shared/play/maomaoDialogue.js";
 //
 // Voice (docs/redesign/MAOMAO-CHARACTER-RESEARCH.md): dry and short by default; real enthusiasm
 // only for herbs, poisons and specimens; warmth shown through small practical acts, then
-// undercut. Original lines, PG, no medical advice or doses. The reader is Kiriya; lines say {name}, which the engine fills.
+// undercut. Original lines, no medical advice or doses. The reader is Kiriya; lines say {name}, which the engine fills.
+// Round 3: her frank, clinical side as the books and anime have it. She grew up in the pleasure
+// quarter (the Verdigris House, the big sisters, the old man's clinic), so aphrodisiacs, love
+// potions, white-lead face powder and the price of an evening are workplace facts to her, said
+// deadpan; she made aphrodisiac chocolates (three ladies-in-waiting ate the test batch) and taught
+// the consorts the Verdigris House's lessons on pleasing the Emperor; Jinshi's beauty is, to her, a
+// public-health nuisance (and if anyone mentions a frog, it was a frog). Never about her own body.
 
 const line = (expression, text) => ({ expression, text });
 /** The website's pools as they are; the engine fills "{name}" with her name. */
@@ -79,11 +85,24 @@ export const lines = {
     line("deadpan", "Romance is a fever with better handwriting."),
     line("curious", "That cloud over there has a damp patch. Damp patches grow interesting things."),
     line("pleased", "Quiet. No errands. Nobody pretty asking for anything. Bliss."),
+    line("thinking", "Aphrodisiacs are mostly warm spices and wishful thinking. The candlelight does the rest."),
+    line("deadpan", "Ginseng, cinnamon, a little cacao. A warm face and a fast heart. People call it love. I call it circulation."),
+    line("amused", "I made chocolates for a consort once. Three ladies-in-waiting ate the test batch. It was a very affectionate afternoon."),
+    line("deadpan", "I taught four consorts how to please the Emperor, from the Verdigris House's notes. I kept a straight face. They didn't."),
+    line("smug", "The sisters taught me to read a man's purse before his face. Faces lie. Purses lie too, just slower."),
+    line("skeptical", "Half the men in the pleasure quarter lied about their money. The other half lied about their wives."),
+    line("thinking", "The old man treated the girls when nobody else would. I learned medicine on the street people pretend not to see."),
   ],
   musing: shared("musing"),
   working: shared("working"),
   herb: shared("herb"),
-  poison: shared("poison"),
+  poison: [
+    ...shared("poison"),
+    line("poison", "Most love potions are poisons in a nicer bottle. The dose decides which."),
+    line("thinking", "Belladonna widens the pupils. Women used it to look smitten. It works beautifully, until it kills you."),
+    line("deadpan", "White lead makes a face pale and a body sick. The sisters knew, and wore it anyway. Beauty is a slow, polite poison."),
+    line("poison", "An aphrodisiac and a poison share a shelf for a reason. I keep them both. Labelled. Mostly."),
+  ],
   notes: shared("notes"),
   deduction: shared("deduction"),
   sleepy: [
@@ -193,6 +212,7 @@ export const lines = {
     line("poison", "Nobody touch it. Nobody drink it. Nobody tell the physician."),
     line("poison", "A little drop on my arm later, just to see. …I'm joking. Mostly."),
     line("poison", "Thank you, {name}. Truly. Nobody ever brings me the good stuff."),
+    line("conspiratorial", "If it's an aphrodisiac, I'm selling it to the Verdigris House. At a markup."),
   ],
 
   // Told to stay; let go again; thinking aloud while she stays put.
@@ -235,6 +255,7 @@ export const lines = {
     line("smug", "A secret, unsold, is worth more than this pouch. I know my prices."),
     line("skeptical", "Somebody's paid me in a coin with a dent in it. I'll remember the face."),
     line("conspiratorial", "Don't tell anyone how much I've saved. Especially not anyone pretty."),
+    line("smug", "The sisters charged for the song, the tea and the listening. The listening was the expensive part."),
   ],
   stretch: [
     line("amused", "Mmmh. Every good cat stretches before work."),
@@ -259,6 +280,10 @@ export const lines = {
     line("ew", "…Never mind. A memory. A very glittering, very tiresome memory."),
     line("ew", "Something sweet-talking somewhere. My skin is crawling."),
     line("ew", "Hm? No. Nothing. Just remembered a hairpin I was given. By someone. Glittering."),
+    line("ew", "A face that pretty, in a palace full of bored women, is a public-health problem."),
+    line("unimpressed", "Nymph-like, they call him. I'd call it a liability with good skin."),
+    line("deadpan", "If anyone brings up the frog: it was a frog. Moving on."),
+    line("ew", "He smiles like he's selling something. I grew up where everyone was. I know the face."),
   ],
   sunbeam: [
     line("fond", "A sunbeam. I'm not saying I'll lie in it. I'm sitting near it."),
@@ -292,6 +317,11 @@ export const visit = {
       [line("deadpan", "Your nose is bleeding. That's the third time. Hold your head forward, not back."), "it's not my fault the clouds are holding hands!!"],
       [line("smug", "Two men sharing one umbrella is called weather, not a confession."), "that's EXACTLY what a confession looks like in volume two~"],
       [line("skeptical", "You've confessed three times today. To whom, exactly?"), "to god, to {name}, and to my sketchbook. the sketchbook is the worst."],
+      // Round 3: she asks a professional, and gets a professional answer.
+      [line("thinking", "An aphrodisiac for two men who don't exist? They don't have blood. It won't work."), "then i'll WRITE it working. that's what fanfic is FOR!!"],
+      [line("deadpan", "In the pleasure quarter, two men sharing a room was a bill, not a romance."), "a BILL. that they SPLIT?! that's so DOMESTIC. i'm dying."],
+      [line("focused", "Nosebleeds from excitement are mostly dry air and staying up till four."), "dry air doesn't make the art teacher hold the P.E. teacher's hand in chapter ninety!!"],
+      [line("unimpressed", "You're reading a hymnal with a centrefold."), "it's a very… progressive hymnal. please don't tell the sisters. either kind of sisters."],
     ],
     bambi: [
       [line("deadpan", "You're bouncing again. Do you ever stand still?"), "no. shuung. that was a spin. …did you see? one more."],
@@ -306,6 +336,8 @@ export const visit = {
       [line("focused", "Peaches are fine. The pit has a little poison in it. Don't chew the pit."), "WHO chews the pit. …okay. once. as a kid."],
       [line("deadpan", "It's a pigeon. It wants your snack, not your soul."), "you're so brave. i'm staying behind you. forever."],
       [line("amused", "You spin like a top. Do you ever get dizzy, or do you just hide it?"), "i hide it. idols always hide it. …one more spin? one more."],
+      [line("curious", "You picked that pill bug up with your bare hand."), "bugs are fine. birds are the problem. …don't make it a medicine. he's my friend."],
+      [line("skeptical", "You slapped yourself mid-dance. Is that a technique?"), "wrong step. *swat*. fixed. it works. don't ask why."],
     ],
     miku: [
       [line("deadpan", "You're humming again."), "sorry~ it's stuck in my head! want to hear the chorus? ♪"],

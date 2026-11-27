@@ -29,6 +29,15 @@ const ALLOWED = [
   // Voice notes: Safari records audio/mp4, Chrome records audio/webm.
   "audio/webm",
 ];
+// Round 3: the chat also takes videos, and end-to-end sealed files (src/lib/chatCrypto.js sealFile
+// makes an application/octet-stream blob). Both only ever go into the chat folder.
+const CHAT_ONLY = ["video/mp4", "video/quicktime", "application/octet-stream"];
+const CHAT_ALLOWED = [...ALLOWED, ...CHAT_ONLY];
+const VIDEO_TYPES = ["video/mp4", "video/quicktime"];
+// Videos travel straight from the phone to Blob storage (never through a function, so Vercel's
+// 4.5 MB request limit doesn't apply) and play back through /media in byte ranges. The cap keeps the
+// shared 1 GB store healthy: about a minute of iPhone video in its "most compatible" form.
+const MAX_VIDEO_BYTES = 60 * 1024 * 1024;
 const FOLDER_PATH = new RegExp(`^(${UPLOAD_FOLDERS.join("|")})\\/[a-zA-Z0-9][a-zA-Z0-9._-]*$`);
 const cacheFor = (pathname) =>
   IMMUTABLE_FOLDERS.some((folder) => pathname.startsWith(`${folder}/`) || pathname.startsWith(`${folder}-`))
@@ -47,7 +56,14 @@ const EXT = {
   "audio/x-m4a": "m4a",
   "audio/aac": "aac",
   "audio/wav": "wav",
+  "video/mp4": "mp4",
+  "video/quicktime": "mov",
+  "application/octet-stream": "bin",
 };
+const folderOf = (pathname) => (pathname ?? "").split(/[/-]/)[0];
+/** What may be uploaded to a folder, and how big: chat takes videos and sealed files too. */
+const rulesFor = (pathname) =>
+  folderOf(pathname) === "chat" ? { types: CHAT_ALLOWED, maxBytes: MAX_VIDEO_BYTES } : { types: ALLOWED, maxBytes: MAX_BYTES };
 
 export const uploadRoutes = new Hono();
 uploadRoutes.use("*", async (c, next) => {
@@ -66,7 +82,9 @@ uploadRoutes.get("/config", async (c) => {
     mode: blobUploadMode() ? "blob" : env.isProd ? "unavailable" : "local",
     uploadType: blobUploadMode(),
     maxBytes: MAX_BYTES,
+    maxVideoBytes: MAX_VIDEO_BYTES,
     allowed: ALLOWED,
+    chatAllowed: CHAT_ALLOWED,
   });
 });
 
@@ -103,7 +121,7 @@ uploadRoutes.post("/blob", async (c) => {
   // room for another maximum-size upload, refuse the grant instead of risking the store lockout.
   if (body.type !== "blob.upload-completed") {
     const { uploadCapacity } = await import("../feeds/storage.js");
-    const capacity = await uploadCapacity(MAX_BYTES).catch(() => ({ ok: true }));
+    const capacity = await uploadCapacity(rulesFor(body.payload?.pathname).maxBytes).catch(() => ({ ok: true }));
     if (!capacity.ok)
       return c.json(
         {
@@ -132,9 +150,10 @@ uploadRoutes.post("/blob", async (c) => {
         webhookPublicKey: env.blobWebhookPublicKey,
         getSignedToken: async (pathname) => {
           await authorizePath(pathname);
+          const rules = rulesFor(pathname);
           const constraints = {
-            allowedContentTypes: ALLOWED,
-            maximumSizeInBytes: MAX_BYTES,
+            allowedContentTypes: rules.types,
+            maximumSizeInBytes: rules.maxBytes,
             validUntil: Date.now() + 10 * 60 * 1000,
           };
           return {
@@ -162,9 +181,10 @@ uploadRoutes.post("/blob", async (c) => {
       request: c.req.raw,
       onBeforeGenerateToken: async (pathname) => {
         await authorizePath(pathname);
+        const rules = rulesFor(pathname);
         return {
-          allowedContentTypes: ALLOWED,
-          maximumSizeInBytes: MAX_BYTES,
+          allowedContentTypes: rules.types,
+          maximumSizeInBytes: rules.maxBytes,
           addRandomSuffix: true,
           allowOverwrite: false,
           validUntil: Date.now() + 10 * 60 * 1000,
@@ -196,20 +216,22 @@ uploadRoutes.post("/local", async (c) => {
       401,
     );
   const type = c.req.header("content-type")?.split(";")[0] ?? "";
-  if (!ALLOWED.includes(type))
+  const folder = (c.req.query("folder") ?? "art").replace(/[^a-z]/g, "");
+  if (!UPLOAD_FOLDERS.includes(folder))
+    return c.json({ error: "bad_folder" }, 400);
+  const rules = rulesFor(folder);
+  if (!rules.types.includes(type))
     return c.json(
       { error: "bad_type", message: "That file type isn't supported." },
       415,
     );
   const buffer = Buffer.from(await c.req.arrayBuffer());
-  if (buffer.length > MAX_BYTES)
+  const limit = VIDEO_TYPES.includes(type) || type === "application/octet-stream" ? rules.maxBytes : MAX_BYTES;
+  if (buffer.length > limit)
     return c.json(
-      { error: "too_big", message: "Files can be up to 15 MB." },
+      { error: "too_big", message: limit > MAX_BYTES ? "Videos can be up to 60 MB." : "Files can be up to 15 MB." },
       413,
     );
-  const folder = (c.req.query("folder") ?? "art").replace(/[^a-z]/g, "");
-  if (!UPLOAD_FOLDERS.includes(folder))
-    return c.json({ error: "bad_folder" }, 400);
   const name = `${folder}-${randomBytes(8).toString("hex")}.${EXT[type]}`;
   await mkdir(LOCAL_DIR, { recursive: true });
   await writeFile(path.join(LOCAL_DIR, name), buffer);

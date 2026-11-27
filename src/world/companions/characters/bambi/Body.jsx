@@ -5,15 +5,15 @@ import "./bambi.css";
 
 // Bamby (PLAVE) as a hand-drawn chibi, in the house style Maomao set: big round head, short body,
 // soft gradients, a rim of colour on the shaded side, no outlines heavier than the lashes.
-// Original fan art after his PLBBUU look (2025) and his official chibi: short, fluffy bubblegum-pink
-// hair with a side-swept fringe, pink-magenta eyes, a periwinkle beret with a white and a pink star,
-// a cream knit sweater with a big pink star over a white turtleneck and a string of pastel beads,
-// periwinkle jeans with navy stars, pink sneakers. His heart sunglasses come out for the showing-off
-// poses. Every pose is CSS transforms on a fixed rig (see bambi.css); nothing re-renders per frame.
+// Original fan art. His face and hair after his official look: thick, wavy bubblegum-pink hair with
+// a fringe to the brows, big pink-violet deer eyes, dark brows, a round face with pink cheeks. His
+// clothes after the PLBBUU era (2025): a cream knit sweater with a big pink star over a white
+// turtleneck, a string of pastel beads, periwinkle jeans with navy stars, pink sneakers. His heart
+// sunglasses come out for the showing-off poses. Every pose is CSS transforms on a fixed rig (see bambi.css); nothing re-renders per frame.
 
-const HAIR = "#f493b0";
-const HAIR_DEEP = "#d26584";
-const HAIR_LINE = "#b2427a";
+const HAIR = "#f59bbf";
+const HAIR_DEEP = "#d86d9e";
+const HAIR_LINE = "#b2457f";
 const SKIN = "#ffe7d8";
 const SKIN_LINE = "#e3b19c";
 const JACKET = "#f7ebdf"; // the cream knit sweater
@@ -70,6 +70,10 @@ const POSE_FACE = {
   cool: "cool",
   fairy: "wink",
   sing: "sing",
+  lassgo: "grin", // "lassgo!": jumping on the spot, fist up (his "let's go")
+  swat: "squeeze", // a step went wrong: he swats himself, then goes again
+  bug: "curious", // squatting over a pill bug on the cloud (he's the one who isn't scared of bugs)
+  lift: "focused", // a dumbbell curl: he trains, and he is stronger than he looks
 };
 export const BAMBY_POSES = Object.keys(POSE_FACE);
 
@@ -149,8 +153,8 @@ function HeartShades({ down }) {
       <g className="bamby__shades bamby__shades--down">
         <path d="M52 108q-4 1-7 4m103-4q4 1 7 4" stroke="#d2417f" strokeWidth="2.2" fill="none" strokeLinecap="round" />
         <path d="M89 108q11-5 22 0" stroke="#d2417f" strokeWidth="2.4" fill="none" />
-        {[77, 123].map((x) => (
-          <g key={x} transform={`translate(${x} 113) scale(1.55)`}>
+        {[76, 124].map((x) => (
+          <g key={x} transform={`translate(${x} 114) scale(1.6)`}>
             <path d={heart} fill="#ff6fae" fillOpacity=".88" stroke="#d2417f" strokeWidth="1.5" />
             <path d="M-6-5.6q-2 1.4-2.2 4" stroke="#fff" strokeWidth="1.3" fill="none" strokeLinecap="round" opacity=".9" />
           </g>
@@ -159,30 +163,6 @@ function HeartShades({ down }) {
     );
   }
   return null;
-}
-
-/** His beret, tilted, with a white star and a pink star patch; the nub wiggles like a cowlick. */
-function Beret({ back }) {
-  return (
-    <g className="bamby__beret" transform={back ? "translate(102 46) rotate(8) scale(.9) translate(-102 -44)" : "translate(102 46) rotate(-9) scale(.88) translate(-100 -44)"}>
-      <path className="bamby__tuft" d="M103 25c-2-6 3-9 7-6" fill="none" stroke={BERET_LINE} strokeWidth="3.4" strokeLinecap="round" />
-      <path
-        d="M44 64C36 42 66 22 104 24C142 26 166 42 158 62C154 71 134 66 104 65C74 64 50 74 44 64Z"
-        fill={BERET}
-        stroke={BERET_LINE}
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path d="M50 61C70 55 134 54 154 59" stroke={BERET_SHADE} strokeWidth="3.2" fill="none" strokeLinecap="round" opacity=".7" />
-      <path d="M66 36q18-9 40-8" stroke="#e4e2fb" strokeWidth="3" fill="none" strokeLinecap="round" opacity=".9" />
-      {!back && (
-        <>
-          <path d={starPath(124, 42, 9)} fill="#fffdf7" stroke="#c9c4e8" strokeWidth="1.1" strokeLinejoin="round" />
-          <path d={starPath(108, 49, 6.5)} fill="#f9a9cb" stroke="#de79a7" strokeWidth="1" strokeLinejoin="round" />
-        </>
-      )}
-    </g>
-  );
 }
 
 function Flower({ x, y, r = 1, tone = "#ffb3d4", className = "" }) {
@@ -194,6 +174,53 @@ function Flower({ x, y, r = 1, tone = "#ffb3d4", className = "" }) {
         ))}
         <circle r="2.4" fill="#ffe27a" stroke="#e9b73f" strokeWidth=".6" />
       </g>
+    </g>
+  );
+}
+
+/** A star candy (konpeito): a fat little star with soft bumps. */
+function Candy({ x, y, tone, className = "" }) {
+  return (
+    <g className={`bamby__flower ${className}`} transform={`translate(${x} ${y})`}>
+      <g className="bamby__flower-in">
+        <path d={starPath(0, 0, 6.4, 0.62)} fill={tone} stroke="#d99ac0" strokeWidth="1.1" strokeLinejoin="round" />
+        <circle cx="-1.6" cy="-1.8" r="1.3" fill="#fff" opacity=".85" />
+      </g>
+    </g>
+  );
+}
+
+/** A little cloud puff. */
+function Puff({ x, y, className = "" }) {
+  return (
+    <g className={`bamby__flower ${className}`} transform={`translate(${x} ${y})`}>
+      <g className="bamby__flower-in">
+        <path d="M-9 3a4 4 0 0 1 2-7 5 5 0 0 1 9-2 4 4 0 0 1 7 4 3 3 0 0 1 0 5Z" fill="#fff" stroke="#d4c3ea" strokeWidth="1.1" strokeLinejoin="round" />
+      </g>
+    </g>
+  );
+}
+
+/** A little pink dumbbell, gripped in his right hand. */
+function Dumbbell() {
+  return (
+    <g className="bamby__dumbbell">
+      <rect x="119" y="199.8" width="26" height="3.4" rx="1.7" fill="#8f8aa6" />
+      <rect x="117" y="194.5" width="5.6" height="14" rx="2" fill="#ff8fbf" stroke="#d2417f" strokeWidth="1" />
+      <rect x="141.4" y="194.5" width="5.6" height="14" rx="2" fill="#ff8fbf" stroke="#d2417f" strokeWidth="1" />
+      <circle cx="132" cy="201.5" r="7" fill="#ffe7d8" stroke="#e3b19c" strokeWidth="1.1" />
+    </g>
+  );
+}
+
+/** His earbuds, in while he works out choreography in his own world. */
+function Earbuds() {
+  return (
+    <g className="bamby__earbuds" fill="#fdfcff" stroke="#b8b0c8" strokeWidth="1">
+      <ellipse cx="43.5" cy="115" rx="3.6" ry="3.2" />
+      <rect x="41.8" y="116.5" width="3.2" height="10" rx="1.6" />
+      <ellipse cx="156.5" cy="115" rx="3.6" ry="3.2" />
+      <rect x="155" y="116.5" width="3.2" height="10" rx="1.6" />
     </g>
   );
 }
@@ -214,32 +241,57 @@ function curls(points, bulge, cx = 100, cy = 88) {
   return d;
 }
 
-// His hair is short and fluffy, tousled rather than curly: soft bumps round the outline.
+// His hair, after his official look: bubblegum pink, thick and wavy with a lot of volume on top, a
+// fringe that falls to the brows in separate wavy locks (parted a little to his right, the long
+// central lock dipping between his eyes, the rest swept towards the viewer's right), and soft locks
+// over the ears that curl in towards his cheeks. Drawn as a base mass with locks layered on it.
 const HAIR_OUTLINE = [
-  [46, 136], [37, 120], [33, 101], [36, 81], [44, 63], [57, 47], [74, 36], [92, 30], [110, 30],
-  [128, 35], [144, 46], [157, 62], [165, 80], [168, 100], [164, 120], [155, 136],
+  [46, 138], [36, 122], [31, 102], [33, 82], [40, 63], [53, 47], [70, 35], [89, 29], [110, 28],
+  [130, 32], [147, 43], [160, 59], [168, 80], [170, 101], [165, 122], [155, 138],
 ];
-const BACK_HAIR = `${curls(HAIR_OUTLINE, 3.4)}L146 142H54Z`;
-const CROWN = "M44 104C42 64 66 41 100 41s58 23 56 63";
-// The fringe's lower edge, right to left: wavy locks that hook at the tips, down to the brows.
-// Side-swept: each lock's tip hooks to his left (the viewer's right), longest over his left eye.
-const FRINGE_EDGE =
-  "M156 104C153 98 151 92 150 86C151 95 148 98 145 105C140 102 142 91 137 82C138 91 132 96 129 103C124 100 127 88 122 79C123 88 115 92 112 99C107 96 110 87 105 78C106 87 98 89 95 96C90 93 94 88 89 79C90 88 82 87 79 94C74 91 78 91 73 82C74 91 67 88 64 95C59 92 63 96 58 87C59 96 54 92 51 99C48 97 46 102 44 104";
-const FRINGE = `${CROWN}${FRINGE_EDGE.replace(/^M156 104/, "")}Z`;
+const BACK_HAIR = `${curls(HAIR_OUTLINE, 5.2, 100, 86)}L146 144H54Z`;
+// The front mass: over the crown, down the temples, a soft hairline across the forehead.
+const FRONT =
+  "M40 120C35 70 62 37 100 37C138 37 165 70 160 120L152 120C151 104 147 93 137 88C120 82 80 82 63 88C53 93 49 104 48 120Z";
+// Each lock: [root x, root y, length, sweep (tip's sideways reach), width]. Drawn in this order, so the
+// ones nearest the parting land on top.
+const LOCKS = [
+  [47.5, 88, 46, 7, 15], // over his right ear, curling in
+  [152.5, 88, 46, -7, 15], // over his left ear
+  [60, 80, 22, -7, 17],
+  [141, 80, 22, 7, 15],
+  [75, 77, 20, -6, 16],
+  [125, 75, 23, 9, 17],
+  [109, 73, 26, 9, 18],
+  [92, 72, 36, 8, 17], // the long one between his eyes
+];
+function lockPaths([rx, ry, len, sweep, w]) {
+  const s = Math.sign(sweep) || 1;
+  const a = [rx - (s * w) / 2, ry]; // the long, outer edge starts here
+  const b = [rx + (s * w) / 2, ry];
+  const tip = [rx + sweep, ry + len];
+  const f = (n) => n.toFixed(1);
+  const edge =
+    `M${f(a[0])} ${f(a[1])}C${f(a[0] - s * 3.2)} ${f(ry + len * 0.5)} ${f(tip[0] - sweep * 0.7)} ${f(tip[1] - 2.5)} ${f(tip[0])} ${f(tip[1])}` +
+    `C${f(tip[0] - s * 3.5)} ${f(tip[1] - len * 0.38)} ${f(b[0] + s * 2.5)} ${f(ry + len * 0.4)} ${f(b[0])} ${f(b[1])}`;
+  const strand = `M${f(rx - s * 1.5)} ${f(ry + 5)}C${f(rx - s * 3.5)} ${f(ry + len * 0.4)} ${f(tip[0] - sweep * 0.6)} ${f(tip[1] - len * 0.4)} ${f(tip[0] - sweep * 0.25 - s * 1.5)} ${f(tip[1] - len * 0.2)}`;
+  return { fill: `${edge}Z`, edge, strand };
+}
+const LOCK_PATHS = LOCKS.map(lockPaths);
 const BACK_HEAD = `${curls(
-  [[60, 146], [44, 132], [36, 114], [33, 95], [37, 76], [46, 59], [60, 45], [78, 35], [100, 30], [122, 35], [140, 45], [154, 59], [163, 76], [167, 95], [164, 114], [156, 132], [140, 146]],
-  3.4,
+  [[60, 146], [44, 132], [35, 114], [31, 95], [35, 75], [44, 57], [58, 43], [77, 33], [100, 28], [123, 33], [142, 43], [156, 57], [165, 75], [169, 95], [165, 114], [156, 132], [140, 146]],
+  4.4,
+  100,
+  86,
 )}C132 151 124 149 118 152C112 148 104 148 100 152C96 148 88 148 82 152C76 149 68 151 60 146Z`;
-const SIDE_LOCKS =
-  "M48 93C42 103 40 115 42 126C39 125 36 127 36 130C41 135 49 133 52 126C53 119 55 113 56 108C56 113 58 117 61 119C59 111 59 103 60 97ZM152 93C158 103 160 115 158 126C161 125 164 127 164 130C159 135 151 133 148 126C147 119 145 113 144 108C144 113 142 117 139 119C141 111 141 103 140 97Z";
 
 function Hair({ ids }) {
   return (
     <>
       <path d={BACK_HAIR} fill={`url(#${ids.hair})`} stroke={HAIR_LINE} strokeWidth="1.6" strokeLinejoin="round" />
-      {/* Curl texture on the crown and sides. */}
+      {/* Wave texture on the sides and the nape. */}
       <path
-        d="M58 56q5-7 13-5m10-11q7-5 15-2m12-1q8-3 14 2m11 7q7 0 10 7M41 92q-2-8 2-14m116 14q2-8-2-14M42 118q-3-6-1-12m118 12q3-6 1-12"
+        d="M39 92q-2-8 2-14m118 14q2-8-2-14M40 118q-3-6-1-12m120 12q3-6 1-12M44 132q4 3 8 2m104-2q-4 3-8 2"
         stroke={HAIR_DEEP}
         strokeWidth="1.7"
         fill="none"
@@ -249,23 +301,40 @@ function Hair({ ids }) {
   );
 }
 
+/** His cowlick: a little wavy tuft on the crown that bounces when he does. */
+function Tuft() {
+  return (
+    <g className="bamby__tuft">
+      <path d="M101 39c-3-7 1-13 8-12-4 2-5 6-3 11Z" fill={HAIR} stroke={HAIR_LINE} strokeWidth="1.4" strokeLinejoin="round" />
+    </g>
+  );
+}
+
 function Fringe({ ids }) {
   return (
     <>
-      <path d={FRINGE} fill={`url(#${ids.hair})`} />
-      <path d={FRINGE} fill={`url(#${ids.sheen})`} />
-      <path d={FRINGE_EDGE} stroke={HAIR_LINE} strokeWidth="1.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
-      {/* Strand lines running down into each lock. */}
+      <path d={FRONT} fill={`url(#${ids.hair})`} />
+      <path d={FRONT} fill={`url(#${ids.sheen})`} />
+      {/* Waves running back from the parting over the crown. */}
       <path
-        d="M134 66q8 14 9 30m-25-34q8 14 9 30m-26-30q7 13 8 27m-25-26q7 12 8 24m-24-20q6 10 7 20m-20-12q5 7 6 14"
+        d="M82 44c-7 6-4 12-10 20M98 41c-3 7 2 13-2 21M116 42c3 7-1 12 4 19M132 49c5 5 3 10 8 15"
         stroke={HAIR_DEEP}
-        strokeWidth="1.5"
+        strokeWidth="1.4"
         fill="none"
         strokeLinecap="round"
+        opacity=".55"
       />
-      <path d={SIDE_LOCKS} fill={`url(#${ids.hair})`} stroke={HAIR_LINE} strokeWidth="1.4" strokeLinejoin="round" />
-      <path d="M68 50q14-8 30-8" stroke="#ffe3f0" strokeWidth="3.2" fill="none" strokeLinecap="round" opacity=".85" />
-      <path d="M112 44q9 1 15 5" stroke="#ffe3f0" strokeWidth="2.2" fill="none" strokeLinecap="round" opacity=".6" />
+      {LOCK_PATHS.map((l, i) => (
+        <g key={i}>
+          <path d={l.fill} fill={`url(#${ids.hair})`} />
+          <path d={l.edge} fill="none" stroke={HAIR_LINE} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+          <path d={l.strand} fill="none" stroke={HAIR_DEEP} strokeWidth="1.3" strokeLinecap="round" opacity=".8" />
+        </g>
+      ))}
+      {/* The shine: a soft ring of light across the crown. */}
+      <path d="M62 58q18-16 40-17" stroke="#fff0f7" strokeWidth="3.4" fill="none" strokeLinecap="round" opacity=".85" />
+      <path d="M112 42q14 2 24 10" stroke="#fff0f7" strokeWidth="2.4" fill="none" strokeLinecap="round" opacity=".6" />
+      <Tuft />
     </>
   );
 }
@@ -295,7 +364,7 @@ function BackView({ ids }) {
           strokeLinecap="round"
         />
         <path d="M82 140q6 8 0 14m36-14q-6 8 0 14m-18-16v14" stroke={HAIR_DEEP} strokeWidth="1.8" fill="none" strokeLinecap="round" />
-        <Beret back />
+        <Tuft />
       </g>
     </g>
   );
@@ -332,7 +401,13 @@ export default function BambyBody({
   // while he dances for her, a finger heart for the ending fairy, a mic to sing. A pose may bring
   // its own as well (the fairy's finger heart, the mic when he sings), so the two add up.
   const carried = new Set([prop, POSE_PROP[known]].filter(Boolean));
-  const rightArm = carried.has("heart") ? <HeartArm /> : carried.has("mic") ? <MicArm /> : <Arm side="r" />;
+  const rightArm = carried.has("heart") ? (
+    <HeartArm />
+  ) : carried.has("mic") ? (
+    <MicArm />
+  ) : (
+    <Arm side="r">{known === "lift" && <Dumbbell />}</Arm>
+  );
   // The engine passes `frame` as live motion values (ignored here: the walk is a CSS cycle). A plain
   // number is the lab's way to freeze a pose at that point of its cycle, for screenshots.
   const frozen = typeof frame === "number";
@@ -355,9 +430,9 @@ export default function BambyBody({
     >
       <defs>
         <linearGradient id={ids.hair} gradientUnits="userSpaceOnUse" x1="80" y1="28" x2="112" y2="150">
-          <stop stopColor="#f8c5d4" />
-          <stop offset=".4" stopColor={HAIR} />
-          <stop offset="1" stopColor="#e2799f" />
+          <stop stopColor="#fcd3e5" />
+          <stop offset=".42" stopColor={HAIR} />
+          <stop offset="1" stopColor="#e47cad" />
         </linearGradient>
         <linearGradient id={ids.sheen} gradientUnits="userSpaceOnUse" x1="90" y1="40" x2="104" y2="104">
           <stop offset=".15" stopColor="#fff" stopOpacity="0" />
@@ -369,9 +444,9 @@ export default function BambyBody({
           <stop offset="1" stopColor="#f5cdb9" />
         </radialGradient>
         <linearGradient id={ids.iris} x1="0" y1="0" x2="0" y2="1">
-          <stop stopColor="#4a1f40" />
-          <stop offset=".5" stopColor="#b4528f" />
-          <stop offset="1" stopColor="#f2a8d4" />
+          <stop stopColor="#3b1037" />
+          <stop offset=".45" stopColor="#a23d8e" />
+          <stop offset="1" stopColor="#f3a9dc" />
         </linearGradient>
         <radialGradient id={ids.blush}>
           <stop stopColor="#f48aa8" stopOpacity=".95" />
@@ -435,9 +510,9 @@ export default function BambyBody({
                 <BambyFace expression={face} ids={ids} />
                 <Fringe ids={ids} />
                 <BambyBrows expression={face} />
-                <Beret />
                 <HeartShades down={shadesDown} />
                 {carried.has("headset") && <Headset />}
+                {known === "count" && <Earbuds />}
                 {known === "bloom" && (
                   <g className="bamby__bloom">
                     <g className="bamby__bloom-squeeze">
@@ -450,6 +525,12 @@ export default function BambyBody({
                     <Flower x={174} y={120} r={1.3} className="bamby__flower--4" />
                     <Flower x={54} y={32} r={1.15} tone="#ffd0e6" className="bamby__flower--5" />
                     <Flower x={148} y={28} r={1.25} tone="#ffd0e6" className="bamby__flower--6" />
+                    {/* In the PLBBUU era his flowers came with star candies and little clouds. */}
+                    <Candy x={18} y={104} tone="#ffe58a" className="bamby__flower--2" />
+                    <Candy x={184} y={98} tone="#c9dcff" className="bamby__flower--5" />
+                    <Candy x={100} y={18} tone="#ffc6dc" className="bamby__flower--3" />
+                    <Puff x={30} y={56} className="bamby__flower--4" />
+                    <Puff x={172} y={52} className="bamby__flower--1" />
                   </g>
                 )}
               </g>
@@ -506,10 +587,30 @@ export default function BambyBody({
           <path d="M166 42c6-2 12-4 20-5" stroke="#a99bc0" strokeWidth="1" fill="none" />
         </g>
       )}
-      {(known === "freeze" || known === "cool" || known === "jump") && (
+      {(known === "freeze" || known === "cool" || known === "jump" || known === "lift") && (
         <g className="bamby__glints" fill="#ffd56e">
           <path d="m30 76 2.6 6.4 6.4 2.6-6.4 2.6L30 94l-2.6-6.4-6.4-2.6 6.4-2.6Z" />
           <path d="m172 58 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" />
+        </g>
+      )}
+      {known === "lassgo" && (
+        <g className="bamby__lassgo" stroke="#ff7fb6" strokeWidth="2.4" strokeLinecap="round">
+          <path d="M150 96l3-10m7 13 9-6m-6 15 10-1" />
+        </g>
+      )}
+      {known === "swat" && (
+        <g className="bamby__swat" stroke="#e0567f" strokeWidth="2.2" strokeLinecap="round">
+          <path d="M166 112l9-3m-8 12 10 2m-14 7 7 7" />
+        </g>
+      )}
+      {known === "bug" && (
+        <g className="bamby__pillbug">
+          {/* A pill bug, rolled up: a little grey-lilac ball with its plates, rolling to and fro. */}
+          <g className="bamby__pillbug-roll">
+            <circle cx="0" cy="0" r="6.4" fill="#9c96b4" stroke="#6d6888" strokeWidth="1.1" />
+            <path d="M-5.4-3q5.4 2.2 10.8 0M-6.3 0.7q6.3 2.2 12.6 0M-5 4q5 1.8 10 0" stroke="#6d6888" strokeWidth=".9" fill="none" />
+            <circle cx="-1.8" cy="-2.6" r="1.2" fill="#fff" opacity=".7" />
+          </g>
         </g>
       )}
       {known === "count" && (
