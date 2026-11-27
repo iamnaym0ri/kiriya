@@ -203,6 +203,13 @@ function PhotoCarousel({ photos, index, onIndex }) {
   const strip = useRef(null);
   const settled = useRef(false);
   const many = photos.length > 1;
+  // The first photo she sees: the app's opening waits for it (data-opening-wait, capped there).
+  const [shown, setShown] = useState(false);
+  const firstPhoto = useRef(null);
+  useEffect(() => {
+    const img = firstPhoto.current;
+    if (!img || (img.complete && img.naturalWidth > 0)) setShown(true);
+  }, []);
 
   // Open on today's photo without an animation.
   useLayoutEffect(() => {
@@ -244,7 +251,13 @@ function PhotoCarousel({ photos, index, onIndex }) {
   };
 
   return (
-    <div className="home-stage__photos" data-companion-avoid aria-roledescription={many ? "carousel" : undefined} aria-label={many ? "Photos of you" : undefined}>
+    <div
+      className="home-stage__photos"
+      data-companion-avoid
+      data-opening-wait={(!shown && photos.length > 0) || undefined}
+      aria-roledescription={many ? "carousel" : undefined}
+      aria-label={many ? "Photos of you" : undefined}
+    >
       <div
         ref={strip}
         className="home-stage__strip"
@@ -263,6 +276,9 @@ function PhotoCarousel({ photos, index, onIndex }) {
             aria-label={many ? `${i + 1} of ${photos.length}` : undefined}
           >
             <img
+              ref={i === index ? firstPhoto : undefined}
+              onLoad={i === index ? () => setShown(true) : undefined}
+              onError={i === index ? () => setShown(true) : undefined}
               src={item.src}
               alt={item.alt || "Kiriya"}
               width={item.width}
