@@ -146,7 +146,7 @@ export default function SpotDifference({ onReward }) {
           <div className="pastime-stat spot-found">
             <span className="pastime-stat__label">found</span>
             <span className="spot-dots" aria-label={`${state.found.length} of ${round.diffs.length} found`}>
-              {round.diffs.map((diff, i) => <span key={diff.id} data-on={i < state.found.length} aria-hidden="true">♡</span>)}
+              {round.diffs.map((diff, i) => <span key={diff.id} data-on={i < state.found.length} aria-hidden="true">{i < state.found.length ? "♥" : "♡"}</span>)}
             </span>
           </div>
           <div className="pastime-stat spot-time">
