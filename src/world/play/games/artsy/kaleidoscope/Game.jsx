@@ -19,7 +19,8 @@ const START = { strokes: [], undone: [], palette: "dusk", paper: "night", n: 8, 
 const CHECKPOINT_EVERY = 20;
 
 export default function Kaleidoscope({ onReward }) {
-  const [draft, setDraft] = useSavedState("kaleidoscope", START);
+  // Written in her pauses (each stroke pushes it back), and at once when the app goes to the background.
+  const [draft, setDraft] = useSavedState("kaleidoscope", START, 2000);
   const settings = { ...START, ...draft };
   const set = (change) => setDraft((old) => ({ ...START, ...old, ...change }));
   const palette = PALETTES.find((each) => each.id === settings.palette) ?? PALETTES[0];
