@@ -378,6 +378,30 @@ test("A step with a chance plays only that often", () => {
   assert.ok(dances > 5 && dances < 35, `about half: ${dances}`);
 });
 
+test("Nothing moves it off somewhere in the middle of its action, and travelling puts the prop down", () => {
+  localStorage.clear();
+  const sim = makeStage();
+  sim.setHost(character());
+  const host = sim.host;
+  run(sim, 2);
+  tapHost(sim);
+  run(sim, 0.6);
+  host.choose("action");
+  run(sim, 0.05);
+  // Pretend she stopped scrolling over text: the host would normally go somewhere clearer.
+  const at = { x: host.x, level: host.level };
+  sim.options.avoidText = true;
+  sim.spotScore = (_actor, level, x) => (level === at.level && Math.abs(x - at.x) < 2 ? 1 : 0);
+  sim.scrollAt = sim.time - 1;
+  run(sim, 0.5);
+  assert.equal(host.view.get().pose, "show", "still showing it");
+  assert.deepEqual({ x: host.x, level: host.level }, at);
+  // A real jump elsewhere drops the prop.
+  host.interrupt([...host.pathTo(host.level + 1 < sim.levels.length ? host.level + 1 : host.level - 1, host.x), { type: "rest" }]);
+  run(sim, 0.3);
+  assert.equal(host.view.get().prop, null);
+});
+
 test("Characters without an action still get stay", () => {
   const c = character({ action: undefined });
   assert.equal(c.action, null);

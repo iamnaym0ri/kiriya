@@ -583,6 +583,8 @@ export class Actor {
       this.until = 0;
       return;
     }
+    // A real jump somewhere puts down whatever it was holding (the tap's little hop doesn't).
+    if (!step.small) this.behaviour = null;
     const g = this.m.gravity * this.scale;
     const apex = Math.min(this.y, to.y) - (step.height ?? this.m.jumpHeight) * this.scale;
     const up = Math.sqrt((2 * Math.max(1, this.y - apex)) / g);
@@ -615,6 +617,7 @@ export class Actor {
 
   beginFloat(step) {
     const to = this.stage.levels[step.level];
+    this.behaviour = null;
     const distance = Math.hypot(step.to - this.x, to.y - this.y);
     this.face(Math.sign(step.to - this.x));
     this.floating = {

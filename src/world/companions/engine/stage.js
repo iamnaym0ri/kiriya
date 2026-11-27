@@ -473,7 +473,9 @@ export class StageSim {
     } else if (this.time - this.lastComfort < 5) return;
     this.lastComfort = this.time;
     const host = this.host;
-    if (!host || !this.lively || this.visit || host.staying || host.menu || host.level == null || host.mode !== "rest" || host.step?.type === "wait" || this.time - this.lastAvoid < 6) return;
+    // Never in the middle of something she asked for (the menu, its action) or told it (stay).
+    const busy = host.step?.type === "wait" || host.step?.type === "hold" || (host.step?.type === "act" && host.step.solid);
+    if (!host || !this.lively || this.visit || host.staying || host.menu || host.level == null || host.mode !== "rest" || busy || this.time - this.lastAvoid < 6) return;
     if (!this.options.avoidText) return;
     const here = this.spotScore(host, host.level, host.x);
     if (here < 0.35) return;
