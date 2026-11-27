@@ -126,7 +126,14 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
               {fresh > 0 && (
                 <li className="app-row app-row--more mail-row" data-unread>
                   <button type="button" className="mail-row__button" onClick={onOpenJar}>
-                    <span className="mail-row__icon mail-row__icon--jar" aria-hidden="true">✿</span>
+                    <span className="mail-row__icon mail-row__icon--jar" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="18" height="18">
+                        {[0, 72, 144, 216, 288].map((angle) => (
+                          <ellipse key={angle} cx="12" cy="7.2" rx="3.4" ry="4.4" fill="currentColor" opacity="0.85" transform={`rotate(${angle} 12 12)`} />
+                        ))}
+                        <circle cx="12" cy="12" r="2.6" fill="#fff4f8" />
+                      </svg>
+                    </span>
                     <span className="mail-row__text">
                       <strong>{fresh === 1 ? "a new little note in your jar" : `${fresh} new little notes in your jar`}</strong>
                       <span className="mail-row__preview">{admin ? "she hasn’t pulled them yet" : "pull one whenever u like ♡"}</span>

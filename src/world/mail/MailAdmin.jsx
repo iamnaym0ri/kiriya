@@ -292,7 +292,7 @@ export function JarEditor({ open, onClose }) {
       <Chips value={feelings} onChange={setFeelings} />
       {added && (
         <p className="mail-sheet-note" role="status">
-          in the jar ♡ it joins at {onItsWay(added.releaseAt)}.
+          in the jar ♡ it joins her jar {onItsWay(added.releaseAt)}.
         </p>
       )}
       {data && (
