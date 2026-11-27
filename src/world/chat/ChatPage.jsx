@@ -4,6 +4,7 @@
 // and the rest of the conversation glides up to make room; a deleted message folds away and the
 // ones around it close the gap.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { MessageScroller, useMessageScroller } from "@shadcn/react/message-scroller";
@@ -73,7 +74,7 @@ function glide(root, before, { skip } = {}) {
 }
 
 function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loadingOlder, onOlder, actions, preview, flashId, viewport, jumpRef }) {
-  const { scrollToMessage } = useMessageScroller();
+  const { scrollToMessage, scrollToEnd } = useMessageScroller();
   jumpRef.current = scrollToMessage;
   const content = useRef(null);
   const other = me === "kiriya" ? "admin" : "kiriya";
@@ -86,6 +87,7 @@ function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loading
   useLayoutEffect(() => {
     const now = new Map(list.map((m) => [m.id, m]));
     const newlyGone = [...shownBefore.current.values()].filter((m) => now.has(m.id) && isGone(now.get(m.id)) && !ghosts.has(m.id));
+    shownBefore.current = new Map(list.filter((m) => !isGone(m)).map((m) => [m.id, m]));
     if (!newlyGone.length) return;
     setGhosts((current) => {
       const next = new Map(current);
@@ -102,9 +104,11 @@ function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loading
     }, reducedMotion() ? 0 : LEAVE_MS);
   }, [list]); // eslint-disable-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
-    if (!pendingGlide.current) return;
-    glide(content.current, pendingGlide.current);
+    const before = pendingGlide.current;
+    if (!before) return;
     pendingGlide.current = null;
+    // Measured once the scroller has settled its own position (still before the frame is drawn).
+    requestAnimationFrame(() => glide(content.current, before));
   }, [ghosts]);
 
   const visible = useMemo(() => list.filter((m) => !isGone(m) || ghosts.has(m.id)).map((m) => (isGone(m) ? { ...ghosts.get(m.id), leaving: true } : m)), [list, ghosts]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -128,13 +132,25 @@ function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loading
     const fresh = [...arriving.current].filter((key) => !known.current.has(key));
     for (const m of visible) known.current.add(keyOf(m));
     newestAt.current = visible.reduce((latest, m) => (m.createdAt > latest ? m.createdAt : latest), newestAt.current);
-    if (!fresh.length || !node || reducedMotion()) return;
+    if (!fresh.length || !node) return;
+    const freshIds = new Set(visible.filter((m) => fresh.includes(keyOf(m))).map((m) => m.id));
+    const mineSent = visible.some((m) => freshIds.has(m.id) && m.sender === me);
+    // Was she reading at the bottom before these arrived? (Their own height doesn't count.)
+    let freshHeight = 0;
+    content.current?.querySelectorAll(".msg[data-id]").forEach((row) => freshIds.has(row.dataset.id) && (freshHeight += row.parentElement?.offsetHeight ?? row.offsetHeight));
+    const wasAtBottom = node.scrollHeight - freshHeight - node.scrollTop - node.clientHeight < 24;
     const top = node.scrollTop;
     // The scroller follows the bottom right after this (before the screen is drawn); measure how far it moved.
     requestAnimationFrame(() => {
       const delta = node.scrollTop - top;
-      if (delta <= 0) return;
-      const skip = new Set(visible.filter((m) => fresh.includes(keyOf(m))).map((m) => m.id));
+      const away = node.scrollHeight - node.scrollTop - node.clientHeight > 4;
+      // Something she just sent always comes into view, and so does what arrives while she's at the bottom.
+      if (away && (mineSent || wasAtBottom)) {
+        scrollToEnd({ behavior: reducedMotion() ? "auto" : "smooth" });
+        return;
+      }
+      if (delta <= 0 || reducedMotion()) return;
+      const skip = freshIds;
       content.current?.querySelectorAll(".msg[data-id]").forEach((row) => {
         if (skip.has(row.dataset.id)) return;
         const rect = row.getBoundingClientRect();
@@ -443,8 +459,11 @@ export default function ChatPage() {
           {toast}
         </p>
       )}
-      {held && (
-        <HoldMenu
+      {held &&
+        // On <body>, above the tab bar, in a layer that carries the chat's look (theme, bubbles).
+        createPortal(
+          <div className="chat chat--layer" data-theme={prefs.theme ?? "lilac"} data-bubble={prefs.bubble} data-background={background} style={style}>
+            <HoldMenu
           held={held}
           me={me}
           preview={preview}
@@ -477,8 +496,10 @@ export default function ChatPage() {
             if (editing?.id === message.id) setEditing(null);
             remove.mutate(message, { onError: () => say("that couldn’t be deleted just now") });
           }}
-        />
-      )}
+            />
+          </div>,
+          document.body,
+        )}
       {designOpen && <ChatLook prefs={prefs} name={names[other]} onClose={() => setDesignOpen(false)} />}
     </div>
   );
