@@ -154,3 +154,22 @@ export function Crank() {
     </>
   );
 }
+
+/** A dashed arrow curling round the crank: "turn me". */
+export function CrankHint({ show }) {
+  const { cx, cy, r } = MACHINE.crank;
+  const R = r + 13;
+  const a0 = -2.4;
+  const a1 = 0.9;
+  const p = (a) => `${(cx + R * Math.cos(a)).toFixed(1)} ${(cy + R * Math.sin(a)).toFixed(1)}`;
+  const tip = { x: cx + R * Math.cos(a1), y: cy + R * Math.sin(a1) };
+  // The arrowhead points along the circle, clockwise: two short strokes back from the tip.
+  const back = Math.atan2(-Math.cos(a1), Math.sin(a1));
+  const wing = (turn) => `${(tip.x + 9 * Math.cos(back + turn)).toFixed(1)} ${(tip.y + 9 * Math.sin(back + turn)).toFixed(1)}`;
+  return (
+    <g className="capsule-crank-hint" data-show={show}>
+      <path d={`M${p(a0)}A${R} ${R} 0 1 1 ${p(a1)}`} fill="none" stroke="#9b6091" strokeWidth="2.6" strokeDasharray="5 6" strokeLinecap="round" />
+      <path d={`M${wing(0.55)}L${tip.x.toFixed(1)} ${tip.y.toFixed(1)}L${wing(-0.55)}`} fill="none" stroke="#9b6091" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+  );
+}

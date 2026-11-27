@@ -174,3 +174,12 @@ button.luck-chip:active { transform: translateY(1px); }
   .luck-panel, .luck-panel-backdrop, .luck-btn { transition: none; }
 }
 html[data-little-motion="off"] .luck-panel, html[data-little-motion="off"] .luck-panel-backdrop { transition: none; }
+
+.luck-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
