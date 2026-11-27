@@ -6,6 +6,7 @@ import { zzfxSamples } from "../src/world/play/games/dexterity/_kit/zzfx.js";
 import * as petals from "../src/world/play/games/dexterity/petal-catch/logic.js";
 import * as boop from "../src/world/play/games/dexterity/boop-the-cats/logic.js";
 import * as tower from "../src/world/play/games/dexterity/mochi-tower/logic.js";
+import * as crane from "../src/world/play/games/dexterity/crane-flight/logic.js";
 
 const run = (step, state, seconds, dt = 1 / 60, each) => {
   for (let t = 0; t < seconds; t += dt) {
@@ -269,5 +270,68 @@ describe("mochi tower", () => {
     assert.ok(s.bestCombo >= 5);
     assert.deepEqual(tower.rewardsFor(s).map((r) => r.sticker), ["st-mochi", "st-star"]);
     assert.ok(tower.cameraHeight(s) > 0, "the view follows the tower up");
+  });
+});
+
+describe("paper-crane flight", () => {
+  const fly = (s, seconds, pilot) => run(crane.stepFlight, s, seconds, 1 / 60, pilot);
+  // a careful pilot: flap whenever below the next gap's middle and not already rising
+  const careful = (s) => {
+    let next = null;
+    for (const o of s.obstacles) if (o.active && o.x + crane.OBSTACLE_WIDTH / 2 > s.crane.x - crane.CRANE_RADIUS && (!next || o.x < next.x)) next = o;
+    const target = next ? next.gapY + 18 : s.height * 0.45;
+    if (s.crane.y > target && s.crane.vy > -40) crane.flap(s);
+  };
+
+  test("the crane waits, hovering, until the first tap", () => {
+    const s = crane.createFlight({ random: seeded(1) });
+    fly(s, 5);
+    assert.equal(s.started, false);
+    assert.equal(s.lives, crane.LIVES);
+    assert.ok(s.obstacles.every((o) => !o.active));
+    crane.flap(s);
+    assert.equal(s.started, true);
+    assert.ok(s.crane.vy < 0);
+  });
+
+  test("falling into the meadow bounces and costs one heart, with grace afterwards", () => {
+    const s = crane.createFlight({ random: seeded(2) });
+    crane.flap(s);
+    fly(s, 2);
+    assert.equal(s.lives, crane.LIVES - 1);
+    assert.ok(s.crane.vy < 0, "bounced back up");
+    assert.ok(s.hurt > 0);
+    fly(s, 4);
+    assert.ok(s.lives < crane.LIVES - 1, "after the grace period it can bump again");
+    fly(s, 20);
+    assert.equal(s.over, true);
+  });
+
+  test("a careful pilot flies through many gaps; gaps stay reachable and fair", () => {
+    const s = crane.createFlight({ random: seeded(3) });
+    crane.flap(s);
+    let previous = null;
+    let widest = 0;
+    fly(s, 120, (st) => {
+      careful(st);
+      for (const o of st.obstacles) {
+        if (!o.active || o.seen) continue;
+        o.seen = true;
+        if (previous !== null) widest = Math.max(widest, Math.abs(o.gapY - previous));
+        previous = o.gapY;
+        assert.ok(o.gapH >= 170, `gap ${o.gapH}`);
+        assert.ok(o.gapY - o.gapH / 2 >= st.ceiling, "gap below the score");
+        assert.ok(o.gapY + o.gapH / 2 <= st.ground, "gap above the meadow");
+      }
+    });
+    assert.ok(widest <= 191, `jump between gaps ${widest}`);
+    assert.ok(s.gaps >= 40, `gaps ${s.gaps}`);
+    assert.ok(s.bestClean >= 15, `clean ${s.bestClean}`);
+    assert.deepEqual(crane.rewardsFor(s).map((r) => r.sticker), ["st-crane", "st-sprig"]);
+  });
+
+  test("calm mode is slower with wider gaps", () => {
+    assert.ok(crane.tuning(30, true).speed < crane.tuning(30).speed);
+    assert.ok(crane.tuning(30, true).gap > crane.tuning(30).gap);
   });
 });

@@ -73,6 +73,17 @@ const BOTS = {
       } else await page.waitForTimeout(12);
     }
   },
+  async "crane-flight"(page, box, seconds) {
+    const until = Date.now() + seconds * 1000;
+    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+    while (Date.now() < until && (await phase(page)) === "playing") {
+      const s = await state(page);
+      const next = s.obstacles.filter((o) => o.active && o.x + 33 > s.crane.x - 13).sort((a, b) => a.x - b.x)[0];
+      const target = next ? next.gapY + 18 : s.height * 0.45;
+      if (s.crane.y > target && s.crane.vy > -40) await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+      else await page.waitForTimeout(10);
+    }
+  },
   async "boop-the-cats"(page, box, seconds) {
     const until = Date.now() + seconds * 1000;
     while (Date.now() < until && (await phase(page)) === "playing") {
