@@ -1,4 +1,5 @@
-/* The kiriya.love app's Face ID screen: the same lilac and cursive wordmark as the app icon. */
+/* The kiriya.love app's lock while Face ID (or the quiet sign-in) decides: the same lilac and cursive
+   wordmark as the app icon. If it doesn't open, the sign-in screen (opening/AppSignIn) takes over. */
 .native-lock {
   position: fixed;
   inset: 0;
@@ -41,4 +42,131 @@
 .native-lock__other {
   min-height: 44px;
   font-size: 13px;
+}
+
+/* ---------- the first-run choice: how should the app open on this phone? ---------- */
+.native-choice {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(20px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom))
+    max(18px, env(safe-area-inset-left));
+  background: rgb(25 8 58 / 0.32);
+  animation: native-choice-shade 240ms ease-out both;
+}
+.native-choice__card {
+  box-sizing: border-box;
+  display: grid;
+  gap: 10px;
+  width: min(100%, 360px);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 22px 18px 12px;
+  border-radius: 26px;
+  background: var(--theme-paper, #fff9fd);
+  box-shadow: 0 24px 60px -18px rgb(73 40 99 / 0.55);
+  color: #4e2f63;
+  text-align: center;
+  animation: native-choice-rise 380ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+.native-choice__label {
+  margin: 0;
+  color: #7d6489;
+  font: 10px/1.3 var(--font-pixel, monospace);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.native-choice__card h2 {
+  margin: 0 0 6px;
+  font: 700 26px/1.15 var(--font-hand, cursive);
+  color: #4e2f63;
+}
+.native-choice__options {
+  display: grid;
+  gap: 10px;
+}
+.native-choice__option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 16px;
+  border: 1.5px solid color-mix(in srgb, #9a6fb4 40%, transparent);
+  border-radius: 18px;
+  background: #fbf6fd;
+  color: #4e2f63;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease;
+}
+.native-choice__option:active {
+  transform: scale(0.98);
+}
+.native-choice__option:disabled {
+  opacity: 0.6;
+}
+.native-choice__option--main {
+  border-color: #7a4f9a;
+  background: #7a4f9a;
+  color: #fff9ff;
+}
+.native-choice__option strong {
+  display: block;
+  font: 700 17px/1.2 var(--font-ui, system-ui);
+}
+.native-choice__option small {
+  display: block;
+  margin-top: 2px;
+  font: 13px/1.35 var(--font-ui, system-ui);
+  opacity: 0.85;
+}
+.native-choice__option .app-signin__glyph {
+  flex: none;
+}
+.native-choice__heart {
+  flex: none;
+  width: 28px;
+  font: 26px/1 Georgia, serif;
+  text-align: center;
+  color: #b0679a;
+}
+.native-choice__problem {
+  margin: 0;
+  color: #914467;
+  font: 13px/1.4 var(--font-ui, system-ui);
+}
+.native-choice__note {
+  margin: 4px 0 0;
+  color: #6b5279;
+  font: 13px/1.4 var(--font-ui, system-ui);
+}
+.native-choice__later {
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: #7d6489;
+  font: 13px/1 var(--font-ui, system-ui);
+  text-decoration: underline;
+  cursor: pointer;
+}
+@keyframes native-choice-shade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes native-choice-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .native-choice__card {
+    animation: native-choice-shade 200ms ease both;
+  }
 }

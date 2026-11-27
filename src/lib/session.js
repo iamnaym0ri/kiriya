@@ -75,7 +75,6 @@ export function useUnlock() {
     mutationFn: (passphrase) =>
       api("/session/unlock", { method: "POST", body: { passphrase } }),
     gcTime: 0,
-    // eslint-disable-next-line no-unused-vars
     onSuccess: (data, passphrase) => {
       queryClient.setQueryData(sessionKey, { role: data.role });
       // ↓ Round 3 (r3-chat-room): hand `passphrase` to src/lib/chatCrypto.js here, in memory only,
