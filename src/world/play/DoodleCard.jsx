@@ -1,18 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api.js";
-import { useToday } from "../../lib/world.js";
-import { useIsAdmin } from "../../lib/session.js";
-import { HEART } from "../../../shared/reactions.js";
 import ReactionBar from "../../shared/ReactionBar.jsx";
-import { AdminEdit, EditField, EditSheet } from "../../shared/admin/AdminEdit.jsx";
+import { EditField, EditSheet } from "../../shared/admin/AdminEdit.jsx";
 
-// The doodle card at the top of the play hub: her sketchbook, her latest doodles, and the notes
-// Josh leaves on them. Signed in as Josh, tapping a doodle opens his reaction and note sheet (the
-// website admin's "Her doodles", in place). Owner: the frame agent.
+// The doodle card at the top of the play hub: the way into her sketchbook. Her saved things, and
+// the notes Josh leaves on them, live in the gallery (gallery/GalleryCard.jsx, GalleryScreen.jsx);
+// Josh's reaction and note sheet for one of them (DoodleNotesSheet, below) opens from there.
 
 const NOTE_MAX = 300;
-const reactionGlyph = (reaction) => (reaction === HEART ? "♥" : reaction);
 
 function SketchbookArt() {
   return (
@@ -29,29 +25,13 @@ function SketchbookArt() {
   );
 }
 
-export default function DoodleCard({ onOpenSketchbook, onOpenDoodle }) {
-  const admin = useIsAdmin();
-  const gallery = useQuery({ queryKey: ["me", "artworks"], queryFn: () => api("/me/artworks") });
-  const signature = useToday().data?.signature ?? "josh";
-  const artworks = gallery.data?.artworks ?? [];
-  const unseen = artworks.filter((art) => art.notes?.some((note) => !note.seenAt));
-  const [noting, setNoting] = useState(null);
-  const recent = artworks.slice(0, 12);
-
+export default function DoodleCard({ onOpenSketchbook }) {
   return (
     <section className="app-card app-card--flush play-doodle" aria-labelledby="play-doodle-title">
       <header className="app-card__head">
         <h2 className="app-card__title" id="play-doodle-title">
           doodle
         </h2>
-        <div className="app-card__action">
-          <AdminEdit compact label="notes on her doodles" onClick={() => artworks[0] && setNoting(artworks[0].id)} />
-          {artworks.length > 0 && (
-            <button type="button" onClick={() => onOpenSketchbook({ gallery: true })}>
-              gallery · {artworks.length}
-            </button>
-          )}
-        </div>
       </header>
       <button type="button" className="play-doodle__open" onClick={() => onOpenSketchbook({})}>
         <SketchbookArt />
@@ -63,49 +43,12 @@ export default function DoodleCard({ onOpenSketchbook, onOpenDoodle }) {
           <span className="play-doodle__cta">open your sketchbook</span>
         </span>
       </button>
-      {!admin && unseen.length > 0 && (
-        <button type="button" className="play-doodle__news" onClick={() => onOpenDoodle(unseen[0].id)}>
-          <span aria-hidden="true">💌</span>
-          {unseen.length === 1 ? `a little note from ${signature} on your doodle` : `little notes from ${signature} on ${unseen.length} doodles`}
-        </button>
-      )}
-      {recent.length > 0 && (
-        <ul className="play-doodle__strip" aria-label={admin ? "Her latest doodles" : "Your latest doodles"}>
-          {recent.map((art) => {
-            const fresh = art.notes?.some((note) => !note.seenAt);
-            const label = art.prompt || "a little untitled thing";
-            return (
-              <li key={art.id}>
-                <button
-                  type="button"
-                  className="play-doodle__thumb"
-                  onClick={() => (admin ? setNoting(art.id) : onOpenDoodle(art.id))}
-                  aria-label={admin ? `React or leave a note on ${label}` : `Open ${label}`}
-                >
-                  <img src={art.url} alt="" loading="lazy" decoding="async" />
-                  {art.reaction && (
-                    <span className="play-doodle__mark" data-heart={art.reaction === HEART}>
-                      {reactionGlyph(art.reaction)}
-                    </span>
-                  )}
-                  {art.notes?.length > 0 && (
-                    <span className="play-doodle__note" data-new={fresh || undefined} aria-hidden="true">
-                      💌
-                    </span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-      {admin && <DoodleNotesSheet artworks={artworks} openId={noting} onChange={setNoting} />}
     </section>
   );
 }
 
 /** Josh's sheet for one of her doodles: a heart or an emoji, and little notes she'll see beside it. */
-function DoodleNotesSheet({ artworks, openId, onChange }) {
+export function DoodleNotesSheet({ artworks, openId, onChange }) {
   const queryClient = useQueryClient();
   const index = artworks.findIndex((art) => art.id === openId);
   const art = index >= 0 ? artworks[index] : null;

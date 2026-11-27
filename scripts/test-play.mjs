@@ -99,3 +99,30 @@ await test("Each of them has their own 'new' marks", async () => {
   assert.deepEqual((await (await request("me/play", { cookie: josh })).json()).played, []);
   assert.equal((await request("me/play/played", { method: "POST", cookie: her, body: { game: "../etc" } })).status, 400);
 });
+
+// ---------------------------------------------------------------- her gallery (pure helpers)
+const { KINDS, artKind, artTitle, groupByMonth, kindsIn } = await import("../src/world/play/gallery/kinds.js");
+
+await test("Her gallery tells doodles, kaleidoscopes, paper dolls and bouquets apart by the titles the games save", () => {
+  assert.equal(artKind({ prompt: "a little kaleidoscope" }), "kaleidoscope");
+  assert.equal(artKind({ prompt: "paper doll · idol stage" }), "doll");
+  assert.equal(artKind({ prompt: "bouquet · roses & peony" }), "bouquet");
+  assert.equal(artKind({ prompt: "A little birthday doodle" }), "doodle");
+  assert.equal(artKind({ prompt: null }), "doodle");
+  assert.equal(artTitle({ prompt: "paper doll · idol stage" }), "idol stage");
+  assert.equal(artTitle({ prompt: "bouquet · roses & peony" }), "roses & peony");
+  assert.equal(artTitle({ prompt: "  " }), "a little untitled thing");
+  assert.equal(artTitle({ prompt: "my cat · sleeping" }), "my cat · sleeping", "only the games' own prefixes come off");
+  const counted = kindsIn([{ prompt: "bouquet · x" }, { prompt: "doodle" }, { prompt: "a little kaleidoscope" }, { prompt: "bouquet · y" }]);
+  assert.deepEqual(counted.map((kind) => [kind.id, kind.count]), [["doodle", 1], ["kaleidoscope", 1], ["bouquet", 2]], "in the gallery's order, only kinds she has");
+  assert.equal(KINDS.length, 4);
+});
+
+await test("Her gallery groups by month in Singapore time, newest first", () => {
+  const groups = groupByMonth([{ id: "a", createdAt: "2026-11-30T17:00:00Z" }, { id: "b", createdAt: "2026-11-02T00:00:00Z" }, { id: "c", createdAt: "2026-10-31T16:30:00Z" }, { id: "d" }]);
+  assert.deepEqual(groups.map((group) => [group.key, group.label, group.artworks.map((art) => art.id)]), [
+    ["2026-12", "december 2026", ["a"]],
+    ["2026-11", "november 2026", ["b", "c"]],
+    ["undated", "a little while ago", ["d"]],
+  ]);
+});

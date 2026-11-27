@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+import { useNavigate } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../../../lib/api.js";
 import { uploadFile } from "../../../../../lib/uploads.js";
@@ -29,6 +31,9 @@ export function useArtShare() {
     },
     onSuccess: () => haptic("success"),
   });
+  // Resolves to the saved artwork ({ id, url, prompt, … }), so a game can link straight to it.
+  // Titles name the kind for her gallery's filters (src/world/play/gallery/kinds.js):
+  // "a little kaleidoscope…", "paper doll · <look>", "bouquet · <name>".
   const toDoodles = useMutation({
     mutationFn: async ({ make, title }) => {
       const { file, width, height } = await make();
@@ -41,6 +46,18 @@ export function useArtShare() {
     },
   });
   return { partner, toChat, toDoodles };
+}
+
+/**
+ * Opens her gallery from inside a game (on one artwork when `id` is given). It replaces the game's
+ * history entry, so the game's sheet closes and back from the gallery returns to play.
+ */
+export function useOpenGallery() {
+  const navigate = useNavigate();
+  return useCallback(
+    (id) => navigate(`/world/play?gallery=1${id ? `&doodle=${encodeURIComponent(id)}` : ""}`, { replace: true }),
+    [navigate],
+  );
 }
 
 /** A canvas as a PNG file ready to upload. */

@@ -121,3 +121,7 @@ html[data-little-motion="off"] .doodle-noted[data-new="true"] { animation: none;
 .doodle-reacted[data-heart="true"] { font-family: var(--font-hand); color: #b9719f; }
 .gallery-dialog .doodle-reaction { display: flex; align-items: center; justify-content: center; gap: 6px; font: 19px/1.2 var(--font-hand); color: #9a7599; }
 .gallery-dialog .doodle-reaction .doodle-reacted { font-size: 22px; }
+/* In the app the gallery is its own screen: the sketchbook just points there. */
+.doodle-app-gallery { display: grid; justify-items: center; gap: 8px; margin-top: 14px; }
+.doodle-app-gallery .doodle-link { min-height: 44px; font: 23px var(--font-hand); }
+.doodle-app-gallery .button-plum { min-height: 44px; }

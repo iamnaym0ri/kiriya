@@ -1,15 +1,16 @@
-// The artsy shelf's rules: colour by number, kaleidoscope, sticker scenes and the paper doll, plus
-// the shared saves and rewards (docs/refactor/RENOVATION.md, "Games").
+// The artsy shelf's rules: colour by number and the kaleidoscope, plus the shared saves and rewards
+// (docs/refactor/RENOVATION.md, "Games"). The paper doll and the bouquet maker have their own files
+// (test-games-artsy-doll.mjs, test-games-artsy-bouquet.mjs).
 import test from "node:test";
 import assert from "node:assert/strict";
 import { canFill, decodeIds, distanceField, hintRegion, idColour, labelSpots, nextColour, progress, toPicture, viewBox, zoomAround } from "../src/world/play/games/artsy/colour-by-number/logic.js";
 import { PICTURES } from "../src/world/play/games/artsy/colour-by-number/pictures.js";
 import { smooth, star } from "../src/world/play/games/artsy/colour-by-number/shapes.js";
-import { FOLDS, beadPoints, copyPoint, nearestCheckpoint, nextFold, symmetry, tidyPoints } from "../src/world/play/games/artsy/kaleidoscope/logic.js";
-import { MAX_STICKERS, MAX_SIZE, MIN_SIZE, bringToFront, duplicate, handleTo, moveTo, pinchTo, placeNew, placement, pushHistory } from "../src/world/play/games/artsy/sticker-scene/logic.js";
-import { DEFAULT_LOOK, MAX_LOOKS, addLook, lookName, sameLook, surprise, takeOff, wear } from "../src/world/play/games/artsy/paper-doll/logic.js";
+import { readdirSync, existsSync } from "node:fs";
+import { FOLDS, PALETTES, SLICE_CHOICES, beadPoints, copyPoint, isBlank, nearestCheckpoint, nextFold, strokeColour, symmetry, tidyPoints, visibleStrokes } from "../src/world/play/games/artsy/kaleidoscope/logic.js";
 import { STORE_PREFIX, readJson, writeJson } from "../src/world/play/games/artsy/_kit/store.js";
-import { ARTSY_REWARDS, rewardOnce } from "../src/world/play/games/artsy/_kit/rewards.js";
+import { ARTSY_REWARDS, countMade, rewardOnce } from "../src/world/play/games/artsy/_kit/rewards.js";
+import { stickers as CATALOGUE } from "../server/content/birthday.js";
 
 const memory = () => {
   const data = new Map();
@@ -147,91 +148,25 @@ test("kaleidoscope: points are tidied, beads evenly spaced, folds cycle and undo
   assert.equal(nearestCheckpoint(checkpoints, 7), 0);
 });
 
-// ---------------------------------------------------------------- sticker scenes
-
-test("sticker scenes: new stickers land near the middle, moves and sizes stay sensible", () => {
-  let items = [];
-  for (let i = 0; i < 12; i++) items = [...items, placeNew(items, { kind: "pack", ref: "/x.webp" }, () => 0.5, `s${i}`)];
-  for (const item of items) assert.ok(item.x > 0.3 && item.x < 0.7 && item.y > 0.3 && item.y < 0.6);
-  assert.ok(new Set(items.slice(0, 6).map((item) => `${item.x},${item.y}`)).size === 6, "the first six don't stack");
-  assert.equal(placeNew([], { kind: "word", ref: "ily" }, () => 0.5, "w").s, 0.42);
-  const moved = moveTo(items[0], 3, -2);
-  assert.deepEqual([moved.x, moved.y], [1.05, -0.05]);
-  assert.equal(pinchTo(items[0], 100, 0).s, MAX_SIZE);
-  assert.equal(pinchTo(items[0], 0.001, 0).s, MIN_SIZE);
-  const start = { ...items[0], s: 0.2, r: 0 };
-  const turned = handleTo(start, [100, 100], [120, 100], [100, 140]);
-  assert.ok(near(turned.s, 0.4, 1e-3) && near(turned.r, 90, 0.1), "twice as far, a quarter turn");
-});
-
-test("sticker scenes: copy, front, history and placement", () => {
-  const a = { id: "a", kind: "pack", ref: "/a", x: 0.5, y: 0.5, s: 0.2, r: 10, flip: true };
-  const b = { ...a, id: "b" };
-  assert.deepEqual(bringToFront([a, b], "a").map((item) => item.id), ["b", "a"]);
-  const copied = duplicate([a], "a", "c");
-  assert.equal(copied.length, 2);
-  assert.equal(copied[1].id, "c");
-  assert.ok(copied[1].x > a.x);
-  const full = Array.from({ length: MAX_STICKERS }, (_, i) => ({ ...a, id: `x${i}` }));
-  assert.equal(duplicate(full, "x0", "y"), full, "a full scene stays full");
-  let history = [];
-  for (let i = 0; i < 40; i++) history = pushHistory(history, [i]);
-  assert.equal(history.length, 30);
-  assert.deepEqual(history.at(-1), [39]);
-  const style = placement(a, 400);
-  assert.equal(style.width, "80px");
-  assert.match(style.transform, /translate\(200px, 250px\).*rotate\(10deg\) scaleX\(-1\)$/);
-});
-
-// ---------------------------------------------------------------- paper doll
-
-const ITEMS = [
-  { id: "t", slot: "top", colors: [[1], [2]] }, { id: "b", slot: "bottom", colors: [[1]] }, { id: "d", slot: "dress", colors: [[1], [2]] },
-  { id: "s", slot: "shoes", colors: [[1]] }, { id: "h", slot: "head", colors: [[1]] }, { id: "k", slot: "socks", colors: [[1]] },
-  { id: "n", slot: "neck", colors: [[1]] }, { id: "x", slot: "hand", colors: [[1]] }, { id: "w", slot: "back", colors: [[1]] },
-];
-const byId = (id) => ITEMS.find((item) => item.id === id);
-
-test("paper doll: a dress replaces a top and skirt, and the other way round", () => {
-  let look = wear(DEFAULT_LOOK, byId("d"), 1);
-  assert.deepEqual(look.outfit.dress, { id: "d", c: 1 });
-  assert.equal(look.outfit.top, undefined);
-  assert.equal(look.outfit.bottom, undefined);
-  assert.ok(look.outfit.shoes, "shoes stay on");
-  look = wear(look, byId("t"));
-  assert.equal(look.outfit.dress, undefined);
-  assert.deepEqual(look.outfit.top, { id: "t", c: 0 });
-  look = takeOff(look, "top");
-  assert.equal(look.outfit.top, undefined);
-  assert.ok(DEFAULT_LOOK.outfit.top, "the default look is never changed in place");
-});
-
-test("paper doll: surprise outfits are always wearable", () => {
-  let seed = 1;
-  const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  for (let i = 0; i < 200; i++) {
-    const look = surprise(DEFAULT_LOOK, ITEMS, [{ id: "waves" }, { id: "bob" }], 7, random);
-    const slots = Object.keys(look.outfit);
-    assert.ok(!(slots.includes("dress") && (slots.includes("top") || slots.includes("bottom"))));
-    assert.ok(slots.includes("dress") || (slots.includes("top") && slots.includes("bottom")), "never left in just the slip");
-    assert.ok(slots.includes("shoes"));
-    for (const slot of slots) assert.ok(byId(look.outfit[slot].id)?.slot === slot);
-    assert.ok(look.hair.c >= 0 && look.hair.c < 7);
+test("kaleidoscope: the page, blank or not, and the colour each new stroke takes", () => {
+  const stroke = (tool = "ink") => ({ tool, points: [[1, 1]] });
+  assert.equal(isBlank([]), true);
+  assert.equal(isBlank([stroke()]), false);
+  assert.equal(isBlank([stroke(), { tool: "clear" }]), true, "a fresh plate is blank");
+  assert.deepEqual(visibleStrokes([stroke("ink"), { tool: "clear" }, stroke("glow")]).map((each) => each.tool), ["glow"]);
+  const palette = PALETTES[0];
+  assert.equal(strokeColour({ turns: false, colour: 2 }, palette, []), palette.colors[2]);
+  assert.equal(strokeColour({ turns: false, colour: 99 }, palette, []), palette.colors[0]);
+  const drawn = [stroke(), stroke(), { tool: "clear" }, stroke(), stroke("eraser")];
+  assert.equal(strokeColour({ turns: true }, palette, drawn), palette.colors[1], "rainbow counts only what's on the page, erasers aside");
+  assert.equal(strokeColour({ turns: true }, palette, Array.from({ length: palette.colors.length }, () => stroke())), palette.colors[0], "and wraps around");
+  for (const each of PALETTES) {
+    assert.equal(each.colors.length, 6, `${each.id} fills the colour row`);
+    for (const colour of each.colors) assert.match(colour, /^#[0-9a-f]{6}$/i);
   }
-});
-
-test("paper doll: the lookbook skips repeats, keeps the newest first and has a limit", () => {
-  let looks = addLook([], DEFAULT_LOOK, "room", "a");
-  looks = addLook(looks, structuredClone(DEFAULT_LOOK), "room", "b");
-  assert.equal(looks.length, 1, "the same look twice in a row is saved once");
-  const other = wear(DEFAULT_LOOK, byId("d"));
-  looks = addLook(looks, other, "room", "c");
-  assert.equal(looks[0].id, "c");
-  for (let i = 0; i < 40; i++) looks = addLook(looks, wear(other, byId("h"), i % 2), i % 2 ? "room" : "garden", `l${i}`);
-  assert.equal(looks.length, MAX_LOOKS);
-  assert.ok(sameLook(DEFAULT_LOOK, structuredClone(DEFAULT_LOOK)));
-  assert.ok(!sameLook(DEFAULT_LOOK, other));
-  assert.equal(lookName(wear(other, byId("h")), (id) => ({ d: { name: "frill dress" }, h: { name: "kitty ears" } })[id]), "frill dress & kitty ears");
+  assert.equal(new Set(PALETTES.map((each) => each.id)).size, PALETTES.length);
+  assert.deepEqual(SLICE_CHOICES, [...SLICE_CHOICES].sort((a, b) => a - b));
+  for (const n of SLICE_CHOICES) assert.ok(FOLDS.includes(n), `${n} slices draw like any other fold`);
 });
 
 // ---------------------------------------------------------------- saves and rewards
@@ -249,12 +184,35 @@ test("artsy saves survive bad or missing storage", () => {
   assert.equal(readJson("x", 1, null), 1);
 });
 
-test("artsy rewards: real stickers from her catalogue, each given once", () => {
-  for (const game of Object.values(ARTSY_REWARDS)) for (const reward of Object.values(game)) assert.match(reward.sticker, /^st-(kitten|sprig|leek|pointe|bow|brush|star|bottle|mirror|cake)$/);
+// New sticker designs the artsy games bring along (each game's stickers.js), by id.
+const artsyDir = new URL("../src/world/play/games/artsy/", import.meta.url);
+const GAME_STICKERS = new Map();
+for (const folder of readdirSync(artsyDir)) {
+  const file = new URL(`${folder}/stickers.js`, artsyDir);
+  if (!existsSync(file)) continue;
+  for (const sticker of (await import(file)).default) GAME_STICKERS.set(sticker.id, { ...sticker, folder });
+}
+
+test("artsy rewards: stickers from her catalogue or a game's own stickers.js, each given once", () => {
+  const known = new Set(CATALOGUE.filter((sticker) => !sticker.birthdayOnly).map((sticker) => sticker.id));
+  for (const [game, rewards] of Object.entries(ARTSY_REWARDS))
+    for (const reward of Object.values(rewards)) {
+      assert.match(reward.sticker, /^st-[a-z0-9-]{1,40}$/);
+      assert.ok(known.has(reward.sticker) || GAME_STICKERS.has(reward.sticker), `${game}: ${reward.sticker} has art somewhere`);
+      assert.ok(reward.reason.length <= 80);
+    }
+  for (const [id, sticker] of GAME_STICKERS) {
+    assert.ok(!known.has(id), `${id} doesn't reuse a catalogue id`);
+    assert.ok(sticker.name && sticker.line, `${id} has a name and a line`);
+    assert.match(sticker.art, /^<(path|g|circle|rect|ellipse)/, `${id} is 64×64 svg markup`);
+  }
+  assert.ok(!("sticker-scene" in ARTSY_REWARDS), "the sticker scenes are gone from the shelf");
+  assert.ok(known.has("st-kitten"), "the sticker scene's old reward stays in her catalogue");
   const store = memory();
   const got = [];
   assert.equal(rewardOnce((reward) => got.push(reward), "kaleidoscope", "first", store), true);
   assert.equal(rewardOnce((reward) => got.push(reward), "kaleidoscope", "first", store), false);
   assert.equal(rewardOnce((reward) => got.push(reward), "nope", "first", store), false);
   assert.deepEqual(got, [{ sticker: "st-mirror", reason: "kept a first kaleidoscope" }]);
+  assert.deepEqual([countMade("bouquet", store), countMade("bouquet", store), countMade("kaleidoscope", store)], [1, 2, 1]);
 });

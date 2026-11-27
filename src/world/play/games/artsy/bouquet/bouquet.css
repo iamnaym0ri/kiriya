@@ -1,0 +1,401 @@
+/* bouquet maker: the bouquet on its little table, the selection card, the tray, the shelf and the
+   finished moment. */
+.bq-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(70% 55% at 50% 45%, #fffafd 0%, rgb(255 250 253 / 0) 70%);
+}
+.bq-canvas {
+  position: relative;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.bq-canvas::after {
+  /* a soft shadow where the bouquet rests */
+  content: "";
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  bottom: -2px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(93 63 120 / 0.16);
+  filter: blur(3px);
+  z-index: -1;
+}
+.bq-svg,
+.bq-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+.bq-overlay {
+  pointer-events: none;
+}
+.bq-overlay [data-handle] {
+  pointer-events: auto;
+  cursor: grab;
+}
+.bq-svg [data-flower] {
+  cursor: grab;
+}
+.bq-canvas[data-tying] .bq-svg {
+  animation: bq-tie 0.7s cubic-bezier(0.25, 0.9, 0.3, 1.2);
+  transform-origin: 50% 75%;
+}
+@keyframes bq-tie {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(0.94, 1.03);
+  }
+  60% {
+    transform: scale(1.04, 0.97) rotate(-1deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.bq-hello {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 22%;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.bq-hello p {
+  margin: 0;
+  padding: 10px 18px;
+  border-radius: 18px;
+  background: rgb(255 250 253 / 0.9);
+  box-shadow: 0 8px 24px -14px rgb(73 30 140 / 0.45);
+  color: var(--a-ink-soft);
+  font-size: 21px;
+  line-height: 1.2;
+  text-align: center;
+}
+.bq-hello b {
+  color: var(--a-plum);
+}
+.bq-tidy {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  z-index: 3;
+}
+
+/* ---------- the flower she has picked ---------- */
+.bq-sel {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 8px;
+  z-index: 4;
+  display: grid;
+  gap: 6px;
+  padding: 8px 8px 6px;
+  border: 1px solid var(--a-line);
+  border-radius: 20px;
+  background: rgb(255 250 253 / 0.96);
+  box-shadow: 0 12px 30px -14px rgb(73 30 140 / 0.5);
+  animation: artsy-rise 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.bq-sel__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.bq-sel__top strong {
+  flex: none;
+  max-width: 34%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-left: 6px;
+  font: 700 19px/1 var(--font-hand);
+  color: var(--a-ink);
+}
+.bq-sel__swatches {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  touch-action: pan-x;
+}
+.bq-sel__swatches::-webkit-scrollbar {
+  display: none;
+}
+.bq-sel__swatch {
+  flex: none;
+  transform: scale(0.82);
+}
+.bq-sel__swatch[aria-pressed="true"] {
+  transform: scale(0.9);
+}
+.bq-sel__actions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+}
+.bq-sel__actions button {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 4px 0 3px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--a-wash);
+  color: var(--a-plum);
+  font: 600 11px/1.1 var(--font-ui);
+  cursor: pointer;
+}
+.bq-sel__actions button:disabled {
+  opacity: 0.4;
+}
+.bq-sel__actions svg {
+  width: 22px;
+  height: 22px;
+}
+.bq-sel__actions .bq-sel__done {
+  align-content: center;
+  background: var(--a-plum);
+  color: #fff9fd;
+  font-size: 13px;
+}
+.bq-sel__hint {
+  margin: 0;
+  text-align: center;
+  font: 500 11px/1.2 var(--font-ui);
+  color: var(--a-ink-soft);
+}
+
+/* ---------- the tray ---------- */
+.bq-tray {
+  display: grid;
+  gap: 4px;
+}
+.bq-shelf-row {
+  align-items: stretch;
+}
+.bq-tile {
+  display: grid;
+  grid-template-rows: 62px auto;
+  justify-items: center;
+  gap: 2px;
+  width: 80px;
+  padding: 6px 4px;
+  border: 1px solid var(--a-line-soft);
+  border-radius: 16px;
+  background: var(--a-wash);
+  cursor: pointer;
+  touch-action: pan-x manipulation;
+  transition: transform 0.12s;
+}
+.bq-tile:active {
+  transform: scale(0.95);
+}
+.bq-tile svg {
+  width: 62px;
+  height: 62px;
+  pointer-events: none;
+}
+.bq-tile span {
+  font: 600 11px/1.15 var(--font-ui);
+  color: var(--a-ink-soft);
+  text-align: center;
+}
+.bq-tile[aria-checked="true"] {
+  background: #fffafd;
+  border-color: #bd9fd6;
+  box-shadow: 0 0 0 2px #e3d4ff;
+}
+.bq-choices {
+  display: grid;
+  gap: 2px;
+}
+.bq-swatches {
+  gap: 6px;
+  padding-top: 0;
+}
+.bq-card {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 6px;
+}
+.bq-card__write {
+  display: grid;
+  gap: 4px;
+  margin: 0 12px;
+  font: 600 12px/1 var(--font-ui);
+  color: var(--a-ink-soft);
+}
+.bq-card__write input {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--a-line);
+  border-radius: 14px;
+  background: var(--a-paper);
+  color: var(--a-ink);
+  font: 700 19px/1 var(--font-hand);
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ---------- the shelf ---------- */
+.bq-empty {
+  margin: 24px 12px;
+  text-align: center;
+  font-size: 21px;
+  line-height: 1.3;
+  color: var(--a-ink-soft);
+}
+.bq-vases {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 10px;
+}
+.bq-vase {
+  position: relative;
+}
+.bq-vase__open {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 6px 6px 8px;
+  border: 1px solid var(--a-line);
+  border-radius: 16px;
+  background: radial-gradient(80% 60% at 50% 40%, #fffafd, #f3e9f9);
+  cursor: pointer;
+}
+.bq-vase__open svg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+}
+.bq-vase__open span {
+  font: 600 11px/1.2 var(--font-ui);
+  color: var(--a-ink-soft);
+}
+.bq-vase__remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  color: var(--a-plum);
+  font: 700 16px/1 var(--font-ui);
+  cursor: pointer;
+}
+
+/* ---------- tied with a bow ---------- */
+.bq-finish {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+.bq-finish__card {
+  justify-self: center;
+  width: min(100%, 240px);
+  padding: 10px 10px 8px;
+  border-radius: 8px;
+  background: #fffdfb;
+  box-shadow: 0 1px 0 #ebdff3, 0 14px 30px -16px rgb(73 30 140 / 0.45);
+  transform: rotate(1.5deg);
+  animation: bq-card-in 0.5s cubic-bezier(0.2, 0.9, 0.25, 1.2);
+  text-align: center;
+}
+@keyframes bq-card-in {
+  from {
+    transform: translateY(24px) scale(0.92) rotate(-3deg);
+    opacity: 0;
+  }
+}
+.bq-finish__picture {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 4;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f6eefb;
+  color: var(--a-ink-soft);
+  font-size: 19px;
+}
+.bq-finish__picture img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.bq-finish__name {
+  margin: 6px 0 0;
+  font-size: 21px;
+  line-height: 1.1;
+  color: var(--a-ink);
+}
+.bq-finish__line {
+  margin: 2px 0 0;
+  font: 500 12px/1.2 var(--font-ui);
+  color: var(--a-ink-soft);
+}
+.bq-finish__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.bq-finish__buttons > * {
+  padding-inline: 10px;
+  font-size: 14px;
+}
+.bq-finish__also {
+  justify-self: center;
+}
+.bq-finish__more {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.bq-confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 46;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.bq-bar .artsy-chip {
+  white-space: nowrap;
+}
+.bq-shelf-button {
+  position: relative;
+}
+.bq-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 9px;
+  background: var(--a-pink);
+  color: #fff;
+  font: 700 11px/18px var(--font-ui);
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--a-paper);
+}

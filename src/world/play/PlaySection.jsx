@@ -6,19 +6,22 @@ import PageLoader from "../../shared/PageLoader.jsx";
 import { GAMES, SHELVES, gameById } from "./games/registry.js";
 import GameSheet from "./games/GameSheet.jsx";
 import DoodleCard from "./DoodleCard.jsx";
+import GalleryCard from "./gallery/GalleryCard.jsx";
 import { StickerBook, StickerMoment } from "./Stickers.jsx";
 import { useMarkPlayed, usePlayState, useReward } from "./playState.js";
 import "./PlaySection.css";
 
 const MiniSketchbook = lazy(() => import("./MiniSketchbook.jsx"));
+const GalleryScreen = lazy(() => import("./gallery/GalleryScreen.jsx"));
 // The quizzes agent's entry card (src/world/play/quizzes/index.js exports QuizzesEntry); until it
 // lands, a quiet placeholder holds its place.
 const quizModules = import.meta.glob("./quizzes/index.{js,jsx}", { eager: true });
 const QuizzesEntry = Object.values(quizModules)[0]?.QuizzesEntry ?? null;
 
-// The params that open the sketchbook: links to a doodle (a note's notification), the gallery, and
-// colour-club paints all land here (lib/appLinks.js).
-const SKETCH_PARAMS = ["doodle", "gallery", "paint"];
+// Colour-club paints (?paint=) open the sketchbook with them on the brush. Her gallery is a pushed
+// screen of its own: ?gallery=1, and ?doodle=<id> (a note's notification) opens one piece in it
+// (lib/appLinks.js maps the website's /world?gallery=1&doodle=<id>#play-desk here).
+const SKETCH_PARAMS = ["paint"];
 
 /**
  * The app's play section (docs/refactor/RENOVATION.md, owner: the frame agent): doodle, quizzes
@@ -36,8 +39,8 @@ export default function PlaySection() {
   const [moment, setMoment] = useState(null);
   const endMoment = useCallback(() => setMoment(null), []);
 
-  // A doodle link (?doodle=, ?gallery=1, ?paint=) opens the sketchbook, and keeps it open while the
-  // gallery tidies its own params away.
+  // A colour-club link (?paint=) opens the sketchbook, and keeps it open while the sketchbook
+  // tidies the param away.
   useEffect(() => {
     if (params.get("sketchbook") !== "1" && SKETCH_PARAMS.some((key) => params.has(key))) {
       setParams((next) => {
@@ -50,6 +53,7 @@ export default function PlaySection() {
   const gameId = params.get("game");
   const game = gameById(gameId);
   const sketchbook = params.get("sketchbook") === "1";
+  const gallery = !sketchbook && !game && (params.get("gallery") === "1" || params.has("doodle"));
 
   // Opening something pushes a history entry, so the back button and the edge swipe close it.
   const open = useCallback(
@@ -95,6 +99,17 @@ export default function PlaySection() {
     [gameId, reward, state],
   );
 
+  if (gallery) {
+    return (
+      <>
+        <Suspense fallback={<PageLoader />}>
+          <GalleryScreen onStartDoodle={() => open({ sketchbook: 1 })} />
+        </Suspense>
+        <StickerMoment moment={moment} onDone={endMoment} />
+      </>
+    );
+  }
+
   return (
     <div className="app-section app-section--play">
       <header className="app-section__head">
@@ -107,7 +122,8 @@ export default function PlaySection() {
         </div>
       </header>
       <div className="app-section__body">
-        <DoodleCard onOpenSketchbook={({ gallery }) => open({ sketchbook: 1, gallery: gallery ? 1 : undefined })} onOpenDoodle={(id) => open({ sketchbook: 1, gallery: 1, doodle: id })} />
+        <DoodleCard onOpenSketchbook={() => open({ sketchbook: 1 })} />
+        <GalleryCard onOpen={() => open({ gallery: 1 })} onOpenArt={(id) => open({ gallery: 1, doodle: id })} onStart={() => open({ sketchbook: 1 })} />
         {QuizzesEntry ? <QuizzesEntry /> : <QuizzesPlaceholder />}
         <GameLibrary played={state.data?.played} ready={state.isSuccess} onOpen={openGame} />
       </div>
