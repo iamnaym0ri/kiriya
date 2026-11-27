@@ -26,6 +26,7 @@ The previous session's memory lives on the other machine and is not available on
 ## 2. State of the code
 
 - **Branch `connection-refactor`.** Phases 1–4b are commit cd17fd4. The iMac session added the Xcode targets on top. Deploying means merging into `main` and pushing: Vercel builds `main` to production (config check → migrations → build).
+- **2026-11-27 on the iMac:** after the renovation merges, `npm test` passes everything except the 4 cancelled shop-feed tests below (the old "Media gates" failure was a test date that went stale; fixed in 5ec4f34). `npm test` now runs every `scripts/test-*.mjs`.
 - **Last full run on Linux:** `npm test` gave 282 tests with 281 passing. The one failure, "Media gates require recorded YouTube playback…", **was failing before this work and is unrelated**. `npm run build` passes, including the leak check.
 - **On the iMac** (2026-11-25), 4 more tests in `scripts/test-feed-sources-shop.mjs` are *cancelled* ("Promise resolution is still pending…"). `main` behaves the same on this Mac, so it's an environment quirk in old feed code, not a regression.
 - `docs/note.md` stayed on the WSL machine; ignore it.
@@ -170,26 +171,27 @@ The previous session's memory lives on the other machine and is not available on
    - Locking from Settings shows the passphrase gate but stays on `/world/settings` instead of going to `/`. That was the behaviour before 4b and is harmless.
 5. **Then Kiriya:** invite her as an **internal** TestFlight tester, so Apple's beta review never needs access to her private world. Josh tests first, then tells her (see `IOS-APP.md`).
 
-## 5. What's left to build after the app ships
+## 5. The app renovation (2026-11-26/27) and what's left
 
-All of it is specified in `PLAN.md`; the decisions there are Josh's and are settled.
+Phases 5, 6 and 7 were built in one round together with the app's five-section renovation. The
+decisions, the ownership map, every contract (section markup, admin in place, companions, games)
+and the deep-link table are in [`RENOVATION.md`](RENOVATION.md); its "Status" section lists what is
+merged, what still needs Josh's phone, and the keys still to come.
 
-- **Phase 5: quizzes and a 25-game library.**
-  - **Quizzes sent to each other.** A push says "Kiriya sent you a quiz question ♡". Each question has an image (upload or clean stock) and multiple-choice answers with emoji. There's an "about me" mode where the sender sets the right answer, plus "about us". They keep scores and streaks. It should be very pretty and clean in the app.
-  - **Games:** five per category: pastime, brain power, luck, artsy and dexterity. The candidate list is in PLAN.md. Adapt open-source implementations under our own names and art. Rewards tie into the sticker collection.
-  - Use `kind: "quiz"` pushes; add a category in `apns.js` and in `KiriyaNotifications.swift`.
-- **Phase 6: events & merch.**
-  - A Railway worker does change detection over the sources in `SG-EVENT-SOURCES.md`.
-  - Haiku 5.5 triages, and Opus 5.5 investigates with web search and fetch, under a US$20/month ceiling with a spend ledger in admin.
-  - Apify watches a few key Instagram accounts as a trigger only; there's also a paste-a-link box and a newsletter Gmail inbox.
-  - Each event gets a dossier with a timeline and update log.
-  - Weather from Open-Meteo and NEA; transit from LTA.
-  - Pushes: big items instantly, the rest weekly.
-  - Retire the OpenAI events stage. Draft the permission emails to Suntec and EXPO.
-  - Josh provides: `ANTHROPIC_API_KEY`, a Railway project, an Apify token, a Gmail inbox, and optionally LTA and data.gov.sg keys.
-  - Open question for him: move Maomao's `/me/maomao/ask` from OpenAI to Haiku.
-  - The widget's "Next con" already reads the `events` table: SG tier, confirmed, soonest first.
-- **Phase 7: mini Miku.** A hand-drawn SVG chibi on a generalised Maomao companion engine, with the Crypton credit line.
+- **Built:** the app frame and tab bar, home (editable centre stage, songs from files or YouTube,
+  pinboard, at-a-glance, little-corner widget, events block), chat, notes & letters, the last tab
+  (hers and Josh's desk), the companion engine with Maomao, Rotten Girl Miku, Bamby, Hatsune Miku
+  and KAITO, quizzes, the game library (five shelves), the events engine (Railway worker, dry run
+  until keys) and the events screens.
+- **Still open after it ships:** the events engine going live (keys below), real-phone checks the
+  agents could not do (touch drag, pinch, lock-screen audio, frame times), and the open question of
+  moving Maomao's `/me/maomao/ask` from OpenAI to Haiku.
+- **Keys for the events engine, when Josh says go:** `ANTHROPIC_API_KEY`, a Railway project with
+  `DATABASE_URL` and `CRON_SECRET` (same as Vercel), `APIFY_TOKEN`, `BLOB_READ_WRITE_TOKEN`, the
+  newsletter Gmail's `GMAIL_CLIENT_ID` / `GMAIL_CLIENT_SECRET` / `GMAIL_REFRESH_TOKEN`, optionally
+  `LTA_DATAMALL_KEY` and `DATA_GOV_SG_API_KEY`; event pushes reach her only once
+  `EVENTS_PUSH_AUDIENCE` is set in Vercel. Confirm the 8 Instagram handles in
+  `server/lib/events/registry.js` before the first paid Apify run.
 
 ## 6. Conventions that kept things working
 
