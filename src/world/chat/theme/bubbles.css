@@ -43,6 +43,10 @@
   font-size: 17px;
   line-height: 24px;
 }
+/* a voice note's waveform reads better without the ruled lines through it */
+.chat[data-theme][data-bubble="paper"] .bubble--voice:not(.chat-preview *) {
+  background-image: none;
+}
 .chat[data-theme][data-bubble="paper"] .msg[data-first] .bubble:not(.chat-preview *)::before,
 .chat-preview[data-bubble="paper"] .msg[data-first] .bubble::before {
   content: "";
