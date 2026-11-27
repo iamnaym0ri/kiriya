@@ -6,6 +6,7 @@ import { signMediaLinks, unsignMediaLinks } from "./lib/mediaLinks.js";
 import { sessionRoutes } from "./routes/session.js";
 import { publicRoutes } from "./routes/public.js";
 import { meRoutes } from "./routes/me.js";
+import { playRoutes } from "./routes/play.js";
 import { adminRoutes } from "./routes/admin.js";
 import { jobRoutes } from "./routes/jobs.js";
 import { pushRoutes } from "./routes/push.js";
@@ -16,6 +17,11 @@ import { adminNoteJarRoutes } from "./routes/noteJarAdmin.js";
 import { widgetRoutes } from "./routes/widget.js";
 import { appRoutes, appSessionRoutes } from "./routes/app.js";
 import { eventRoutes, eventAdminRoutes, eventJobRoutes } from "./routes/events.js";
+import { secretWordRoutes, secretWordAdminRoutes } from "./routes/secretWord.js";
+import { homeEmbedRoutes, homeRoutes } from "./routes/home.js";
+import { glanceRoutes, hubRoutes } from "./routes/meSection.js";
+import { pastimeRoutes } from "./routes/gamesPastime.js";
+import { quizRoutes } from "./routes/quizzes.js";
 
 const app = new Hono().basePath("/api");
 
@@ -78,8 +84,14 @@ app.route("/public", publicRoutes);
 app.route("/events", eventRoutes);
 
 app.use("/me/*", requireRole("kiriya", "admin"));
+app.route("/me/games/secret-word", secretWordRoutes);
+app.route("/me/home", homeRoutes);
+app.route("/me/glance", glanceRoutes);
+app.route("/me/quizzes", quizRoutes);
 app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
+app.route("/me", playRoutes);
+app.route("/me/games/pastime", pastimeRoutes);
 
 app.use("/app/*", requireRole("kiriya", "admin"));
 app.route("/app", appRoutes);
@@ -92,6 +104,8 @@ app.route("/admin/feeds", feedAdminRoutes);
 app.route("/admin/events", eventAdminRoutes);
 app.route("/admin/love-notes", adminLoveNoteRoutes);
 app.route("/admin/note-jar", adminNoteJarRoutes);
+app.route("/admin/games/secret-word", secretWordAdminRoutes);
+app.route("/admin/hub", hubRoutes);
 app.route("/admin", adminRoutes);
 
 app.route("/jobs/feeds", feedJobRoutes);
@@ -99,6 +113,7 @@ app.route("/jobs/events", eventJobRoutes);
 app.route("/jobs", jobRoutes);
 app.route("/uploads", uploadRoutes);
 app.route("/widget", widgetRoutes);
+app.route("/embed", homeEmbedRoutes);
 
 app.notFound((c) => c.json({ error: "not_found", message: "Nothing lives at this address." }, 404));
 app.onError((error, c) => {

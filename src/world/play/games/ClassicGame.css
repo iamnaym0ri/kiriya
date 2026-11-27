@@ -1,0 +1,18 @@
+.classic-game {
+  position: relative;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px max(12px, env(safe-area-inset-left)) 28px max(12px, env(safe-area-inset-right));
+}
+.classic-game > * {
+  max-width: 640px;
+  margin-inline: auto;
+}
+/* The sheet's bar already names the game and gives the way out. */
+.classic-game .play-window {
+  margin: 0 auto;
+}

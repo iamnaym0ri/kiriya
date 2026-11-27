@@ -1,0 +1,1136 @@
+/* KAITO's body motion. Transform and opacity only (cheap on an iPhone 11), all in the SVG's
+   200×236 user units, everything cancelled by [data-motion="off"] and prefers-reduced-motion.
+   Clocks are deliberately off Maomao's (blink 5.9s vs 6.7s, breath 5.2s vs 6.8s) so two
+   companions on screen together never blink or breathe in step. */
+
+.kaito {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.kaito__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.kaito--thumb {
+  flex: none;
+  border-radius: 50%;
+}
+.kaito--thumb .kaito__svg {
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+/* ---------- always: breath, blink, the scarf drifting, the odd glance ------------------------- */
+.kaito__root {
+  transform-origin: 100px 232px;
+}
+.kaito__breath {
+  transform-origin: 100px 230px;
+  animation: kaito-breathe 5.2s ease-in-out infinite;
+}
+.kaito__float,
+.kaito__upper {
+  transform-origin: 100px 230px;
+}
+.kaito__head {
+  transform-origin: 100px 152px;
+  rotate: 0deg;
+  translate: 0 0;
+  transition:
+    rotate 0.4s cubic-bezier(0.22, 0.72, 0.2, 1),
+    translate 0.4s cubic-bezier(0.22, 0.72, 0.2, 1);
+}
+.kaito__flick {
+  transform-origin: 46px 80px;
+  animation: kaito-flick 5.2s ease-in-out infinite;
+}
+.kaito__tails {
+  transform-origin: 76px 161px;
+  rotate: 0deg;
+  transition: rotate 0.5s cubic-bezier(0.3, 0.7, 0.3, 1);
+  animation: kaito-tails-drift 4.6s ease-in-out infinite;
+}
+.kaito__tail-end {
+  animation: kaito-tail-end-drift 4.6s ease-in-out infinite;
+  animation-delay: -0.9s;
+}
+.kaito__tail--far {
+  animation: none;
+}
+.kaito__blink-mask {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: kaito-blink 5.9s linear infinite;
+}
+.kaito__blink-line {
+  opacity: 0;
+  animation: kaito-blink-line 5.9s linear infinite;
+}
+.kaito:is([data-pose="idle"], [data-pose="sit"]) .kaito__gaze {
+  animation: kaito-glance 11s ease-in-out infinite;
+}
+.kaito__arm {
+  rotate: 0deg;
+}
+
+@keyframes kaito-breathe {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1;
+  }
+  50% {
+    translate: 0 -0.8px;
+    scale: 1.003 1.006;
+  }
+}
+@keyframes kaito-flick {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  50% {
+    rotate: -3deg;
+  }
+}
+@keyframes kaito-tails-drift {
+  0%,
+  100% {
+    rotate: -2deg;
+  }
+  50% {
+    rotate: 4deg;
+  }
+}
+@keyframes kaito-tail-end-drift {
+  0%,
+  100% {
+    rotate: -3deg;
+  }
+  50% {
+    rotate: 6deg;
+  }
+}
+/* A blink at 40%, and a soft double blink near the end of the loop. */
+@keyframes kaito-blink {
+  0%,
+  39%,
+  42%,
+  88%,
+  90%,
+  91.6%,
+  93.6%,
+  100% {
+    scale: 1 1;
+  }
+  40.2%,
+  89%,
+  92.6% {
+    scale: 1 0.02;
+  }
+}
+@keyframes kaito-blink-line {
+  0%,
+  39.4%,
+  41.4%,
+  88.4%,
+  89.8%,
+  91.9%,
+  93.3%,
+  100% {
+    opacity: 0;
+  }
+  40.2%,
+  89%,
+  92.6% {
+    opacity: 1;
+  }
+}
+@keyframes kaito-glance {
+  0%,
+  26%,
+  40%,
+  66%,
+  80%,
+  100% {
+    translate: 0 0;
+  }
+  29%,
+  37% {
+    translate: 2.6px -0.6px;
+  }
+  69%,
+  77% {
+    translate: -2.4px 0.4px;
+  }
+}
+
+/* ---------- expressions carry the head a little --------------------------------------------- */
+.kaito[data-expression="thinking"] .kaito__head {
+  rotate: -4deg;
+}
+.kaito[data-expression="shy"] .kaito__head {
+  rotate: -3deg;
+  translate: 0 1.5px;
+}
+.kaito[data-expression="fond"] .kaito__head {
+  rotate: -3deg;
+}
+.kaito[data-expression="proud"] .kaito__head {
+  rotate: 2deg;
+  translate: 0 -1px;
+}
+.kaito[data-expression="pout"] .kaito__head {
+  rotate: 3deg;
+  translate: 0 1px;
+}
+.kaito[data-expression="sheepish"] .kaito__head {
+  rotate: 4deg;
+  animation: kaito-sheepish 1.4s ease-in-out 2;
+}
+.kaito[data-expression="joyful"] .kaito__head {
+  animation: kaito-giggle 0.5s ease-in-out 3;
+}
+.kaito__sweat {
+  animation: kaito-sweat 1.5s ease-in-out 2 both;
+}
+@keyframes kaito-sheepish {
+  0%,
+  100% {
+    rotate: 4deg;
+  }
+  50% {
+    rotate: 6deg;
+    translate: 0 1px;
+  }
+}
+@keyframes kaito-giggle {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -1.6px;
+  }
+}
+@keyframes kaito-sweat {
+  0% {
+    opacity: 0.2;
+    translate: 0 -2px;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+    translate: 0 3px;
+  }
+}
+
+/* ---------- walk: an unhurried glide (his cloud is icy) ---------------------------------------
+   Long, low strides that slide rather than stamp, a forward lean, arms swinging easy, and the scarf
+   streaming out behind him with a ripple. */
+.kaito[data-pose="walk"] .kaito__root {
+  rotate: 3deg;
+}
+.kaito[data-pose="walk"] .kaito__float {
+  animation: kaito-glide-bob 0.76s ease-in-out infinite;
+}
+.kaito[data-pose="walk"] .kaito__boot--l {
+  animation: kaito-glide-l 0.76s ease-in-out infinite;
+}
+.kaito[data-pose="walk"] .kaito__boot--r {
+  animation: kaito-glide-l 0.76s ease-in-out infinite;
+  animation-delay: -0.38s;
+}
+.kaito[data-pose="walk"] .kaito__arm--l {
+  animation: kaito-arm-swing 0.76s ease-in-out infinite;
+}
+.kaito[data-pose="walk"] .kaito__arm--r {
+  animation: kaito-arm-swing 0.76s ease-in-out infinite;
+  animation-delay: -0.38s;
+}
+.kaito[data-pose="walk"] .kaito__head {
+  animation: kaito-walk-head 0.76s ease-in-out infinite;
+}
+.kaito[data-pose="walk"] .kaito__gaze {
+  translate: 2px 0;
+}
+.kaito:is([data-pose="walk"], [data-pose="slip"]) .kaito__tails {
+  rotate: 64deg;
+  animation: kaito-stream 0.38s ease-in-out infinite;
+}
+.kaito:is([data-pose="walk"], [data-pose="slip"]) .kaito__tail-end {
+  animation: kaito-ripple 0.38s ease-in-out infinite;
+  animation-delay: -0.12s;
+}
+.kaito[data-pose="walk"] .kaito__tail--far {
+  animation: kaito-ripple 0.38s ease-in-out infinite;
+  animation-delay: -0.2s;
+  transform-origin: 76px 161px;
+}
+@keyframes kaito-glide-bob {
+  0%,
+  50%,
+  100% {
+    translate: 0 0;
+  }
+  25%,
+  75% {
+    translate: 0 -2.2px;
+  }
+}
+@keyframes kaito-glide-l {
+  0%,
+  100% {
+    translate: -6px 0;
+    rotate: -5deg;
+  }
+  30% {
+    translate: -1px -3.5px;
+    rotate: 2deg;
+  }
+  50% {
+    translate: 6px 0;
+    rotate: 5deg;
+  }
+  80% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+}
+@keyframes kaito-arm-swing {
+  0%,
+  100% {
+    rotate: 11deg;
+  }
+  50% {
+    rotate: -11deg;
+  }
+}
+@keyframes kaito-walk-head {
+  0%,
+  50%,
+  100% {
+    rotate: 0.8deg;
+    translate: 0 0;
+  }
+  25%,
+  75% {
+    rotate: -0.6deg;
+    translate: 0 0.6px;
+  }
+}
+@keyframes kaito-stream {
+  0%,
+  100% {
+    rotate: 60deg;
+  }
+  50% {
+    rotate: 68deg;
+  }
+}
+@keyframes kaito-ripple {
+  0%,
+  100% {
+    rotate: -14deg;
+  }
+  50% {
+    rotate: 14deg;
+  }
+}
+
+/* ---------- jump, fall, land ------------------------------------------------------------------ */
+.kaito[data-pose="jump"] .kaito__root {
+  scale: 0.96 1.05;
+  animation: kaito-jump 0.42s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.kaito:is([data-pose="jump"], [data-pose="fall"]) .kaito__boot--l {
+  translate: -2px -7px;
+  rotate: 12deg;
+}
+.kaito:is([data-pose="jump"], [data-pose="fall"]) .kaito__boot--r {
+  translate: 2px -7px;
+  rotate: -12deg;
+}
+.kaito[data-pose="jump"] .kaito__tails {
+  rotate: 26deg;
+  animation: none;
+}
+.kaito[data-pose="fall"] .kaito__root {
+  scale: 1.02 0.98;
+}
+.kaito[data-pose="fall"] .kaito__tails {
+  rotate: 150deg;
+  animation: kaito-flutter-up 0.3s ease-in-out infinite;
+}
+.kaito[data-pose="fall"] .kaito__tail-end {
+  animation: kaito-ripple 0.3s ease-in-out infinite;
+}
+.kaito[data-pose="fall"] .kaito__coat-halves {
+  transform-origin: 100px 165px;
+  scale: 1.06 0.97;
+}
+.kaito[data-pose="fall"] .kaito__arm--l {
+  animation: kaito-flail 0.34s ease-in-out infinite alternate;
+}
+.kaito[data-pose="fall"] .kaito__arm--r {
+  animation: kaito-flail 0.34s ease-in-out infinite alternate-reverse;
+}
+.kaito[data-pose="fall"] .kaito__flick {
+  rotate: 8deg;
+  animation: none;
+}
+.kaito[data-pose="land"] .kaito__root {
+  animation: kaito-land 0.62s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+.kaito[data-pose="land"] .kaito__tails {
+  animation: kaito-tails-drop 0.7s ease-out both;
+}
+@keyframes kaito-jump {
+  0% {
+    translate: 0 4px;
+    scale: 1.1 0.88;
+  }
+  35% {
+    translate: 0 -3px;
+    scale: 0.92 1.1;
+  }
+  100% {
+    translate: 0 0;
+    scale: 0.96 1.05;
+  }
+}
+@keyframes kaito-flutter-up {
+  0%,
+  100% {
+    rotate: 146deg;
+  }
+  50% {
+    rotate: 156deg;
+  }
+}
+@keyframes kaito-flail {
+  from {
+    rotate: -7deg;
+  }
+  to {
+    rotate: 7deg;
+  }
+}
+@keyframes kaito-land {
+  0% {
+    translate: 0 -6px;
+    scale: 1.02 0.96;
+  }
+  22% {
+    translate: 0 2px;
+    scale: 1.14 0.86;
+  }
+  48% {
+    translate: 0 0;
+    scale: 0.95 1.06;
+  }
+  72% {
+    scale: 1.02 0.98;
+  }
+  100% {
+    translate: 0 0;
+    scale: 1 1;
+  }
+}
+@keyframes kaito-tails-drop {
+  0% {
+    rotate: 120deg;
+  }
+  45% {
+    rotate: -10deg;
+  }
+  75% {
+    rotate: 6deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+
+/* ---------- crouch: the anticipation before a jump --------------------------------------------- */
+.kaito[data-pose="crouch"] .kaito__root {
+  scale: 1.07 0.9;
+  translate: 0 2px;
+}
+.kaito[data-pose="crouch"] .kaito__boot--l {
+  translate: -2px 0;
+  rotate: -6deg;
+}
+.kaito[data-pose="crouch"] .kaito__boot--r {
+  translate: 2px 0;
+  rotate: 6deg;
+}
+.kaito[data-pose="crouch"] .kaito__tails {
+  rotate: 12deg;
+}
+.kaito[data-pose="crouch"] .kaito__head {
+  translate: 0 2px;
+}
+
+/* ---------- talking: a little mouth flap while his bubble is up -------------------------------- */
+.kaito__talk {
+  opacity: 0;
+}
+.kaito[data-talking="on"] .kaito__talk {
+  animation: kaito-talk 0.42s steps(1, end) infinite;
+}
+@keyframes kaito-talk {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- sitting on the cloud's edge (sit, sleep, treat) ----------------------------------- */
+.kaito:is([data-pose="sit"], [data-pose="sleep"], [data-pose="treat"]) .kaito__coat-halves {
+  transform-origin: 100px 170px;
+  scale: 1.07 1;
+}
+.kaito:is([data-pose="sit"], [data-pose="sleep"], [data-pose="treat"]) .kaito__upper {
+  translate: 0 10px;
+}
+.kaito:is([data-pose="sit"], [data-pose="sleep"], [data-pose="treat"]) .kaito__ground {
+  opacity: 0;
+}
+.kaito:is([data-pose="sit"], [data-pose="treat"]) .kaito__boot--l {
+  animation: kaito-leg-swing 2.3s ease-in-out infinite;
+}
+.kaito:is([data-pose="sit"], [data-pose="treat"]) .kaito__boot--r {
+  animation: kaito-leg-swing 2.3s ease-in-out infinite;
+  animation-delay: -1.15s;
+}
+.kaito:is([data-pose="sit"], [data-pose="sleep"], [data-pose="treat"]) .kaito__tails {
+  rotate: 18deg;
+}
+.kaito[data-pose="sleep"] .kaito__head {
+  rotate: 7deg;
+  translate: 1px 3px;
+}
+.kaito[data-pose="sleep"] .kaito__breath {
+  animation: kaito-sleep-breathe 6.4s ease-in-out infinite;
+}
+.kaito[data-pose="sleep"] .kaito__boot--l {
+  rotate: 6deg;
+}
+.kaito[data-pose="sleep"] .kaito__boot--r {
+  rotate: -4deg;
+}
+.kaito__z {
+  animation: kaito-z 3.4s ease-in-out infinite both;
+}
+.kaito__z--2 {
+  animation-delay: 1.7s;
+}
+.kaito[data-pose="treat"] .kaito__arm--r {
+  animation: kaito-spoon 2.2s ease-in-out infinite;
+}
+.kaito[data-pose="treat"] .kaito__head {
+  rotate: 3deg;
+  animation: kaito-nod 2.2s ease-in-out infinite;
+}
+@keyframes kaito-leg-swing {
+  0%,
+  100% {
+    rotate: -9deg;
+  }
+  50% {
+    rotate: 9deg;
+  }
+}
+@keyframes kaito-sleep-breathe {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1;
+  }
+  50% {
+    translate: 0 -1.2px;
+    scale: 1.008 1.014;
+  }
+}
+@keyframes kaito-z {
+  0% {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    translate: 5px -12px;
+  }
+}
+@keyframes kaito-spoon {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  40% {
+    rotate: -5deg;
+  }
+}
+@keyframes kaito-nod {
+  0%,
+  100% {
+    rotate: 3deg;
+  }
+  45% {
+    rotate: 5deg;
+    translate: 0 1px;
+  }
+}
+
+/* ---------- wave, react, held ------------------------------------------------------------------ */
+.kaito[data-pose="wave"] .kaito__arm--r {
+  animation: kaito-wave 0.52s ease-in-out infinite alternate;
+}
+.kaito[data-pose="wave"] .kaito__head {
+  rotate: 3deg;
+}
+.kaito[data-pose="wave"] .kaito__float {
+  animation: kaito-glide-bob 1.04s ease-in-out infinite;
+}
+@keyframes kaito-wave {
+  from {
+    rotate: -9deg;
+  }
+  to {
+    rotate: 9deg;
+  }
+}
+.kaito[data-pose="react"] .kaito__root {
+  animation: kaito-react 0.56s cubic-bezier(0.22, 0.72, 0.2, 1) both;
+}
+.kaito[data-pose="react"] .kaito__tails {
+  animation: kaito-tails-flip 0.7s ease-out both;
+}
+.kaito__bang {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: kaito-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+@keyframes kaito-react {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1;
+  }
+  18% {
+    translate: 0 2px;
+    scale: 1.05 0.94;
+  }
+  42% {
+    translate: 0 -9px;
+    scale: 0.97 1.04;
+  }
+  72% {
+    translate: 0 1px;
+    scale: 1.03 0.98;
+  }
+}
+@keyframes kaito-tails-flip {
+  0% {
+    rotate: 0deg;
+  }
+  35% {
+    rotate: 80deg;
+  }
+  70% {
+    rotate: -6deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+@keyframes kaito-pop {
+  from {
+    opacity: 0;
+    scale: 0.3;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+/* Picked up by the back of the collar: everything below hangs and swings, damped. */
+.kaito[data-pose="held"] .kaito__root {
+  transform-origin: 100px 156px;
+}
+.kaito[data-pose="held"] .kaito__ground {
+  opacity: 0;
+}
+.kaito[data-pose="held"] .kaito__boot--l,
+.kaito[data-pose="held"] .kaito__boot--r {
+  animation: kaito-dangle 1s ease-in-out infinite;
+}
+.kaito[data-pose="held"] .kaito__boot--r {
+  animation-delay: -0.3s;
+}
+.kaito[data-pose="held"] .kaito__arm--l,
+.kaito[data-pose="held"] .kaito__arm--r {
+  animation: kaito-dangle 1.2s ease-in-out infinite;
+}
+.kaito[data-pose="held"] .kaito__tails {
+  rotate: -6deg;
+  animation: kaito-dangle 1.4s ease-in-out infinite;
+}
+@keyframes kaito-dangle {
+  0%,
+  100% {
+    rotate: -5deg;
+  }
+  50% {
+    rotate: 5deg;
+  }
+}
+
+/* ---------- his own: ice cream, offering, brain freeze, humming, scarf, the slip ---------------- */
+/* Eating: he leans in to the cone for a lick, then savours it. */
+.kaito[data-pose="icecream"] .kaito__head {
+  animation: kaito-lick 2.6s ease-in-out infinite;
+}
+.kaito[data-pose="icecream"] .kaito__cone {
+  transform-box: view-box;
+}
+.kaito__drip {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: kaito-drip 4.2s ease-in infinite;
+}
+@keyframes kaito-lick {
+  0%,
+  55%,
+  100% {
+    rotate: 1deg;
+    translate: 0 0;
+  }
+  18%,
+  38% {
+    rotate: 5deg;
+    translate: 3px 1px;
+  }
+  28% {
+    rotate: 6deg;
+    translate: 3px 2px;
+  }
+}
+@keyframes kaito-drip {
+  0%,
+  60% {
+    scale: 1 0.6;
+    opacity: 1;
+  }
+  85% {
+    scale: 1 1.25;
+    opacity: 1;
+  }
+  100% {
+    scale: 1 1.4;
+    opacity: 0;
+  }
+}
+/* Offering her the lilac one: a small nod forward, the cone held out, a heart. */
+.kaito[data-pose="offer"] .kaito__float {
+  animation: kaito-offer 2.4s ease-in-out infinite;
+}
+.kaito__heart {
+  animation: kaito-heart 2.4s ease-out infinite;
+}
+@keyframes kaito-offer {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  40% {
+    translate: 0 1.6px;
+  }
+}
+@keyframes kaito-heart {
+  0% {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 2px -14px;
+  }
+}
+/* Brain freeze: a hand to his head and a shiver that comes in waves. */
+.kaito[data-pose="brainfreeze"] .kaito__head {
+  rotate: -4deg;
+  translate: 0 1px;
+}
+.kaito[data-pose="brainfreeze"] .kaito__float {
+  animation: kaito-shiver 1.6s linear infinite;
+}
+.kaito__frost {
+  animation: kaito-twinkle 0.9s ease-in-out infinite alternate;
+}
+@keyframes kaito-shiver {
+  0%,
+  4%,
+  12%,
+  20%,
+  28%,
+  36% {
+    translate: 0.9px 0;
+  }
+  8%,
+  16%,
+  24%,
+  32% {
+    translate: -0.9px 0;
+  }
+  40%,
+  100% {
+    translate: 0 0;
+  }
+}
+@keyframes kaito-twinkle {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* Humming along with something only he can hear: a sway and notes drifting up. */
+.kaito[data-pose="hum"] .kaito__root {
+  animation: kaito-sway 2.4s ease-in-out infinite;
+}
+.kaito[data-pose="hum"] .kaito__head {
+  animation: kaito-sway-head 2.4s ease-in-out infinite;
+}
+.kaito__note {
+  animation: kaito-note 2.4s ease-out infinite both;
+}
+.kaito__note--2 {
+  animation-delay: 1.2s;
+}
+@keyframes kaito-sway {
+  0%,
+  100% {
+    rotate: -2.5deg;
+  }
+  50% {
+    rotate: 2.5deg;
+  }
+}
+@keyframes kaito-sway-head {
+  0%,
+  100% {
+    rotate: 2deg;
+  }
+  50% {
+    rotate: -1.5deg;
+  }
+}
+@keyframes kaito-note {
+  0% {
+    opacity: 0;
+    translate: -2px 6px;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 4px -12px;
+  }
+}
+/* Snuggled into his scarf. */
+.kaito[data-pose="snuggle"] .kaito__head {
+  rotate: -3deg;
+  translate: 0 2px;
+}
+.kaito[data-pose="snuggle"] .kaito__root {
+  animation: kaito-sway 3.6s ease-in-out infinite;
+}
+/* The slip: a skid on his own icy cloud, arms going, then he rights himself. */
+.kaito[data-pose="slip"] .kaito__root {
+  animation: kaito-slip 1.5s cubic-bezier(0.3, 0.7, 0.3, 1) both;
+}
+.kaito[data-pose="slip"] .kaito__boot--r {
+  animation: kaito-skid 1.5s ease-out both;
+}
+.kaito[data-pose="slip"] .kaito__arm--l {
+  rotate: -108deg;
+  animation: kaito-windmill-l 1.5s ease-in-out both;
+}
+.kaito[data-pose="slip"] .kaito__arm--r {
+  rotate: 74deg;
+  animation: kaito-windmill-r 1.5s ease-in-out both;
+}
+@keyframes kaito-slip {
+  0% {
+    rotate: 0deg;
+    translate: 0 0;
+  }
+  14% {
+    rotate: -13deg;
+    translate: -4px 1px;
+  }
+  32% {
+    rotate: 8deg;
+    translate: 2px -2px;
+  }
+  48% {
+    rotate: -5deg;
+    translate: 0 0;
+  }
+  64% {
+    rotate: 2.5deg;
+  }
+  80% {
+    rotate: -1deg;
+  }
+  100% {
+    rotate: 0deg;
+    translate: 0 0;
+  }
+}
+@keyframes kaito-skid {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  14% {
+    translate: 9px -5px;
+    rotate: -22deg;
+  }
+  40% {
+    translate: 3px -1px;
+    rotate: -6deg;
+  }
+}
+@keyframes kaito-windmill-l {
+  0% {
+    rotate: 0deg;
+  }
+  10% {
+    rotate: -40deg;
+  }
+  20% {
+    rotate: 25deg;
+  }
+  30% {
+    rotate: -35deg;
+  }
+  40% {
+    rotate: 15deg;
+  }
+  55% {
+    rotate: -20deg;
+  }
+  100% {
+    rotate: -108deg;
+  }
+}
+@keyframes kaito-windmill-r {
+  0% {
+    rotate: 0deg;
+  }
+  10% {
+    rotate: 35deg;
+  }
+  20% {
+    rotate: -25deg;
+  }
+  30% {
+    rotate: 30deg;
+  }
+  40% {
+    rotate: -10deg;
+  }
+  55% {
+    rotate: 20deg;
+  }
+  100% {
+    rotate: 74deg;
+  }
+}
+
+/* ---------- little marks ------------------------------------------------------------------------ */
+.kaito__glints {
+  animation: kaito-twinkle 0.6s ease-in-out 4 alternate;
+}
+
+/* ---------- his cloud (Platform.jsx) -------------------------------------------------------------
+   forming: the base spreads from the middle and the scoops plop in one after another;
+   steady: frost sparkles; fading: it melts (drips stretch, scoops slump and sink, all fades). */
+.kaito-cloud {
+  position: relative;
+  display: block;
+  pointer-events: none;
+}
+.kaito-cloud svg {
+  display: block;
+  overflow: visible;
+}
+.kaito-cloud__base,
+.kaito-cloud__scoop,
+.kaito-cloud__drip,
+.kaito-cloud__frost {
+  transform-box: view-box;
+}
+.kaito-cloud__drip {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+}
+.kaito-cloud__sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: kaito-cloud-twinkle 2.6s ease-in-out infinite;
+}
+.kaito-cloud__sparkle--1 {
+  animation-delay: -0.9s;
+}
+.kaito-cloud__sparkle--2 {
+  animation-delay: -1.7s;
+}
+.kaito-cloud[data-state="forming"] .kaito-cloud__base {
+  transform-origin: 50% 14px;
+  animation: kaito-cloud-spread 0.34s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+.kaito-cloud[data-state="forming"] .kaito-cloud__scoop {
+  animation: kaito-cloud-plop 0.38s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+.kaito-cloud[data-state="forming"] .kaito-cloud__drip {
+  animation: kaito-cloud-drip-in 0.5s ease-out 0.15s both;
+}
+.kaito-cloud[data-state="forming"] .kaito-cloud__frost {
+  animation: kaito-cloud-fade-in 0.4s ease-out 0.25s both;
+}
+.kaito-cloud[data-state="fading"] svg {
+  animation: kaito-cloud-fade-out 0.55s ease-in 0.05s both;
+}
+.kaito-cloud[data-state="fading"] .kaito-cloud__scoop {
+  animation: kaito-cloud-slump 0.6s ease-in both;
+  animation-delay: 0s !important;
+}
+.kaito-cloud[data-state="fading"] .kaito-cloud__drip {
+  animation: kaito-cloud-melt 0.6s ease-in both;
+}
+.kaito-cloud[data-state="fading"] .kaito-cloud__base {
+  transform-origin: 50% 14px;
+  animation: kaito-cloud-sink 0.6s ease-in both;
+}
+.kaito-cloud[data-state="fading"] .kaito-cloud__frost {
+  opacity: 0;
+}
+@keyframes kaito-cloud-spread {
+  from {
+    opacity: 0;
+    scale: 0.25 0.6;
+  }
+  to {
+    opacity: 1;
+    scale: 1 1;
+  }
+}
+@keyframes kaito-cloud-plop {
+  0% {
+    opacity: 0;
+    scale: 0.2;
+    translate: 0 -6px;
+  }
+  60% {
+    opacity: 1;
+    scale: 1.12 0.9;
+    translate: 0 0;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+  }
+}
+@keyframes kaito-cloud-drip-in {
+  from {
+    scale: 1 0;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+@keyframes kaito-cloud-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes kaito-cloud-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes kaito-cloud-slump {
+  to {
+    scale: 1.12 0.55;
+    translate: 0 5px;
+  }
+}
+@keyframes kaito-cloud-melt {
+  to {
+    scale: 1 2.3;
+  }
+}
+@keyframes kaito-cloud-sink {
+  to {
+    scale: 1 0.7;
+    translate: 0 4px;
+  }
+}
+@keyframes kaito-cloud-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    scale: 0.6;
+  }
+  50% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* ---------- quiet: no motion at all ------------------------------------------------------------- */
+.kaito[data-motion="off"] * {
+  animation: none !important;
+  transition-duration: 0s !important;
+}
+.kaito-cloud[data-playing="off"] * {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kaito *,
+  .kaito-cloud * {
+    animation: none !important;
+    transition-duration: 0s !important;
+  }
+}

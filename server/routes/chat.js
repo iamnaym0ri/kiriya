@@ -24,6 +24,7 @@ import {
   sendMessage,
   setTyping,
   typingOf,
+  clearTyping,
   unreadMessages,
 } from "../lib/chat.js";
 import { ablyConfigured, realtimeToken } from "../lib/realtime.js";
@@ -68,7 +69,9 @@ chatRoutes.get("/summary", async (c) => {
 
 chatRoutes.post("/messages", async (c) => {
   try {
-    const message = await sendMessage(await getDb(), role(c), await c.req.json().catch(() => null), { after: background });
+    const db = await getDb();
+    const message = await sendMessage(db, role(c), await c.req.json().catch(() => null), { after: background });
+    if (!ablyConfigured()) await clearTyping(db, role(c)).catch(() => {});
     return c.json(message, 201);
   } catch (error) {
     return fail(c, error, "That message couldn’t be sent.");

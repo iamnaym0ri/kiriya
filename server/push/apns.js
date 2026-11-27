@@ -30,6 +30,7 @@ const KINDS = {
   jar: { category: "JAR", thread: "jar", sound: "jar.caf", special: true },
   reminder: { category: "REMINDER", thread: "reminders", sound: "jar.caf" },
   event: { category: "EVENT", thread: "events", sound: "default" },
+  quiz: { category: "QUIZ", thread: "quizzes", sound: "tap.caf" },
 };
 
 /** The same message the web push carries, as an APNs alert. `navigate` rides along for the tap. */

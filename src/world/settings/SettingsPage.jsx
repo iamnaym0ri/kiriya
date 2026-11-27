@@ -45,7 +45,7 @@ function InstallGuide() {
   );
 }
 
-function Sharing() {
+export function Sharing() {
   const prefs = usePrefs();
   const setPrefs = useSetPrefs();
   const role = useSession().data?.role;
@@ -106,7 +106,7 @@ function Sharing() {
   );
 }
 
-function Passphrase() {
+export function Passphrase() {
   const queryClient = useQueryClient();
   const role = useSession().data?.role ?? "kiriya";
   const id = useId();
@@ -209,7 +209,7 @@ function Steps({ items }) {
   );
 }
 
-function PhoneWidget() {
+export function PhoneWidget() {
   const queryClient = useQueryClient();
   const keys = useQuery({ queryKey: ["me", "device-keys"], queryFn: () => api("/me/device-keys") });
   // Loaded ahead of the tap: Safari only allows copying straight from the tap, not after a request.
@@ -351,7 +351,7 @@ const UNAVAILABLE = {
   "not-configured": "Notifications aren’t set up on the server yet. Your world works without them.",
 };
 
-function Surprises() {
+export function Surprises() {
   const surprises = useSurprises();
   const { support, state, settings, ownsSettings, saveSettings, message, setMessage, busy } = surprises;
   const test = useMutation({
@@ -504,7 +504,7 @@ function Surprises() {
   );
 }
 
-function Address() {
+export function Address() {
   const queryClient = useQueryClient();
   const address = useQuery({
     queryKey: ["me", "address"],
@@ -551,7 +551,7 @@ function Address() {
 
 const lines = (text) => text.split("\n").map((line) => line.trim()).filter(Boolean);
 
-function PublicProfile() {
+export function PublicProfile() {
   const queryClient = useQueryClient();
   const role = useSession().data?.role;
   const profile = useQuery({ queryKey: ["me", "profile"], queryFn: () => api("/me/profile") });

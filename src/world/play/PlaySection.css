@@ -1,0 +1,434 @@
+/* The app's play section (PlaySection.jsx). Layout comes from styles/app-shell.css; this styles what
+   is play's own: the doodle card, the shelves and their game tiles. */
+
+/* ---------- sticker book button ---------- */
+html.app-shell .play-stickers-button {
+  position: relative;
+}
+.play-stickers-button__count {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 9px;
+  background: var(--theme-accent, #785383);
+  color: #fff;
+  font: 700 11px/18px var(--font-ui);
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--theme-paper, #fff9fd);
+}
+
+/* ---------- doodle ---------- */
+.play-doodle__open {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: calc(100% - 24px);
+  margin: 0 12px;
+  padding: 12px 14px 12px 10px;
+  box-sizing: border-box;
+  border: 1.5px dashed color-mix(in srgb, var(--theme-line, #d5bedf) 90%, transparent);
+  border-radius: 18px;
+  background: var(--theme-notebook, #fffaf6);
+  color: var(--theme-ink, #54385f);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.play-doodle__open:active {
+  transform: scale(0.985);
+}
+.play-doodle__art {
+  flex: none;
+  width: 84px;
+  height: 72px;
+  rotate: -4deg;
+}
+.play-doodle__words {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.play-doodle__words strong {
+  font: 700 25px/1.05 var(--font-hand);
+  letter-spacing: -0.01em;
+}
+.play-doodle__words > span:not(.play-doodle__cta) {
+  color: var(--theme-muted, #7a6583);
+  font: 400 13.5px/1.35 var(--font-ui);
+}
+.play-doodle__cta {
+  justify-self: start;
+  margin-top: 6px;
+  padding: 7px 14px;
+  border-radius: 99px;
+  background: var(--theme-accent, #785383);
+  color: #fff9ff;
+  font: 600 13px/1.2 var(--font-ui);
+  box-shadow: 0 2px 0 var(--theme-deep, #554062);
+}
+.play-doodle__news {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% - 24px);
+  min-height: 44px;
+  margin: 10px 12px 0;
+  padding: 8px 14px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 14px;
+  background: color-mix(in srgb, #ffcce0 55%, var(--theme-paper, #fff9fd));
+  color: var(--theme-ink, #54385f);
+  font: 600 14px/1.3 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+.play-doodle__strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 76px;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 16px 16px;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 16px;
+  scrollbar-width: none;
+}
+.play-doodle__strip::-webkit-scrollbar {
+  display: none;
+}
+.play-doodle__strip li {
+  scroll-snap-align: start;
+}
+.play-doodle__thumb {
+  position: relative;
+  display: block;
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--theme-line, #d5bedf) 70%, transparent);
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+  cursor: pointer;
+}
+.play-doodle__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.play-doodle__thumb:active {
+  transform: scale(0.96);
+}
+.play-doodle__mark,
+.play-doodle__note {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--theme-paper, #fff9fd) 94%, transparent);
+  box-shadow: 0 1px 3px rgb(84 56 95 / 0.25);
+  font-size: 12px;
+  line-height: 1;
+}
+.play-doodle__mark {
+  right: 4px;
+  bottom: 4px;
+  color: #d0457e;
+}
+.play-doodle__note {
+  top: 4px;
+  right: 4px;
+  font-size: 11px;
+}
+.play-doodle__note[data-new] {
+  background: #ffcce0;
+  box-shadow: 0 0 0 2px #e0457b;
+}
+
+/* Josh's sheet for a doodle. */
+.doodle-notes-sheet {
+  display: grid;
+  gap: 14px;
+}
+.doodle-notes-sheet__picture {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid var(--purple-100, #f1e8ff);
+  overflow: hidden;
+}
+.doodle-notes-sheet__picture img {
+  display: block;
+  width: 100%;
+  max-height: 38vh;
+  object-fit: contain;
+}
+.doodle-notes-sheet__step {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, #fff 86%, transparent);
+  box-shadow: 0 2px 8px rgb(84 56 95 / 0.2);
+  color: var(--purple-700, #632bb5);
+  font: 600 24px/1 var(--font-ui);
+  cursor: pointer;
+}
+.doodle-notes-sheet__step[data-side="left"] {
+  left: 8px;
+}
+.doodle-notes-sheet__step[data-side="right"] {
+  right: 8px;
+}
+.doodle-notes-sheet__notes {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.doodle-notes-sheet__notes li {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--purple-100, #f1e8ff);
+}
+.doodle-notes-sheet__notes p {
+  margin: 0 0 4px;
+  font: 400 15px/1.45 var(--font-ui);
+}
+.doodle-notes-sheet__notes div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.doodle-notes-sheet__notes small {
+  color: var(--mist-600, #6f6879);
+}
+.doodle-notes-sheet__notes button {
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--pink-700, #9c0057);
+  font: 600 13px/1 var(--font-ui);
+  cursor: pointer;
+}
+.doodle-notes-sheet__notify {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font: 400 15px/1.3 var(--font-ui);
+}
+.doodle-notes-sheet__notify input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--purple-600, #7e39df);
+}
+
+/* The sketchbook inside its sheet: the website's notebook, given room. */
+.play-sketch-stage {
+  padding: 12px max(12px, env(safe-area-inset-left)) 32px max(12px, env(safe-area-inset-right));
+  box-sizing: border-box;
+}
+.play-sketch-stage > .mini-sketchbook {
+  max-width: 640px;
+  margin: 8px auto 0;
+}
+
+/* ---------- quizzes (until the quizzes agent's card lands) ---------- */
+.play-quizzes-soon .app-card__body p {
+  color: var(--theme-muted, #7a6583);
+}
+
+/* ---------- the game library ---------- */
+.play-library {
+  display: grid;
+  gap: 22px;
+  margin-top: 8px;
+}
+.play-library__title {
+  margin: 0;
+  color: var(--theme-ink, #54385f);
+  font: 700 28px/1.1 var(--font-hand);
+  letter-spacing: -0.015em;
+}
+.play-shelf {
+  --shelf-tint: #f1e6f7;
+  --shelf-ink: #7d5a96;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.play-shelf[data-shelf="brain"] {
+  --shelf-tint: #e9e7f8;
+  --shelf-ink: #5f5c9c;
+}
+.play-shelf[data-shelf="luck"] {
+  --shelf-tint: #fbe5ef;
+  --shelf-ink: #a24d7a;
+}
+.play-shelf[data-shelf="artsy"] {
+  --shelf-tint: #f6e5f2;
+  --shelf-ink: #93558c;
+}
+.play-shelf[data-shelf="dexterity"] {
+  --shelf-tint: #e2f1ee;
+  --shelf-ink: #3f7f78;
+}
+.play-shelf__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "mark title count"
+    "mark blurb count";
+  align-items: center;
+  column-gap: 10px;
+  min-width: 0;
+}
+.play-shelf__mark {
+  grid-area: mark;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: var(--shelf-tint);
+  color: var(--shelf-ink);
+  font: 18px/1 var(--font-hand);
+}
+.play-shelf__head h3 {
+  grid-area: title;
+  margin: 0;
+  color: var(--theme-ink, #54385f);
+  font: 700 21px/1.1 var(--font-hand);
+}
+.play-shelf__blurb {
+  grid-area: blurb;
+  color: var(--theme-muted, #7a6583);
+  font: 400 12.5px/1.3 var(--font-ui);
+}
+.play-shelf__count {
+  grid-area: count;
+  color: var(--theme-muted, #7a6583);
+  font: 600 12px/1 var(--font-ui);
+}
+.play-shelf__row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 150px;
+  gap: 12px;
+  margin-block: 0;
+  padding: 2px max(var(--app-gutter, 16px), env(safe-area-inset-left)) 10px;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: max(var(--app-gutter, 16px), env(safe-area-inset-left));
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.play-shelf__row::-webkit-scrollbar {
+  display: none;
+}
+.play-shelf__row > li {
+  scroll-snap-align: start;
+  min-width: 0;
+}
+.play-tile {
+  display: grid;
+  grid-template-rows: 108px auto;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 1px solid var(--app-card-line, #e4d5ec);
+  border-radius: 20px;
+  background: var(--app-card-bg, #fff9fd);
+  box-shadow: var(--app-card-shadow);
+  color: var(--theme-ink, #54385f);
+  text-align: left;
+  font: inherit;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+.play-tile:active {
+  transform: scale(0.965);
+}
+.play-tile__art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(90% 80% at 50% 100%, color-mix(in srgb, #fff 55%, transparent), transparent 70%),
+    var(--shelf-tint);
+}
+.play-tile__art > svg {
+  width: 74px;
+  height: 74px;
+  filter: drop-shadow(0 2px 2px rgb(84 56 95 / 0.12));
+}
+.play-tile__glyph {
+  color: var(--shelf-ink);
+  font: 40px/1 var(--font-hand);
+}
+.play-tile__new {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: #e0457b;
+  color: #fff;
+  font: 700 10.5px/1.5 var(--font-ui);
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 3px rgb(160 40 90 / 0.3);
+}
+.play-tile__text {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  min-height: 62px;
+  padding: 9px 12px 12px;
+  min-width: 0;
+}
+.play-tile__text strong {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font: 700 18.5px/1.1 var(--font-hand);
+  overflow-wrap: anywhere;
+}
+.play-tile__text span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  color: var(--theme-muted, #7a6583);
+  font: 400 12.5px/1.3 var(--font-ui);
+}
+@media (prefers-reduced-motion: reduce) {
+  .play-tile,
+  .play-doodle__open {
+    transition: none;
+  }
+}

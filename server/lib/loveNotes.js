@@ -175,6 +175,29 @@ export async function openLoveNote(db, recipient, id, now = new Date()) {
   return inboxFields(note);
 }
 
+/**
+ * Josh's view of the notes and letters section: her inbox exactly as she sees it (her opened marks
+ * and reactions included), the notes still on their way to her, and his own test notes.
+ */
+export async function mailForAdmin(db, now = new Date()) {
+  const [hers, test, upcoming] = await Promise.all([
+    inbox(db, "kiriya", { now }),
+    inbox(db, "admin", { now, limit: 20 }),
+    db
+      .select()
+      .from(schema.loveNotes)
+      .where(and(eq(schema.loveNotes.recipient, "kiriya"), eq(schema.loveNotes.status, "scheduled")))
+      .orderBy(schema.loveNotes.sendAt)
+      .limit(30),
+  ]);
+  return {
+    notes: hers.notes,
+    unread: hers.unread,
+    test: test.notes,
+    upcoming: upcoming.filter((note) => note.sendAt.getTime() > now.getTime()).map((note) => ({ ...inboxFields(note), status: note.status })),
+  };
+}
+
 /** Hearts (or one emoji) a note that has reached this person; null takes the reaction back. */
 export async function reactToLoveNote(db, recipient, id, reaction, now = new Date()) {
   const [note] = await db

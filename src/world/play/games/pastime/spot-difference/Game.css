@@ -1,0 +1,59 @@
+.spot {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.spot .pastime-stats { flex: none; }
+.spot .pastime-stats { gap: 6px; }
+.spot .pastime-stat { padding: 6px 8px; }
+.spot-found { flex: 1.25; }
+.spot-dots { display: flex; gap: 2px; font-size: 18px; line-height: 1; }
+.spot-dots [data-on="true"] { color: #e5579a; }
+.spot-dots [data-on="false"] { color: #dccbe4; }
+.spot-hint-button { flex: none; align-self: stretch; padding-inline: 12px; }
+
+.spot-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+.spot-pics { position: relative; display: flex; flex-direction: column; }
+.spot-frame {
+  position: relative;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1.5px #c9aed8, 0 5px 0 #e3d3ea;
+  overflow: hidden;
+  background: #fff;
+}
+.spot-frame[data-shake] { animation: spot-shake 0.3s ease-in-out; }
+.spot-pic { position: absolute; inset: 0; touch-action: none; cursor: pointer; }
+.spot-pic img { display: block; width: 100%; height: 100%; pointer-events: none; -webkit-user-drag: none; }
+.spot-marks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.spot-ring {
+  fill: none;
+  stroke: #e5579a;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  animation: spot-draw 0.45s ease-out both;
+  filter: drop-shadow(0 0 2px #fff);
+}
+.spot-hint { fill: rgb(255 240 160 / 0.28); stroke: #f0b429; stroke-width: 3; stroke-dasharray: 6 6; animation: spot-glow 0.9s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+.spot-miss path { fill: none; stroke: #9a83a6; stroke-width: 3; stroke-linecap: round; animation: spot-miss 0.7s ease-out forwards; }
+.spot-done__count { font: 20px/1.2 var(--font-hand, "Gaegu", cursive); color: var(--ink-faint); }
+.spot-next { width: 100%; margin-top: 6px; }
+
+@keyframes spot-draw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+@keyframes spot-glow { from { opacity: 0.45; transform: scale(0.9); } to { opacity: 1; transform: scale(1.05); } }
+@keyframes spot-miss { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes spot-shake {
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spot-ring { animation: none; stroke-dasharray: none; }
+  .spot-hint { animation: none; }
+  .spot-frame[data-shake] { animation: none; }
+}
