@@ -164,7 +164,9 @@ the hub lands, open a game in the dev-only lab: `/world/game-lab?g=<id>`.
   `~/kiriya` (the coordinator's checkout) or another agent's worktree.
 - Run the dev server on **your own port** (in your brief): `npx vite --port <port> --strictPort`.
   Your local database lives in your worktree's `.data/pglite`, so it is yours alone.
-  Sign in locally with the dev passphrases: `kiriya` (her view) and `admin` (Josh's view).
+  Sign in locally with the dev passphrases: `kiriya` (her view) and `admin` (Josh's view). In
+  Playwright: `await context.request.post("http://localhost:<port>/api/session/unlock", { headers:
+  { "x-kw": "1" }, data: { passphrase: "admin" } })`, then open pages in that context.
 - Use the app layout with `http://localhost:<port>/world?app=1`.
 - **Heavy work takes a slot.** Wrap every browser run, simulator run, `vite build` and full test
   suite in `~/.cache/kiriya-agents/slot.sh <command>` (at most 3 at once across all agents; it waits
