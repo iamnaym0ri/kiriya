@@ -84,15 +84,18 @@ export default function LanternsGame({ onReward }) {
   const place = useCallback(() => {
     const { width, height } = sky;
     if (!width) return;
-    for (const lantern of lanterns) {
+    lanterns.forEach((lantern, index) => {
       const node = nodes.current.get(lantern.id);
-      if (!node) continue;
-      const at = lanternAt(lantern, clock.current.t);
+      if (!node) return;
+      // Reduced motion: the lanterns hang still, spread down the sky above the hills.
+      const at = reduced
+        ? { x: lantern.x, y: 0.12 + ((index * 3) % lanterns.length) / lanterns.length * 0.6, swayX: 0, tilt: 0 }
+        : lanternAt(lantern, clock.current.t);
       const x = at.x * (width - LANTERN_W) + at.swayX;
       const y = at.y * height - LANTERN_H / 2;
       node.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${at.tilt.toFixed(1)}deg) scale(${lantern.size.toFixed(2)})`;
-    }
-  }, [lanterns, sky]);
+    });
+  }, [lanterns, sky, reduced]);
 
   useLayoutEffect(() => {
     place();
