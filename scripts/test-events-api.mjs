@@ -67,7 +67,8 @@ try {
     assert.match(ics.headers.get("content-type"), /^text\/calendar/);
     const text = await ics.text();
     assert.match(text, /BEGIN:VCALENDAR/);
-    assert.match(text, /DTSTART;TZID=Asia\/Singapore:20261127T100000/);
+    // 10:00 in Singapore, written either with its time zone or in UTC (shared/eventCalendar.js uses UTC).
+    assert.match(text, /DTSTART(;TZID=Asia\/Singapore:20261127T100000|:20261127T020000Z)/);
     assert.doesNotMatch(text, /sample cosplay guest|S\$18/, "public facts only");
     assert.equal((await request("events/nope/calendar.ics")).status, 404);
     assert.equal((await request("events/fixture-art/afa.svg")).status, 404, "sample art is dev-only");
