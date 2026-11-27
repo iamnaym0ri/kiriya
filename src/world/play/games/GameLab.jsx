@@ -1,42 +1,39 @@
-import { Suspense, lazy, useMemo } from "react";
-import { createPortal } from "react-dom";
+import { Suspense, lazy, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { GAMES, gameById } from "./registry.js";
+import GameSheet from "./GameSheet.jsx";
 
-// Dev-only game lab: /world/game-lab?g=<id> opens one game the way the play hub will
-// (docs/refactor/RENOVATION.md, "Games"): a full-screen sheet above everything, safe areas padded,
-// a top bar with "‹ play" and the game's title, and the game filling the rest. The frame agent's
-// hub replaces this for real use; game agents test with it until then.
+// Dev-only game lab: /world/game-lab?g=<id> opens one game in the very sheet the play hub uses
+// (GameSheet.jsx: full screen above everything, portalled to <body>, safe areas padded, a 44 pt bar
+// with "‹ play" and the title, the game filling .game-sheet__stage). Rewards are logged, and shown
+// at the bottom of the lab list, instead of being saved.
 export default function GameLab() {
   const [params, setParams] = useSearchParams();
   const game = gameById(params.get("g"));
   const Game = useMemo(() => (game ? lazy(game.load) : null), [game]);
+  const [rewards, setRewards] = useState([]);
   if (!import.meta.env.DEV) return null;
-  if (!Game) {
-    return (
+  const exit = () => setParams({});
+  const reward = (value) => {
+    console.info("reward", value);
+    setRewards((list) => [...list, { ...value, game: value?.game ?? game?.id }]);
+  };
+  return (
+    <>
       <div style={{ padding: 16, display: "grid", gap: 8 }}>
         <h1>games</h1>
         {GAMES.map((each) => (
           <button key={each.id} type="button" onClick={() => setParams({ g: each.id })}>{each.shelf} · {each.title}</button>
         ))}
+        {rewards.length > 0 && <pre data-testid="lab-rewards">{JSON.stringify(rewards, null, 1)}</pre>}
       </div>
-    );
-  }
-  const exit = () => setParams({});
-  // Portalled to <body>: the page's content column is its own stacking context, so a sheet inside
-  // it would sit under the header, the ribbon, the little corner and the tab bar.
-  return createPortal(
-    <div className="game-sheet" style={{ position: "fixed", inset: 0, zIndex: 2147482500, display: "flex", flexDirection: "column", background: "var(--purple-50)", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
-      <header style={{ flex: "none", height: 44, display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-        <button type="button" onClick={exit} style={{ minHeight: 44, border: 0, background: "none", color: "var(--purple-700)", font: "500 16px var(--font-ui)" }}>‹ play</button>
-        <strong style={{ font: "600 16px var(--font-ui)", color: "var(--purple-900)" }}>{game.title}</strong>
-      </header>
-      <div className="game-sheet__stage" style={{ flex: 1, minHeight: 0, position: "relative", overflow: "hidden" }}>
-        <Suspense fallback={<p style={{ padding: 16 }}>loading…</p>}>
-          <Game onExit={exit} onReward={(reward) => console.info("reward", reward)} />
-        </Suspense>
-      </div>
-    </div>,
-    document.body,
+      <GameSheet open={Boolean(Game)} title={game?.title ?? ""} onClose={exit}>
+        {Game && (
+          <Suspense fallback={<p style={{ padding: 16 }}>loading…</p>}>
+            <Game onExit={exit} onReward={reward} />
+          </Suspense>
+        )}
+      </GameSheet>
+    </>
   );
 }
