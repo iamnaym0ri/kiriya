@@ -304,8 +304,8 @@ uploadRoutes.get("/media", async (c) => {
   // Event and merch pictures stored before they were sized for phones (lib/events/images.js
   // fitImage) are shrunk on the way out, so no 7000 px photo ever reaches the app.
   const contentType = result.blob.contentType ?? "application/octet-stream";
-  const length = Number(result.headers.get("Content-Length") ?? 0);
-  if (!range && pathname.startsWith("events/") && /^image\/(?:jpeg|png|webp)$/.test(contentType) && length > 700 * 1024) {
+  // (Measured in pixels, not bytes: a 432 KB JPEG can still be 6912 px wide, about 95 MB decoded.)
+  if (!range && pathname.startsWith("events/") && /^image\/(?:jpeg|png|webp)$/.test(contentType)) {
     const original = Buffer.from(await new Response(result.stream).arrayBuffer());
     const body = await fitImage(original, contentType);
     return new Response(body, {
