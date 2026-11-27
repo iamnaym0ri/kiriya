@@ -218,12 +218,32 @@ Query: `fandom=…`, `saved=1`, `when=all` (default: upcoming and on-now events 
   "price": 25, "currency": "SGD", "priceLabel": "S$25",
   "where": "official merch booth, hall 402", "when": "while stocks last",
   "limited": true, "status": "revealed", "note": "one per person on Friday",
-  "image": "…" | null, "saved": false,
-  "sourceIds": ["s3"], "sourceId": "s3",
+  "image": "/api/uploads/media?path=events%2F…" | null,   // the first of `images`
+  "images": ["…"], "imageCredit": "@animefestivalasia" | null,   // our stored copies only
+  "saved": false, "sourceIds": ["s3"], "sourceId": "s3",
   "event": { "id": "…", "name": "AFA Singapore 2026", "kind": "con", "startsOn": "…", "endsOn": "…",
-             "dateLabel": "27–29 nov", "venueName": "…", "status": "on_now" }
+             "dateLabel": "27–29 nov", "venueName": "…", "venueArea": "City Hall", "status": "on_now",
+             "image": { "url", "alt" } | null }
 }
 ```
+
+### `GET /api/events/merch/:merchId` — one piece (round 2)
+
+`{ "merch": MerchDetail, "redirectedFrom"?: "<old id>", "me": Me }`: a MerchCard plus `sources`
+(the piece's own), `event.venue { name, hall, area, address, lat, lng }`, `event.tickets`,
+`event.timeLabel`, `event.tagline`, `event.url`, and `more: [MerchCard]` (up to 8 others from the
+same event). 404 when the piece is gone. The screens open it at `/world/events/merch/<merchId>`.
+
+### Ids never die (round 2)
+
+An event's id is minted once (whole words, ≤52 characters, plus the year when the name has none)
+and never changes; renames keep it. When the engine folds a duplicate into the event first spotted,
+the duplicate stays as an alias (`status: "merged"`, `dossier.mergedInto`): `GET /api/events/:id`,
+its calendar file, saves and merch ids (`<old id>~<piece>`) answer with the surviving event and add
+`redirectedFrom`. Statuses that keep a row off the lists say why: `merged`, `out_of_scope` (the
+retired weekly stage's overseas rows), `hidden` (Josh). A `cancelled` event stays listed, marked,
+until its last day has passed; open-ended pop-ups (no end date) count as on for 60 days. Nothing is
+deleted.
 
 ### `GET /api/events/home` — the home section's events & merch block
 
@@ -233,8 +253,8 @@ Query: `fandom=…`, `saved=1`, `when=all` (default: upcoming and on-now events 
   "onNow": [EventCard],           // happening today
   "upcoming": [EventCard],        // the next four after `next`
   "fresh": [{ "id": "uuid", "at": "…", "kind": "merch", "title": "exclusives revealed", "text": "…", "big": true,
-              "event": { "id": "…", "name": "…", "kind": "con", "dateLabel": "27–29 nov" } }],   // ≤4 unseen since the section mark
-  "merch": [MerchCard],           // three from her events
+              "event": { "id": "…", "name": "…", "kind": "con", "dateLabel": "27–29 nov" } }],   // ≤4 unseen since the section mark, one per event
+  "merch": [MerchCard],           // up to six: her events first, pieces with a picture first, no sold-out
   "counts": { "upcoming": 11, "unseenUpdates": 4, "saved": 2 },
   "me": Me, "today": "2026-11-27", "updatedAt": "…"
 }
@@ -304,11 +324,18 @@ are researched through web search, never fetched.
   sources: [{ id, name, method, lastCheckAt, status, nextAt }], recentUpdates: [{ id, eventId, at, kind, title, push, pushedAt }] }`.
 - `PATCH /api/admin/events/:id { hidden?, hers?, big? }` → `{ event: EventDetail }`.
 - `POST /api/admin/events/:id/refresh` → 202 `{ id, status: "queued", eventId }`: the worker looks into it again.
+- `POST /api/admin/events/:id/merge { into }` → `{ id, into }`: folds a duplicate into another event (the id keeps working).
 
 ## The worker: `/api/jobs/events` (not for screens)
 
 `POST /api/jobs/events/deliver { digest?: true }` with `Authorization: Bearer $CRON_SECRET`: the
 Railway worker asks Vercel to send due pushes, so push keys stay in Vercel only.
+
+`POST /api/jobs/events/images` with `Authorization: Bearer $CRON_SECRET` and a JPEG, PNG or WebP
+body (≤4 MB): the worker hands over an event or merch picture, the site stores it in the private
+Blob store under `events/<content hash>.<ext>` (locally: `.data/uploads`) and answers 201
+`{ url: "/api/uploads/media?path=events%2F…", pathname }`. 415 for anything that isn't a picture,
+503 when no store is connected. The worker needs no Blob token of its own.
 
 ## Running the engine (for the coordinator and Josh)
 
@@ -317,7 +344,9 @@ service's config-as-code path at it) ticks every minute: queue first-research fo
 dossier, check sources that are due (≤6 a tick, each at its own cadence, robots.txt first, blocked
 sites never), Apify Instagram (every 8 h), the newsletter inbox (every 30 min), the signal queue
 (≤3 a tick: Haiku triage → Opus investigation), weather (every 3 h; 30 min on event days) and
-trains, then asks Vercel to deliver pushes (`/api/jobs/events/deliver`). It writes a heartbeat to
+trains, looks for pictures for up to two events that are missing some (their pages' share pictures
+and the Instagram posts that led to them, copied through `/api/jobs/events/images`; no Claude
+calls), then asks Vercel to deliver pushes (`/api/jobs/events/deliver`). It writes a heartbeat to
 `settings.events_worker` (admin status) and answers `GET /health`. The OpenAI weekly events stage is
 retired (no import, no cron).
 
@@ -329,7 +358,8 @@ retired (no import, no cron).
 | `ANTHROPIC_API_KEY` | Claude; without it everything runs as a dry run (a stand-in answers, nothing billed) |
 | `CRON_SECRET` | the same value as in Vercel; lets the worker ask Vercel to send pushes |
 | `APIFY_TOKEN` | Apify Instagram trigger (optional `APIFY_INSTAGRAM_ACTOR`, default `apify~instagram-scraper`; `EVENTS_INSTAGRAM_EVERY_HOURS`, default 8) |
-| `BLOB_READ_WRITE_TOKEN` (or `BLOB_STORE_ID`) | to copy Instagram images into the private Blob store (`events/` folder) |
+| `BLOB_READ_WRITE_TOKEN` (or `BLOB_STORE_ID`) | optional: without it (the usual case) pictures go through the site's API with `CRON_SECRET` |
+| `EVENTS_API_ORIGIN` | optional, default `https://kiriya.love`: where the API lives (pushes, pictures) |
 | `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN` | the newsletter inbox (read-only scope `gmail.readonly`); optional `EVENTS_GMAIL_QUERY` |
 | `LTA_DATAMALL_KEY` | train alerts on event days (optional) |
 | `DATA_GOV_SG_API_KEY` | higher NEA rate limit (optional; works without) |

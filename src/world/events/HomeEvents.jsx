@@ -4,9 +4,9 @@
 // list inside the home tab.
 import { useEffect, useId, useMemo, useRef } from "react";
 import { Link } from "react-router";
-import { ago, dateRange, kindLabel, merchChips, phaseOf, timeOf, whenLabel } from "./eventFormat.js";
-import { eventPath, markLooked, useEventsHome, useFreshSnapshot } from "./eventsData.js";
-import { Chips, Countdown, EventRow, ItemChips, KindDoodle, NewMark, SaveButton, Toaster, useNow } from "./EventPieces.jsx";
+import { ago, dateRange, displayName, handSafe, kindLabel, phaseOf, timeOf, whenLabel } from "./eventFormat.js";
+import { MERCH_LIST, eventPath, markLooked, useEventsHome, useFreshSnapshot, useSeenNow } from "./eventsData.js";
+import { Countdown, EventRow, ItemChips, KindDoodle, MerchCard, NewMark, Toaster, useNow } from "./EventPieces.jsx";
 import PasteLink from "./PasteLink.jsx";
 import "./events.css";
 
@@ -71,7 +71,7 @@ function Hero({ item, now }) {
       <span className="ev-hero__art" aria-hidden="true">
         {item.image?.url ? <img src={item.image.url} alt="" decoding="async" /> : <KindDoodle kind={item.kind} size={50} />}
       </span>
-      <strong className="ev-hero__name">{item.name}</strong>
+      <strong className="ev-hero__name">{handSafe(displayName(item.name))}</strong>
       <span className="ev-hero__meta">
         {dateRange(item, { now })}
         {where && <> · {where}</>}
@@ -96,6 +96,7 @@ function Hero({ item, now }) {
 }
 
 function NewSince({ fresh, total }) {
+  const seenNow = useSeenNow();
   if (!fresh.length)
     return (
       <p className="ev-caught-up">
@@ -113,51 +114,37 @@ function NewSince({ fresh, total }) {
         </h3>
         {total > fresh.length && (
           <div className="app-card__action">
-            <Link to="/world/events?show=new">see all</Link>
+            <Link className="ev-card-link" to="/world/events?show=new">see all</Link>
           </div>
         )}
       </header>
       <ul className="app-list">
-        {fresh.map((entry) => (
-          <li key={entry.id} className="app-row ev-newsince__row">
-            <Link to={`${eventPath(entry.event.id)}${entry.kind === "new" ? "" : "#updates"}`} state={{ from: "home" }}>
-              <span className="ev-newsince__icon" aria-hidden="true">
-                <KindDoodle kind={entry.event.kind} size={22} />
-              </span>
-              <span className="app-row__text">
-                <span className="ev-newsince__what">
-                  {entry.event.name}
-                  {entry.big && <NewMark newness="new" />}
+        {fresh.map((entry) => {
+          // Opened during this visit: it stays put, just without its spark.
+          const seen = seenNow(entry.event.id);
+          return (
+            <li key={entry.id} className="app-row ev-newsince__row" data-seen={seen ? "" : undefined}>
+              <Link to={`${eventPath(entry.event.id)}${entry.kind === "new" ? "" : "#updates"}`} state={{ from: "home" }}>
+                <span className="ev-newsince__icon" aria-hidden="true">
+                  <KindDoodle kind={entry.event.kind} size={22} />
                 </span>
-                <small>
-                  {entry.kind === "new" ? "just announced" : entry.title}
-                  {entry.at ? ` · ${ago(entry.at)}` : ""}
-                </small>
-              </span>
-              <span className="ev-chevron" aria-hidden="true" />
-            </Link>
-          </li>
-        ))}
+                <span className="app-row__text">
+                  <span className="ev-newsince__what">
+                    {displayName(entry.event.name)}
+                    {entry.big && !seen && <NewMark newness="new" />}
+                  </span>
+                  <small>
+                    {entry.kind === "new" ? "just announced" : entry.title}
+                    {entry.at ? ` · ${ago(entry.at)}` : ""}
+                  </small>
+                </span>
+                <span className="ev-chevron" aria-hidden="true" />
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </section>
-  );
-}
-
-function MerchTile({ item }) {
-  const event = item.event ?? {};
-  return (
-    <li className="ev-merch">
-      <Link className="ev-merch__link" to={`${eventPath(event.id)}#merch`} state={{ from: "home" }}>
-        <span className="ev-merch__art" aria-hidden="true">
-          {item.image ? <img src={item.image} alt="" loading="lazy" decoding="async" /> : <KindDoodle kind="merch" size={40} />}
-        </span>
-        <span className="ev-merch__name">{item.name}</span>
-        <span className="ev-merch__meta">{[item.priceLabel, event.name].filter(Boolean).join(" · ")}</span>
-        <span className="ev-merch__when">{item.when ?? event.dateLabel}</span>
-        <Chips chips={merchChips(item).slice(0, 2)} />
-      </Link>
-      <SaveButton item={item} merch className="ev-merch__save" />
-    </li>
   );
 }
 
@@ -227,7 +214,7 @@ export default function HomeEvents() {
               <header className="app-card__head">
                 <h3 className="app-card__title">on now & coming up</h3>
                 <div className="app-card__action">
-                  <Link to="/world/events">all {data?.counts?.upcoming ?? ""}</Link>
+                  <Link className="ev-card-link" to="/world/events">all {data?.counts?.upcoming ?? ""}</Link>
                 </div>
               </header>
               <ul className="app-list">
@@ -241,13 +228,13 @@ export default function HomeEvents() {
             <section className="ev-drops" aria-label="Merch">
               <header className="ev-drops__head">
                 <h3 className="ev-drops__title">merch & exclusives</h3>
-                <Link className="ev-drops__all" to="/world/events?kind=merch">
+                <Link className="ev-drops__all" to={MERCH_LIST} state={{ from: "home" }}>
                   all merch
                 </Link>
               </header>
               <ul className="ev-drops__strip app-bleed">
                 {merch.map((item) => (
-                  <MerchTile key={item.id} item={item} />
+                  <MerchCard key={item.id} item={item} />
                 ))}
               </ul>
             </section>

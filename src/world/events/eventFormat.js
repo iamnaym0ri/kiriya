@@ -46,8 +46,9 @@ export const dayLabel = (value) => `${weekday(value)} ${dayNumber(value)} ${mont
 /** "28–30 nov", "30 nov – 2 dec", "28 nov 2026 – 3 jan 2027", or the "dates tbc" note. */
 export function dateRange(item, { withYear = false, now = new Date() } = {}) {
   if (!item) return "";
-  if (item.datesTbc || !item.startsAt) return item.datesNote ? `dates tbc · ${item.datesNote}` : "dates tbc";
+  if (item.datesTbc || !item.startsAt) return "dates tbc";
   const start = item.startsAt;
+  if (item.openEnded) return `from ${dayNumber(start)} ${monthShort(start)}${withYear || yearOf(start) !== yearOf(now) ? ` ${yearOf(start)}` : ""}`;
   const end = item.endsAt ?? item.startsAt;
   const sameDay = sgDay(asDate(start)) === sgDay(asDate(end));
   const year = (v) => (withYear || yearOf(v) !== yearOf(now) ? ` ${yearOf(v)}` : "");
@@ -58,8 +59,12 @@ export function dateRange(item, { withYear = false, now = new Date() } = {}) {
   return `${dayNumber(start)} ${monthShort(start)} – ${dayNumber(end)} ${monthShort(end)}${year(end)}`;
 }
 
-/** "10:00–21:00" for one open day. */
-export const hours = (d) => (d?.opens && d?.closes ? `${d.opens}–${d.closes}` : d?.opens ? `from ${d.opens}` : "hours tbc");
+/** "10am – 9pm" for one open day (12-hour, like every other time on these screens). */
+const hhmm12 = (t) => {
+  const [h, m] = String(t).split(":").map(Number);
+  return `${h % 12 || 12}${m ? `.${String(m).padStart(2, "0")}` : ""}${h >= 12 ? "pm" : "am"}`;
+};
+export const hours = (d) => (d?.opens && d?.closes ? `${hhmm12(d.opens)} – ${hhmm12(d.closes)}` : d?.opens ? `from ${hhmm12(d.opens)}` : "hours tbc");
 
 /** The open days as moments: [{ date, start, end, note }], oldest first. */
 export function openings(item) {
@@ -200,10 +205,16 @@ const TIER_CHIPS = {
 };
 export const tierChip = (status) => TIER_CHIPS[status] ?? null;
 
-function ticketChip(tickets) {
+function ticketChip(tickets, now = new Date()) {
+  const opens = sgMoment(tickets?.opensAt);
+  if (tickets?.status === "soon" && Number.isFinite(opens)) {
+    // "tickets 2 dec" while it's coming, "tickets on sale" once that moment has passed.
+    if (opens > now.getTime()) return { tone: "plum", label: `tickets ${dayNumber(opens)} ${monthShort(opens)}` };
+    return { tone: "mint", label: "tickets on sale" };
+  }
   switch (tickets?.status) {
     case "on_sale":
-      return { tone: "mint", label: tickets.label ? `tickets ${tickets.label}` : "tickets on sale" };
+      return { tone: "mint", label: tickets.label && tickets.label !== "tickets on sale" ? `tickets ${tickets.label}` : "tickets on sale" };
     case "selling_fast":
       return { tone: "rose", label: "selling fast" };
     case "sold_out":
@@ -239,7 +250,7 @@ export function chipsFor(item, now = new Date(), { live = true } = {}) {
   if (p.phase === "ended") return [{ tone: "mute", label: "ended" }];
   const chips = [];
   if (live && p.phase === "open") chips.push({ tone: "rose", label: "on now" });
-  const ticket = ticketChip(item.tickets);
+  const ticket = ticketChip(item.tickets, now);
   if (ticket && item.kind !== "merch") chips.push(ticket);
   if (item.merchInfo?.label) chips.push({ tone: item.merchInfo.exclusives ? "rose" : "plum", label: item.merchInfo.label });
   return chips;
@@ -285,6 +296,11 @@ export function ago(value, now = new Date()) {
 export function groupOf(item, now = new Date()) {
   const p = phaseOf(item, now);
   if (p.phase === "open" || p.phase === "between") return { key: "0-now", label: "on now" };
+  // Cancelled stays in its month (marked), where she last saw it, until its day has passed.
+  if (p.phase === "cancelled" && Number.isFinite(sortTime(item)) && sortTime(item) > now.getTime() - 86_400_000) {
+    const at = new Date(sortTime(item));
+    return { key: `1-${sgDay(at).slice(0, 7)}`, label: yearOf(at) === yearOf(now) ? monthLong(at) : `${monthLong(at)} ${yearOf(at)}` };
+  }
   if (p.phase === "ended" || p.phase === "sold_out" || p.phase === "cancelled") return { key: "9-ended", label: "just ended" };
   if (p.phase === "tbc") return { key: "8-tbc", label: "dates to be announced" };
   const at = p.next ?? new Date(sortTime(item));
@@ -292,3 +308,98 @@ export function groupOf(item, now = new Date()) {
   const year = yearOf(at);
   return { key: `1-${sgDay(at).slice(0, 7)}`, label: year === yearOf(now) ? month : `${month} ${year}` };
 }
+
+/**
+ * A name as she reads it: an all-caps press-release name calmed down ("FINAL FANTASY XIV ORCHESTRA
+ * CONCERT" → "Final Fantasy XIV Orchestra Concert"; numerals and short acronyms stay), and the
+ * "(Singapore)" every listing here would carry dropped.
+ */
+export function displayName(name) {
+  let out = String(name ?? "").replace(/\s*\((?:singapore|sg)\)\s*$/i, "").trim();
+  const shouty = (out.match(/\b[A-Z][A-Z-]{3,}\b/g) ?? []).filter((w) => !/^[IVXLC]+$/.test(w));
+  const letters = out.replace(/[^A-Za-z]/g, "");
+  if (shouty.length >= 3 && letters.replace(/[^A-Z]/g, "").length / Math.max(1, letters.length) > 0.6)
+    out = out.replace(/\b[A-Z][A-Z]+(?:-[A-Z]+)*\b/g, (w) => (/^[IVXLC]+$/.test(w) || w.length <= 3 ? w : w.split("-").map((p) => p[0] + p.slice(1).toLowerCase()).join("-")));
+  return out || String(name ?? "");
+}
+
+/** How long a title is, for its size: "" | "long" | "xlong". */
+export const titleLength = (text) => {
+  const n = String(text ?? "").length;
+  return n > 52 ? "xlong" : n > 26 ? "long" : "";
+};
+
+/** The forecast for the day she'd go: today while it's on, else its first day. */
+export function dayWeather(item, now = new Date()) {
+  const days = item?.weather?.days ?? [];
+  if (!days.length) return null;
+  const today = sgDay(now);
+  const first = item.startsOn && item.startsOn > today ? item.startsOn : today;
+  return days.find((d) => d.date === first) ?? days.find((d) => d.date >= first) ?? null;
+}
+
+/** "2026-12-02 12:00", ISO, or a plain day (Singapore time) → epoch ms, or NaN. Safari-safe. */
+export function sgMoment(value) {
+  if (typeof value === "number") return value;
+  const m = String(value ?? "").trim().match(/^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+  if (!m) return NaN;
+  if (/(?:[+-]\d{2}:?\d{2}|Z)$/.test(String(value).trim())) return Date.parse(String(value).trim().replace(" ", "T"));
+  return Date.parse(`${m[1]}T${m[2] ?? "00"}:${m[3] ?? "00"}:00+08:00`);
+}
+
+/** "12pm", "9.30am" in Singapore time (the site's own way of writing a time). */
+export function clock12(value) {
+  const [h, m] = TIME.format(asDate(value)).split(":").map(Number);
+  return `${h % 12 || 12}${m ? `.${String(m).padStart(2, "0")}` : ""}${h >= 12 ? "pm" : "am"}`;
+}
+
+/**
+ * The ticket line: what she needs to know first, from everything known (status, when sales open,
+ * who sells them, the lowest price still on sale). A sale that was "soon" reads as on sale once its
+ * moment passes, even before the next research. → { status, title, detail, tone, opensAt (ms|null) }
+ */
+export function ticketFacts(tickets, now = new Date()) {
+  if (!tickets) return { status: "tbc", title: "tickets tbc", detail: null, tone: "plum", opensAt: null };
+  const opensMs = sgMoment(tickets.opensAt);
+  const opens = Number.isFinite(opensMs) ? opensMs : null;
+  let status = tickets.status ?? "tbc";
+  if ((status === "soon" || status === "tbc") && opens && opens <= now.getTime()) status = "on_sale";
+  else if (status === "tbc" && opens) status = "soon";
+  const tiers = tickets.tiers ?? [];
+  const available = tiers.filter((t) => t.price != null && t.status !== "sold_out");
+  const from = tickets.from ?? (available.length ? Math.min(...available.map((t) => t.price)) : null);
+  const fromLabel = from === 0 ? "free" : from != null ? `from ${price({ amount: from, currency: available[0]?.currency ?? "SGD" })}` : null;
+  const when = opens ? `${dayLabel(opens)}${tickets.opensHasTime === false ? "" : `, ${clock12(opens)}`}` : null;
+  const seller = tickets.seller ?? (tickets.url ? siteOf(tickets.url) : null);
+  const on = seller ? `on ${seller}` : null;
+  switch (status) {
+    case "on_sale":
+      return {
+        status,
+        title: fromLabel ? `on sale · ${fromLabel}` : "on sale now",
+        detail: [available.length > 1 ? `${available.length} kinds of ticket` : null, on, !fromLabel && when ? `since ${when}` : null].filter(Boolean).join(" · ") || null,
+        tone: "mint",
+        opensAt: null,
+      };
+    case "soon":
+      return { status, title: when ? `on sale ${when}` : "tickets soon", detail: on ?? (when ? null : "sales not open yet"), tone: "plum", opensAt: opens };
+    case "sold_out":
+      return { status, title: "sold out", detail: on, tone: "mute", opensAt: null };
+    case "free":
+      return { status, title: "free entry", detail: tiers.length ? null : "no ticket needed", tone: "mint", opensAt: null };
+    case "closed":
+      return { status, title: "sales closed", detail: null, tone: "mute", opensAt: null };
+    default:
+      return { status: "tbc", title: "tickets tbc", detail: on, tone: "plum", opensAt: null };
+  }
+}
+
+/** A merch piece's availability in words. */
+export const MERCH_STATUS = { revealed: "revealed", preorder: "pre-order open", on_sale: "on sale", sold_out: "sold out" };
+export const MERCH_KIND = { exclusive: "exclusive: only sold here", merch: "event merch", collab: "collab goods", limited: "limited run", freebie: "freebie" };
+
+/**
+ * Text for the hand-lettered font: it has no "×" (iOS draws a box), so collabs read "AFA x Miku"
+ * there. Other fonts keep the real character.
+ */
+export const handSafe = (text) => String(text ?? "").replace(/\s*×\s*/g, " x ");

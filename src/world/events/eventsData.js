@@ -22,6 +22,8 @@ import { useSession } from "../../lib/session.js";
 import { haptic } from "../../lib/native.js";
 
 export const eventPath = (id) => `/world/events/${encodeURIComponent(id)}`;
+export const merchPath = (id) => `/world/events/merch/${encodeURIComponent(id)}`;
+export const MERCH_LIST = "/world/events/merch";
 export const eventsKey = ["me", "events-ui"];
 const enc = encodeURIComponent;
 
@@ -81,11 +83,14 @@ export function fromCard(card) {
     startsAt,
     endsAt,
     datesTbc: Boolean(card.datesTbc) || !startsAt,
+    openEnded: Boolean(card.openEnded),
     dateLabel: card.dateLabel,
     timeLabel: card.timeLabel ?? null,
     days: roughDays(card),
     venue: card.venueName ? { name: card.venueName, area: card.venueArea ?? null } : null,
-    tickets: card.tickets ? { status: card.tickets.status, label: card.tickets.label ?? null, from: card.tickets.from ?? null } : null,
+    tickets: card.tickets
+      ? { status: card.tickets.status, label: card.tickets.label ?? null, from: card.tickets.from ?? null, opensAt: card.tickets.opensAt ?? null, opensHasTime: card.tickets.opensHasTime ?? true, url: card.tickets.url ?? null, seller: card.tickets.seller ?? null }
+      : null,
     merchInfo: card.merch ?? null,
     countdown: card.countdown ?? null,
     image: card.image?.url ? { ...card.image, url: mediaUrl(card.image.url) } : null,
@@ -107,11 +112,16 @@ export function fromCard(card) {
 }
 
 export function fromMerchCard(card) {
+  if (!card) return null;
+  const images = [...new Set([...(card.images ?? []), card.image].filter((u) => typeof u === "string"))].map(mediaUrl);
   return {
     ...card,
-    image: card.image ? mediaUrl(typeof card.image === "string" ? card.image : card.image.url) : null,
+    image: images[0] ?? null,
+    images,
     exclusive: card.kind === "exclusive",
     saved: Boolean(card.saved),
+    event: card.event ? { ...card.event, image: card.event.image?.url ? { ...card.event.image, url: mediaUrl(card.event.image.url) } : null } : null,
+    more: (card.more ?? []).map(fromMerchCard),
   };
 }
 
@@ -130,11 +140,12 @@ export function fromDetail(detail) {
   item.datesNote = d.datesNote ?? null;
   item.popup = d.popup ? { about: d.popup.about ?? null, sold: d.popup.sold ?? [] } : null;
   if (d.tickets)
+    // The card's line already says what's known (it reads the timeline too); the dossier adds detail.
     item.tickets = {
       ...item.tickets,
-      status: d.tickets.status ?? item.tickets?.status,
-      url: d.tickets.buyUrl ?? null,
-      opensAt: d.tickets.opensAt ?? null,
+      status: item.tickets?.status ?? d.tickets.status,
+      url: item.tickets?.url ?? d.tickets.buyUrl ?? null,
+      opensAt: item.tickets?.opensAt ?? d.tickets.opensAt ?? null,
       note: d.tickets.note ?? null,
       tiers: d.tickets.tiers ?? [],
     };
@@ -161,6 +172,7 @@ const VISIT_GAP_MS = 10 * 60_000;
 function createVisit() {
   const listeners = new Set();
   let newness = new Map(); // id → "new" | "updated" | null
+  let seenNow = new Set(); // opened during this visit
   let fresh = null; // the home block's "new since you last looked" list, as it was
   const saved = new Map(); // id → true/false while a save is on its way
   let version = 0;
@@ -174,6 +186,7 @@ function createVisit() {
       if (document.hidden) hiddenAt = Date.now();
       else if (hiddenAt && Date.now() - hiddenAt > VISIT_GAP_MS) {
         newness = new Map();
+        seenNow = new Set();
         fresh = null;
         hiddenAt = null;
         emit();
@@ -184,15 +197,21 @@ function createVisit() {
     version: () => version,
     newness(item) {
       if (!newness.has(item.id)) newness.set(item.id, item.unseen > 0 ? (item.lastUpdate?.kind === "new" ? "new" : "updated") : null);
-      return newness.get(item.id);
+      return seenNow.has(item.id) ? null : newness.get(item.id);
+    },
+    /** Whether it was new when this visit began (it stays in the "new" filter after she opens it). */
+    wasNew(item) {
+      this.newness(item);
+      return Boolean(newness.get(item.id));
     },
     fresh(list) {
       fresh ??= list;
       return fresh;
     },
+    seen: (id) => seenNow.has(id),
+    // Opening something only dims its "new" mark: nothing she was looking at leaves the screen.
     looked(id) {
-      newness.set(id, null);
-      if (fresh) fresh = fresh.filter((entry) => entry.event?.id !== id);
+      seenNow.add(id);
       emit();
     },
     savedOverride: (id) => saved.get(id),
@@ -263,7 +282,21 @@ export function useSavedList() {
   return { ...query, ...data };
 }
 
-/** One event, everything about it. Shows the list's card at once while the rest arrives. */
+/** A card for `id` from any list already on this phone (lists, home), or null. */
+function cachedCard(queryClient, id) {
+  for (const [, data] of queryClient.getQueriesData({ queryKey: eventsKey })) {
+    const cards = [...(data?.events ?? []), ...(data?.onNow ?? []), ...(data?.upcoming ?? []), ...(data?.next ? [data.next] : [])];
+    const card = cards.find((e) => e?.id === id);
+    if (card) return card;
+  }
+  return null;
+}
+
+/**
+ * One event, everything about it. Shows the list's card at once while the rest arrives, and never
+ * blanks: a refresh that fails or says the event is gone keeps what's on screen (`gone` says so).
+ * An id that was folded into another event comes back as that event (`movedTo`).
+ */
 export function useEvent(id) {
   const queryClient = useQueryClient();
   const query = useEventsQuery(["item", id], `/events/${enc(id)}`, {
@@ -273,18 +306,58 @@ export function useEvent(id) {
   const item = useMemo(() => {
     if (query.data?.event) return fromDetail(query.data.event);
     // A card from a list already on this phone, so the page has a head straight away.
-    for (const [, data] of queryClient.getQueriesData({ queryKey: [...eventsKey, "list"] })) {
-      const card = data?.events?.find((e) => e.id === id);
-      if (card) return fromCard(card);
-    }
-    return null;
+    const card = cachedCard(queryClient, id);
+    return card ? fromCard(card) : null;
   }, [query.data, queryClient, id]);
+  const missing = query.error?.status === 404;
+  const movedTo = query.data?.event && query.data.event.id !== id ? query.data.event.id : null;
+  // The event it became opens with what's already here, so nothing blanks while the address swaps.
+  useEffect(() => {
+    if (movedTo && query.data) queryClient.setQueryData([...eventsKey, "item", movedTo], (old) => old ?? { ...query.data, redirectedFrom: undefined });
+  }, [movedTo, query.data, queryClient]);
   return {
     item,
     me: query.data?.me ?? null,
     isPending: query.isPending,
-    isError: query.isError && query.error?.status !== 404,
-    missing: query.error?.status === 404,
+    isError: query.isError && !missing,
+    missing,
+    gone: missing && Boolean(item),
+    movedTo,
+    refetch: query.refetch,
+  };
+}
+
+/** One merch piece with where it is. Starts from a card already on this phone. */
+export function useMerchItem(id) {
+  const queryClient = useQueryClient();
+  const query = useEventsQuery(["merch-item", id], `/events/merch/${enc(id)}`, {
+    enabled: Boolean(id),
+    retry: (count, error) => error?.status !== 404 && count < 1,
+  });
+  const item = useMemo(() => {
+    if (query.data?.merch) return fromMerchCard(query.data.merch);
+    for (const [, data] of queryClient.getQueriesData({ queryKey: eventsKey })) {
+      const lists = [data?.merch, data?.event?.dossier?.merch].filter(Array.isArray);
+      for (const list of lists) {
+        const card = list.find((m) => m?.id === id);
+        if (card) return fromMerchCard(card);
+      }
+    }
+    return null;
+  }, [query.data, queryClient, id]);
+  const missing = query.error?.status === 404;
+  const movedTo = query.data?.merch && query.data.merch.id !== id ? query.data.merch.id : null;
+  useEffect(() => {
+    if (movedTo && query.data) queryClient.setQueryData([...eventsKey, "merch-item", movedTo], (old) => old ?? { ...query.data, redirectedFrom: undefined });
+  }, [movedTo, query.data, queryClient]);
+  return {
+    item,
+    full: Boolean(query.data?.merch),
+    isPending: query.isPending,
+    isError: query.isError && !missing,
+    missing,
+    gone: missing && Boolean(item),
+    movedTo,
     refetch: query.refetch,
   };
 }
@@ -294,6 +367,20 @@ export function useNewness() {
   const version = useVisitVersion();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useCallback((item) => visit.newness(item), [version]);
+}
+
+/** Whether an item was new when this visit began (filters keep it after she opens it). */
+export function useWasNew() {
+  const version = useVisitVersion();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useCallback((item) => visit.wasNew(item), [version]);
+}
+
+/** Whether she has opened this event during this visit. */
+export function useSeenNow() {
+  const version = useVisitVersion();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useCallback((id) => visit.seen(id), [version]);
 }
 
 /** The home block's list of what's new, steady for this visit. */

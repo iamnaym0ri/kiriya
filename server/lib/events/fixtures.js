@@ -9,6 +9,8 @@ import { env } from "../../env.js";
 const c = (text, ...sourceIds) => ({ text, sourceIds });
 const src = (id, label, url, kind, publisher, at) => ({ id, label, url, kind, publisher, at, images: [] });
 const art = (name) => ({ url: `/api/events/fixture-art/${name}.svg`, alt: "sample artwork", credit: "sample" });
+const pic = (name) => `/api/events/fixture-art/${name}.svg`;
+const m = (id, name, kind, price, where, extra = {}) => ({ id, name, kind, fandoms: [], price, currency: "SGD", where, when: null, limited: kind === "exclusive", status: "revealed", note: null, image: null, images: [], imageCredit: null, sourceIds: ["s3"], ...extra });
 
 const FIXTURES = [
   {
@@ -30,7 +32,7 @@ const FIXTURES = [
       about: {
         summary: c("Southeast Asia's biggest anime festival is back for its 2026 edition, celebrating 60 years of Singapore–Japan friendship.", "s1"),
         like: c("Busy, loud and joyful: three halls of exhibitor booths, a creators hub, stage events all day and the I LOVE ANISONG concerts at night. Expect queues at the popular booths in the first hour.", "s1", "s3"),
-        highlights: [c("Cosplay Singles Competition finals on Saturday afternoon.", "s2"), c("A Project SEKAI booth with photo spots and a stamp rally (sample).", "s3"), c("Creators Hub with around 300 artist tables.", "s2")],
+        highlights: [c("Cosplay Singles Competition finals on Saturday afternoon.", "s2"), c("A Project SEKAI booth with photo spots and a stamp rally (sample).", "s3"), c("Creators Hub with around 300 artist tables.", "s2"), c("Three nights of I LOVE ANISONG concerts (sample line-up).", "s3"), c("A food street with collab menus from local cafés (sample).", "s6"), c("Stage events all day on the Day Stage and NEXT Stage.", "s1")],
       },
       days: [
         { date: "2026-11-27", opens: "10:00", closes: "21:00", label: "friday", note: null, sourceIds: ["s1"] },
@@ -55,7 +57,12 @@ const FIXTURES = [
         tiers: [
           { name: "1-day pass", price: 18, currency: "SGD", status: "on_sale", note: "Friday is quietest", sourceIds: ["s5"] },
           { name: "3-day pass", price: 45, currency: "SGD", status: "on_sale", note: null, sourceIds: ["s5"] },
+          { name: "Exhibition group bundle of four (one day)", price: 64, currency: "SGD", status: "on_sale", note: null, sourceIds: ["s5"] },
+          { name: "Exhibition + Stage, Sat or Sun", price: 38, currency: "SGD", status: "on_sale", note: null, sourceIds: ["s5"] },
           { name: "I LOVE ANISONG concert, Saturday", price: 98, currency: "SGD", status: "sold_out", note: "festival pass included", sourceIds: ["s5"] },
+          { name: "Concert Cat 1, one night", price: 175, currency: "SGD", status: "on_sale", note: "Assigned seat, fast lane. Chance at signed posters on Sat and Sun.", sourceIds: ["s5"] },
+          { name: "Concert Cat 2, one night", price: 145, currency: "SGD", status: "on_sale", note: null, sourceIds: ["s5"] },
+          { name: "Concert Cat 1, three nights + merch bundle & signed badge", price: 570, currency: "SGD", status: "sold_out", note: "sold out by 9 Nov", sourceIds: ["s5"] },
         ],
         note: c("Passes are sold online only; there is no door sale on Saturday.", "s5"),
       },
@@ -69,17 +76,31 @@ const FIXTURES = [
         { name: "sample cosplay guest", role: "cosplay judge", day: "2026-11-28", fandoms: ["cosplay"], note: "signing at the guest stage 1pm", sourceIds: ["s2"] },
         { name: "sample anisong singer", role: "I LOVE ANISONG, Saturday", day: "2026-11-28", fandoms: ["anime"], note: null, sourceIds: ["s3"] },
         { name: "sample illustrator", role: "creators hub guest", day: null, fandoms: ["anime"], note: null, sourceIds: ["s2"] },
+        ...["a", "b", "c", "d", "e", "f", "g"].map((k, i) => ({ name: `sample guest ${k.toUpperCase()}`, role: i % 2 ? "stage guest" : "concert artist", day: ["2026-11-27", "2026-11-28", "2026-11-29"][i % 3], fandoms: [], note: null, sourceIds: ["s2"] })),
       ],
+      // A big con's worth of merch (all samples), some with pictures, for the merch screens.
       merch: [
-        { id: "m-afa-miku-acrylic", name: "AFA × Hatsune Miku acrylic stand (sample)", kind: "exclusive", fandoms: ["miku"], price: 25, currency: "SGD", where: "official merch booth, hall 402", when: "while stocks last", limited: true, status: "revealed", note: "one per person on Friday", image: null, sourceIds: ["s3"] },
-        { id: "m-afa-tote", name: "AFA 2026 festival tote", kind: "merch", fandoms: ["anime"], price: 15, currency: "SGD", where: "official merch booth", when: null, limited: false, status: "revealed", note: null, image: null, sourceIds: ["s3"] },
-        { id: "m-afa-sekai-badge", name: "Project SEKAI can badge set (sample)", kind: "exclusive", fandoms: ["sekai"], price: 12, currency: "SGD", where: "SEKAI booth", when: null, limited: true, status: "revealed", note: null, image: null, sourceIds: ["s3"] },
+        m("m-afa-miku-acrylic", "AFA × Hatsune Miku acrylic stand (sample)", "exclusive", 25, "official merch booth, hall 402", { fandoms: ["miku"], when: "while stocks last", note: "one per person on Friday", images: [pic("merch-miku"), pic("merch-miku-back"), pic("merch-miku-box")], image: pic("merch-miku"), imageCredit: "@animefestivalasia" }),
+        m("m-afa-tote", "AFA 2026 festival tote", "merch", 15, "official merch booth", { fandoms: ["anime"], images: [pic("merch-tote")], image: pic("merch-tote"), imageCredit: "@afashop.co" }),
+        m("m-afa-sekai-badge", "Project SEKAI can badge set (sample)", "exclusive", 12, "SEKAI booth", { fandoms: ["sekai"], images: [pic("merch-badges")], image: pic("merch-badges"), imageCredit: "@animefestivalasia" }),
+        m("m-afa-bundle", "AFASG26 merch bundle (oversized tee, eco bag, mini keychain set) — Super Earlybird three-day exhibition ticket add-on", "exclusive", 110, null, { status: "sold_out", when: "Super Earlybird phase from 19 Oct", note: "Sold with a three-day exhibition ticket.", sourceIds: ["s5"] }),
+        m("m-afa-kajiura", "Signed concert badge and lanyard (sample)", "exclusive", null, "concert merch counter, level 3", { note: "Comes with the Friday Cat 1 + badge ticket." }),
+        m("m-afa-namie", "Exhibition artist exclusive prints (sample)", "exclusive", 30, "Pre-order on AFASHOP.co; collect at the exhibition corner", { status: "preorder", images: [pic("merch-prints")], image: pic("merch-prints"), imageCredit: "@afashop.co" }),
+        m("m-afa-plush", "Mascot plush keychain (sample)", "merch", 18, "official merch booth", { images: [pic("merch-plush")], image: pic("merch-plush") }),
+        m("m-afa-cosplay-towel", "Cosplay Singles Competition towel (sample)", "limited", 20, "cosplay hub", { limited: true }),
+        m("m-afa-artbook", "Creators Hub artbook vol. 3 (sample)", "merch", 28, "creators hub info desk", { status: "on_sale" }),
+        m("m-afa-freebie", "Free sticker sheet with any purchase over S$50 (sample)", "freebie", 0, "official merch booth"),
+        m("m-afa-collab-cafe-coaster", "Collab café coaster set, random of 6 (sample)", "collab", 9, "food street café corner"),
+        m("m-afa-https-test", "Supercalifragilisticexpialidociouslylongunbrokenmerchnamewithnospaces (sample)", "merch", 5, "https://animefestival.asia/afasg26/exhibitors/very-long-booth-page-address/"),
       ],
       size: { scale: "huge", text: "One of the region's largest: well over 100,000 visits across the weekend in recent years.", sourceIds: ["s6"] },
       tips: [
         c("Go on Friday morning if you want the exclusives; Saturday is the busiest day.", "s6"),
         c("Bring cash and a power bank: some artist tables only take PayNow or cash.", "s6"),
         c("Changing rooms for cosplayers are on level 3; bring your own mirror.", "s2"),
+        c("Queue for the merch booth before the halls open; the line is shortest at 9.30am.", "s6"),
+        c("Ticket prices don't include booking fees and there are no refunds.", "s5"),
+        c("The halls are cold: bring a light jacket if your cosplay allows.", "s6"),
       ],
       popup: null,
       datesTbc: false,
@@ -499,6 +520,52 @@ const FIXTURES = [
     log: [{ at: "2026-10-20T03:00:00Z", kind: "new", title: "first spotted", text: "dates tbc at the Esplanade", sourceIds: ["s1"] }],
   },
   {
+    id: "fx-ffxiv-eorzean-symphony-2027",
+    name: "FINAL FANTASY XIV ORCHESTRA CONCERT 2027 -Eorzean Symphony- (Singapore)",
+    kind: "concert",
+    tagline: "a full orchestra and choir playing the music of final fantasy xiv, one night only",
+    startsOn: "2027-05-14",
+    endsOn: "2027-05-14",
+    venue: "The Star Theatre",
+    url: "https://na.finalfantasyxiv.com/lodestone/topics/detail/6980c068417272551bdafc3f215858b2bb08a3a8",
+    confidence: "official",
+    hers: false,
+    big: false,
+    fandoms: ["final-fantasy-xiv"],
+    tags: ["orchestra", "game music"],
+    image: null,
+    dossier: {
+      about: {
+        summary: c("The game's official orchestra concert goes on its first world tour after sold-out runs in Japan. Singapore gets one show, with a full orchestra and choir (details here are samples).", "s1", "s2"),
+        like: c("A seated evening concert in a large theatre, not a convention. Expect a full house of fans.", "s2"),
+        highlights: [c("A full orchestra and choir with the game's original vocalists (sample).", "s1"), c("One of two Southeast Asian stops on the tour.", "s1")],
+      },
+      days: [{ date: "2027-05-14", opens: "20:00", closes: null, label: "Concert", note: "Show starts at 8pm (Friday). Door times not announced yet.", sourceIds: ["s2"] }],
+      datesNote: null,
+      venue: { name: "The Star Theatre", hall: "The Star Performing Arts Centre", address: "1 Vista Exchange Green, Singapore 138617", area: "Buona Vista", lat: 1.3067, lng: 103.7881, directions: [c("one-north MRT (CC23), exit A, then a 5-minute walk through The Star Vista.", "s2")], sourceIds: ["s2"] },
+      tickets: { status: "soon", opensAt: "2026-12-02 12:00", buyUrl: "https://www.sistic.com.sg/events/finalfantasy0527", tiers: [], note: c("On sale on SISTIC from 2 Dec, 12pm. Prices not announced yet; SISTIC adds a booking fee of S$1–5 per ticket.", "s2") },
+      links: [
+        { label: "Official announcement (The Lodestone)", url: "https://na.finalfantasyxiv.com/lodestone/topics/detail/6980c068417272551bdafc3f215858b2bb08a3a8", kind: "official" },
+        { label: "SISTIC tickets", url: "https://www.sistic.com.sg/events/finalfantasy0527", kind: "tickets" },
+      ],
+      guests: [{ name: "sample conductor", role: "Conductor", day: null, fandoms: [], note: null, sourceIds: ["s1"] }],
+      merch: [],
+      size: { scale: "medium", text: "A single show at The Star Theatre, one of 13 on the world tour.", sourceIds: ["s2"] },
+      tips: [c("Be ready on SISTIC when sales open at 12pm on 2 December: there's only one Singapore show.", "s2")],
+      popup: null,
+      sources: [
+        src("s1", "Announcing the Eorzean Symphony World Tour!", "https://na.finalfantasyxiv.com/lodestone/topics/detail/6980c068417272551bdafc3f215858b2bb08a3a8", "official", "Square Enix", "2026-11-27T08:55:00Z"),
+        src("s2", "FINAL FANTASY XIV ORCHESTRA CONCERT 2027 -Eorzean Symphony- on SISTIC", "https://www.sistic.com.sg/events/finalfantasy0527", "ticketing", "SISTIC", "2026-11-27T08:55:00Z"),
+      ],
+      timeline: [
+        { stage: "announced", at: "2026-11-24", title: "World tour announced", text: "Singapore on Friday 14 May 2027.", sourceIds: ["s1"] },
+        { stage: "tickets", at: "2026-12-02 12:00", title: "Singapore tickets on sale", text: "On SISTIC at 12pm.", sourceIds: ["s2"] },
+      ],
+    },
+    weather: null,
+    log: [{ at: "2026-11-27T08:55:00Z", kind: "new", title: "first spotted", text: "a full orchestra and choir playing the music of final fantasy xiv, one night only", sourceIds: ["s1"] }],
+  },
+  {
     id: "fx-apothecary-exhibition-2026",
     name: "The Apothecary Diaries Exhibition",
     kind: "popup",
@@ -534,6 +601,8 @@ const FIXTURES = [
 ];
 
 export const FIXTURE_IDS = FIXTURES.map((f) => f.id);
+// Bump when the samples change, so local databases pick them up.
+const FIXTURE_VERSION = "2026-11-27b";
 
 /** Whether this process may seed samples: local development only, and EVENTS_FIXTURES isn't "0". */
 export const fixturesAllowed = () => !env.isProd && process.env.EVENTS_FIXTURES !== "0" && !env.databaseUrl;
@@ -542,7 +611,8 @@ export const fixturesAllowed = () => !env.isProd && process.env.EVENTS_FIXTURES 
 export async function seedFixtures(db, { force = false } = {}) {
   if (!force && !fixturesAllowed()) return { seeded: 0 };
   const [any] = await db.select({ id: schema.events.id }).from(schema.events).where(eq(schema.events.origin, "fixture")).limit(1);
-  if (any && !force) return { seeded: 0 };
+  const [version] = await db.select({ value: schema.kv.value }).from(schema.kv).where(eq(schema.kv.key, "events:fixtures:version"));
+  if (any && !force && version?.value === FIXTURE_VERSION) return { seeded: 0 };
   let seeded = 0;
   for (const f of FIXTURES) {
     const { log, dossier, ...row } = f;
@@ -553,12 +623,18 @@ export async function seedFixtures(db, { force = false } = {}) {
       await db.insert(schema.eventLog).values({ eventId: f.id, at: new Date(entry.at), kind: entry.kind, title: entry.title, text: entry.text ?? "", sourceIds: entry.sourceIds ?? [], big: Boolean(entry.big), push: "none", pushedAt: new Date(entry.at) });
     seeded++;
   }
+  await db.insert(schema.kv).values({ key: "events:fixtures:version", value: FIXTURE_VERSION }).onConflictDoUpdate({ target: schema.kv.key, set: { value: FIXTURE_VERSION } });
   return { seeded };
 }
 
 /** A soft lilac placeholder picture for sample events (no official art). */
 export function fixtureArt(name) {
   const hues = { afa: 280, sgcc: 250, doumini: 320, sanrio: 340, apothecary: 200, exhibition: 160 };
+  if (String(name).startsWith("merch-")) {
+    const word = String(name).slice(6).replace(/[^a-z0-9-]/gi, "").slice(0, 14);
+    const hue = [...word].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) % 360, 17);
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600"><rect width="600" height="600" fill="hsl(${hue},55%,92%)"/><circle cx="300" cy="270" r="170" fill="hsl(${hue},60%,80%)"/><rect x="205" y="150" width="190" height="250" rx="36" fill="#fff" opacity=".85"/><path d="M250 230h100M250 275h100M250 320h60" stroke="hsl(${hue},40%,55%)" stroke-width="14" stroke-linecap="round"/><text x="300" y="500" text-anchor="middle" font-family="sans-serif" font-size="34" fill="hsl(${hue},35%,35%)">${word}</text><text x="300" y="545" text-anchor="middle" font-family="sans-serif" font-size="20" fill="hsl(${hue},30%,45%)">sample merch picture</text></svg>`;
+  }
   const h = hues[name] ?? 270;
   const label = String(name).slice(0, 12).replace(/[^a-z0-9 -]/gi, "");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h},70%,88%)"/><stop offset="1" stop-color="hsl(${(h + 40) % 360},60%,76%)"/></linearGradient></defs><rect width="600" height="400" fill="url(#g)"/><g fill="#fff" opacity=".55"><circle cx="90" cy="80" r="40"/><circle cx="520" cy="320" r="60"/><circle cx="470" cy="70" r="18"/></g><text x="300" y="215" text-anchor="middle" font-family="Georgia, serif" font-size="44" fill="hsl(${h},35%,35%)">${label}</text><text x="300" y="262" text-anchor="middle" font-family="sans-serif" font-size="18" fill="hsl(${h},30%,40%)">sample picture</text></svg>`;

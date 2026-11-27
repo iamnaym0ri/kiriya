@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router";
 import {
   chipsFor,
   dayNumber,
+  displayName,
   kindLabel,
   merchChips,
   monthShort,
@@ -13,7 +14,7 @@ import {
   splitDuration,
   whenLabel,
 } from "./eventFormat.js";
-import { eventPath, useIsSaved, useNewness, useToggleSave } from "./eventsData.js";
+import { eventPath, merchPath, useIsSaved, useNewness, useToggleSave } from "./eventsData.js";
 
 // ---------- the clock ----------
 /** The time now, refreshed every `ms` while the page is visible (and at once when it comes back). */
@@ -250,10 +251,23 @@ export function Sourced({ item, ids, className = "" }) {
 // ---------- countdown ----------
 const pad2 = (n) => String(n).padStart(2, "0");
 
-/** The live countdown: days, hours, minutes and seconds to `to`. */
-export function Countdown({ to, label, compact = false }) {
+/** The live countdown: days, hours, minutes and seconds to `to`. `inline`: one small line. */
+export function Countdown({ to, label, compact = false, inline = false }) {
   const now = useNow(1000);
   const { days, hours, minutes, seconds } = splitDuration(to.getTime() - now.getTime());
+  if (inline) {
+    const parts = [days ? [days, "d"] : null, [days ? pad2(hours) : hours, "h"], [pad2(minutes), "m"], days ? null : [pad2(seconds), "s"]].filter(Boolean);
+    return (
+      <span className="ev-count-inline" role="timer" aria-label={`${label ? `${label} ` : ""}${days} days, ${hours} hours and ${minutes} minutes`}>
+        {parts.map(([value, unit]) => (
+          <span key={unit} aria-hidden="true">
+            {value}
+            <small>{unit}</small>
+          </span>
+        ))}
+      </span>
+    );
+  }
   const units = [
     { value: days, unit: days === 1 ? "day" : "days" },
     { value: hours, unit: hours === 1 ? "hr" : "hrs" },
@@ -274,9 +288,12 @@ export function Countdown({ to, label, compact = false }) {
 }
 
 // ---------- rows ----------
-/** Where a pushed event page should say "back" to. */
+/** Where a pushed page should say "back" to. */
 export function useFrom() {
   const { pathname } = useLocation();
+  if (pathname.startsWith("/world/events/merch/")) return "piece";
+  if (pathname.startsWith("/world/events/merch")) return "merch";
+  if (/^\/world\/events\/[^/]+/.test(pathname)) return "event";
   return pathname.startsWith("/world/events") ? "events" : pathname.startsWith("/world/saves") ? "saved" : "home";
 }
 
@@ -292,7 +309,7 @@ export function EventRow({ item, now, save = false, showNew = true }) {
         <DateTile item={item} now={now} />
         <span className="ev-row__text">
           <span className="ev-row__name">
-            {item.name}
+            {displayName(item.name)}
             {fresh && <NewMark newness={fresh} />}
           </span>
           <small className="ev-row__meta">{[where, kindLabel(item.kind)].filter(Boolean).join(" · ")}</small>
@@ -308,19 +325,19 @@ export function EventRow({ item, now, save = false, showNew = true }) {
   );
 }
 
-/** A merch piece as a row: picture or doodle, name, price, which event; opens the event at its merch. */
+/** A merch piece as a row: picture, name, price, where; opens the piece's own page. */
 export function MerchRow({ item, save = true }) {
   const from = useFrom();
   const event = item.event ?? {};
   return (
     <li className="app-row ev-row ev-merch-row">
-      <Link className="ev-row__link" to={`${eventPath(event.id)}#merch`} state={{ from }}>
+      <Link className="ev-row__link" to={merchPath(item.id)} state={{ from }}>
         <span className="ev-merch-row__art" aria-hidden="true">
           {item.image ? <img src={item.image} alt="" loading="lazy" decoding="async" /> : <KindDoodle kind="merch" size={26} />}
         </span>
         <span className="ev-row__text">
           <span className="ev-row__name">{item.name}</span>
-          <small className="ev-row__meta">{[event.name, event.dateLabel].filter(Boolean).join(" · ")}</small>
+          <small className="ev-row__meta">{[displayName(event.name), event.dateLabel].filter(Boolean).join(" · ")}</small>
           <span className="ev-row__foot">
             {item.priceLabel && <span className="ev-row__when">{item.priceLabel}</span>}
             <Chips chips={merchChips(item).slice(0, 2)} />
@@ -329,6 +346,41 @@ export function MerchRow({ item, save = true }) {
         {!save && <span className="ev-chevron" aria-hidden="true" />}
       </Link>
       {save && <SaveButton item={item} merch />}
+    </li>
+  );
+}
+
+/**
+ * A merch piece as a picture card (grids and strips): picture, name, price and where. Opens the
+ * piece's own page; `where` adds the event's name under it.
+ */
+export function MerchCard({ item, where = true, save = true }) {
+  const from = useFrom();
+  const event = item.event ?? {};
+  const chips = merchChips(item).slice(0, 2);
+  return (
+    <li className="ev-mcard" data-sold={item.status === "sold_out" ? "" : undefined}>
+      <Link className="ev-mcard__link" to={merchPath(item.id)} state={{ from, title: item.name }}>
+        <span className="ev-mcard__art">
+          {item.image ? (
+            <img src={item.image} alt="" loading="lazy" decoding="async" />
+          ) : (
+            <span className="ev-mcard__doodle" aria-hidden="true">
+              <KindDoodle kind="merch" size={40} />
+            </span>
+          )}
+          {item.images?.length > 1 && <span className="ev-mcard__count" aria-label={`${item.images.length} pictures`}>{item.images.length}</span>}
+          {chips[0] && (
+            <span className="ev-mcard__badge" data-tone={chips[0].tone}>
+              {chips[0].label}
+            </span>
+          )}
+        </span>
+        <span className="ev-mcard__name">{item.name}</span>
+        <span className="ev-mcard__price">{item.priceLabel ?? (item.price === 0 ? "free" : "price tbc")}</span>
+        {where && (event.name || item.where) && <span className="ev-mcard__where">{displayName(event.name) || item.where}</span>}
+      </Link>
+      {save && <SaveButton item={item} merch className="ev-mcard__save" />}
     </li>
   );
 }

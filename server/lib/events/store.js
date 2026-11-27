@@ -67,15 +67,102 @@ export async function writeKv(db, key, value) {
 // Events.
 // ---------------------------------------------------------------------------------------------
 
-/** Singapore events only (tier sg), newest first by start, hidden ones only for admin tooling. */
+/**
+ * Singapore events (tier sg) from the last ~13 months on, soonest first. Hidden, merged (aliases) and
+ * ruled-out rows only with `includeHidden` (the engine's own bookkeeping). The window, not the row
+ * limit, keeps this bounded: long-past events drop out before any upcoming one could be cut off.
+ */
 export async function listEventRows(db, { includeHidden = false } = {}) {
-  const where = includeHidden ? eq(schema.events.tier, "sg") : and(eq(schema.events.tier, "sg"), sql`${schema.events.status} <> 'hidden'`);
-  return db.select().from(schema.events).where(where).orderBy(asc(schema.events.startsOn), asc(schema.events.name)).limit(400);
+  const recent = sql`(coalesce(${schema.events.endsOn}, ${schema.events.startsOn}) IS NULL OR coalesce(${schema.events.endsOn}, ${schema.events.startsOn}) >= current_date - 400)`;
+  const where = includeHidden
+    ? and(eq(schema.events.tier, "sg"), recent)
+    : and(eq(schema.events.tier, "sg"), recent, sql`${schema.events.status} NOT IN ('hidden', 'merged', 'out_of_scope')`);
+  return db.select().from(schema.events).where(where).orderBy(asc(schema.events.startsOn), asc(schema.events.name)).limit(2000);
 }
 
 export async function getEventRow(db, id) {
   const [row] = await db.select().from(schema.events).where(eq(schema.events.id, id));
   return row ?? null;
+}
+
+/**
+ * An event by id, following merges: an id that was folded into another event (status "merged",
+ * `dossier.mergedInto`) answers with the event it became. Returns `{row, from}`: `from` is the id
+ * asked for when it was an alias. Ids are never deleted, so an old link, a saved heart or a page
+ * she has open always lands somewhere.
+ */
+export async function resolveEventRow(db, id) {
+  let row = await getEventRow(db, id);
+  const seen = new Set([id]);
+  while (row?.status === "merged" && row.dossier?.mergedInto && !seen.has(row.dossier.mergedInto) && seen.size < 6) {
+    seen.add(row.dossier.mergedInto);
+    const next = await getEventRow(db, row.dossier.mergedInto);
+    if (!next) break;
+    row = next;
+  }
+  return { row, from: row && row.id !== id ? id : null };
+}
+
+/** Every id that leads to the given events, aliases included: `{alias → canonical}`. */
+export async function aliasMap(db) {
+  const rows = await db.select({ id: schema.events.id, status: schema.events.status, dossier: schema.events.dossier }).from(schema.events).where(eq(schema.events.status, "merged"));
+  const direct = new Map(rows.map((r) => [r.id, r.dossier?.mergedInto]).filter(([, to]) => to));
+  const out = {};
+  for (const [from] of direct) {
+    let to = direct.get(from);
+    for (let n = 0; n < 5 && direct.has(to); n++) to = direct.get(to);
+    out[from] = to;
+  }
+  return out;
+}
+
+/**
+ * Folds event `fromId` into `intoId`: `fromId` stays as an alias (status "merged"), its update log
+ * moves over (minus its own "first spotted"), and her saves follow.
+ */
+export async function mergeEvent(db, fromId, intoId, { now = new Date(), reason = "same event" } = {}) {
+  if (fromId === intoId) return null;
+  const from = await getEventRow(db, fromId);
+  const into = await getEventRow(db, intoId);
+  if (!from || !into) return null;
+  await db
+    .update(schema.events)
+    .set({ status: "merged", dossier: { ...(from.dossier ?? {}), mergedInto: intoId, mergedAt: now.toISOString(), mergedReason: reason }, updatedAt: now })
+    .where(eq(schema.events.id, fromId));
+  await db.delete(schema.eventLog).where(and(eq(schema.eventLog.eventId, fromId), eq(schema.eventLog.kind, "new")));
+  await db.update(schema.eventLog).set({ eventId: intoId }).where(eq(schema.eventLog.eventId, fromId));
+  await db.update(schema.eventSignals).set({ eventId: intoId }).where(eq(schema.eventSignals.eventId, fromId));
+  const intoMerch = new Set((into.dossier?.merch ?? []).map((m) => m.id));
+  await updateMe(db, (me) => {
+    if (me.saved.events[fromId]) {
+      me.saved.events[intoId] ??= me.saved.events[fromId];
+      delete me.saved.events[fromId];
+    }
+    if (me.looked[fromId]) me.looked[intoId] ??= me.looked[fromId];
+    for (const key of Object.keys(me.saved.merch)) {
+      const [eventId, itemId] = key.split("~");
+      if (eventId === fromId && intoMerch.has(itemId)) {
+        me.saved.merch[`${intoId}~${itemId}`] ??= me.saved.merch[key];
+        delete me.saved.merch[key];
+      }
+    }
+    return me;
+  });
+  return getEventRow(db, intoId);
+}
+
+/**
+ * Housekeeping: rows the retired weekly stage left behind outside Singapore are marked ruled out
+ * ("out_of_scope"), so every list agrees (the old /api/me/events still read them as upcoming).
+ * Nothing is ever deleted. Returns how many rows changed.
+ */
+export async function ruleOutOverseas(db, { now = new Date() } = {}) {
+  const rows = await db
+    .update(schema.events)
+    .set({ status: "out_of_scope", updatedAt: now })
+    .where(and(sql`${schema.events.tier} IS NOT NULL AND ${schema.events.tier} <> 'sg'`, eq(schema.events.status, "upcoming")))
+    .returning({ id: schema.events.id });
+  return rows.length;
 }
 
 export async function logFor(db, ids) {

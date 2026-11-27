@@ -8,12 +8,13 @@ import { claudeFor } from "../server/lib/events/claude.js";
 import { detect } from "../server/lib/events/detect.js";
 import { politeFetcher } from "../server/lib/events/fetch.js";
 import { checkGmail } from "../server/lib/events/gmail.js";
-import { checkInstagram, loadBlobImage } from "../server/lib/events/instagram.js";
+import { refreshPictures } from "../server/lib/events/images.js";
+import { checkInstagram, loadSignalImage, postsForEvent, workerImageStore } from "../server/lib/events/instagram.js";
 import { processQueue, requeuePaused } from "../server/lib/events/pipeline.js";
 import { deliverEventPushes } from "../server/lib/events/push.js";
 import { enabledSources } from "../server/lib/events/registry.js";
 import { canSpend } from "../server/lib/events/spend.js";
-import { addLogEntries, enqueueSignal, listEventRows, readKv, readMe, sha, writeKv, writeSetting } from "../server/lib/events/store.js";
+import { addLogEntries, enqueueSignal, listEventRows, readKv, readMe, ruleOutOverseas, sha, writeKv, writeSetting } from "../server/lib/events/store.js";
 import { apiClient, loadTrainAlerts, loadWeatherFeeds, weatherFor } from "../server/lib/events/weather.js";
 import { describe, workerConfig } from "./config.js";
 
@@ -65,7 +66,7 @@ export async function queueMissingDossiers(db, { now = new Date() } = {}) {
   const rows = await listEventRows(db);
   let queued = 0;
   for (const row of rows) {
-    if (row.investigatedAt || row.origin === "fixture" || (row.endsOn ?? row.startsOn ?? "9999") < today) continue;
+    if (row.investigatedAt || row.origin === "fixture" || ["merged", "out_of_scope", "cancelled"].includes(row.status) || (row.endsOn ?? row.startsOn ?? "9999") < today) continue;
     const { created } = await enqueueSignal(db, { origin: "refresh", eventId: row.id, url: row.url, title: row.name, hash: sha("first-research", row.id) });
     if (created) queued++;
   }
@@ -108,6 +109,20 @@ export async function refreshWeather(db, { api, now = new Date(), everyMinutes =
   return { ran: true, updated, feeds: Object.keys(feeds) };
 }
 
+/** Pictures for upcoming events and their merch (no Claude calls; see lib/events/images.js). */
+export async function findPictures(db, { store, fetcher, now = new Date(), perTick = 2 } = {}) {
+  const today = localDay(now);
+  const rows = (await listEventRows(db)).filter((r) => !["merged", "out_of_scope", "hidden"].includes(r.status) && r.origin !== "fixture" && (r.endsOn ?? r.startsOn ?? "9999") >= today);
+  return refreshPictures(db, rows, {
+    fetcher,
+    store,
+    now,
+    perTick,
+    postsFor: (id) => postsForEvent(db, id),
+    save: (row, patch) => db.update(schema.events).set(patch).where(eq(schema.events.id, row.id)),
+  });
+}
+
 /** Asks the API to deliver due pushes (push keys stay in Vercel); in dry runs, nothing is sent. */
 export async function deliver(db, { config, now = new Date(), post = globalThis.fetch, local = null } = {}) {
   const last = await readKv(db, "events:deliver", null);
@@ -143,12 +158,15 @@ export async function tick(db, deps = {}) {
   const api = apiClient({ send: deps.send });
   const claude = claudeFor(db, { responder: deps.responder ?? null, dryRun: deps.responder ? true : config.dryRun, now: () => now });
 
+  const pictures = deps.pictures !== undefined ? deps.pictures : await workerImageStore({ apiOrigin: config.apiOrigin, cronSecret: config.cronSecret }).catch(() => null);
+  await step("housekeeping", async () => ({ ruledOut: await ruleOutOverseas(db, { now }) }));
   await step("dossiers", () => queueMissingDossiers(db, { now }));
   await step("sources", () => checkSources(db, { fetcher, now, perTick: config.sourcesPerTick }));
-  await step("instagram", () => checkInstagram(db, { now, send: deps.send, ...(deps.instagram ?? {}) }));
+  await step("instagram", () => checkInstagram(db, { now, send: deps.send, store: pictures, ...(deps.instagram ?? {}) }));
   await step("gmail", () => checkGmail(db, { now, send: deps.send, ...(deps.gmail ?? {}) }));
   await step("requeued", async () => requeuePaused(db, await canSpend(db, "investigate", { now })));
-  await step("queue", () => processQueue(db, claude, { limit: config.signalsPerTick, now: () => now, loadImage: deps.loadImage ?? loadBlobImage, log: deps.log }));
+  await step("queue", () => processQueue(db, claude, { limit: config.signalsPerTick, now: () => now, loadImage: deps.loadImage ?? ((ref) => loadSignalImage(ref, { send: deps.send })), log: deps.log }));
+  await step("pictures", () => findPictures(db, { store: pictures, fetcher, now }));
   await step("weather", () => refreshWeather(db, { api, now, everyMinutes: config.weatherEveryMinutes }));
   await step("deliver", () => deliver(db, { config, now, post: deps.post, local: deps.localDeliver ?? null }));
   await step("status", async () => (await sourcesStatus(db)).length);

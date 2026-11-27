@@ -63,7 +63,11 @@ export const MerchSchema = z
     limited: z.boolean().default(false),
     status: z.enum(MERCH_STATUSES).default("revealed"),
     note: z.string().trim().max(400).nullable().default(null),
+    // A picture link: our stored copy, or (from the research) a page's picture still to be copied.
     image: z.string().max(800).nullable().default(null),
+    // Our stored copies (lib/events/images.js); filled by the worker, never by the research.
+    images: z.array(z.string().max(800)).max(6).default([]),
+    imageCredit: z.string().trim().max(120).nullable().default(null),
     sourceIds,
   })
   .strict();
@@ -371,8 +375,11 @@ export function timelineFor({ timeline = [], startsOn, endsOn, status, dossier =
   };
   const steps = STAGES.map((stage) => {
     const step = recorded.get(stage);
-    let state = step?.at || step?.text || implied[stage] ? "done" : "unknown";
-    if (stage === "announced") state = "done";
+    // A milestone dated in the future (tickets go on sale on 2 Dec) is coming, not done.
+    const atDay = step?.at ? String(step.at).slice(0, 10) : null;
+    const ahead = Boolean(atDay && /^\d{4}-\d{2}-\d{2}$/.test(atDay) && atDay > today);
+    let state = ahead ? "next" : step?.at || step?.text || implied[stage] ? "done" : "unknown";
+    if (stage === "announced" && !ahead) state = "done";
     if (stage === "day") state = after ? "done" : on ? "now" : startsOn ? "next" : "unknown";
     if (stage === "after") state = after ? (step?.text ? "done" : "now") : "unknown";
     if (status === "cancelled" && (stage === "day" || stage === "after")) state = "unknown";
@@ -386,7 +393,7 @@ export function timelineFor({ timeline = [], startsOn, endsOn, status, dossier =
     };
   });
   // The first stage that hasn't happened yet is "next" (unless the day already is).
-  if (!steps.some((s) => s.state === "now")) {
+  if (!steps.some((s) => s.state === "now" || (s.state === "next" && s.stage !== "day"))) {
     const next = steps.find((s) => s.state === "unknown" && s.stage !== "after");
     if (next && next.stage !== "day") next.state = "next";
   }
@@ -398,13 +405,69 @@ export function currentPhase(steps) {
   return steps.find((s) => s.state === "now")?.stage ?? [...steps].reverse().find((s) => s.state === "done")?.stage ?? "announced";
 }
 
-/** Every merch item's lowest ticket price, and the "from S$…" line for cards. */
-export function ticketSummary(tickets = {}) {
-  const priced = (tickets.tiers ?? []).filter((t) => t.price != null);
-  const from = priced.length ? Math.min(...priced.map((t) => t.price)) : tickets.status === "free" ? 0 : null;
-  const status = tickets.status ?? "tbc";
-  const labels = { on_sale: "tickets on sale", soon: "tickets soon", sold_out: "sold out", free: "free entry", tbc: "tickets tbc", closed: "sales closed" };
-  return { status, from, label: status === "on_sale" && from != null ? `from ${priceLabel(from, priced[0]?.currency)}` : labels[status] };
+/** "2026-12-02 12:00", "2026-12-02T12:00:00+08:00" or "2026-12-02" (Singapore time) → epoch ms, or null. */
+export function sgMoment(value) {
+  if (!value || typeof value !== "string") return null;
+  const m = value.trim().match(/^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+  if (!m) return null;
+  if (/[+-]\d{2}:?\d{2}$|Z$/.test(value.trim())) {
+    const t = Date.parse(value);
+    return Number.isFinite(t) ? t : null;
+  }
+  const t = Date.parse(`${m[1]}T${m[2] ?? "00"}:${m[3] ?? "00"}:00+08:00`);
+  return Number.isFinite(t) ? t : null;
+}
+
+const hostOf = (url) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return null;
+  }
+};
+
+/** Who sells the tickets: the ticketing source's publisher ("SISTIC"), else the link's site. */
+export function ticketSeller(url, { sources = [], links = [] } = {}) {
+  const host = hostOf(url);
+  if (!host) return null;
+  const source = sources.find((s) => hostOf(s.url) === host && s.publisher && ["ticketing", "official", "venue"].includes(s.kind));
+  if (source) return source.publisher.split(/\s+[–—-]\s+/)[0].trim().slice(0, 40);
+  const link = links.find((l) => hostOf(l.url) === host && l.label);
+  const named = link?.label.replace(/\b(tickets?|ticketing|page|official|on)\b/gi, "").replace(/\s+/g, " ").trim();
+  return named && named.length <= 24 ? named : host;
+}
+
+/**
+ * The card's ticket line, saying what is actually known: when sales open (from the tickets block,
+ * else the timeline's "tickets" milestone), who sells them, the lowest price still on sale. A sale
+ * that was "soon" counts as on sale once its moment has passed, without waiting for new research.
+ */
+export function ticketSummary(tickets = {}, { timeline = [], sources = [], links = [], official = null, now = new Date() } = {}) {
+  tickets ??= {};
+  const tiers = tickets.tiers ?? [];
+  const available = tiers.filter((t) => t.price != null && t.status !== "sold_out");
+  const priced = available.length ? available : tiers.filter((t) => t.price != null);
+  const opensAt = tickets.opensAt ?? timeline.find((step) => step.stage === "tickets" && sgMoment(step.at))?.at ?? null;
+  const opensMs = sgMoment(opensAt);
+  let status = tickets.status ?? "tbc";
+  if (status === "tbc" && opensMs) status = opensMs > now.getTime() ? "soon" : "on_sale";
+  else if (status === "soon" && opensMs && opensMs <= now.getTime()) status = "on_sale";
+  const from = priced.length ? Math.min(...priced.map((t) => t.price)) : status === "free" ? 0 : null;
+  const url = tickets.buyUrl ?? links.find((l) => l.kind === "tickets")?.url ?? null;
+  // Sold on the event's own site: no seller to name. Elsewhere (SISTIC, Ticketmaster…): say who.
+  const seller = url && hostOf(url) !== hostOf(official) ? ticketSeller(url, { sources, links }) : null;
+  const opens = opensMs ? new Date(opensMs).toISOString() : null;
+  const day = opensMs ? dateRangeText(new Date(opensMs + 8 * 3600_000).toISOString().slice(0, 10)) : null;
+  const labels = { on_sale: "tickets on sale", soon: day ? `tickets ${day}` : "tickets soon", sold_out: "sold out", free: "free entry", tbc: "tickets tbc", closed: "sales closed" };
+  return {
+    status,
+    from,
+    label: status === "on_sale" && from != null ? `from ${priceLabel(from, priced[0]?.currency)}` : labels[status] ?? labels.tbc,
+    opensAt: opens,
+    opensHasTime: Boolean(opensAt && /\d{2}:\d{2}/.test(opensAt)),
+    url,
+    seller,
+  };
 }
 
 export function merchSummary(merch = []) {

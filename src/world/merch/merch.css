@@ -1,0 +1,256 @@
+/*
+  Merch & exclusives on their own (round 2): the merch list (picture cards grouped by event) and one
+  piece's page (gallery, price and facts, then where it is). Shares events.css's tokens and cards.
+*/
+
+/* ---------- one piece ---------- */
+html.app-shell .mx-page .app-section__head {
+  padding-bottom: 12px;
+}
+.mx-gallery {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--ev-line);
+  border-radius: var(--app-card-radius, 20px);
+  background: color-mix(in srgb, var(--ev-soft) 50%, var(--ev-paper));
+  box-shadow: var(--app-card-shadow);
+}
+.mx-gallery__strip {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.mx-gallery__strip::-webkit-scrollbar {
+  display: none;
+}
+.mx-gallery__strip img {
+  flex: none;
+  width: 100%;
+  aspect-ratio: 1;
+  max-height: min(70vh, 520px);
+  object-fit: cover;
+  scroll-snap-align: center;
+}
+.mx-gallery__dots {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  display: flex;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgb(40 20 50 / 0.35);
+  transform: translateX(-50%);
+}
+.mx-gallery__dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.55);
+}
+.mx-gallery__dots span[data-on] {
+  background: #fff;
+}
+.mx-gallery figcaption {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  max-width: calc(100% - 16px);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(40 20 50 / 0.5);
+  color: #fff;
+  font: 600 11px/1.5 var(--font-ui);
+}
+.mx-gallery--empty {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  aspect-ratio: 16 / 10;
+  color: var(--ev-accent);
+  font: 600 14px/1.3 var(--font-ui);
+}
+.mx-gallery--empty span {
+  color: var(--ev-muted);
+}
+
+.mx-facts__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+.mx-facts__price {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  min-width: 0;
+}
+.mx-facts__price strong {
+  color: var(--ev-ink);
+  font: 700 30px/1.05 var(--font-hand);
+}
+.mx-facts__top .ev-save {
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--ev-line);
+  border-radius: 50%;
+}
+.mx-facts__list {
+  display: grid;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.mx-fact {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid color-mix(in srgb, var(--ev-line) 55%, transparent);
+}
+.mx-fact__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ev-soft) 70%, var(--ev-paper));
+  color: var(--ev-accent);
+}
+.mx-fact__icon[data-tone="mint"] {
+  background: var(--ev-mint-bg);
+  color: var(--ev-mint-ink);
+}
+.mx-fact__icon[data-tone="mute"] {
+  background: var(--ev-mute-bg);
+  color: var(--ev-muted);
+}
+.mx-fact__text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  color: var(--ev-ink);
+  font: 500 15px/1.4 var(--font-ui);
+}
+.mx-fact__text small {
+  color: var(--ev-muted);
+  font: 700 10.5px/1.3 var(--font-ui);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+html.app-shell .mx-where__head {
+  padding: 16px 16px 4px;
+}
+/* The card is flush, so its list needs no pull to the edges. */
+html.app-shell .mx-where > .app-list {
+  margin-inline: 0;
+}
+.mx-where__art {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ev-soft) 70%, var(--ev-paper));
+  color: var(--ev-accent);
+}
+.mx-where__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mx-where__label {
+  color: var(--ev-muted);
+  font: 700 10.5px/1.3 var(--font-ui) !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.mx-where__name {
+  color: var(--ev-ink);
+  font: 600 16px/1.35 var(--font-ui);
+}
+html.app-shell .mx-where .app-row {
+  align-items: center;
+}
+html.app-shell .mx-where .app-row > a,
+html.app-shell .mx-where .app-row > span {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.mx-more {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.mx-more__strip {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 2px max(var(--app-gutter, 16px), env(safe-area-inset-left)) 8px;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: max(var(--app-gutter, 16px), env(safe-area-inset-left));
+  scrollbar-width: none;
+}
+.mx-more__strip::-webkit-scrollbar {
+  display: none;
+}
+.mx-more__strip .ev-mcard {
+  flex: none;
+  width: 140px;
+  scroll-snap-align: start;
+}
+
+/* ---------- the list ---------- */
+.mx-group {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.mx-group__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 4px 4px 0;
+  color: inherit;
+  text-decoration: none;
+}
+.mx-group__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.mx-group__text strong {
+  color: var(--ev-ink);
+  font: 700 20px/1.15 var(--font-hand);
+}
+.mx-group__text small {
+  color: var(--ev-muted);
+  font: 400 13px/1.35 var(--font-ui);
+}
+.mx-group__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  color: var(--ev-accent);
+  font: 700 13px/1 var(--font-ui);
+}
+.mx-group__go .ev-chevron {
+  margin: 0;
+}
