@@ -46,7 +46,8 @@
   border-radius: 24px 24px 0 0;
   background: var(--theme-paper, #fff9fd);
   color: var(--theme-ink);
-  box-shadow: 0 -10px 40px rgb(73 54 83 / 0.2);
+  /* The second shadow is paper under the bottom edge, for when she pulls the sheet up a little. */
+  box-shadow: 0 -10px 40px rgb(73 54 83 / 0.2), 0 40px 0 var(--theme-paper, #fff9fd);
   outline: none;
   pointer-events: auto;
   transform: translate3d(0, 105%, 0);
