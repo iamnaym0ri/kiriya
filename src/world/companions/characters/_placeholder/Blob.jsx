@@ -23,7 +23,7 @@ function Eyes({ expression }) {
   );
 }
 
-export function BlobBody({ pose = "idle", expression, playing = true, talking = false }) {
+export function BlobBody({ pose = "idle", expression, playing = true, talking = false, prop = null }) {
   const face = expression ?? (pose === "sleep" ? "sleepy" : pose === "react" || pose === "held" || pose === "fall" ? "surprised" : pose === "wave" ? "happy" : undefined);
   return (
     <svg className="blob" data-pose={pose} data-playing={playing ? "" : undefined} viewBox="0 0 80 96" aria-hidden="true">
@@ -44,6 +44,9 @@ export function BlobBody({ pose = "idle", expression, playing = true, talking = 
         <path d="M40 14c-2-6 1-10 6-11" stroke="#8a6aa6" strokeWidth="2.4" fill="none" strokeLinecap="round" />
         <circle cx="47" cy="3" r="3" fill="#f2a7c3" stroke="#8a6aa6" strokeWidth="1.5" />
       </g>
+      {prop === "star" && (
+        <path className="blob__prop" d="M74 50l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z" fill="#ffd970" stroke="#c99a2e" strokeWidth="1.4" strokeLinejoin="round" />
+      )}
       {pose === "sleep" && (
         <text x="64" y="22" fill="#8a6aa6" fontSize="13" fontWeight="700" className="blob__z">
           z

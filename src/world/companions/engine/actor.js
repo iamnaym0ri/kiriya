@@ -6,6 +6,9 @@
 // second at most, never per frame. All timing runs on the stage's clock, which stops when the
 // stage is paused, so a hidden home costs nothing and picks up where it left off.
 import { motionValue } from "motion/react";
+import { staysPut } from "./character.js";
+import { placeMenu } from "./menu.js";
+import { clearStay, spotAt, writeStay } from "./stay.js";
 import { createLinePicker, fillName, greetTopics, readMs } from "./talk.js";
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -35,6 +38,12 @@ function createStore(initial) {
 let actorSeq = 0;
 let tileSeq = 0;
 let lineSeq = 0;
+let menuSeq = 0;
+
+/** The tap menu closes by itself after this long without a choice (README.md). */
+export const MENU_MS = 5000;
+/** Steps that take it somewhere else; none of them run while it is told to stay. */
+const TRAVEL = new Set(["walk", "jump", "float"]);
 
 export class Actor {
   constructor(stage, character, { role = "host" } = {}) {
@@ -80,6 +89,14 @@ export class Actor {
     this.lastBehaviour = null;
     this.moment = null; // { expression, until }: a brief expression from tapping, picking up…
     this.sayAt = null; // { topic, at }: a remark queued a beat after starting a behaviour
+    this.staying = false; // told to stay: it never travels, and `spot` is where it stays
+    this.spot = null; // { x: 0..1, level } (stay.js)
+    this.menu = null; // { id, at, focus } while the tap menu is open
+    this.menuSize = null; // { column: { w, h }, row: { w, h } }, measured by ActorView
+    this.menuPlace = null;
+    this.bubbleRect = null;
+    this.bounce = null; // { t0, count, height, every, hops }: little hops on the spot
+    this.hopY = 0;
 
     this.tiles = [];
     this.ride = null; // { id, state, at } for "ride" platforms: the one cloud it sits on
@@ -104,6 +121,9 @@ export class Actor {
       bubble: null,
       talking: false,
       held: false,
+      prop: null,
+      menu: null,
+      staying: false,
     });
     this.els = {};
   }
@@ -145,7 +165,11 @@ export class Actor {
   }
   refreshExpression() {
     const bubble = this.view.get().bubble;
-    this.view.set({ expression: bubble?.expression ?? this.baseExpression() });
+    this.view.set({ expression: bubble?.expression ?? this.baseExpression(), prop: this.mode === "held" ? null : (this.behaviour?.prop ?? null) });
+  }
+  get inVisit() {
+    const v = this.stage.visit;
+    return !!v && (v.host === this || v.visitor === this);
   }
   setMoment(name, seconds = 2.2) {
     const expression = this.m.expressions[name];
@@ -177,6 +201,7 @@ export class Actor {
   }
   hush() {
     this.view.set({ bubble: null, talking: false });
+    this.bubbleRect = null;
     this.refreshExpression();
   }
   /** Something unprompted: the behaviour's topic, now and then something sweet. */
@@ -185,7 +210,10 @@ export class Actor {
     const topics = [];
     if (this.stage.birthday && Math.random() < 0.3) topics.push("birthday");
     if (Math.random() < 0.22) topics.push("sweet");
-    topics.push(topic ?? "idle", "idle");
+    // Told to stay, it now and then remarks on staying put instead of the behaviour's own topic.
+    if (this.staying && (!topic || Math.random() < 0.4)) topics.push("stayIdle");
+    if (topic) topics.push(topic);
+    topics.push("idle");
     this.say(topics, { aside: true });
   }
   greet() {
@@ -259,7 +287,9 @@ export class Actor {
 
   pickBehaviour() {
     const hour = new Date().getHours();
-    const pool = this.c.behaviours.filter((b) => {
+    // Told to stay: only what it can do where it stands.
+    const allowed = this.staying ? this.c.behaviours.filter(staysPut) : this.c.behaviours;
+    const pool = allowed.filter((b) => {
       if (!this.lively && b.quiet === false) return false;
       if (Array.isArray(b.hours)) {
         const [from, to] = b.hours;
@@ -268,11 +298,17 @@ export class Actor {
       }
       return true;
     });
-    const list = pool.length ? pool : this.c.behaviours;
+    const list = pool.length ? pool : allowed.length ? allowed : [this.restBehaviour()];
     const weights = list.map((b) => (b.weight ?? 1) * (b === this.lastBehaviour && list.length > 1 ? 0.25 : 1));
     let roll = Math.random() * weights.reduce((a, b) => a + b, 0);
     for (let i = 0; i < list.length; i++) if ((roll -= weights[i]) <= 0) return list[i];
     return list[0];
+  }
+
+  /** Staying with nothing it may do in place: it just settles where it is. */
+  restBehaviour() {
+    this.stayRest ??= { id: "stay-rest", weight: 1, pose: this.m.restPose, seconds: this.m.restSeconds, say: this.m.talkiness, stay: true, prop: null, bounce: null, steps: null };
+    return this.stayRest;
   }
 
   /** What to do next when left alone: maybe go somewhere, then a behaviour, then settle. */
@@ -283,7 +319,7 @@ export class Actor {
     }
     const b = this.pickBehaviour();
     const steps = [];
-    if (this.lively && this.level != null && !b.stay) {
+    if (this.lively && this.level != null && !b.stay && !this.staying) {
       const here = this.stage.spotScore(this, this.level, this.x);
       if (Math.random() < this.m.restlessness || here > 0.3 || b.level) steps.push(...this.planMove(b));
       if (b.roam) steps.push(...this.planRoam(b));
@@ -386,6 +422,20 @@ export class Actor {
     return steps;
   }
 
+  /**
+   * What to carry on with after a tap or a choice: what it was doing (shortened, unless a visit is
+   * holding it there) and the rest of its plan.
+   */
+  resumeSteps() {
+    const step = this.step;
+    const keep = this.inVisit;
+    let resume = null;
+    if (step?.type === "behave" || step?.type === "rest") resume = keep ? step : { ...step, seconds: [2, 4], resumed: true };
+    else if (step?.type === "act" && !step.solid) resume = { ...step, s: { ...step.s, seconds: keep ? step.s.seconds : [2, 4], topic: null, bounce: null } };
+    const plan = this.plan.filter((s) => s.type !== "hold" && (s.type !== "walk" || s.to !== step?.to));
+    return resume ? [resume, ...plan] : plan;
+  }
+
   /** Drops the current plan (keeping what it is standing on) and does `steps` instead. */
   interrupt(steps = []) {
     this.plan = [...steps];
@@ -406,15 +456,48 @@ export class Actor {
       case "behave": {
         const b = step.b;
         this.lastBehaviour = b;
+        if (b.steps && !step.resumed) {
+          // A little sequence: each step is its own pose (and prop, and line) in turn.
+          if (b.topic && Math.random() < b.say) this.sayAt = { topic: b.topic, at: this.time + 0.9 };
+          this.plan.unshift(...b.steps.map((s) => ({ type: "act", s, parent: b })));
+          this.next();
+          return;
+        }
         this.behaviour = b;
         this.mode = "rest";
         this.setPose(b.pose);
         this.refreshExpression();
         this.until = this.time + between(step.seconds ?? b.seconds) * slow;
+        if (step.resumed) break;
+        if (b.bounce && this.lively) this.startBounce(b.bounce);
         if (b.topic && Math.random() < b.say) this.sayAt = { topic: b.topic, at: this.time + 0.9 };
-        else if (Math.random() < b.say * 0.4) this.sayAt = { topic: "idle", at: this.time + 1.2 };
+        else if (Math.random() < b.say * 0.4) this.sayAt = { topic: null, at: this.time + 1.2 };
         break;
       }
+      case "act": {
+        // One step of the tap menu's action (`solid`: said to her) or of a behaviour's sequence.
+        const s = step.s;
+        const parent = step.parent;
+        this.behaviour = { id: parent?.id ?? step.action ?? "action", pose: s.pose, expression: s.expression, prop: s.prop };
+        this.mode = "rest";
+        if (s.turn) this.face(-this.facing);
+        this.setPose(s.pose);
+        this.refreshExpression();
+        this.until = this.time + between(s.seconds) * slow;
+        if (s.bounce && this.lively) this.startBounce(s.bounce);
+        if (s.topic) {
+          if (step.solid) this.say([s.topic]);
+          else if (Math.random() < (parent?.say ?? this.m.talkiness)) this.sayAt = { topic: s.topic, at: this.time + 0.6 };
+        }
+        break;
+      }
+      case "hold":
+        // The tap menu is open: it waits, looking at her, until she chooses or it closes.
+        this.mode = "rest";
+        this.setPose(step.pose ?? this.m.restPose);
+        this.refreshExpression();
+        this.until = this.menu ? Infinity : 0;
+        break;
       case "rest":
         this.behaviour = null;
         this.mode = "rest";
@@ -567,6 +650,8 @@ export class Actor {
     const dropped = this.fall.dropped;
     this.fall = null;
     this.jump = null;
+    // Told to stay and put down somewhere new: this is its spot now.
+    if (this.staying) this.saveSpot();
     if (dropped) {
       this.setMoment("putDown");
       this.say(["putDown"]);
@@ -694,7 +779,12 @@ export class Actor {
     else if (event.type !== "pointercancel" && performance.now() - p.t0 < 500) this.tap();
   }
 
-  tap() {
+  /**
+   * A tap: the `react` pose and a `tapped` line (three quick taps: `pester`), and for the host the
+   * tap menu, while it waits for her choice. `keyboard`: opened from the keyboard, so the menu's
+   * first chip takes the focus.
+   */
+  tap({ keyboard = false } = {}) {
     if (this.mode === "air" || this.mode === "crouch" || this.mode === "held") return;
     const now = this.time;
     this.taps = [...this.taps.filter((t) => now - t < 2.4), now];
@@ -703,20 +793,111 @@ export class Actor {
     this.say(pester ? ["pester", "tapped"] : ["tapped"]);
     this.stage.haptic?.("light");
     if (this.role === "visitor") return;
-    const resume = this.step && (this.step.type === "behave" || this.step.type === "rest") ? { ...this.step, seconds: [2, 4] } : null;
-    const rest = resume ? [resume, ...this.plan] : this.plan.filter((s) => s.type !== "walk" || s.to !== this.step?.to);
+    const rest = this.resumeSteps();
+    this.openMenu({ focus: keyboard });
+    const hold = { type: "hold" };
     if (this.lively && this.m.hop && this.level != null) {
-      this.interrupt([{ type: "jump", level: this.level, to: this.x, small: true, height: 14, anticipation: 70 }, { type: "wait", seconds: [0.9, 0.9], pose: "react" }, ...rest]);
+      this.interrupt([{ type: "jump", level: this.level, to: this.x, small: true, height: 14, anticipation: 70 }, { type: "wait", seconds: [0.9, 0.9], pose: "react" }, hold, ...rest]);
     } else {
       this.sx = 1.08;
       this.sy = 0.92;
-      this.interrupt([{ type: "wait", seconds: [1.1, 1.1], pose: "react" }, ...rest]);
+      this.interrupt([{ type: "wait", seconds: [1.1, 1.1], pose: "react" }, hold, ...rest]);
     }
+  }
+
+  // --- The tap menu, the action and stay -------------------------------------------------------------
+
+  openMenu({ focus = false } = {}) {
+    if (this.role !== "host") return;
+    this.menu = { id: ++menuSeq, at: performance.now(), focus };
+    this.lastMenu = null;
+    this.view.set({ menu: { id: this.menu.id, focus } });
+  }
+
+  /** Closes the menu: `reason` is "chose", "outside", "scroll", "drag", "timeout", "escape" or "away". */
+  closeMenu(reason = "away") {
+    if (!this.menu) return;
+    this.menu = null;
+    this.menuPlace = null;
+    this.view.set({ menu: null });
+    if (this.step?.type === "hold") this.until = 0;
+    this.stage.onMenuClosed?.(this, reason);
+  }
+
+  /** A chip in the menu: "action", "stay" or "wander". */
+  choose(which) {
+    this.closeMenu("chose");
+    this.stage.haptic?.("light");
+    if (which === "action") this.runAction();
+    else this.setStay(which === "stay", { say: true });
+  }
+
+  /** Plays its own action (`character.action`): each step's pose, prop and expression in turn. */
+  runAction() {
+    const action = this.c.action;
+    if (!action || this.mode === "held") return false;
+    this.moment = null;
+    const steps = action.steps.map((s) => ({ type: "act", s, solid: true, action: action.id }));
+    const after = this.inVisit ? [{ type: "rest", seconds: [600, 600] }] : [{ type: "rest" }];
+    // Mid-hop (the tap's little jump): it plays as soon as the feet are down.
+    if (this.mode === "air" || this.mode === "crouch") this.plan = [...steps, ...after];
+    else this.interrupt([...steps, ...after]);
+    return true;
+  }
+
+  /** Stay (true) or wander again (false). `say`: answer with a `stay` / `wander` line. */
+  setStay(on, { say = false } = {}) {
+    if (this.role !== "host") return;
+    if (on) {
+      this.staying = true;
+      // Stops where it stands: no more walks, hops to other levels or floats.
+      if (this.mode === "walk" || this.mode === "turn") {
+        this.mode = "rest";
+        this.speed = 0;
+        this.until = 0;
+      }
+      this.plan = this.plan.filter((s) => !TRAVEL.has(s.type) || s.off || s.small);
+      if (this.level != null) this.saveSpot();
+      this.view.set({ staying: true });
+      if (say) {
+        this.moment = null;
+        this.setMoment("stay", 2.4);
+        this.say(["stay"]);
+        if (this.lively && this.mode === "rest") this.startBounce({ count: 1, height: 6, every: 0.3 });
+      }
+    } else {
+      this.staying = false;
+      this.spot = null;
+      clearStay(this.c.id);
+      this.view.set({ staying: false });
+      if (say) {
+        this.moment = null;
+        this.setMoment("wander", 2.4);
+        this.say(["wander"]);
+        if (this.lively && this.mode === "rest") this.startBounce({ count: 2, height: 8, every: 0.32 });
+        if (!this.inVisit && this.mode === "rest") this.interrupt([{ type: "wait", seconds: [1.2, 1.6] }]);
+      }
+    }
+  }
+
+  /** Where it stands now becomes its spot, kept on this phone. */
+  saveSpot() {
+    if (this.level == null) return;
+    this.spot = spotAt(this.x, this.level, this.stage.band);
+    writeStay(this.c.id, this.spot);
+  }
+
+  /** Little hops on the spot (a dance, a happy bounce): the feet never leave their level. */
+  startBounce(bounce) {
+    this.bounce = { t0: this.time, count: bounce.count, height: bounce.height ?? 9, every: bounce.every ?? 0.36, hops: 0 };
   }
 
   pickUp() {
     const p = this.pointer;
     p.picked = true;
+    this.closeMenu("drag");
+    this.bounce = null;
+    this.hopY = 0;
     this.mode = "held";
     this.plan = [];
     this.step = null;
@@ -741,7 +922,8 @@ export class Actor {
     this.rotTarget = 0;
     const levels = this.stage.levels;
     const g = this.m.gravity * this.scale;
-    const throwX = clamp(p.vx * 0.35, -420, 420);
+    // Told to stay, it drops straight down: where she lets go is its new spot.
+    const throwX = this.staying ? 0 : clamp(p.vx * 0.35, -420, 420);
     const below = levels.filter((l) => l.y >= this.y - 4).sort((a, b) => a.y - b.y);
     let choice = null;
     for (const level of below) {
@@ -818,6 +1000,7 @@ export class Actor {
     }
     // A long press without moving picks it up too.
     if (this.pointer && !this.pointer.picked && performance.now() - this.pointer.t0 > 420) this.pickUp();
+    if (this.menu && performance.now() - this.menu.at > MENU_MS) this.closeMenu("timeout");
 
     switch (this.mode) {
       case "rest":
@@ -845,6 +1028,7 @@ export class Actor {
           this.speed = 0;
           this.mode = "rest";
           this.setPose(this.m.restPose);
+          if (this.staying && !step.off) this.saveSpot();
           // At the end of a level it turns back to face the room.
           const level = this.levelObj;
           if (level && !step.off && (this.x <= level.x0 + 2 || this.x >= level.x1 - 2) && !this.plan.some((s) => s.type === "walk")) {
@@ -889,6 +1073,7 @@ export class Actor {
           this.level = f.level;
           this.y = f.y1;
           this.floating = null;
+          if (this.staying) this.saveSpot();
           this.sx = 1.05;
           this.sy = 0.95;
           this.mode = "rest";
@@ -938,6 +1123,24 @@ export class Actor {
       this.rot = 0;
       this.turn = this.facing;
     }
+    // Hops on the spot: a lift written with the frame, a little squash each time the feet touch.
+    let hop = 0;
+    if (this.bounce) {
+      const b = this.bounce;
+      const p = (t - b.t0) / b.every;
+      if (!lively || this.mode !== "rest" || p >= b.count) {
+        if (lively && p >= b.count) this.squashKick(0.06);
+        this.bounce = null;
+      } else {
+        const i = Math.floor(p);
+        if (i > b.hops) {
+          b.hops = i;
+          this.squashKick(0.06);
+        }
+        hop = Math.sin(Math.PI * (p - i)) * b.height * this.scale;
+      }
+    }
+    this.hopY = hop;
     if (this.opacity !== this.opacityTarget) {
       const step = this.opacityRate * dt;
       this.opacity = this.opacity < this.opacityTarget ? Math.min(this.opacityTarget, this.opacity + step) : Math.max(this.opacityTarget, this.opacity - step);
@@ -946,6 +1149,7 @@ export class Actor {
     this.updateTiles();
     this.write();
     if (this.view.get().bubble) this.placeBubble();
+    if (this.menu) this.placeMenu();
 
     const f = this.frame;
     f.time.set(t);
@@ -962,7 +1166,7 @@ export class Actor {
     if (!root) return;
     const bob = this.m.bob && this.lively && this.level != null && this.mode !== "held" ? Math.sin(this.time * 2.4 + this.bobPhase) * this.m.bob * this.scale : 0;
     const x = Math.round(this.x * 10) / 10;
-    const y = Math.round((this.y + bob) * 10) / 10;
+    const y = Math.round((this.y + bob - this.hopY) * 10) / 10;
     const rootKey = `${x},${y}`;
     if (force || rootKey !== this.lastRoot) {
       root.style.transform = `translate3d(${x}px, ${y}px, 0)`;
@@ -1021,6 +1225,7 @@ export class Actor {
         : clamp(head + this.h * 0.3 - top, 12, bh - 12);
     const lx = Math.round(left);
     const ty = Math.round(top);
+    this.bubbleRect = { left: lx, top: ty, right: lx + bw, bottom: ty + bh };
     const key = `${lx},${ty},${place},${Math.round(tail)}`;
     if (key === this.lastBubble) return;
     this.lastBubble = key;
@@ -1030,5 +1235,36 @@ export class Actor {
       this.bubblePlace = place;
     }
     el.style.setProperty("--tail", `${Math.round(tail)}px`);
+  }
+
+  squashKick(amount) {
+    const k = this.m.squash;
+    this.sx = 1 + amount * k;
+    this.sy = 1 - amount * 1.2 * k;
+  }
+
+  /** Keeps the tap menu beside it (menu.js), clear of the bubble and inside the band. */
+  placeMenu() {
+    const el = this.els.menu;
+    if (!el || !this.menuSize) return;
+    const levels = this.stage.levels;
+    // The level it stands on (or is hopping back down to), so the tap's little hop doesn't shake it.
+    const level = this.level != null ? levels[this.level] : this.fall ? levels[this.fall.level] : null;
+    const feet = level ? level.y : this.y;
+    const x = this.fall?.x ?? this.x;
+    const place = placeMenu({
+      band: this.stage.band,
+      actor: { x, feet, w: this.w * 0.74, h: this.h * 0.97, cloud: this.pw * 0.24 },
+      size: this.menuSize,
+      bubble: this.view.get().bubble ? this.bubbleRect : null,
+      prev: this.menuPlace,
+    });
+    this.menuPlace = place;
+    const key = `${place.left},${place.top},${place.layout}`;
+    if (key === this.lastMenu) return;
+    this.lastMenu = key;
+    el.style.transform = `translate3d(${place.left}px, ${place.top}px, 0)`;
+    el.dataset.layout = place.layout;
+    el.dataset.side = place.side;
   }
 }

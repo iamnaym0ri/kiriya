@@ -23,7 +23,20 @@ export default {
     { id: "sit", weight: 3, pose: "sit", expression: "happy", seconds: [6, 12], topic: "idle" },
     { id: "bop", weight: 1, pose: "idle", roam: true, roamSpeed: 1.3, seconds: [2, 4] },
     { id: "nap", weight: 1, pose: "sleep", seconds: [6, 10], say: 0 },
+    // In place (what it does while told to stay): a bounce with a prop, and a little routine.
+    { id: "hop", weight: 1, pose: "wave", expression: "happy", prop: "star", bounce: 3, seconds: [2, 3], topic: "dance" },
+    { id: "look", weight: 1, steps: [{ pose: "idle", seconds: 1.2, turn: true }, { pose: "react", seconds: 0.8, expression: "surprised" }, { pose: "idle", seconds: 1, turn: true }] },
   ],
+  // The tap menu's own choice: a star it holds up and bounces with.
+  action: {
+    id: "star",
+    label: "give it a star",
+    icon: "⭐",
+    pose: "wave",
+    prop: "star",
+    expression: "happy",
+    steps: [{ seconds: 1.4, bounce: 2 }, { pose: "sit", seconds: 2, topic: "starAfter" }],
+  },
   lines: {
     greet: ["hello hello!", { text: "oh, {name}! hi!", expression: "happy" }],
     greetMorning: ["good morning, {name}"],
@@ -37,6 +50,12 @@ export default {
     birthday: ["happy birthday!!"],
     visit: ["knock knock!"],
     bye: ["see you soon!"],
+    action: [{ text: "a star! for me?", expression: "happy" }, "ooh, shiny"],
+    starAfter: ["I'll keep it forever"],
+    stay: ["okay, I'll stay right here", "staying!"],
+    wander: ["off I go then", "wheee, free"],
+    stayIdle: ["still here", "good spot, this"],
+    dance: ["boing boing"],
   },
   visit: {
     with: {
