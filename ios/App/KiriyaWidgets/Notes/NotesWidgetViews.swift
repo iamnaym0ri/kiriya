@@ -233,7 +233,7 @@ struct NotesWidgetSheet: View {
                 peeling(note, progress: labPeel)
             } else {
                 if let note = sealedNote {
-                    Button(intent: NotesWidgetPeelIntent(noteID: note.id ?? "")) {
+                    Button(intent: NotesWidgetPeelIntent(noteID: note.openID)) {
                         foldedLayer(note, letter: false)
                     }
                     .buttonStyle(.plain)
@@ -248,7 +248,7 @@ struct NotesWidgetSheet: View {
                         .transition(NotesWidgetMotion.unfold(anchor: unit(CGPoint(x: geometry.page.midX, y: geometry.page.minY))))
                 }
                 if let note = sealedNote {
-                    Button(intent: NotesWidgetPeelIntent(noteID: note.id ?? "")) {
+                    Button(intent: NotesWidgetPeelIntent(noteID: note.openID)) {
                         sealTapeLayer(note.key)
                     }
                     .buttonStyle(.plain)

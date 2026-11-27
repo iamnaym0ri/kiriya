@@ -36,6 +36,15 @@ struct NotesWidgetNote: Equatable {
 
     /// Identifies the note for SwiftUI transitions (a new note → a new paper slides in).
     var key: String { id?.lowercased() ?? "\(kind)-\(Int(at?.timeIntervalSince1970 ?? 0))-\(text.prefix(24))" }
+
+    /// What "peel the tape" marks opened on this phone: the note's id, or for a note without one
+    /// (Josh's test notes from admin, which are never saved) its kind and arrival time, so a test opens just like a
+    /// real note does. Only real ids are ever sent to the server (KiriyaAPI.openNote checks).
+    /// No spaces in it, so nothing on the way (the intent trims its parameter) can change it.
+    var openID: String {
+        if let id { return id.lowercased() }
+        return "local-\(kind)-\(Int(at?.timeIntervalSince1970 ?? 0))"
+    }
 }
 
 /// What the widget draws.
@@ -149,7 +158,7 @@ enum NotesWidgetResolver {
         let fromServer = input.snapshot?.latestNote.map { note(from: $0, signer: signer, notesLink: input.snapshot?.links?.notes) }
         let fromPush = input.pushed.map { note(from: $0, signer: signer) }
         var received = newest(fromServer, fromPush)
-        if var note = received, let id = note.id, input.openedHere.contains(id.lowercased()) {
+        if var note = received, input.openedHere.contains(note.openID) {
             note.opened = true
             received = note
         }
