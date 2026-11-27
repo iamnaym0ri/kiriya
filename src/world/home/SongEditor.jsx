@@ -4,7 +4,7 @@ import { api, apiUrl, authHeaders, isBundledApp } from "../../lib/api.js";
 import { shrinkImage, uploadFile } from "../../lib/uploads.js";
 import { formatTime } from "../../shared/music/audioEngine.js";
 import { audioFile, measureDuration, readSongTags, titleFromName } from "../../shared/music/songTags.js";
-import { youtubeId, youtubePlayerUrl, useYoutubeEvents } from "../../shared/music/youtube.js";
+import { tidyYoutubeTitle, youtubeId, youtubePlayerUrl, useYoutubeEvents } from "../../shared/music/youtube.js";
 import { useSongEdit } from "./useHome.js";
 import HomeIcon from "./icons.jsx";
 
@@ -351,7 +351,7 @@ function YoutubeSongSheet({ open, onDone, onClose }) {
       .then((data) => {
         if (!live) return;
         setFound(data);
-        setFields({ title: data.title ?? "", artist: data.artist ?? "" });
+        setFields(tidyYoutubeTitle(data.title ?? "", data.artist ?? ""));
       })
       .catch((error) => live && setProblem(error.message));
     return () => {

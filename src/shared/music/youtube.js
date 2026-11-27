@@ -22,6 +22,30 @@ export function youtubeId(input) {
   }
 }
 
+/**
+ * A video's title and channel as a song's title and artist: "Rick Astley - Never Gonna Give You Up
+ * (Official Video) (4K Remaster)" by "Rick Astley" → "Never Gonna Give You Up", "Rick Astley".
+ * Only a first guess; Josh can change both.
+ */
+export function tidyYoutubeTitle(title = "", channel = "") {
+  let artist = String(channel ?? "").replace(/\s*(?:- Topic|VEVO|Official(?: YouTube)? Channel)$/i, "").trim();
+  let name = String(title ?? "")
+    .replace(/[(\[【]\s*(?:official|music video|mv|m\/v|lyrics?|lyric video|audio|visuali[sz]er|4k|hd|remaster(?:ed)?|full ver(?:sion|\.)?)[^)\]】]*[)\]】]/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const split = name.match(/^(.+?)\s+[-–—|/]\s+(.+)$/);
+  if (split) {
+    const [, left, right] = split;
+    const same = (a, b) => a.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "") === b.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+    if (artist && same(right, artist)) name = left.trim();
+    else if (!artist || same(left, artist) || left.toLowerCase().includes(artist.toLowerCase())) {
+      artist = left.trim();
+      name = right.trim();
+    }
+  }
+  return { title: name || String(title ?? "").trim(), artist };
+}
+
 export const youtubePlayerUrl = (id, { autoplay = false, probe = false } = {}) =>
   apiUrl(`/embed/youtube?v=${encodeURIComponent(id)}${autoplay ? "&autoplay=1" : ""}${probe ? "&probe=1" : ""}`);
 

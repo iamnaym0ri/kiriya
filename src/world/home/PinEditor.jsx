@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { EditField, EditSheet } from "../../shared/admin/AdminEdit.jsx";
 import StickerArt from "../../shared/stickers/StickerArt.jsx";
 import { useHomeEdit } from "./useHome.js";
-import { PinNote } from "./Pinboard.jsx";
+import { fromLine, PinNote } from "./Pinboard.jsx";
 
 const COLOURS = [
   ["cream", "cream"],
@@ -61,8 +61,8 @@ export function PinSheet({ editing, onClose, signature }) {
       <EditField label="the note" hint={`${draft.text.length}/400 · something to cheer her on, or just because`}>
         <textarea className="home-edit__input" rows={4} maxLength={400} value={draft.text} onChange={(event) => set({ text: event.target.value })} />
       </EditField>
-      <EditField label="little label on top" hint={`empty says “from ${signature} ♡”`}>
-        <input className="home-edit__input" maxLength={40} value={draft.label} placeholder={`from ${signature} ♡`} onChange={(event) => set({ label: event.target.value })} />
+      <EditField label="little label on top" hint={`empty says “${fromLine(signature)}”`}>
+        <input className="home-edit__input" maxLength={40} value={draft.label} placeholder={fromLine(signature)} onChange={(event) => set({ label: event.target.value })} />
       </EditField>
       <fieldset className="home-edit__fieldset">
         <legend>held up with</legend>

@@ -14,6 +14,8 @@ function hash(text) {
   for (const char of String(text)) value = (value * 31 + char.charCodeAt(0)) | 0;
   return Math.abs(value);
 }
+/** "from Josh ♡", without doubling a heart his signature already has ("Josh <3"). */
+export const fromLine = (signature) => `from ${signature}${/(<3|♡|❤|💕|💜)\s*$/u.test(signature) ? "" : " ♡"}`;
 const pinnedOn = (at) =>
   new Intl.DateTimeFormat("en-SG", { day: "numeric", month: "short", timeZone: "Asia/Singapore" }).format(new Date(at)).toLowerCase();
 
@@ -30,7 +32,7 @@ export function PinNote({ pin, signature = "Josh", onEdit, preview = false }) {
     >
       <span className={pin.style === "tape" ? "home-pin__tape" : "home-pin__pushpin"} aria-hidden="true" />
       {pin.new && <span className="home-pin__new">new ♡</span>}
-      <span className="home-pin__label">{pin.label || `from ${signature} ♡`}</span>
+      <span className="home-pin__label">{pin.label || fromLine(signature)}</span>
       <p className="home-pin__text">{pin.text}</p>
       <footer className="home-pin__foot">
         {onEdit && <AdminEdit compact label="this note" onClick={onEdit} />}
