@@ -188,12 +188,13 @@ export function checkRegistry(sources = SOURCES) {
 // SG con/pop-up trackers that cover Suntec, EXPO and the malls). Edit freely; handles only.
 // Josh: confirm or replace these before the first paid run (they're the agents' best guesses).
 export const INSTAGRAM_ACCOUNTS = [
-  { handle: "animefestivalasia", why: "AFA (organiser)" },
-  { handle: "sgcomiccon", why: "Singapore Comic Con (organiser)" },
-  { handle: "doujinmarket", why: "Doujin Market / Doumini (organiser)" },
-  { handle: "konbini.sg", why: "Konbini J-fashion market (organiser)" },
-  { handle: "anipluscafesg", why: "ANIPLUS Café collabs" },
-  { handle: "thegundambasesg", why: "The Gundam Base Singapore" },
-  { handle: "sgcosplayclub", why: "Singapore Cosplay Club (Cosfest, Anime Earth)" },
-  { handle: "cosset.sg", why: "COSSET cosplay flea market (Instagram only)" },
-];
+  // Chosen by Josh on 2026-11-27 from docs/refactor/events-instagram-shortlist.md (each handle is
+  // linked from the organiser's own site or a published article; Instagram itself is never crawled).
+  { handle: "animefestivalasia", why: "AFA Singapore (organiser)" },
+  { handle: "sgcomiccon", why: "Singapore Comic Con (organiser): guests and exclusives" },
+  { handle: "neotokyoproject", why: "Doujin Market / Doumini (organiser)" },
+  { handle: "anipluscafe.sg", why: "ANIPLUS Café collab cafés (e.g. Hatsune Miku)" },
+  { handle: "cossetevent", why: "COSSET cosplay flea market (Instagram first)" },
+  { handle: "dokidokianimemarket", why: "Doki Doki anime markets and merch" },
+  { handle: "afashop.co", why: "AFA's merch shop: exclusives and drops" },
+]
