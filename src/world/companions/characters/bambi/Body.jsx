@@ -22,6 +22,7 @@ const PANTS = "#3c3549";
 // What each pose looks like when no line is setting the face.
 const POSE_FACE = {
   idle: "neutral",
+  crouch: "focused",
   walk: "grin",
   jump: "grin",
   fall: "surprised",
@@ -268,11 +269,11 @@ function BackView({ ids }) {
 export default function BambyBody({
   pose = "idle",
   expression,
-  facing = 1,
   playing = true,
   frame,
-  width = 100,
-  height = 118,
+  talking = false,
+  width = "100%",
+  height = "100%",
   x,
   y,
 }) {
@@ -291,6 +292,8 @@ export default function BambyBody({
   const face = expression ?? POSE_FACE[known];
   const shadesDown = SHADES.has(known);
   const back = known === "skygaze";
+  // The engine passes `frame` as live motion values (ignored here: the walk is a CSS cycle). A plain
+  // number is the lab's way to freeze a pose at that point of its cycle, for screenshots.
   const frozen = typeof frame === "number";
   return (
     <svg
@@ -304,10 +307,8 @@ export default function BambyBody({
       data-motion={playing || frozen ? "on" : "off"}
       data-frozen={frozen ? "" : undefined}
       data-sitting={SITTING.has(known) ? "" : undefined}
-      style={{
-        "--bf": frozen ? frame : 0,
-        transform: facing < 0 ? "scaleX(-1)" : undefined,
-      }}
+      data-talking={talking && !back ? "" : undefined}
+      style={frozen ? { "--bf": frame } : undefined}
       aria-hidden="true"
     >
       <defs>

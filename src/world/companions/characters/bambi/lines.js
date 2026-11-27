@@ -7,7 +7,7 @@ const say = (expression, text) => ({ text, expression });
 
 export const lines = {
   greet: [
-    say("happy", "kiriyaaa! you're here!"),
+    say("happy", "{name}~! you're here!"),
     say("grin", "hi hi! did you miss me? i missed you. a normal amount. okay, a lot."),
     say("proud", "ta-da~ bamby, arriving on stage!"),
     say("surprised", "oh! hi! i was just… dancing. as usual."),
@@ -15,7 +15,7 @@ export const lines = {
     say("happy", "you came! my cloud got bouncier, i swear."),
   ],
   greetMorning: [
-    say("grin", "good morning, kiriya! i already stretched. twice. you're late~"),
+    say("grin", "good morning, {name}! i already stretched. twice. you're late~"),
     say("happy", "morning! did you sleep well? i dreamed i won kart rider again."),
     say("grin", "rise and shine~ shuuung! that's the sound of the sun coming up."),
     say("fond", "morning. breakfast first, okay? no skipping."),
@@ -25,7 +25,7 @@ export const lines = {
     say("grin", "today's first count: five, six, seven, eight… go!"),
   ],
   greetAfternoon: [
-    say("happy", "afternoon, kiriya! perfect time for a snack break. peach?"),
+    say("happy", "afternoon, {name}! perfect time for a snack break. peach?"),
     say("grin", "hey hey! you're back. i was practising. watch this!"),
     say("curious", "good afternoon~ have you eaten? cold noodles count."),
     say("fond", "it's so hot out there, right? stay in the shade, okay."),
@@ -33,14 +33,14 @@ export const lines = {
     say("wink", "afternoon slump? i'll do a little dance. free of charge."),
   ],
   greetEvening: [
-    say("fond", "good evening, kiriya. you worked hard today. i can tell."),
+    say("fond", "good evening, {name}. you worked hard today. i can tell."),
     say("proud", "evening~ the sky's going pink. my colour. coincidence? no."),
     say("happy", "you're back! sit, sit. tell me everything."),
     say("curious", "evening! dance practice, or a movie? something with a twist?"),
-    say("fond", "the day's done. you did well, kiriya. really."),
+    say("fond", "the day's done. you did well, {name}. really."),
   ],
   greetNight: [
-    say("fond", "it's late, kiriya… you should be sleeping. i'll keep watch."),
+    say("fond", "it's late, {name}… you should be sleeping. i'll keep watch."),
     say("sleepy", "still up? me too. let's be quiet together."),
     say("pout", "night owl, huh? okay, but just one more scroll."),
     say("wink", "shh… everyone's asleep. secret midnight dance practice."),
@@ -57,7 +57,7 @@ export const lines = {
     say("sleepy", "i should practise my high notes. aaa~ …later."),
     say("pout", "someone said i'm short. i'm fun-sized."),
     say("cool", "i could beat anyone at the watermelon game today. anyone."),
-    say("curious", "kiriya, what are you doing right now? i'm curious."),
+    say("curious", "{name}, what are you doing right now? i'm curious."),
     say("wink", "bored? watch me. i'm very watchable."),
     say("curious", "do peaches know they're the best fruit? someone should tell them."),
     say("cool", "the cloud's a stage. and i'm on."),
@@ -76,7 +76,7 @@ export const lines = {
     say("surprised", "oh! you scared me. a little. not bird-level."),
     say("wink", "poke me again and i'll do a spin. …go on."),
     say("curious", "yes? a dance? a hug? a snack recommendation?"),
-    say("happy", "kiriya! hi! hi again!"),
+    say("happy", "{name}! hi! hi again!"),
     say("proud", "that was a nice poke. eight out of ten."),
     say("happy", "you found me~"),
     say("pout", "careful, i bruise easily. emotionally."),
@@ -93,7 +93,7 @@ export const lines = {
     say("proud", "i'm very light, right? everyone says so."),
     say("grin", "is this a lift? are we doing choreography?!"),
     say("scared", "high up here… no birds, no birds, no birds…"),
-    say("surprised", "kiriyaaa! where are we going?"),
+    say("surprised", "{name}~! where are we going?"),
     say("squeeze", "wheee— no wait, i didn't mean wheee!"),
   ],
   putDown: [
@@ -106,7 +106,7 @@ export const lines = {
     say("fond", "safe! thanks for not dropping me."),
   ],
   birthday: [
-    say("sparkle", "happy birthday, kiriya!! the whole stage is yours today."),
+    say("sparkle", "happy birthday, {name}!! the whole stage is yours today."),
     say("grin", "it's your birthday! i made up a dance just for you. watch!"),
     say("happy", "happy birthday~ i'd give you all my peaches. all of them."),
     say("proud", "the seventeenth of september. best date on the calendar. i checked."),
@@ -118,7 +118,7 @@ export const lines = {
   ],
   sweet: [
     say("fond", "you make everything brighter. pink-level bright."),
-    say("fond", "you're doing great, kiriya. i mean it. really really."),
+    say("fond", "you're doing great, {name}. i mean it. really really."),
     say("sparkle", "if i could bloom flowers for anyone, it'd be you."),
     say("happy", "you smiled just now. i saw. that's my favourite move."),
     say("fond", "rest when you're tired, okay? i'll keep dancing for both of us."),
@@ -164,7 +164,7 @@ export const lines = {
     say("munch", "a peach! the best fruit. i'm not sharing. …okay, half."),
     say("munch", "chewy snacks are a lifestyle."),
     say("happy", "cold noodles in winter? cold noodles always."),
-    say("fond", "have you eaten, kiriya? something yummy, okay?"),
+    say("fond", "have you eaten, {name}? something yummy, okay?"),
     say("munch", "hotteok, bungeoppang, yakgwa… listing them made me hungry."),
     say("proud", "'bam' means chestnut, you know. so roasted chestnuts are basically me."),
   ],
@@ -204,6 +204,17 @@ export const lines = {
     say("teary", "i'm not crying! okay, i'm crying. good crying."),
     say("teary", "something sweet happened and now my eyes are leaking."),
   ],
+  pester: [
+    say("squeeze", "okay okay okay! i'm awake! i'm dancing!"),
+    say("pout", "three pokes?! that's a whole count of eight."),
+    say("grin", "hehe, stop, stop! …don't stop."),
+    say("surprised", "is this a rhythm game? i'm winning."),
+  ],
+  bye: [
+    say("happy", "see you later! keep the stage warm~"),
+    say("wink", "bye bye! i'll be back for an encore."),
+    say("grin", "gotta go, practice! vrrrm!"),
+  ],
   visit: [
     say("happy", "knock knock~ bamby's here!"),
     say("grin", "i was in the neighbourhood. the next cloud over."),
@@ -213,6 +224,10 @@ export const lines = {
 
 // When another character drops by: [Bamby's line, their reply], in each one's own voice.
 export const visit = {
+  any: [
+    [say("grin", "hi hi! want to see a dance? it's free."), "Sure! Go on, then."],
+    [say("happy", "your cloud is so nice! mine has flowers, though."), "They're very pretty flowers."],
+  ],
   with: {
     maomao: [
       [say("grin", "maomao! want to learn a dance? it's good exercise!"), "Exercise is good for you. So is sitting still. I'll prescribe myself the second."],

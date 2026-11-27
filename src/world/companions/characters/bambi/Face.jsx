@@ -208,7 +208,7 @@ export default function BambyFace({ expression, ids }) {
   const face = faceFor(expression);
   const closed = face.eyes === "happy" || face.eyes === "sleep" || face.eyes === "squeeze";
   return (
-    <g className="bamby__face" data-eyes={face.eyes}>
+    <g className="bamby__face" data-eyes={face.eyes} data-mouth={face.mouth}>
       <ellipse cx="63" cy="130" rx="12" ry="7" fill={`url(#${ids.blush})`} opacity={face.blush} />
       <ellipse cx="137" cy="130" rx="12" ry="7" fill={`url(#${ids.blush})`} opacity={face.blush} />
       {face.blush > 0.5 && (
@@ -229,6 +229,11 @@ export default function BambyFace({ expression, ids }) {
       )}
       <path d="M99.5 127.5l1.8 1.4-1.8 1" fill="none" stroke="#d9a18c" strokeWidth="1.15" strokeLinecap="round" />
       <Mouth kind={face.mouth} />
+      {/* While his bubble is up the mouth flaps between its own shape and a small open one. */}
+      <g className="bamby__talk">
+        <path d="M94.5 136q5.5 1 11 0q-1 6.5-5.5 6.5t-5.5-6.5Z" fill="#b24d78" />
+        <path d="M96.5 140q3.5-1.6 7 0q-1.5 2-3.5 2t-3.5-2Z" fill="#f08cae" />
+      </g>
       {face.tear && (
         <g className="bamby__tears" fill="#bfe3ff" stroke="#8fb8de" strokeWidth=".8">
           <path d="M62 121q4 6 0 9-4-3 0-9Z" />

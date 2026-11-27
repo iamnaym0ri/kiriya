@@ -27,7 +27,7 @@ function shape(w) {
   return { d, bumps };
 }
 
-export default function BambyPlatform({ width = 100, state = "steady" }) {
+export default function BambyPlatform({ width = 100, state = "steady", playing = true }) {
   const raw = useId().replace(/[:«»]/g, "");
   const fill = `bp${raw}-fill`;
   const glow = `bp${raw}-glow`;
@@ -38,6 +38,7 @@ export default function BambyPlatform({ width = 100, state = "steady" }) {
     <svg
       className="bamby-cloud"
       data-state={state}
+      data-playing={playing ? "on" : "off"}
       width={w}
       height={HEIGHT}
       viewBox={`0 0 ${w} ${HEIGHT}`}

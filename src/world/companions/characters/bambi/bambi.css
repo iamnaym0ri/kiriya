@@ -9,6 +9,13 @@
   overflow: visible;
   --cycle: 560ms;
 }
+.bamby[data-pose="dance"] {
+  --cycle: 2s;
+}
+.bamby[data-pose="groove"],
+.bamby[data-pose="count"] {
+  --cycle: 1s;
+}
 .bamby * {
   transform-box: view-box;
 }
@@ -1776,6 +1783,55 @@
   }
 }
 
+/* --- talking: the mouth flaps while his bubble is up --------------------------------------- */
+.bamby__talk {
+  opacity: 0;
+}
+.bamby[data-talking] .bamby__talk {
+  animation: bamby-talk 360ms steps(1, end) infinite;
+}
+.bamby[data-talking] .bamby__face:is([data-eyes="sleep"], [data-mouth="grin"], [data-mouth="open"], [data-mouth="o"]) .bamby__talk {
+  animation: none;
+}
+@keyframes bamby-talk {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* --- crouch: the wind-up before a jump ------------------------------------------------------ */
+.bamby[data-pose="crouch"] .bamby__bob {
+  translate: 0 5px;
+  scale: 1.1 0.88;
+  animation: bamby-crouch 190ms ease-out both;
+}
+.bamby[data-pose="crouch"] .bamby__arm--l {
+  rotate: -24deg;
+}
+.bamby[data-pose="crouch"] .bamby__arm--r {
+  rotate: 24deg;
+}
+.bamby[data-pose="crouch"] .bamby__leg--l {
+  rotate: 10deg;
+}
+.bamby[data-pose="crouch"] .bamby__leg--r {
+  rotate: -10deg;
+}
+@keyframes bamby-crouch {
+  from {
+    translate: 0 0;
+    scale: 1 1;
+  }
+  to {
+    translate: 0 5px;
+    scale: 1.1 0.88;
+  }
+}
+
 /* --- Frames, pausing, reduced motion ------------------------------------------------------- */
 /* A fixed frame (0..1 through the pose's cycle) for the picker, tests and screenshots. */
 .bamby[data-frozen] * {
@@ -1908,6 +1964,12 @@
     rotate: 70deg;
     opacity: 0;
   }
+}
+.bamby-cloud[data-playing="off"] * {
+  animation: none !important;
+}
+.bamby-cloud[data-playing="off"][data-state="fading"] .bamby-cloud__all {
+  opacity: 0.4;
 }
 @media (prefers-reduced-motion: reduce) {
   .bamby-cloud * {
