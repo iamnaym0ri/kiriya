@@ -227,7 +227,7 @@ export function Lettering({ word, size = 16, color = C.paddleInk, width = 3.2, g
 
 /**
  * Her paddle: the con-floor "yaoi paddle" she carries through the MV, a tan wooden board on a
- * long handle, "SINNER" burnt into it in red (the MV; the song's concept art has "YAOI"). Drawn standing up, the end of the handle at
+ * long handle, "SINNER" burnt dark into the wood (the MV; the song's concept art has "YAOI"). Drawn standing up, the end of the handle at
  * (0, 0) and the blade's tip at (0, -LEN); place it with x, y (the hand) and rotate. The engine
  * mirrors her whole body to face left, so with `facing` -1 the lettering mirrors back and still
  * reads. `grip` is how far up the handle her hand is; `tipFirst` turns the word round to read from
@@ -253,7 +253,10 @@ export function Paddle({ x, y, rotate = 0, word = "SINNER", facing = 1, classNam
       <path d="M-11-92V-56" stroke={C.paddleLight} strokeWidth="2.4" strokeLinecap="round" opacity=".9" />
       {/* The word runs along the blade, from the handle up (or from the tip down with tipFirst). */}
       <g transform={`translate(${tipFirst ? -1 : 1} -70) rotate(${tipFirst ? 90 : -90})${facing < 0 ? " scale(-1 1)" : ""}`}>
-        <Lettering word={word} size={size} width={Math.max(2.4, size * 0.22)} />
+        <g transform="translate(.7 .7)">
+          <Lettering word={word} size={size} width={Math.max(2.4, size * 0.22)} color={C.paddleBurnLight} />
+        </g>
+        <Lettering word={word} size={size} width={Math.max(2.4, size * 0.22)} color={C.paddleBurn} />
       </g>
     </g>
   );
@@ -299,6 +302,52 @@ export function SmackBurst({ x, y, facing = 1, className }) {
       <g transform={`rotate(-8)${facing < 0 ? " scale(-1 1)" : ""}`}>
         <Lettering word="SMACK!" size={9} width={2.6} gap={2} color={C.paddleInk} />
       </g>
+      </g>
+    </g>
+  );
+}
+
+/**
+ * A hymnal held open in front of her, cover towards the viewer (brown leather, a gold cross,
+ * "HYMNS"), with a glossy pink magazine tucked inside it poking out of the top: what she's really
+ * reading (in the MV she buys one). Centred on (x, y). The title mirrors back with `facing` -1.
+ */
+export function Hymnal({ x, y, w = 50, h = 34, rotate = 0, facing = 1, className }) {
+  const left = -w / 2,
+    top = -h / 2;
+  return (
+    <g className={className} transform={`translate(${x} ${y}) rotate(${rotate})`}>
+      {/* The magazine inside, sticking out of the top and one side. */}
+      <g className="mr-mag">
+        <path d={`M${left + 5} ${top - 9}h${w - 8}l2 ${h * 0.6}h${-w + 4}Z`} fill={C.mag} stroke={C.magDark} strokeWidth="1.2" strokeLinejoin="round" />
+        <path d={`M${left + 9} ${top - 5}h${w * 0.36}m4 0h${w * 0.22}`} stroke="#fff" strokeWidth="1.6" strokeLinecap="round" opacity=".9" />
+        <Heart x={w * 0.22} y={top - 1.5} size={6} fill="#fff" stroke={C.magDark} />
+      </g>
+      <rect x={left} y={top} width={w} height={h} rx="2.6" fill={C.hymnal} stroke={C.hymnalDark} strokeWidth="1.5" />
+      <path d={`M0 ${top + 1}v${h - 2}`} stroke={C.hymnalDark} strokeWidth="1.6" />
+      <path d={`M${left + 3} ${top + 3}h${w / 2 - 6}`} stroke="#fff" strokeWidth="1.1" strokeLinecap="round" opacity=".2" />
+      {/* The front cover is the right half (seen from outside): a gold cross and the title. */}
+      <g transform={`translate(${w / 4} 0)${facing < 0 ? " scale(-1 1)" : ""}`}>
+        <path d="M-1.4-12h2.8v4h3.6v2.6h-3.6V2h-2.8v-7.4h-3.6V-8h3.6Z" fill={C.gold} />
+        <g transform="translate(0 8.5)">
+          <Lettering word="HYMNS" size={5.2} width={1.15} gap={2.4} color={C.gold} />
+        </g>
+      </g>
+      <g transform={`translate(${-w / 4} 0)`}>
+        <path d="M-1.4-6h2.8v2.4h2.6v2.2h-2.6V6h-2.8V-1.4h-2.6v-2.2h2.6Z" fill={C.gold} opacity=".7" />
+      </g>
+    </g>
+  );
+}
+
+/** A halo: she has ascended (a chapter was that good). Centred on (x, y). */
+export function Halo({ x, y, className }) {
+  return (
+    <g className={className} transform={`translate(${x} ${y})`}>
+      <g className="mr-halo-in">
+        <ellipse rx="27" ry="7.5" fill="none" stroke={C.haloLine} strokeWidth="6.4" />
+        <ellipse rx="27" ry="7.5" fill="none" stroke={C.halo} strokeWidth="4" />
+        <path d="M-17-5q8-3.4 17-3.6" stroke="#fff8d8" strokeWidth="1.6" fill="none" strokeLinecap="round" />
       </g>
     </g>
   );
