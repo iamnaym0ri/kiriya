@@ -199,7 +199,7 @@ export default function ChatPage() {
   const replyLabel = replyTo ? (replyTo.kind === "text" ? `“${replyTo.body.slice(0, 60)}”` : `a ${replyTo.kind}`) : "";
 
   return (
-    <div ref={shell} className="chat" data-app={app || undefined} data-bubble={prefs.bubble} data-background={background} style={style}>
+    <div ref={shell} className="chat" data-app={app || undefined} data-theme={prefs.theme ?? "lilac"} data-bubble={prefs.bubble} data-background={background} style={style}>
       <div className="chat__backdrop" aria-hidden="true" />
       {WALLPAPERS[background] && !app && <p className="chat__credit">{WALLPAPERS[background].credit}</p>}
       <header className="chat__head">

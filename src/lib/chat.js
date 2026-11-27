@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api.js";
+import { openIncoming, sealOutgoing } from "./chatCrypto.js";
 
 export const chatKey = ["me", "chat", "messages"];
 export const chatPrefsKey = ["me", "chat", "prefs"];
@@ -13,10 +14,14 @@ const POLL_MS = 4000;
 
 export const newClientId = () => `${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 13)}`;
 
+// Everything that arrives is opened (src/lib/chatCrypto.js) before anything renders it: pages,
+// catch-ups, a send's or edit's echo, and the summary's latest message.
+const openPage = async (page) => ({ ...page, messages: await Promise.all((page.messages ?? []).map((m) => openIncoming(m))) });
+
 export function useChatMessages() {
   return useInfiniteQuery({
     queryKey: chatKey,
-    queryFn: ({ pageParam, signal }) => api(`/me/chat/messages${pageParam ? `?before=${encodeURIComponent(pageParam)}` : ""}`, { signal }),
+    queryFn: async ({ pageParam, signal }) => openPage(await api(`/me/chat/messages${pageParam ? `?before=${encodeURIComponent(pageParam)}` : ""}`, { signal })),
     initialPageParam: null,
     getNextPageParam: (page) => page.next ?? undefined,
     staleTime: 15_000,
@@ -82,7 +87,7 @@ export function useChatLive({ live, me, enabled = true }) {
     // Live (Ably) events carry reactions, unsends and reads, so only new messages need fetching.
     // Without Ably, re-read the latest page instead, which also picks those changes up.
     const query = live && newest ? `?after=${encodeURIComponent(newest)}` : "";
-    const page = await api(`/me/chat/messages${query}`).catch(() => null);
+    const page = await api(`/me/chat/messages${query}`).then(openPage).catch(() => null);
     if (!page) return;
     mergeMessages(queryClient, page.messages, { reads: page.reads, unread: page.unread });
     if (!live) setTyping(Boolean(page.typing));
@@ -165,11 +170,13 @@ export function useChatLive({ live, me, enabled = true }) {
 export function useSendMessage(me) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (message) =>
-      api("/me/chat/messages", {
-        method: "POST",
-        body: { clientId: message.clientId, kind: message.kind, body: message.body ?? "", media: message.media, replyTo: message.replyTo?.id ?? null },
-      }),
+    mutationFn: async (message) =>
+      openIncoming(
+        await api("/me/chat/messages", {
+          method: "POST",
+          body: await sealOutgoing({ clientId: message.clientId, kind: message.kind, body: message.body ?? "", media: message.media, replyTo: message.replyTo?.id ?? null }),
+        }),
+      ),
     onMutate: (message) =>
       mergeMessages(queryClient, [{ reactions: {}, body: "", media: null, ...message, id: `pending-${message.clientId}`, sender: me, pending: true, failed: false, createdAt: new Date().toISOString() }]),
     onSuccess: (saved) => {
@@ -234,7 +241,16 @@ export function useSaveChatPrefs() {
 }
 
 export function useChatSummary({ enabled = true } = {}) {
-  return useQuery({ queryKey: chatSummaryKey, queryFn: () => api("/me/chat/summary"), staleTime: 30_000, enabled, refetchInterval: 60_000 });
+  return useQuery({
+    queryKey: chatSummaryKey,
+    queryFn: async () => {
+      const summary = await api("/me/chat/summary");
+      return summary.last ? { ...summary, last: await openIncoming(summary.last) } : summary;
+    },
+    staleTime: 30_000,
+    enabled,
+    refetchInterval: 60_000,
+  });
 }
 
 export function useSaveMemory() {
