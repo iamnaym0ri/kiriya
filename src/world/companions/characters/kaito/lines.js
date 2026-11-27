@@ -328,20 +328,20 @@ export const visit = {
     ],
     bambi: [
       [l("sparkle", "bamby! teach me one dance move?"), l("wink", "okay hyung, step one: don't slip on your own cloud.")],
-      [l("happy", "want some ice cream?"), l("happy", "yes! …wait, the blue one again? hyung, you're so predictable.")],
-      [l("surprised", "how do you have so much energy?"), l("proud", "practice! and snacks. mostly snacks.")],
+      [l("happy", "want some ice cream?"), l("happy", "yes. …wait, the blue one again? hyung, you're so predictable.")],
+      [l("surprised", "how do you have so much energy?"), l("proud", "practice. and snacks. mostly snacks.")],
       [l("happy", "that landing was so clean!"), l("happy", "yours was… brave. very brave, hyung.")],
       // Round 2: he calls KAITO hyung and drags him into dance practice; a cold-food team.
-      [l("fond", "peach scoop, just for you."), "hyung!! you remembered! okay, now i owe you a dance."],
-      [l("thinking", "teach me the count?"), "no numbers! it's ssuk-guk, ssuk-guk— hyung, don't slip!"],
+      [l("fond", "peach scoop, just for you."), "hyung. …you remembered. okay. now i owe you a dance."],
+      [l("thinking", "teach me the count?"), "no numbers. it's ssukguk, ssukguk— hyung, don't slip."],
       [l("proud", "a pigeon's coming. get behind my scarf."), "hyung is so cool right now. don't let it go."],
-      [l("happy", "cold noodles and ice cream. we're a cold-food team."), "the coolest team. get it? cool? …aigoo, hyung, laugh."],
+      [l("happy", "cold noodles and ice cream. we're a cold-food team."), "the coolest team. get it? cool? …hyung. laugh."],
     ],
     miku: [
       [l("happy", "miku! want to share? I brought two spoons."), l("happy", "yay! oh— is there a leek flavour yet?")],
       [l("fond", "you sang beautifully today."), l("happy", "ehehe, thank you, nii-san! you too… when you weren't eating.")],
-      [l("worried", "are you warm enough? it's chilly up here."), l("shy", "I'm fine, nii-san! …okay, maybe just your scarf for a bit.")],
-      [l("proud", "let's do a duet! you take the high part."), l("proud", "I always take the high part!")],
+      [l("worried", "are you warm enough? it's chilly up here."), l("shy", "i'm fine, nii-san! …okay, maybe just your scarf for a bit.")],
+      [l("proud", "let's do a duet! you take the high part."), l("proud", "i always take the high part!")],
       // Round 2: he's her senior; she bosses him about fondly.
       [l("surprised", "miku, did you lick my cone?"), l("giggle", "it was a quality check, nii-san!")],
       [l("thinking", "leek ice cream would never work."), l("wink", "you said that about leek bread. and look at us now.")],

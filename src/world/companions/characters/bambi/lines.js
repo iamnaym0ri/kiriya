@@ -96,7 +96,7 @@ export const lines = {
   pester: [
     say("squeeze", "OKAY. okay. i'm awake. i'm dancing."),
     say("pout", "three taps. that's a whole count. rude."),
-    say("grin", "stop. …don't stop."),
+    say("grin", "stop. …okay. one more."),
     say("surprised", "is this a rhythm game? i'm winning."),
   ],
   picked: [
@@ -284,18 +284,18 @@ export const visit = {
       [say("curious", "why do you hide the notebook every time i look?"), say("nervous", "b-because it's homework! very boring homework! about clouds!")],
     ],
     miku: [
-      [say("grin", "miku. duet. i'll take the high part."), say("joy", "Yes! You take the high part, I'll take the higher one~")],
-      [say("curious", "the leek. why."), say("proud", "Why the heart sunglasses? Exactly. Style!")],
-      [say("happy", "teach me a song. i'll teach you a dance."), say("sing", "Deal! Ready? One, two, three… ♪")],
-      [say("focused", "your twin tails. good groove. no notes."), say("giggle", "Thank you! They have a mind of their own, honestly.")],
-      [say("happy", "ganbatte, miku. see? i study japanese."), say("love", "Sugoi! Your accent is so cute!")],
+      [say("grin", "miku. duet. i'll take the high part."), say("joy", "yes! you take the high part, i'll take the higher one~ ♪")],
+      [say("curious", "the leek. why."), say("proud", "why the heart sunglasses? exactly. style! ♪")],
+      [say("happy", "teach me a song. i'll teach you a dance."), say("sing", "deal! ready? one, two, three… ♪")],
+      [say("focused", "your twin tails. good groove. no notes."), say("giggle", "thank you! they have a mind of their own, honestly ♪")],
+      [say("happy", "ganbatte, miku. see? i study japanese."), say("love", "sugoi! your accent is so cute!")],
     ],
     kaito: [
-      [say("grin", "kaito hyung. ice cream?"), say("happy", "Always. Vanilla, or… vanilla?")],
-      [say("curious", "hyung. peach ice cream. does it exist?"), say("thinking", "Does it? Hm-hm. Now I need to know too.")],
-      [say("grin", "race you to the next cloud. VRRRM."), say("surprised", "Ah— wait, my scarf— no fair!")],
-      [say("pout", "hyung. you're too tall. it's rude."), say("sheepish", "Sorry… I'll slouch? Is this better?")],
-      [say("fond", "hyung. how do you sing so softly?"), say("gentle", "Lots of practice. And lots of ice cream, ahaha.")],
+      [say("grin", "kaito hyung. ice cream?"), say("happy", "always. vanilla, or… vanilla?")],
+      [say("curious", "hyung. peach ice cream. does it exist?"), say("thinking", "does it? hm-hm. now I need to know too.")],
+      [say("grin", "race you to the next cloud. VRRRM."), say("surprised", "ah— wait, my scarf— no fair!")],
+      [say("pout", "hyung. you're too tall. it's rude."), say("sheepish", "sorry… I'll slouch? is this better?")],
+      [say("fond", "hyung. how do you sing so softly?"), say("gentle", "lots of practice. and lots of ice cream, ahaha.")],
     ],
   },
 };

@@ -391,12 +391,12 @@ export const visit = {
       ["teach me your dance? i'll teach you the leek twirl", "deal. but the leek stays on your side of the stage."],
       ["your stage colour is pink and mine is teal!", "put them together and that's a very pretty concert."],
       ["do you get nervous before a stage?", "every time. then the lights come on and it's fine."],
-      ["{name}'s here! quick, idol smile!", "already on it. hi {name}~"],
+      ["{name}'s here! quick, idol smile!", "already on it. hi, {name}."],
       ["is it true your symbol is a little deer?", "a deer who can dance. very rare. take a photo."],
       ["duet? you take the high part", "you're the one who can hit those notes, miku."],
       // Round 2: two virtual idols comparing notes; he calls her sunbae.
-      ["bamby! how do you count your choreography?", "not with numbers, sunbae. ssuk-guk ssuk-guk, then shuung~"],
-      ["my fans wave teal. what do yours wave?", "every colour! but pink's the best. no offence to teal~"],
+      ["bamby! how do you count your choreography?", "not with numbers, sunbae. ssukguk, ssukguk, then shuung."],
+      ["my fans wave teal. what do yours wave?", "every colour. but pink's the best. no offence to teal."],
       ["rhythm game duel? i've had years of practice ♪", "i lose once, then i practise all night. that's a warning."],
     ],
     kaito: [
