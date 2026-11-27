@@ -103,7 +103,7 @@ await test("Each of them has their own 'new' marks", async () => {
 // ---------------------------------------------------------------- her gallery (pure helpers)
 const { KINDS, artKind, artTitle, groupByMonth, kindsIn } = await import("../src/world/play/gallery/kinds.js");
 
-await test("Her gallery tells doodles, kaleidoscopes, paper dolls and bouquets apart by the titles the games save", () => {
+await test("Her gallery tells doodles, kaleidoscopes, paper dolls, bouquets and coloured-in pictures apart by the titles the games save", () => {
   assert.equal(artKind({ prompt: "a little kaleidoscope" }), "kaleidoscope");
   assert.equal(artKind({ prompt: "paper doll · idol stage" }), "doll");
   assert.equal(artKind({ prompt: "bouquet · roses & peony" }), "bouquet");
@@ -115,7 +115,9 @@ await test("Her gallery tells doodles, kaleidoscopes, paper dolls and bouquets a
   assert.equal(artTitle({ prompt: "my cat · sleeping" }), "my cat · sleeping", "only the games' own prefixes come off");
   const counted = kindsIn([{ prompt: "bouquet · x" }, { prompt: "doodle" }, { prompt: "a little kaleidoscope" }, { prompt: "bouquet · y" }]);
   assert.deepEqual(counted.map((kind) => [kind.id, kind.count]), [["doodle", 1], ["kaleidoscope", 1], ["bouquet", 2]], "in the gallery's order, only kinds she has");
-  assert.equal(KINDS.length, 4);
+  assert.equal(artKind({ prompt: "colour by number: tea for two" }), "colouring");
+  assert.equal(artTitle({ prompt: "colour by number: tea for two" }), "tea for two");
+  assert.equal(KINDS.length, 5);
 });
 
 await test("Her gallery groups by month in Singapore time, newest first", () => {
