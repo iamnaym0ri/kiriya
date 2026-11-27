@@ -178,14 +178,118 @@ export function Arm({ d, hand, handR = 4.8, className, children }) {
   );
 }
 
-/** The little wooden cheer paddle (the MV's prop, with a carved heart instead of a word). */
-export function Paddle({ x, y, rotate = 0 }) {
+/* --- Her paddle ------------------------------------------------------------------------------ */
+
+// The letters, hand-drawn as strokes in a 12 × 16 cell (no font to load, same on every phone).
+const LETTERS = {
+  Y: "M0 0L6 7.5L12 0M6 7.5V16",
+  A: "M0 16L6 0L12 16M2.4 10.4H9.6",
+  O: "M6 0C-1.6 0-1.6 16 6 16C13.6 16 13.6 0 6 0Z",
+  I: "M6 0V16M2.5 0H9.5M2.5 16H9.5",
+  S: "M11 2.4C9.8.6 8 0 6 0C2.6 0 .8 2 1.2 4.4C1.6 7 4.8 7.6 7 8.4C10 9.4 11.6 10.8 11 13C10.4 15 8.4 16 6 16C3.6 16 1.6 15 .6 13",
+  N: "M0 16V0L12 16V0",
+  E: "M11 0H1V16H11M1 8H9",
+  R: "M1 16V0H7C11 0 11.6 8 7 8H1M6.4 8L11.6 16",
+  H: "M1 0V16M11 0V16M1 8H11",
+  P: "M1 16V0H7C11.4 0 11.4 8.4 7 8.4H1",
+  T: "M0 0H12M6 0V16",
+  C: "M11.4 3C10 .8 8.2 0 6.4 0C2.2 0 .4 3.6.4 8S2.2 16 6.4 16C8.2 16 10 15.2 11.4 13",
+  M: "M0 16V0L6 9L12 0V16",
+  K: "M1 0V16M11 0L1 9.4M4.6 6.4L11.4 16",
+  "!": "M6 0V10.4M6 15.4V15.6",
+  "♥": "M6 15C-2 9.4-1 3 2.6 2.4C4.4 2.1 5.6 3.4 6 4.8C6.4 3.4 7.6 2.1 9.4 2.4C13 3 14 9.4 6 15Z",
+};
+
+/** A word in her hand lettering, centred on (0, 0), `size` px tall, reading left to right. */
+export function Lettering({ word, size = 16, color = C.paddleInk, width = 3.2, gap = 3.4 }) {
+  const chars = [...word];
+  const step = 12 + gap;
+  const total = chars.length * step - gap;
+  const k = size / 16;
   return (
-    <g transform={`translate(${x} ${y}) rotate(${rotate})`}>
-      <rect x="-2.4" y="-8" width="4.8" height="18" rx="2" fill={C.woodDark} />
-      <path d="M-11-40q0-8 11-8t11 8v22q0 9-11 10-11-1-11-10Z" fill={C.wood} stroke={C.woodDark} strokeWidth="1.5" />
-      <path d="M-7-38q1-5 7-6" stroke="#e9c49c" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-      <path d="M0-21.5C-5.5-26.5-6.5-30-4.5-32S.5-33 0-29.5c-.5-3.5 2.5-4.5 4.5-2.5s1 5.5-4.5 10.5Z" fill="#a86a48" stroke={C.woodDark} strokeWidth="1" />
+    <g transform={`scale(${k}) translate(${-total / 2} -8)`} fill="none" stroke={color} strokeWidth={width / k} strokeLinecap="round" strokeLinejoin="round">
+      {chars.map((ch, i) =>
+        LETTERS[ch] ? (
+          <path key={i} d={LETTERS[ch]} transform={`translate(${i * step} 0)`} fill={ch === "♥" ? color : "none"} />
+        ) : null,
+      )}
+    </g>
+  );
+}
+
+/**
+ * Her paddle: the con-floor "yaoi paddle" she carries through the MV, a tan wooden board on a
+ * long handle with the word in red hand lettering. Drawn standing up, the end of the handle at
+ * (0, 0) and the blade's tip at (0, -LEN); place it with x, y (the hand) and rotate. The engine
+ * mirrors her whole body to face left, so with `facing` -1 the lettering mirrors back and still
+ * reads. `grip` is how far up the handle her hand is; `tipFirst` turns the word round to read from
+ * the tip, for when the blade points left.
+ */
+export const PADDLE_LEN = 104;
+export function Paddle({ x, y, rotate = 0, word = "YAOI", facing = 1, className, grip = 8, tipFirst = false }) {
+  return (
+    <g className={className} transform={`translate(${x} ${y}) rotate(${rotate}) translate(0 ${grip})`}>
+      {/* Handle with a rounded knob, then the blade, then the grain, the lettering and a shine. */}
+      <path d="M-4.6-2Q-6.6 0-6 3.4Q-5 6.6 0 6.6T6 3.4Q6.6 0 4.6-2V-34H-4.6Z" fill={C.paddleDark} stroke={C.paddleLine} strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M-1.6-4v-27" stroke={C.paddle} strokeWidth="1.6" strokeLinecap="round" opacity=".7" />
+      <path
+        d="M-6-32Q-15-36-15-44V-96Q-15-104-7-104H7Q15-104 15-96V-44Q15-36 6-32Z"
+        fill={C.paddle}
+        stroke={C.paddleLine}
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path d="M-9-48Q-10-72-8-96M8-46Q10-70 9-98" stroke={C.paddleDark} strokeWidth="1" fill="none" opacity=".45" strokeLinecap="round" />
+      <path d="M-11-92V-56" stroke={C.paddleLight} strokeWidth="2.4" strokeLinecap="round" opacity=".9" />
+      {/* The word runs along the blade, from the handle up (or from the tip down with tipFirst). */}
+      <g transform={`translate(${tipFirst ? -1 : 1} -70) rotate(${tipFirst ? 90 : -90})${facing < 0 ? " scale(-1 1)" : ""}`}>
+        <Lettering word={word} size={15} />
+      </g>
+    </g>
+  );
+}
+
+/** The paddle as a tiny icon for the tap menu's chip. */
+export function PaddleIcon({ size = 18 }) {
+  return (
+    <svg viewBox="-56 -110 112 112" width={size} height={size} style={{ display: "block", overflow: "visible" }} aria-hidden="true">
+      <g transform="rotate(38 0 -50)">
+        <Paddle x={0} y={-4} word="♥" grip={0} />
+      </g>
+    </svg>
+  );
+}
+
+/** Her phone, seen from the back (lilac case, a heart sticker), the screen's glow on her face. */
+export function Phone({ x, y, rotate = 0, className }) {
+  return (
+    <g className={className} transform={`translate(${x} ${y}) rotate(${rotate})`}>
+      <rect x="-11" y="-18" width="22" height="36" rx="5" fill={C.phone} stroke="#211a30" strokeWidth="1.4" />
+      <rect x="-9" y="-16" width="18" height="32" rx="4" fill="#c9b5ec" />
+      <circle cx="-4.4" cy="-10.6" r="2.6" fill="#2a2238" stroke="#7d6aa2" strokeWidth="1" />
+      <Heart x={1.5} y={4} size={10} />
+    </g>
+  );
+}
+
+/** The comic "SMACK!" burst where the paddle lands. */
+export function SmackBurst({ x, y, facing = 1, className }) {
+  // The class (animated with CSS scale/opacity) sits on an inner group: WebKit drops an SVG
+  // transform attribute on an element that also has CSS transform properties.
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <g className={className}>
+      <path
+        d="M0-25L6-12L19-20L13-6L28-1L13 4L20 18L6 11L0 25L-6 11L-20 18L-13 4L-28-1L-13-6L-19-20L-6-12Z"
+        fill="#fff6c9"
+        stroke="#e8a93c"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <g transform={`rotate(-8)${facing < 0 ? " scale(-1 1)" : ""}`}>
+        <Lettering word="SMACK!" size={9} width={2.6} gap={2} color={C.paddleInk} />
+      </g>
+      </g>
     </g>
   );
 }

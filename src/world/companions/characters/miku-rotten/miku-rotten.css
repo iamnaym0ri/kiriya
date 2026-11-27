@@ -56,12 +56,17 @@
 .mr-ahoge {
   transform-origin: 108px 46px;
 }
-.mr-arm-l {
+.mr-arm-l,
+.mr-dance-l,
+.mr-smack-off {
   transform-origin: 82px 168px;
 }
 .mr-arm-r,
 .mr-wave-arm,
 .mr-cheer-arm,
+.mr-brandish-arm,
+.mr-smack-arm,
+.mr-dance-r,
 .mr-glasses-hand,
 .mr-giggle-hand {
   transform-origin: 138px 168px;
@@ -893,6 +898,267 @@
   }
   50% {
     translate: 0 -2px;
+  }
+}
+
+/* --- Paddle: held up for all to see, glasses flashing; a smug little bounce ---------------- */
+.mr[data-pose="paddle"] .mr-brandish-arm {
+  animation: mr-brandish 1.3s ease-in-out infinite;
+}
+.mr[data-pose="paddle"] .mr-root {
+  animation: mr-toes 1.3s ease-in-out infinite;
+}
+.mr[data-pose="paddle"] .mr-head {
+  rotate: -4deg;
+}
+@keyframes mr-brandish {
+  0%,
+  100% {
+    rotate: 0deg;
+    translate: 0 0;
+  }
+  50% {
+    rotate: -7deg;
+    translate: 0 -3px;
+  }
+}
+
+/* --- Smack: wind up, slam the paddle down on the cloud, SMACK, admire the result ------------- */
+.mr[data-pose="smack"] .mr-smack-arm {
+  rotate: 100deg; /* the still frame is the moment of impact */
+  animation: mr-smack 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.mr[data-pose="smack"] .mr-smack-burst {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mr-smack-burst 1.5s linear infinite;
+}
+.mr[data-pose="smack"] .mr-root {
+  animation: mr-smack-body 1.5s ease-out infinite;
+}
+.mr[data-pose="smack"] .mr-tail-swing {
+  animation: mr-smack-tail 1.5s ease-out infinite;
+}
+.mr[data-pose="smack"] .mr-smack-off {
+  animation: mr-smack-off 1.5s ease-in-out infinite;
+}
+@keyframes mr-smack {
+  0% {
+    rotate: 0deg;
+  }
+  28% {
+    rotate: -38deg; /* wind-up */
+  }
+  40% {
+    rotate: 104deg; /* SLAM */
+  }
+  44% {
+    rotate: 94deg;
+  }
+  48%,
+  76% {
+    rotate: 100deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+@keyframes mr-smack-burst {
+  0%,
+  39% {
+    opacity: 0;
+    scale: 0.3;
+  }
+  42% {
+    opacity: 1;
+    scale: 1.25;
+  }
+  50%,
+  70% {
+    opacity: 1;
+    scale: 1;
+  }
+  80%,
+  100% {
+    opacity: 0;
+    scale: 0.9;
+  }
+}
+@keyframes mr-smack-body {
+  0%,
+  100% {
+    scale: 1 1;
+    rotate: 0deg;
+  }
+  28% {
+    scale: 0.98 1.03;
+    rotate: -3deg;
+  }
+  41% {
+    scale: 1.06 0.93;
+    rotate: 4deg;
+  }
+  52% {
+    scale: 1 1;
+    rotate: 2deg;
+  }
+}
+@keyframes mr-smack-tail {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  41% {
+    rotate: -9deg;
+  }
+  55% {
+    rotate: 5deg;
+  }
+}
+@keyframes mr-smack-off {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  41%,
+  70% {
+    rotate: -18deg;
+  }
+}
+
+/* --- Phone: squealing at her screen, feet kicking, the phone shaking ------------------------- */
+.mr[data-pose="phone"] .mr-phone {
+  transform-origin: 110px 165px;
+  animation: mr-phone-shake 0.32s ease-in-out infinite;
+}
+.mr[data-pose="phone"] .mr-root {
+  animation: mr-bounce 0.64s ease-in-out infinite;
+}
+.mr[data-pose="phone"] .mr-leg--l {
+  animation: mr-kick-up 0.64s ease-in-out infinite;
+}
+.mr[data-pose="phone"] .mr-leg--r {
+  animation: mr-kick-up 0.64s ease-in-out infinite reverse;
+}
+.mr[data-pose="phone"] .mr-tail-swing {
+  animation: mr-tail-walk 0.64s ease-in-out infinite;
+}
+@keyframes mr-phone-shake {
+  0%,
+  100% {
+    rotate: -2deg;
+  }
+  50% {
+    rotate: 2deg;
+  }
+}
+@keyframes mr-kick-up {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  50% {
+    rotate: -22deg;
+  }
+}
+
+/* --- Dance: hop left, hop right, arms waving in turn, tails flying -------------------------- */
+.mr[data-pose="dance"] .mr-root {
+  animation: mr-dance-hop 1.2s ease-in-out infinite;
+}
+.mr[data-pose="dance"] .mr-dance-l {
+  animation: mr-dance-arm-l 1.2s ease-in-out infinite;
+}
+.mr[data-pose="dance"] .mr-dance-r {
+  animation: mr-dance-arm-r 1.2s ease-in-out infinite;
+}
+.mr[data-pose="dance"] .mr-leg--l {
+  animation: mr-kick-up 0.6s ease-in-out infinite;
+}
+.mr[data-pose="dance"] .mr-leg--r {
+  animation: mr-kick-up 0.6s ease-in-out infinite reverse;
+}
+.mr[data-pose="dance"] .mr-head {
+  animation: mr-dance-head 1.2s ease-in-out infinite;
+}
+.mr[data-pose="dance"] .mr-tail-swing {
+  animation: mr-tail-walk 0.6s ease-in-out infinite;
+}
+@keyframes mr-dance-hop {
+  0%,
+  50%,
+  100% {
+    translate: 0 0;
+    scale: 1.03 0.97;
+  }
+  25% {
+    translate: -5px -6px;
+    scale: 0.98 1.02;
+  }
+  75% {
+    translate: 5px -6px;
+    scale: 0.98 1.02;
+  }
+}
+@keyframes mr-dance-arm-l {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  50% {
+    rotate: -62deg;
+  }
+}
+@keyframes mr-dance-arm-r {
+  0%,
+  100% {
+    rotate: 62deg;
+  }
+  50% {
+    rotate: 0deg;
+  }
+}
+@keyframes mr-dance-head {
+  0%,
+  100% {
+    rotate: -6deg;
+  }
+  50% {
+    rotate: 6deg;
+  }
+}
+
+/* --- Hug: the sketchbook (her doujinshi) clutched to her chest, swaying, hearts --------------- */
+.mr[data-pose="hug"] .mr-root {
+  animation: mr-hug-sway 2.2s ease-in-out infinite;
+}
+@keyframes mr-hug-sway {
+  0%,
+  100% {
+    rotate: -3deg;
+  }
+  50% {
+    rotate: 3deg;
+  }
+}
+
+/* --- The nosebleed drips ------------------------------------------------------------------------ */
+.mr-bleed-drop {
+  animation: mr-drip 1.6s ease-in infinite;
+}
+@keyframes mr-drip {
+  0%,
+  40% {
+    translate: 0 0;
+    opacity: 1;
+  }
+  90% {
+    translate: 0 6px;
+    opacity: 0;
+  }
+  100% {
+    translate: 0 0;
+    opacity: 0;
   }
 }
 

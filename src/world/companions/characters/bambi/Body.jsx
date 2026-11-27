@@ -1,5 +1,6 @@
 import { useId } from "react";
 import BambyFace, { BambyBrows } from "./Face.jsx";
+import { HeartArm, HeartBurst, Headset, MicArm, Notes } from "./props.jsx";
 import "./bambi.css";
 
 // Bamby (PLAVE) as a hand-drawn chibi, in the house style Maomao set: big round head, short body,
@@ -46,6 +47,8 @@ const POSE_FACE = {
   cry: "teary",
   scared: "squeeze",
   cool: "cool",
+  fairy: "wink",
+  sing: "sing",
 };
 export const BAMBY_POSES = Object.keys(POSE_FACE);
 
@@ -53,6 +56,8 @@ export const BAMBY_POSES = Object.keys(POSE_FACE);
 const SHADES = new Set(["freeze", "cool"]);
 // Sitting poses: he sits on the cloud's surface with his legs over its front edge.
 const SITTING = new Set(["sit", "sleep"]);
+// Poses that bring their own prop, so the lab's pose gallery shows it without the engine's `prop`.
+const POSE_PROP = { fairy: "heart", sing: "mic" };
 
 /** One sleeve + hand, drawn as two strokes so it has a soft outline without a filter. */
 function Arm({ side, children }) {
@@ -269,6 +274,7 @@ function BackView({ ids }) {
 export default function BambyBody({
   pose = "idle",
   expression,
+  prop = null,
   playing = true,
   frame,
   talking = false,
@@ -292,6 +298,11 @@ export default function BambyBody({
   const face = expression ?? POSE_FACE[known];
   const shadesDown = SHADES.has(known);
   const back = known === "skygaze";
+  // The tap menu's action hands him a prop (src/world/companions/README.md, "Body"): the headset
+  // while he dances for her, a finger heart for the ending fairy, a mic to sing.
+  const carried = prop ?? POSE_PROP[known] ?? null;
+  const rightArm =
+    carried === "heart" ? <HeartArm /> : carried === "mic" ? <MicArm /> : <Arm side="r" />;
   // The engine passes `frame` as live motion values (ignored here: the walk is a CSS cycle). A plain
   // number is the lab's way to freeze a pose at that point of its cycle, for screenshots.
   const frozen = typeof frame === "number";
@@ -307,7 +318,8 @@ export default function BambyBody({
       data-motion={playing || frozen ? "on" : "off"}
       data-frozen={frozen ? "" : undefined}
       data-sitting={SITTING.has(known) ? "" : undefined}
-      data-talking={talking && !back ? "" : undefined}
+      data-talking={talking && !back && carried !== "mic" ? "" : undefined}
+      data-prop={carried ?? undefined}
       style={frozen ? { "--bf": frame } : undefined}
       aria-hidden="true"
     >
@@ -391,6 +403,7 @@ export default function BambyBody({
                 <Fringe ids={ids} />
                 <BambyBrows expression={face} />
                 <HeartShades down={shadesDown} />
+                {carried === "headset" && <Headset />}
                 {known === "bloom" && (
                   <g className="bamby__bloom">
                     <g className="bamby__bloom-squeeze">
@@ -408,9 +421,11 @@ export default function BambyBody({
               </g>
               {known === "snack" && <Peach />}
               <Arm side="l" />
-              <Arm side="r" />
+              {rightArm}
             </>
           )}
+          {carried === "heart" && !back && <HeartBurst />}
+          {carried === "mic" && !back && <Notes />}
           {known === "heart" && (
             <g className="bamby__love">
               <path
