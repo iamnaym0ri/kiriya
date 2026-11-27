@@ -1,0 +1,205 @@
+import {
+  addressRemark,
+  MAOMAO_REMARKS,
+} from "../../../../shared/play/maomaoDialogue.js";
+
+// Maomao's lines for the app's companion engine (docs/refactor/RENOVATION.md, "Companions").
+//
+// Most of her voice already lives in src/shared/play/maomaoDialogue.js, which the website's
+// Maomao also uses; those pools are reused here, so the two never drift apart. What is new is what
+// only the app needs: greetings by time of day, being picked up and put down on a cloud, dozing,
+// the sweet things she'd never say twice, Kiriya's birthday (17 September), and visits.
+//
+// Voice (docs/redesign/MAOMAO-CHARACTER-RESEARCH.md): dry and short by default; real enthusiasm
+// only for herbs, poisons and specimens; warmth shown through small practical acts, then
+// undercut. Original lines, PG, no medical advice or doses. The reader is Kiriya.
+
+const line = (expression, text) => ({ expression, text });
+const NAME = "Kiriya";
+/** The website's pools, with "{name}" filled in: in the app she always knows who's reading. */
+const shared = (...topics) =>
+  topics.flatMap((topic) =>
+    MAOMAO_REMARKS[topic].map(({ expression, text }) =>
+      line(expression, addressRemark(text, NAME)),
+    ),
+  );
+const hour = (index) => {
+  const { expression, text } = MAOMAO_REMARKS.hour[index];
+  return line(expression, addressRemark(text, NAME));
+};
+
+export const lines = {
+  // Arriving, whatever the time.
+  greet: shared("kiriya"),
+
+  greetMorning: [
+    hour(0),
+    hour(1),
+    line("sleepy", "Morning, Kiriya. The kettle's on. Talk to me once it boils."),
+    line("deadpan", "You're up. Good. The dew's still on the leaves, so I'm busy."),
+    line("pleased", "Morning. I picked the mint before the sun got to it. You can have some."),
+    line("thinking", "Early light is the honest kind. Everything looks like what it is."),
+    line("fond", "Morning, Kiriya. Did you eat? Something, I mean. Not only tea."),
+    line("unimpressed", "You looked at your phone before you sat up. I could tell from here."),
+    line("happy", "Good morning. I kept the warm side of the cloud for you."),
+    line("focused", "Morning. Water first. Then whatever you were about to do."),
+  ],
+  greetAfternoon: [
+    hour(2),
+    line("pleased", "There you are. I was about to start arguing with the jars."),
+    line("thinking", "Afternoon, Kiriya. If you've had lunch, nod. If not, go."),
+    line("curious", "Back already? Hm. Was it a good morning, or a long one?"),
+    line("focused", "Sit a while. I'm nearly done drying these."),
+    line("smug", "Afternoon. I sorted the whole shelf while you were out. Admire it."),
+    line("fond", "You look like you've been busy. Rest your eyes a moment."),
+    line("deadpan", "The light's good for reading labels. And for seeing you, I suppose."),
+  ],
+  greetEvening: [
+    hour(3),
+    line("pleased", "Evening, Kiriya. You got through the day. That counts."),
+    line("fond", "Evening. I lit the lantern. It seemed like a night for it."),
+    line("curious", "Tell me one good thing about today. Just one. I'll write it down."),
+    line("happy", "Evening. The tea's the calming kind. You may have some."),
+    line("deadpan", "You're home. The errands can wait until tomorrow. They always do."),
+    line("shy", "I wasn't waiting up. I happened to be here. With the lantern lit."),
+    line("focused", "Evening. Take your hair down and stop working. That's my professional opinion."),
+  ],
+  greetNight: [
+    hour(4),
+    hour(5),
+    hour(6),
+    line("unimpressed", "Your eyes are doing the thing they do before you fall asleep on your phone."),
+    line("fond", "Go to sleep, Kiriya. I'll keep watch over the jars. And you."),
+    line("thinking", "Sleep is the cheapest remedy there is, and you're not taking it."),
+    line("sleepy", "If you're staying up, at least have a blanket. I'm not arguing about it."),
+    line("deadpan", "Night owls and apothecaries. At least one of us is paid for this."),
+  ],
+
+  // Left alone: self-talk, never addressed to her.
+  idle: shared("idle"),
+  musing: shared("musing"),
+  working: shared("working"),
+  herb: shared("herb"),
+  poison: shared("poison"),
+  notes: shared("notes"),
+  deduction: shared("deduction"),
+  sleepy: [
+    line("sleepy", "Just resting my eyes. I can hear you perfectly well."),
+    line("sleepy", "Five minutes. The herbs aren't going anywhere."),
+    line("sleepy", "…mm. A whole field of caterpillar fungus… no. That was a dream."),
+    line("sleepy", "If anyone asks, I'm thinking. With my eyes closed."),
+    line("sleepy", "The cloud is warm. That's a dangerous quality in a workplace."),
+    line("sleepy", "…the red jar. Not the blue one. …mm."),
+  ],
+
+  // Tapped: the website's taps and pokes together; rapid ones may use "pester".
+  tapped: shared("tap", "poke"),
+  pester: shared("pester"),
+
+  // Picked up by the scruff, and set down again.
+  picked: [
+    ...shared("carried"),
+    line("unimpressed", "I see. We're doing the kitten thing again."),
+    line("ew", "My feet are not touching anything. I'd like that noted."),
+    line("alarmed", "The cloud is getting smaller. Or I'm getting higher. Neither is ideal."),
+    line("deadpan", "If you drop me, I'm writing it down."),
+    line("amused", "Hm. The view's better from up here, at least."),
+    line("skeptical", "Is this about the mushroom? I was only looking at it."),
+  ],
+  putDown: [
+    ...shared("landed"),
+    line("deadpan", "Feet. Cloud. Good. Everything where it belongs."),
+    line("unimpressed", "Thank you for the trip. I won't be booking another."),
+    line("pleased", "Ah, a new spot. The light's not bad. I'll allow it."),
+    line("thinking", "Now, which way was I facing… it doesn't matter. Onward."),
+    line("shy", "You were careful about it. …Thank you."),
+  ],
+
+  // 17 September.
+  birthday: [
+    ...shared("birthday"),
+    line("party", "The seventeenth of September. I wrote it in three notebooks so I couldn't forget."),
+    line("shy", "Happy birthday, Kiriya. I dried you some flowers. Properly, so they'll keep."),
+    line("party", "Another year older. In medicine, we call that a good result."),
+    line("pleased", "No errands today. I've told the jars. They took it well."),
+    line("herb", "I found you a four-leaf clover. I examined it thoroughly. It's very lucky."),
+    line("fond", "Happy birthday. I'm glad you were born. …That's all. Eat your cake."),
+  ],
+
+  // The things she means and would rather not repeat.
+  sweet: [
+    line("shy", "I don't say this often. You're good company, Kiriya. That's all."),
+    line("fond", "Of everyone who wanders in here, you're the one I don't mind."),
+    line("deadpan", "You remembered a label I wrote last week. Nobody remembers my labels."),
+    line("smug", "I've seen the photos. Freckles, braids, the lot. You did your research."),
+    line("shy", "You wear the braids better than I do. Don't let it go to your head."),
+    line("pleased", "You notice small things. It's my favourite thing about you. Don't spread it around."),
+    line("fond", "When you laugh, the whole shelf sounds better. It's very distracting."),
+    line("shy", "I saved you the good cushion. It's not a big deal. It is the good one, though."),
+    line("thinking", "Someone made all this for you. Nobody labels things this carefully by accident."),
+    line("fond", "You're worth more than my rarest herb. …I have some very rare herbs."),
+    line("smug", "If anyone's unkind to you today, tell me. I know which leaves make people sneeze."),
+    line("pleased", "You came back. I like it better when you do."),
+    line("deadpan", "You're not a bother. If you were, I'd say so. At length."),
+    line("fond", "Drink some water, Kiriya. I'm fond of your kidneys. And the rest of you."),
+    line("shy", "I wrote your name in my notebook, under 'important'. It's a short list."),
+    line("happy", "It's quieter when you're not here. I've decided I don't like it."),
+  ],
+
+  // When someone drops by, before the call-and-response.
+  visit: [
+    line("deadpan", "Oh. Company. Mind the mortar."),
+    line("curious", "A visitor. Wipe your feet. Clouds show everything."),
+    line("pleased", "Ah, you came by. Sit. Don't touch the red jars."),
+    line("skeptical", "You've come a long way for a cup of tea. I'll make one anyway."),
+    line("deadpan", "Hello. If you're here for gossip, I'm out."),
+    line("fond", "Visitors on a quiet day. Fine. You can stay a while."),
+  ],
+
+  // Extra pools the engine may use when it knows more (a song playing, an offer of an herb or a vial).
+  music: shared("music"),
+  vial: shared("vial"),
+};
+
+// Call-and-response when a friend drops by: [Maomao's line, their reply]. Their replies are written
+// to the voices the other characters' own research settled on (lowercase and "~" for the rotten
+// girl, sound effects and peaches for Bamby, songs and leeks for Miku, ice cream and "ahaha" for
+// KAITO).
+export const visit = {
+  with: {
+    "miku-rotten": [
+      [line("curious", "What are you drawing behind that sketchbook?"), "n-nothing! just… two clouds. who are in love. it's not what it looks like~"],
+      [line("skeptical", "You've been staring at my mortar and pestle for a while."), "they're just… made for each other, okay?? i'll stop. (i won't stop.)"],
+      [line("thinking", "Your glasses are fogged. Are you blushing or just warm?"), "b-both. mostly the first one. please don't ask why~"],
+      [line("deadpan", "Go on, then. Confess. What did you do?"), "i stayed up till three drawing kaito and his ice cream. i'm so sorry. i'd do it again."],
+      [line("unimpressed", "That's the fourth sketchbook today."), "it's the fifth. the fourth one is… classified~"],
+      [line("amused", "You keep calling Kiriya your muse."), "because she IS. have you seen her cosplay?? i had to lie down."],
+      [line("curious", "Hm. You ship herbs now?"), "mint and lemon balm. they grew up in the same pot. it's FATE."],
+    ],
+    bambi: [
+      [line("deadpan", "You're bouncing again. Do you ever stand still?"), "nope! shuung~ that was a spin. did you see? one more!"],
+      [line("curious", "There's a pigeon on the next cloud."), "WHERE. maomao-ssi, hide me!! behind the lantern, quick!"],
+      [line("pleased", "I brought peaches. They're for Kiriya, but you can have one."), "peaches!! daebak. you're my favourite apothecary now~"],
+      [line("focused", "Count the steps properly. One, two, three, four."), "ssukguk-ssukguk, tung-tung! …that's how I count. it works!"],
+      [line("startled", "Are you crying? It was only a cup of tea."), "it was a REALLY nice cup of tea… aigoo, don't look~"],
+      [line("amused", "You lost the game, and you're still smiling."), "lost, but I did my best! rematch tomorrow. I'm practising tonight."],
+      [line("skeptical", "Cold noodles, in this weather?"), "naengmyeon is good in EVERY weather. no vinegar, no mustard. trust me~"],
+    ],
+    miku: [
+      [line("deadpan", "You're humming again."), "sorry~ it's stuck in my head! want to hear the chorus? ♪"],
+      [line("curious", "Is that a leek? Why are you carrying a leek?"), "for spinning, of course! …and soup later. it's very versatile!"],
+      [line("smug", "Leeks are good for a cold, you know. Mildly."), "see?? healthy AND fun to wave! thank you, maomao~ 39!"],
+      [line("skeptical", "Your hair is longer than your cloud."), "it's a feature! it swishes when I dance~"],
+      [line("focused", "Sing a little quieter. I'm grinding."), "okay, okay~ ♪ this is the quiet version ♪"],
+      [line("pleased", "Kiriya was humming one of your songs earlier."), "really?! that's the best thing anyone's told me all week!"],
+    ],
+    kaito: [
+      [line("unimpressed", "Ice cream again? It's barely morning."), "ahaha… it's never too early for ice cream. want a spoon?"],
+      [line("thinking", "You'll catch cold. Wear the scarf properly."), "hm-hm, I am wearing it! it's just… very long."],
+      [line("ew", "Your ice cream is melting onto my cloud."), "ah, sorry, sorry! the lilac scoop is safe, though. that one's for Kiriya."],
+      [line("curious", "You keep a scoop for Kiriya? Where?"), "in a little cooler. and in my heart. both, really~"],
+      [line("smug", "Mint is an herb, you know. Your mint ice cream counts as medicine."), "really?! then I'm very healthy. ahaha~"],
+      [line("fond", "Has she eaten today, do you know?"), "I was going to ask you the same thing! we're both worriers, hm?"],
+    ],
+  },
+};
