@@ -98,7 +98,12 @@ function stateOf(quiz, choice, picked) {
 export function Choices({ quiz, me, names, picked = null, onPick = null, waiting = false }) {
   const tiles = quiz.choices.every((choice) => !choice.text);
   return (
-    <ul className={`quiz-choices${tiles ? " quiz-choices--tiles" : ""}`} role={onPick ? "radiogroup" : undefined} aria-label={onPick ? "answers" : undefined}>
+    <ul
+      className={`quiz-choices${tiles ? " quiz-choices--tiles" : ""}`}
+      data-count={quiz.choices.length}
+      role={onPick ? "radiogroup" : undefined}
+      aria-label={onPick ? "answers" : undefined}
+    >
       {quiz.choices.map((choice, index) => {
         const state = stateOf(quiz, choice, picked);
         const tags = tagsFor(quiz, choice, me, names);

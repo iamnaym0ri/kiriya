@@ -46,7 +46,10 @@ function HowTo({ title, children, onClose }) {
         <h2 id={id}>{title}</h2>
         <div className="brain-howto__body">{children}</div>
         <button type="button" className="brain-btn" onClick={onClose}>
-          let’s play ♡
+          let’s play
+          <svg viewBox="0 0 20 18" className="brain-heart-glyph" aria-hidden="true">
+            <path d="M10 16.5C3.5 12.3 1.5 9 1.5 6 1.5 3.4 3.4 1.5 5.8 1.5c1.7 0 3.2 1 4.2 2.5 1-1.5 2.5-2.5 4.2-2.5 2.4 0 4.3 1.9 4.3 4.5 0 3-2 6.3-8.5 10.5z" strokeLinejoin="round" />
+          </svg>
         </button>
       </div>
     </div>

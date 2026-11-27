@@ -355,6 +355,10 @@ button.quiz-choice:active:not(:disabled) {
 .quiz-choices--tiles {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+/* Three emoji answers sit in one row rather than leaving a gap under the third. */
+.quiz-choices--tiles[data-count="3"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 .quiz-choices--tiles .quiz-choice {
   flex-direction: column;
   justify-content: center;
@@ -1125,7 +1129,7 @@ button.quiz-choice:active:not(:disabled) {
 .quiz-emoji__shelf {
   display: grid;
   place-items: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0;
   border: 0;
   border-radius: 11px;
