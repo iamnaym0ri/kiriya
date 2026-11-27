@@ -13,6 +13,7 @@ import {
   createLoveNote,
   deliverLoveNote,
   inbox,
+  mailForAdmin,
   openLoveNote,
   reactToLoveNote,
   recentLoveNotes,
@@ -100,6 +101,12 @@ adminLoveNoteRoutes.post("/", async (c) => {
     sendAt = surpriseTime(await notificationSettings(db));
   }
   return c.json(await sendOrSchedule(db, { ...fields, sendAt }));
+});
+
+// The app's notes & letters section on Josh's phone: what she sees, plus what's still on its way.
+adminLoveNoteRoutes.get("/inbox", async (c) => {
+  c.header("Cache-Control", "private, no-store");
+  return c.json(await mailForAdmin(await getDb()));
 });
 
 adminLoveNoteRoutes.delete("/:id", async (c) => {

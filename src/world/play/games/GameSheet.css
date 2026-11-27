@@ -1,0 +1,115 @@
+/* The full-screen game sheet (GameSheet.jsx). Rises from the bottom like an iPhone full-screen sheet;
+   nothing behind it scrolls while it's up. Games fill .game-sheet__stage (height 100%, relative). */
+.game-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482500;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  box-sizing: border-box;
+  background:
+    radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--theme-soft, #e4d5ec) 55%, transparent), transparent 70%),
+    var(--theme-page, #f2ebf7);
+  color: var(--theme-ink, #54385f);
+  overscroll-behavior: none;
+  outline: none;
+  animation: game-sheet-rise 320ms cubic-bezier(0.2, 0.85, 0.25, 1) backwards;
+}
+.game-sheet[data-leaving] {
+  animation: game-sheet-fall 240ms cubic-bezier(0.4, 0, 0.8, 0.4) forwards;
+  pointer-events: none;
+}
+@keyframes game-sheet-rise {
+  from {
+    transform: translate3d(0, 100%, 0);
+  }
+}
+@keyframes game-sheet-fall {
+  to {
+    transform: translate3d(0, 100%, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-sheet,
+  .game-sheet[data-leaving] {
+    animation: none;
+  }
+}
+.game-sheet__bar {
+  flex: none;
+  height: 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  padding: 0 8px;
+  border-bottom: 0.5px solid color-mix(in srgb, var(--theme-line, #d5bedf) 80%, transparent);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.game-sheet__back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 0 10px 0 4px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--theme-accent, #785383);
+  font: 500 16px/1 var(--font-ui);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.game-sheet__back::before {
+  content: "";
+  flex: none;
+  width: 11px;
+  height: 11px;
+  margin: 0 4px 0 8px;
+  border: solid currentColor;
+  border-width: 0 0 2.4px 2.4px;
+  border-radius: 1.5px;
+  transform: rotate(45deg);
+}
+.game-sheet__back:active {
+  background: color-mix(in srgb, var(--theme-soft, #e4d5ec) 70%, transparent);
+}
+.game-sheet__title {
+  margin: 0;
+  max-width: 52vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--theme-ink, #54385f);
+  font: 700 21px/44px var(--font-hand);
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+.game-sheet__trailing {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.game-sheet__stage {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+/* A stage whose content is taller than the screen (the sketchbook, the classic games) scrolls on its own. */
+.game-sheet__stage--scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+html.game-sheet-open,
+html.game-sheet-open body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}

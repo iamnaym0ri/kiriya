@@ -21,6 +21,7 @@ import { notificationPreview } from "../lib/loveNotes.js";
 import { letterLink, signatureName } from "../lib/letterCard.js";
 import { SAMPLE_KINDS, TEST_MODE_HOURS, setTestMode, testLog, testMode, tryNotification } from "../lib/appTestMode.js";
 import { names as chatNames } from "../lib/chat.js";
+import { TAPS } from "../../shared/taps.js";
 
 export const adminRoutes = new Hono();
 
@@ -502,10 +503,10 @@ adminRoutes.post("/app-test/mode", async (c) => {
 });
 
 adminRoutes.post("/app-test/try", async (c) => {
-  const parsed = z.object({ kind: z.enum(SAMPLE_KINDS) }).strict().safeParse(await c.req.json().catch(() => null));
+  const parsed = z.object({ kind: z.enum(SAMPLE_KINDS), tap: z.enum(TAPS.map((tap) => tap.key)).optional() }).strict().safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: "bad_request", message: "Pick one of the notification kinds." }, 400);
   if (!pushConfigured()) return c.json({ error: "not_configured", message: "Notifications aren’t set up on the server yet." }, 503);
   const db = await getDb();
-  const result = await tryNotification(db, parsed.data.kind, await chatNames(db));
+  const result = await tryNotification(db, parsed.data.kind, await chatNames(db), { tap: parsed.data.tap });
   return c.json(result);
 });

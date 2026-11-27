@@ -1,0 +1,153 @@
+/* Stickers in the play hub (Stickers.jsx). */
+.sticker-picture {
+  display: inline-grid;
+  place-items: center;
+}
+.sticker-picture > svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* The moment a game gives her a sticker: a card that drops in over the game. */
+.sticker-moment {
+  position: fixed;
+  z-index: 2147482900;
+  top: calc(env(safe-area-inset-top) + 52px);
+  left: 50%;
+  width: min(360px, calc(100vw - 32px));
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 10px 10px;
+  border: 1px solid color-mix(in srgb, var(--theme-line, #d5bedf) 80%, transparent);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--theme-paper, #fff9fd) 96%, transparent);
+  box-shadow: 0 14px 36px -12px rgb(84 56 95 / 0.45), 0 2px 6px rgb(84 56 95 / 0.08);
+  color: var(--theme-ink, #54385f);
+  text-align: left;
+  cursor: pointer;
+  animation: sticker-moment-in 520ms cubic-bezier(0.25, 1.4, 0.5, 1) backwards;
+}
+.sticker-moment__art {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--theme-soft, #e4d5ec) 70%, var(--theme-paper, #fff9fd));
+  animation: sticker-moment-wiggle 900ms 300ms ease-in-out backwards;
+}
+.sticker-moment__text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.sticker-moment__text small {
+  color: var(--theme-accent, #785383);
+  font: 600 12px/1.3 var(--font-ui);
+}
+.sticker-moment__text strong {
+  font: 700 21px/1.1 var(--font-hand);
+}
+.sticker-moment__text span {
+  color: var(--theme-muted, #7a6583);
+  font: 400 13px/1.35 var(--font-ui);
+}
+@keyframes sticker-moment-in {
+  from {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.92);
+  }
+}
+@keyframes sticker-moment-wiggle {
+  0% {
+    transform: scale(0.4) rotate(-20deg);
+  }
+  45% {
+    transform: scale(1.15) rotate(8deg);
+  }
+  70% {
+    transform: scale(0.96) rotate(-4deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sticker-moment,
+  .sticker-moment__art {
+    animation: none;
+  }
+}
+
+/* The sticker book (inside the shared bottom sheet). */
+.sticker-book {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sticker-book__item {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  width: 100%;
+  min-height: 118px;
+  box-sizing: border-box;
+  padding: 12px 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--theme-line, #d5bedf) 70%, transparent);
+  border-radius: 18px;
+  background: var(--theme-paper, #fff9fd);
+  color: var(--theme-ink, #54385f);
+  text-align: center;
+  position: relative;
+  font: inherit;
+}
+button.sticker-book__item {
+  cursor: pointer;
+}
+button.sticker-book__item:active {
+  transform: scale(0.97);
+}
+.sticker-book__item strong {
+  font: 700 16px/1.1 var(--font-hand);
+}
+.sticker-book__item small {
+  color: var(--theme-muted, #7a6583);
+  font: 400 12px/1.35 var(--font-ui);
+}
+.sticker-book__count {
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: var(--theme-soft, #e4d5ec);
+  color: var(--theme-accent, #785383);
+  font: 700 11px/1.5 var(--font-ui);
+}
+.sticker-book__item--missing {
+  border-style: dashed;
+  background: transparent;
+}
+.sticker-book__item--missing strong {
+  color: var(--theme-muted, #7a6583);
+  font-weight: 400;
+}
+.sticker-book__ghost {
+  display: grid;
+  filter: grayscale(1) brightness(1.6) contrast(0.4);
+  opacity: 0.45;
+}
+.sticker-book__empty {
+  margin: 8px 0 16px;
+  color: var(--theme-muted, #7a6583);
+  text-align: center;
+}
+
+/* The sticker book only shows things: "Done" closes it, so the sheet's Cancel steps aside. */
+.edit-sheet__panel:has(.sticker-book, .sticker-book__empty) .edit-sheet__cancel {
+  visibility: hidden;
+}
