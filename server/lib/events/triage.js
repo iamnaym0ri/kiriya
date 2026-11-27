@@ -13,7 +13,8 @@ export const TRIAGE_SCHEMA = {
     eventId: { type: ["string", "null"] },
     singapore: { type: "boolean" },
     name: { type: ["string", "null"] },
-    kind: { type: ["string", "null"], enum: [...KINDS, null] },
+    // Structured outputs reject null inside an enum, so "a kind or nothing" is an anyOf.
+    kind: { anyOf: [{ type: "string", enum: KINDS }, { type: "null" }] },
     startsOn: { type: ["string", "null"] },
     fandoms: { type: "array", items: { type: "string" } },
     importance: { type: "string", enum: ["big", "normal", "low"] },
