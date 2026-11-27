@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 
-// Maomao's memory drawer (src/world/play/MaomaoGames.jsx), on the brain shelf.
+// Maomao's memory drawer, on the brain shelf: three cabinet sizes and a best for each. The website
+// keeps its own version (src/world/play/MaomaoGames.jsx).
 function MemoryDrawerIcon() {
   const drawer = (x, y, open) =>
     h("g", { key: `${x}${y}` },
