@@ -225,7 +225,7 @@ export default function NativeApp() {
       return;
     }
     if (next.action === "chat") navigate("/world/chat");
-    else if (next.action === "pull-note") navigate(appPath("/world#note-jar"));
+    else if (next.action === "pull-note") navigate(appPath("/world/mail?jar=pull"));
     else if (next.action === "heart") {
       const clientId = `q-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}`;
       api("/me/chat/messages", { method: "POST", body: { clientId, kind: "tap", body: "thinking" } })
