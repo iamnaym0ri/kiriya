@@ -2,8 +2,8 @@
 // Girl": a Catholic-school girl who confesses her BL habit like a sin, swears she'll stop and
 // relapses on the spot. Ships boys on sight (seme/uke debates, fanfic, doujinshi hauls, nosebleeds,
 // feral shrieking), carries the con-floor yaoi paddle, and is secretly very sweet to the reader.
-// Innuendo and comedy, never explicit; she doesn't ship real people (Bamby is off limits, and it
-// pains her). No song lyrics. The reader is Kiriya ({name}). Each line is a string or
+// Innuendo and comedy, never explicit; she only ships grown-ups (never Rin or Len), and she doesn't
+// ship real people (Bamby is off limits, and it pains her). No song lyrics. The reader is Kiriya ({name}). Each line is a string or
 // { text, expression }; expressions are Face.jsx's: soft, happy, giggle, gasp, flustered, sparkle,
 // smug, shy, focused, pray, sleepy, dreamy, worried, pout, feral, guilty, nervous, nosebleed.
 const say = (expression, text) => ({ text, expression });
@@ -185,6 +185,7 @@ export const lines = {
     say("pout", "why do i always write the angst at 3am? who hurt me? me. i hurt me."),
     say("feral", "THE CONFESSION SCENE. i'm writing the confession scene. nobody talk to me."),
     say("shy", "no peeking till it's done! …the first nine chapters are sfw. ish."),
+    say("guilty", "this chapter's a lemon. don't ask. just squint."),
   ],
   shipping: [
     say("sparkle", "look! kaito and his ice cream. older than most marriages."),
@@ -193,7 +194,7 @@ export const lines = {
     say("sparkle", "josh and kaito. no reason. it came to me in a vision."),
     say("dreamy", "two umbrellas, one raincoat. the forbidden kind of love."),
     say("giggle", "i drew the clouds. one's a bit fluffier. you know what that means."),
-    say("sparkle", "kaito and len, both in my song. coincidence? i think not."),
+    say("sparkle", "kaito and gakupo. one scarf, one fan, one destiny."),
   ],
   theory: [
     say("smug", "my analysis is complete. kaito is the uke. look at that scarf."),
@@ -211,7 +212,7 @@ export const lines = {
   confess: [
     say("pray", "forgive me, father, for i have shipped."),
     say("pray", "it's been one day since my last confession. i read 400k words."),
-    say("pray", "i confess… i shipped two altar boys. in church. during mass."),
+    say("pray", "i confess… i shipped two saints in the stained-glass window. during mass."),
     say("pray", "i swore off yaoi for lent. i lasted till tuesday."),
     say("pray", "lord, i have sinned. but have you SEEN chapter 30?"),
     say("guilty", "i promised i'd stop shipping. then i shipped the promise."),
@@ -307,13 +308,13 @@ export const visit = {
       ],
       [say("smug", "jinshi and gaoshun. tell me i'm wrong."), say("ew", "You're not right. That's different.")],
       [say("worried", "maomao, is there a herb for nosebleeds?"), say("skeptical", "Yes. There's also one for reading less. Nobody takes it.")],
-      [say("pray", "maomao, forgive me. i shipped your two eunuchs."), say("deadpan", "I'm a pharmacist, not a priest. Take it up with the shrine.")],
+      [say("pray", "maomao, forgive me. i shipped your boss and his aide."), say("deadpan", "I'm a pharmacist, not a priest. Take it up with the shrine.")],
       [say("guilty", "can i borrow your notebook? purely for research."), say("thinking", "My notes are on poisons. …Which, now that I look at you, is fair.")],
       [say("nosebleed", "a palace full of pretty men and you look at mushrooms?!"), say("herb", "Mushrooms don't sigh at me. Hand me that one, please.")],
     ],
     miku: [
       [say("gasp", "wait… are you me? from a less rotten timeline?"), say("joy", "and you're me with glasses! a duet with myself!")],
-      [say("sparkle", "miku! len and kaito share a dressing room, right? details. now."), say("pout", "They share a mirror. And they argue about hair gel.")],
+      [say("sparkle", "miku! kaito and gakupo share a dressing room, right? details. now."), say("pout", "They share a mirror. And they argue about hair gel.")],
       [say("smug", "ever noticed how kaito looks at gakupo?"), say("thinking", "Like he wants to borrow his fan? …Oh. OH. No!")],
       [say("guilty", "shh… don't tell the others about my sketchbook."), say("giggle", "my lips are sealed! …can i see it, though?")],
       [say("pray", "pray for me, miku. i've sinned in four languages."), say("soft", "Miku forgives you~ Now show me the art!")],

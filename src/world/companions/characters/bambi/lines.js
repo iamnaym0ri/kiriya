@@ -110,6 +110,7 @@ export const lines = {
     say("happy", "phew. solid cloud. i love solid cloud."),
     say("focused", "good lift. we're adding it to the choreography."),
     say("cool", "and… pose!"),
+    say("grin", "nice-ey~! good catch."),
     say("pout", "my hair's messy now, isn't it. be honest. still charismatic?"),
     say("fond", "safe! thanks for not dropping me."),
   ],
@@ -282,7 +283,7 @@ export const visit = {
       [say("surprised", "your glasses went all swirly. are you okay?"), say("flustered", "i'm fine!! totally fine. just… inspired. hehe~")],
       [say("grin", "i'll dance, you draw. deal?"), say("sparkle", "deal! hold still— wait. dancers never hold still!!")],
       [say("scared", "is that paddle… for me?"), say("guilty", "no! never! you're an idol. idols are off limits. it's the law.")],
-      [say("curious", "what's a seme?"), say("nervous", "a… a kind of dance move! a very advanced one! bye!")],
+      [say("curious", "why do you hide your sketchbook every time i look?"), say("nervous", "b-because it's homework! very boring homework! about clouds!")],
     ],
     miku: [
       [say("grin", "miku! duet? i'll take the high harmony!"), say("joy", "Yes! You take the high part, I'll take the higher one~")],
