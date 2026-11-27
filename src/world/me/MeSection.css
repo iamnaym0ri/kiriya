@@ -20,12 +20,12 @@ html.app-shell .me-tile {
   color: var(--tile-ink);
   box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--tile-ink) 18%, transparent);
 }
-.me-tile[data-tone="pink"] { --tile-bg: #fbe1ea; --tile-ink: #a8466f; }
-.me-tile[data-tone="mint"] { --tile-bg: #dcf1ea; --tile-ink: #2f7c6a; }
-.me-tile[data-tone="peach"] { --tile-bg: #fde6d8; --tile-ink: #a55c3a; }
-.me-tile[data-tone="sky"] { --tile-bg: #e0e8fa; --tile-ink: #4a62a3; }
-.me-tile[data-tone="plum"] { --tile-bg: #e7d9ee; --tile-ink: #5c3b6c; }
-.me-tile[data-tone="butter"] { --tile-bg: #fbf0cf; --tile-ink: #8f6b17; }
+html.app-shell .me-tile[data-tone="pink"] { --tile-bg: #fbe1ea; --tile-ink: #a8466f; }
+html.app-shell .me-tile[data-tone="mint"] { --tile-bg: #dcf1ea; --tile-ink: #2f7c6a; }
+html.app-shell .me-tile[data-tone="peach"] { --tile-bg: #fde6d8; --tile-ink: #a55c3a; }
+html.app-shell .me-tile[data-tone="sky"] { --tile-bg: #e0e8fa; --tile-ink: #4a62a3; }
+html.app-shell .me-tile[data-tone="plum"] { --tile-bg: #e7d9ee; --tile-ink: #5c3b6c; }
+html.app-shell .me-tile[data-tone="butter"] { --tile-bg: #fbf0cf; --tile-ink: #8f6b17; }
 
 .me-row__label { overflow-wrap: anywhere; }
 html.app-shell .me-row .app-row__detail {
@@ -464,9 +464,9 @@ html.app-shell .me-field { gap: 10px; padding-block: 0; }
 .me-widget__empty { color: var(--theme-muted); }
 .me-widget--note {
   background:
-    repeating-linear-gradient(180deg, transparent 0 21px, color-mix(in srgb, #9fb7e6 35%, transparent) 21px 22px) 0 36px / 100% calc(100% - 36px) no-repeat,
+    linear-gradient(90deg, transparent 0 22px, color-mix(in srgb, #f0a7c4 55%, transparent) 22px 23px, transparent 23px) 0 0 / 100% 100% no-repeat,
     #fffaf3;
-  padding-top: 20px;
+  padding: 20px 14px 14px 32px;
 }
 .me-widget__tape {
   position: absolute;
@@ -496,6 +496,7 @@ html.app-shell .me-field { gap: 10px; padding-block: 0; }
 }
 .me-widget__taps b { font: 20px/1 "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
 .me-widget--con {
+  border: 0;
   background:
     radial-gradient(circle at 0 62%, var(--theme-page) 0 8px, transparent 8.5px),
     radial-gradient(circle at 100% 62%, var(--theme-page) 0 8px, transparent 8.5px),
@@ -533,3 +534,15 @@ html.app-shell .me-screen--legacy .settings-card__head { grid-template-columns: 
   .me-cast__choice,
   .me-icons__choice img { transition: none; }
 }
+
+/* Her song shelf (src/world/stage/SongShelf.jsx) as one card; the screen's title names it. */
+html.app-shell .me-screen--legacy .settings-songs { margin: 0; padding: 0; max-width: none; background: none; }
+html.app-shell .me-screen--legacy .shelf {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--app-card-line);
+  border-radius: var(--app-card-radius);
+  background: var(--app-card-bg);
+  box-shadow: var(--app-card-shadow);
+}
+html.app-shell .me-screen--legacy .shelf > .stage__section-title { display: none; }

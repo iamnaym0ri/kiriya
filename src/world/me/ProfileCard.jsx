@@ -17,6 +17,15 @@ export function useGlance() {
 
 const plural = (n, one, many = `${one}s`) => (n === 1 ? one : many);
 
+// Her own card says hello instead of repeating the name already in the tab's title.
+function greeting(now = new Date()) {
+  const hour = Number(new Intl.DateTimeFormat("en-SG", { hour: "numeric", hourCycle: "h23", timeZone: "Asia/Singapore" }).format(now));
+  if (hour < 5) return "still up, lovely?";
+  if (hour < 12) return "morning, lovely";
+  if (hour < 18) return "hi, lovely";
+  return "evening, lovely";
+}
+
 function Avatar({ url, name }) {
   return (
     <span className="me-profile__avatar" aria-hidden="true">
@@ -89,8 +98,8 @@ export default function ProfileCard() {
       <div className="me-profile__top">
         <Avatar url={data?.avatarUrl} name={name} />
         <div className="me-profile__who">
-          {admin && <span className="me-profile__tag">her little world</span>}
-          <h2 className="me-profile__name">{name.toLowerCase()}</h2>
+          <span className="me-profile__tag">{admin ? `${name.toLowerCase()}’s` : "your"} little world</span>
+          <h2 className="me-profile__name">{admin ? name.toLowerCase() : greeting()}</h2>
           {allowed && (
             <button type="button" className="me-profile__feeling" onClick={openCorner}>
               <span className="me-profile__feeling-face" aria-hidden="true">

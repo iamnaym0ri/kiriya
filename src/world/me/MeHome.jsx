@@ -112,7 +112,7 @@ function HerSettings({ admin }) {
 
   return (
     <>
-      <Group title={admin ? "her app (your test copy)" : "your app"} note={admin ? "these change your own phone, so you can try them. she picks hers on her phone." : null}>
+      <Group title={admin ? "her app · your test copy" : "your app"} note={admin ? "these change your own phone and your own copy, so you can try everything she can. she picks hers on her phone." : null}>
         <Row to="/world/me/icon" icon="icon" tone="lilac" label="app icon" detail={icon ?? ""} />
         <Row to="/world/me/companion" icon="friend" tone="mint" label="your companion" detail={companion} />
         <Row to="/world/me/notifications" icon="bell" tone="pink" label="notifications" detail={NOTIFY_DETAIL[surprises.state] ?? ""} />
@@ -128,7 +128,7 @@ function HerSettings({ admin }) {
         <Row to="/world/me/widgets" icon="widgets" tone="sky" label="home screen widgets" />
       </Group>
 
-      <Group title={admin ? "her page" : "your page"}>
+      <Group title={admin ? "her page · your test copy" : "your page"}>
         <Row to="/world/me/page" icon="page" tone="lilac" label="your public page" hint="bio, socials, intro song" />
         <Row to="/world/me/sharing" icon="eye" tone="sky" label="what friends can see" />
         <Row to="/world/me/songs" icon="music" tone="pink" label="your songs" />

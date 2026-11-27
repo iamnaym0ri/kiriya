@@ -34,7 +34,7 @@ export default function AdminDesk({ jar }) {
   return (
     <>
       <Group title="your desk" note="every change shows on her phone the next time she opens the app.">
-        <Row to="/world" icon="home" tone="lilac" label="edit home" hint="greeting, photos, songs, pinboard: tap the pencils" />
+        <Row to="/world" icon="home" tone="lilac" label="edit home" hint="tap the pencils on the greeting, photos, songs and pinboard" />
         <Row to="/world/mail?compose=note" icon="note" tone="pink" label="write a little note" />
         <Row to="/world/mail?compose=letter" icon="letter" tone="peach" label="write a letter" />
         <Row
