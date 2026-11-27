@@ -833,7 +833,7 @@ export class Actor {
         const step = this.step;
         const target = step.off ? step.to : this.levelObj ? clamp(step.to, this.levelObj.x0, this.levelObj.x1) : step.to;
         const dist = Math.abs(target - this.x);
-        const max = this.m.walkSpeed * this.scale * (step.speed ?? 1) * (step.off ? 1.3 : 1);
+        const max = this.m.walkSpeed * this.scale * (step.speed ?? 1) * (step.off ? 1.6 : 1);
         const accel = max / 0.28;
         const brake = (this.speed * this.speed) / (2 * accel);
         this.speed = dist <= brake + 0.5 ? Math.max(this.speed - accel * dt, 10 * this.scale) : Math.min(this.speed + accel * dt, max);

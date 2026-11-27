@@ -111,3 +111,7 @@
     transform: rotate(-20deg);
   }
 }
+/* No ground shadow in the air. */
+.blob:is([data-pose="jump"], [data-pose="fall"], [data-pose="held"]) .blob__shadow {
+  opacity: 0;
+}
