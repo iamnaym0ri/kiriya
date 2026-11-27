@@ -212,6 +212,7 @@ export function Credits({ onClose }) {
       </p>
       <p>Brain games: guess words from the ENABLE2K list (public domain); colour maths after Björn Ottosson’s Oklab (public domain); picture-stitch line solving adapted from nonogram-solver by Thomas Rosenau (Apache-2.0).</p>
       <p>Luck games: little sounds made with <a href="https://github.com/KilledByAPixel/ZzFX" target="_blank" rel="noreferrer">ZzFX</a> by Frank Force (MIT); confetti by canvas-confetti (ISC).</p>
+      <p>Dexterity games: mochi tower adapted from <a href="https://github.com/iamkun/tower_game" target="_blank" rel="noreferrer">tower_game</a> by iamkun (MIT); paper-crane flight adapted from <a href="https://github.com/nebez/floppybird" target="_blank" rel="noreferrer">floppybird</a> by Nebez Briefkani (Apache-2.0); little sounds made with <a href="https://github.com/KilledByAPixel/ZzFX" target="_blank" rel="noreferrer">ZzFX</a> by Frank Force (MIT). Their pictures, chiptunes and Negi are made for this site.</p>
       <h3>Reference collection</h3>
       <p>
         Maomao portraits and botanical images are from the supplied reference
