@@ -48,8 +48,8 @@ export const LUCK_STICKERS = [
 export const FORTUNE_LEVELS = [
   { id: "great", label: "great luck", kanji: "大吉" },
   { id: "sweet", label: "sweet luck", kanji: "吉" },
-  { id: "middle", label: "middle luck (the comfy kind)", kanji: "中吉" },
-  { id: "little", label: "little luck (the best kind)", kanji: "小吉" },
+  { id: "middle", label: "comfy luck", kanji: "中吉" },
+  { id: "little", label: "little luck", kanji: "小吉" },
   { id: "sparkly", label: "sparkly luck", kanji: "大吉" },
 ];
 
