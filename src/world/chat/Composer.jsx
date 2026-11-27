@@ -340,7 +340,14 @@ export default function Composer({ onSend, replyTo, replyLabel, onCancelReply, n
           </>
         )}
         {hasText ? (
-          <button type="button" className="composer__send" aria-label="Send" onClick={sendText}>
+          <button
+            type="button"
+            className="composer__send"
+            aria-label="Send"
+            // Keeps the keyboard up after sending, like any messaging app.
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={sendText}
+          >
             <ChatIcon name="send" />
           </button>
         ) : (

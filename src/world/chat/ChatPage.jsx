@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { MessageScroller, useMessageScroller } from "@shadcn/react/message-scroller";
 import { flatten, newClientId, useChatLive, useChatMessages, useChatPrefs, useMarkRead, useReact, useSaveMemory, useSendMessage, useUnsend } from "../../lib/chat.js";
 import { Modal } from "../../shared/WorldPrimitives.jsx";
-import { haptic } from "../../lib/native.js";
+import { haptic, isAppShell } from "../../lib/native.js";
 import PageLoader from "../../shared/PageLoader.jsx";
 import Composer from "./Composer.jsx";
 import ChatLook from "./ChatLook.jsx";
@@ -22,13 +22,42 @@ function dayLabel(iso) {
   return new Date(iso).toLocaleDateString("en-SG", { weekday: "short", day: "numeric", month: "long", timeZone: "Asia/Singapore" });
 }
 
-function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loadingOlder, onOlder, onActions, onRetry, onOpenImage, onTapBack }) {
+/**
+ * When the screen gets shorter (the keyboard comes up, a panel opens), the newest message stays in
+ * sight if she was reading at the bottom, the way every chat app behaves.
+ */
+function useStayAtBottom(viewport) {
+  useEffect(() => {
+    const node = viewport.current;
+    if (!node || typeof ResizeObserver === "undefined") return undefined;
+    let atBottom = true;
+    let height = node.clientHeight;
+    const onScroll = () => {
+      atBottom = node.scrollHeight - node.scrollTop - node.clientHeight < 48;
+    };
+    const observer = new ResizeObserver(() => {
+      const shrank = node.clientHeight < height;
+      height = node.clientHeight;
+      if (shrank && atBottom) node.scrollTop = node.scrollHeight;
+    });
+    node.addEventListener("scroll", onScroll, { passive: true });
+    observer.observe(node);
+    return () => {
+      node.removeEventListener("scroll", onScroll);
+      observer.disconnect();
+    };
+  }, [viewport]);
+}
+
+function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loadingOlder, onOlder, onActions, onRetry, onOpenImage, onTapBack, children }) {
   const { scrollToMessage } = useMessageScroller();
+  const viewport = useRef(null);
+  useStayAtBottom(viewport);
   const other = me === "kiriya" ? "admin" : "kiriya";
   const myLast = [...list].reverse().find((m) => m.sender === me && m.kind !== "tap")?.id;
   return (
     <MessageScroller.Root className="chat__scroller">
-      <MessageScroller.Viewport className="chat__viewport" preserveScrollOnPrepend aria-label="Messages">
+      <MessageScroller.Viewport ref={viewport} className="chat__viewport" preserveScrollOnPrepend aria-label="Messages">
         <MessageScroller.Content>
           {hasOlder && (
             <button type="button" className="text-link chat__older" onClick={onOlder} disabled={loadingOlder}>
@@ -72,6 +101,7 @@ function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loading
       <MessageScroller.Button className="chat__jump" direction="end" aria-label="Jump to the newest message">
         <ChatIcon name="down" />
       </MessageScroller.Button>
+      {children}
     </MessageScroller.Root>
   );
 }
@@ -95,9 +125,11 @@ export default function ChatPage() {
   const [toast, setToast] = useState("");
   const list = useMemo(() => flatten(messages.data), [messages.data]);
   const shell = useRef(null);
-  // The chat fills exactly the space under the site's top bar, like an app screen: the page itself
-  // never scrolls, only the messages do.
+  const app = isAppShell();
+  // The website: the chat fills exactly the space under the site's top bar, like an app screen: the
+  // page itself never scrolls, only the messages do.
   useLayoutEffect(() => {
+    if (app) return undefined;
     const place = () => {
       const bar = document.querySelector(".world-mast")?.getBoundingClientRect().bottom ?? 80;
       shell.current?.style.setProperty("--chat-top", `${Math.max(0, Math.round(bar))}px`);
@@ -110,6 +142,29 @@ export default function ChatPage() {
       window.visualViewport?.removeEventListener("resize", place);
     };
   });
+  // The app: a full screen between the status bar and the tab bar, or the keyboard while she types.
+  // It follows what is actually visible (in Safari the keyboard covers the page instead of resizing
+  // it; in the app the web view resizes and this simply matches the window).
+  useLayoutEffect(() => {
+    const node = shell.current;
+    const viewport = window.visualViewport;
+    if (!app || !node) return undefined;
+    const place = () => {
+      const height = viewport ? viewport.height : window.innerHeight;
+      const top = viewport ? Math.max(0, viewport.offsetTop) : 0;
+      node.style.setProperty("--chat-vv-h", `${Math.round(height)}px`);
+      node.style.setProperty("--chat-vv-top", `${Math.round(top)}px`);
+    };
+    place();
+    viewport?.addEventListener("resize", place);
+    viewport?.addEventListener("scroll", place);
+    window.addEventListener("resize", place);
+    return () => {
+      viewport?.removeEventListener("resize", place);
+      viewport?.removeEventListener("scroll", place);
+      window.removeEventListener("resize", place);
+    };
+  }, [app, messages.isPending]);
   useMarkRead({ data: messages.data, me, enabled: Boolean(first) });
 
   useEffect(() => {
@@ -144,13 +199,20 @@ export default function ChatPage() {
   const replyLabel = replyTo ? (replyTo.kind === "text" ? `“${replyTo.body.slice(0, 60)}”` : `a ${replyTo.kind}`) : "";
 
   return (
-    <div ref={shell} className="chat" data-bubble={prefs.bubble} data-background={background} style={style}>
+    <div ref={shell} className="chat" data-app={app || undefined} data-bubble={prefs.bubble} data-background={background} style={style}>
       <div className="chat__backdrop" aria-hidden="true" />
-      {WALLPAPERS[background] && <p className="chat__credit">{WALLPAPERS[background].credit}</p>}
+      {WALLPAPERS[background] && !app && <p className="chat__credit">{WALLPAPERS[background].credit}</p>}
       <header className="chat__head">
-        <Link className="chat__icon-button" to="/world#letters-hub" aria-label="Back to letters & notes">
-          <ChatIcon name="back" />
-        </Link>
+        {app ? (
+          <span className="chat__avatar" aria-hidden="true">
+            {(names[other] ?? "").slice(0, 1).toUpperCase()}
+            <i data-online={live.online || undefined} />
+          </span>
+        ) : (
+          <Link className="chat__icon-button" to="/world#letters-hub" aria-label="Back to letters & notes">
+            <ChatIcon name="back" />
+          </Link>
+        )}
         <div className="chat__who">
           <strong>{names[other]}</strong>
           <span data-online={live.online || undefined}>{live.typing ? "typing…" : live.online ? "here now ♡" : "your little chat"}</span>
@@ -180,7 +242,14 @@ export default function ChatPage() {
             haptic("success");
             send.mutate({ clientId: newClientId(), kind: "tap", body: key });
           }}
-        />
+        >
+          {app && WALLPAPERS[background] && <p className="chat__credit">{WALLPAPERS[background].credit}</p>}
+          {app && toast && (
+            <p className="chat__toast" role="status">
+              {toast}
+            </p>
+          )}
+        </Thread>
       </MessageScroller.Provider>
       <Composer
         onSend={(message) => {
@@ -194,7 +263,7 @@ export default function ChatPage() {
         notifyTyping={live.notifyTyping}
         placeholder="message…"
       />
-      {toast && (
+      {toast && !app && (
         <p className="chat__toast" role="status">
           {toast}
         </p>
