@@ -33,6 +33,8 @@ function request(route, { method = "GET", cookie, body } = {}) {
   const rewritten = new URL("/api", original);
   rewritten.search = original.search;
   rewritten.searchParams.set("__route", original.pathname.slice(5));
+  // Vercel also echoes the rewrite's named parameter as its own query value.
+  rewritten.searchParams.set("route", original.pathname.slice(5));
   return handlers[method](new Request(rewritten, {
     method,
     headers: { "x-kw": "1", ...(cookie ? { cookie } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) },
