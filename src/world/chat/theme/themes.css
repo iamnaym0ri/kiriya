@@ -1,0 +1,195 @@
+/* Whole-chat themes (round 3, the chat contract in docs/refactor/RENOVATION.md): each one defines
+   every --chat-* colour the chat takes, on .chat[data-theme="…"], so the header, the messages, the
+   composer, menus and the little system bubbles all follow it. Plain hex only in these blocks:
+   scripts/test-chat-themes.mjs reads them and checks every pairing for WCAG AA contrast.
+   --chat-backdrop is this file's own: the theme's background when "the theme's own" is picked. */
+
+.chat[data-theme],
+.chat-preview[data-theme] {
+  --chat-radius: 20px;
+}
+
+.chat[data-theme="lilac"],
+.chat-preview[data-theme="lilac"] {
+  --chat-bg: #f3eaf7;
+  --chat-ink: #3c2650;
+  --chat-meta: #6d5779;
+  --chat-line: #dcc8e4;
+  --chat-accent: #82559f;
+  --chat-accent-ink: #ffffff;
+  --chat-mine: #82559f;
+  --chat-mine-ink: #fffaff;
+  --chat-theirs: #fffaff;
+  --chat-theirs-ink: #3c2650;
+  --chat-bar: #fbf6fd;
+  --chat-bar-ink: #4e2f63;
+  --chat-field: #ffffff;
+  --chat-field-ink: #3c2650;
+  --chat-menu: #fffaff;
+  --chat-menu-ink: #3c2650;
+  --chat-reply: #efe2f6;
+  --chat-glow: #e8d6f1;
+  --chat-backdrop: linear-gradient(#f6eefbcc, #ede0f4d9), url("/images/branches.webp") center / cover no-repeat;
+}
+
+.chat[data-theme="white"],
+.chat-preview[data-theme="white"] {
+  --chat-bg: #ffffff;
+  --chat-ink: #1f1b24;
+  --chat-meta: #66606c;
+  --chat-line: #ebe9ef;
+  --chat-accent: #6e46a0;
+  --chat-accent-ink: #ffffff;
+  --chat-mine: #6e46a0;
+  --chat-mine-ink: #ffffff;
+  --chat-theirs: #f1f0f4;
+  --chat-theirs-ink: #1f1b24;
+  --chat-bar: #ffffff;
+  --chat-bar-ink: #1f1b24;
+  --chat-field: #f3f2f6;
+  --chat-field-ink: #1f1b24;
+  --chat-menu: #ffffff;
+  --chat-menu-ink: #1f1b24;
+  --chat-reply: #efedf3;
+  --chat-glow: #f1f0f4;
+  --chat-backdrop: #ffffff;
+}
+
+.chat[data-theme="cream"],
+.chat-preview[data-theme="cream"] {
+  --chat-bg: #faf3e6;
+  --chat-ink: #4a3426;
+  --chat-meta: #6f5843;
+  --chat-line: #e8d9bf;
+  --chat-accent: #95583a;
+  --chat-accent-ink: #fffaf2;
+  --chat-mine: #ecd5b5;
+  --chat-mine-ink: #45301f;
+  --chat-theirs: #fffcf5;
+  --chat-theirs-ink: #4a3426;
+  --chat-bar: #fdf8ee;
+  --chat-bar-ink: #4a3426;
+  --chat-field: #fffcf5;
+  --chat-field-ink: #4a3426;
+  --chat-menu: #fffcf5;
+  --chat-menu-ink: #4a3426;
+  --chat-reply: #f1e4cc;
+  --chat-glow: #f3e5cb;
+  --chat-backdrop: radial-gradient(120% 80% at 15% 0%, #fffaf0 0%, transparent 60%), radial-gradient(90% 70% at 100% 100%, #f3e2c6 0%, transparent 70%), #faf3e6;
+}
+
+.chat[data-theme="dark"],
+.chat-preview[data-theme="dark"] {
+  --chat-bg: #15121a;
+  --chat-ink: #ede7f3;
+  --chat-meta: #aaa0b6;
+  --chat-line: #2e2836;
+  --chat-accent: #c9a8ea;
+  --chat-accent-ink: #1d1527;
+  --chat-mine: #6a478c;
+  --chat-mine-ink: #fbf6ff;
+  --chat-theirs: #27222f;
+  --chat-theirs-ink: #ede7f3;
+  --chat-bar: #1c1822;
+  --chat-bar-ink: #ede7f3;
+  --chat-field: #27222f;
+  --chat-field-ink: #ede7f3;
+  --chat-menu: #221d29;
+  --chat-menu-ink: #ede7f3;
+  --chat-reply: #312a3b;
+  --chat-glow: #2a2333;
+  --chat-backdrop: radial-gradient(circle at 70% 120%, #3c2652 0, transparent 60%), linear-gradient(165deg, #1b1524 0%, #15121a 60%, #100d14 100%);
+  color-scheme: dark;
+}
+
+.chat[data-theme="love"],
+.chat-preview[data-theme="love"] {
+  --chat-bg: #fff0f4;
+  --chat-ink: #5a1a33;
+  --chat-meta: #86415d;
+  --chat-line: #f5cfdb;
+  --chat-accent: #c42a60;
+  --chat-accent-ink: #ffffff;
+  --chat-mine: #c42a60;
+  --chat-mine-ink: #ffffff;
+  --chat-theirs: #ffffff;
+  --chat-theirs-ink: #5a1a33;
+  --chat-bar: #fff7f9;
+  --chat-bar-ink: #5a1a33;
+  --chat-field: #ffffff;
+  --chat-field-ink: #5a1a33;
+  --chat-menu: #fffafb;
+  --chat-menu-ink: #5a1a33;
+  --chat-reply: #ffe0ea;
+  --chat-glow: #ffd9e5;
+  --chat-backdrop: radial-gradient(90% 60% at 0% 0%, #ffe0ea 0%, transparent 70%), radial-gradient(80% 60% at 100% 100%, #ffd3e2 0%, transparent 70%), #fff0f4;
+}
+
+.chat[data-theme="miku"],
+.chat-preview[data-theme="miku"] {
+  --chat-bg: #edf9f8;
+  --chat-ink: #12403d;
+  --chat-meta: #41625f;
+  --chat-line: #c6e8e5;
+  --chat-accent: #0d7770;
+  --chat-accent-ink: #ffffff;
+  --chat-mine: #0d7770;
+  --chat-mine-ink: #ffffff;
+  --chat-theirs: #ffffff;
+  --chat-theirs-ink: #12403d;
+  --chat-bar: #f6fdfc;
+  --chat-bar-ink: #12403d;
+  --chat-field: #ffffff;
+  --chat-field-ink: #12403d;
+  --chat-menu: #ffffff;
+  --chat-menu-ink: #12403d;
+  --chat-reply: #d5f1ee;
+  --chat-glow: #d1f0ed;
+  --chat-backdrop: linear-gradient(90deg, #c6e8e555 1px, transparent 1px) 0 0 / 28px 28px, linear-gradient(#c6e8e555 1px, transparent 1px) 0 0 / 28px 28px, radial-gradient(70% 50% at 100% 0%, #ffd6ea 0%, transparent 70%), #edf9f8;
+}
+
+.chat[data-theme="herbal"],
+.chat-preview[data-theme="herbal"] {
+  --chat-bg: #f1efe3;
+  --chat-ink: #2f3a28;
+  --chat-meta: #586049;
+  --chat-line: #dad6bf;
+  --chat-accent: #55744a;
+  --chat-accent-ink: #fdfcf5;
+  --chat-mine: #55744a;
+  --chat-mine-ink: #fdfcf5;
+  --chat-theirs: #fffdf6;
+  --chat-theirs-ink: #2f3a28;
+  --chat-bar: #f8f6ec;
+  --chat-bar-ink: #2f3a28;
+  --chat-field: #fffdf6;
+  --chat-field-ink: #2f3a28;
+  --chat-menu: #fffdf6;
+  --chat-menu-ink: #2f3a28;
+  --chat-reply: #e4e5cf;
+  --chat-glow: #e5e6d0;
+  --chat-backdrop: radial-gradient(80% 60% at 0% 100%, #dfe6cf 0%, transparent 70%), radial-gradient(70% 50% at 100% 0%, #efe4cc 0%, transparent 70%), #f1efe3;
+}
+
+.chat[data-theme="sky"],
+.chat-preview[data-theme="sky"] {
+  --chat-bg: #eef4fd;
+  --chat-ink: #1f3352;
+  --chat-meta: #4d6283;
+  --chat-line: #d2e0f4;
+  --chat-accent: #376aae;
+  --chat-accent-ink: #ffffff;
+  --chat-mine: #376aae;
+  --chat-mine-ink: #ffffff;
+  --chat-theirs: #ffffff;
+  --chat-theirs-ink: #1f3352;
+  --chat-bar: #f7faff;
+  --chat-bar-ink: #1f3352;
+  --chat-field: #ffffff;
+  --chat-field-ink: #1f3352;
+  --chat-menu: #ffffff;
+  --chat-menu-ink: #1f3352;
+  --chat-reply: #dce8f9;
+  --chat-glow: #dbe7f8;
+  --chat-backdrop: radial-gradient(60% 30% at 20% 20%, #ffffff 0%, transparent 70%), radial-gradient(50% 25% at 80% 55%, #ffffffcc 0%, transparent 70%), radial-gradient(55% 25% at 30% 85%, #ffffffb3 0%, transparent 70%), linear-gradient(#e2ecfb, #f3f7fe);
+}

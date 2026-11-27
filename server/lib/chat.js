@@ -19,10 +19,24 @@ export const TEXT_MAX = 4000;
 const PAGE = 40;
 const TAPS_PER_HOUR = 30;
 
+// Each person's look for the chat (src/world/chat/theme): a whole-chat theme, a bubble design, a
+// background (her own photo placed, zoomed, dimmed or blurred), the typing indicator, and the
+// chat lock (src/world/chat/lock).
+export const THEMES = ["lilac", "white", "cream", "dark", "love", "miku", "herbal", "sky"];
 export const BUBBLES = ["lilac", "paper", "pixel", "kawaii", "cat", "flowers", "fairy", "gothic", "lovey"];
-export const BACKGROUNDS = ["petals", "night", "notebook", "photo", "miku", "maomao"];
+export const BACKGROUNDS = ["theme", "plain", "petals", "hearts", "clouds", "notebook", "night", "photo", "miku", "maomao"];
 export const TYPING = ["hearts", "maomao", "pencil", "dots"];
-export const DEFAULT_PREFS = { bubble: "lilac", background: "petals", backgroundUrl: null, typing: "hearts" };
+export const LOCK_AFTER = [0, 60, 300];
+export const DEFAULT_PREFS = {
+  theme: "lilac",
+  bubble: "lilac",
+  background: "theme",
+  backgroundUrl: null,
+  backgroundKey: null,
+  photo: { x: 50, y: 50, zoom: 1, dim: 0.35, blur: 0 },
+  typing: "hearts",
+  lock: { on: false, after: 60, previews: false },
+};
 
 async function settingValue(db, key) {
   const [row] = await db.select({ value: schema.settings.value }).from(schema.settings).where(eq(schema.settings.key, key));
@@ -435,10 +449,18 @@ export async function typingOf(db, role, now = new Date()) {
 
 const prefsSchema = z
   .object({
+    theme: z.enum(THEMES).optional(),
     bubble: z.enum(BUBBLES).optional(),
     background: z.enum(BACKGROUNDS).optional(),
-    backgroundUrl: z.string().refine((u) => isUploadUrl(u, ["backgrounds"])).nullable().optional(),
+    // Her own photo; sealed end to end once the chat is (its file key, sealed, in backgroundKey).
+    backgroundUrl: z.string().refine((u) => isUploadUrl(u, ["backgrounds", "chat"])).nullable().optional(),
+    backgroundKey: z.object({ k: z.string().regex(/^[\w-]{1,24}$/), sealed: z.string().regex(/^[\w-]{38,1024}$/) }).strict().nullable().optional(),
+    photo: z
+      .object({ x: z.number().min(0).max(100), y: z.number().min(0).max(100), zoom: z.number().min(1).max(3), dim: z.number().min(0).max(0.85), blur: z.number().min(0).max(16) })
+      .strict()
+      .optional(),
     typing: z.enum(TYPING).optional(),
+    lock: z.object({ on: z.boolean(), after: z.union(LOCK_AFTER.map((n) => z.literal(n))), previews: z.boolean() }).strict().optional(),
   })
   .strict();
 export async function readPrefs(db, role) {

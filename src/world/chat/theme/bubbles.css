@@ -1,0 +1,324 @@
+/* Bubble designs (round 3): how the bubbles themselves look, on top of the whole-chat theme
+   (themes.css). Most designs take the theme's own colours and add their shape and ornaments; a few
+   (kawaii, fairy, gothic, lovey) bring their own colours, always with ink that passes WCAG AA on
+   every stop (scripts/test-chat-themes.mjs). Ornaments are decorations only: pseudo-elements,
+   aria-hidden by nature, never in the way of a tap. Selectors carry [data-theme] so they win over
+   the chat's older built-in bubble rules. Motion is opacity/transform only and stops for
+   prefers-reduced-motion. */
+
+/* ---------- soft lilac: the theme's colours, round and calm ---------- */
+.chat[data-theme][data-bubble="lilac"] .bubble,
+.chat-preview[data-bubble="lilac"] .bubble {
+  border-radius: var(--chat-radius);
+  box-shadow: 0 1px 2px #2a173a1f;
+}
+
+/* ---------- paper notes: lined notepaper, a strip of washi tape, a handwritten feel ---------- */
+.chat[data-theme][data-bubble="paper"],
+.chat-preview[data-bubble="paper"] {
+  --chat-mine: #fff0d9;
+  --chat-mine-ink: #4a3156;
+  --chat-theirs: #fffdf6;
+  --chat-theirs-ink: #3f2c4a;
+  --chat-radius: 6px;
+  --paper-line: #b9a58a33;
+  --paper-tape: #f2b8cf99;
+}
+.chat[data-theme="dark"][data-bubble="paper"],
+.chat-preview[data-theme="dark"][data-bubble="paper"] {
+  --chat-mine: #3b3026;
+  --chat-mine-ink: #f6eadb;
+  --chat-theirs: #2c2620;
+  --chat-theirs-ink: #f0e6d8;
+  --paper-line: #f6eadb1f;
+  --paper-tape: #c9a8ea66;
+}
+.chat[data-theme][data-bubble="paper"] .bubble,
+.chat-preview[data-bubble="paper"] .bubble {
+  border-radius: 4px 7px 5px 6px;
+  background-image: repeating-linear-gradient(transparent 0 23px, var(--paper-line) 23px 24px);
+  background-position: 0 6px;
+  box-shadow: 0 1px 0 #00000014, 0 3px 6px -3px #3b2a1a33;
+  font-family: var(--font-hand), var(--font-ui, system-ui), sans-serif;
+  font-size: 17px;
+  line-height: 24px;
+}
+.chat[data-theme][data-bubble="paper"] .msg[data-first] .bubble::before,
+.chat-preview[data-bubble="paper"] .msg[data-first] .bubble::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 14px;
+  width: 34px;
+  height: 12px;
+  background: var(--paper-tape);
+  transform: rotate(-4deg);
+  border-radius: 1px;
+  pointer-events: none;
+}
+.chat[data-theme][data-bubble="paper"] .msg[data-mine][data-first] .bubble::before,
+.chat-preview[data-bubble="paper"] .msg[data-mine][data-first] .bubble::before {
+  left: auto;
+  right: 14px;
+  transform: rotate(5deg);
+}
+
+/* ---------- pixel retro: square pixels, a stepped border, the dotted game font ---------- */
+.chat[data-theme][data-bubble="pixel"],
+.chat-preview[data-bubble="pixel"] {
+  --chat-radius: 0px;
+}
+.chat[data-theme][data-bubble="pixel"] .bubble,
+.chat-preview[data-bubble="pixel"] .bubble {
+  --px: color-mix(in srgb, var(--chat-theirs-ink) 72%, transparent);
+  margin: 4px;
+  border-radius: 0 !important;
+  font-family: "DotGothic16", var(--font-ui, system-ui), sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  box-shadow:
+    0 -4px 0 0 var(--px),
+    0 4px 0 0 var(--px),
+    -4px 0 0 0 var(--px),
+    4px 0 0 0 var(--px),
+    5px 8px 0 0 #00000026;
+}
+.chat[data-theme][data-bubble="pixel"] .msg[data-mine] .bubble,
+.chat-preview[data-bubble="pixel"] .msg[data-mine] .bubble {
+  --px: color-mix(in srgb, var(--chat-mine) 55%, #1b1024);
+}
+
+/* ---------- sparkly kawaii: candy gradients and a little sparkle ---------- */
+.chat[data-theme][data-bubble="kawaii"],
+.chat-preview[data-bubble="kawaii"] {
+  --chat-mine: #ffc8e1;
+  --chat-mine-ink: #4a1f45;
+  --chat-theirs: #fdfaff;
+  --chat-theirs-ink: #3d2a52;
+  --chat-radius: 22px;
+}
+.chat[data-theme][data-bubble="kawaii"] .bubble,
+.chat-preview[data-bubble="kawaii"] .bubble {
+  background-image: linear-gradient(135deg, #fdfaff, #e6f4ff);
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 2px 8px -2px #b77ad466;
+}
+.chat[data-theme][data-bubble="kawaii"] .msg[data-mine] .bubble,
+.chat-preview[data-bubble="kawaii"] .msg[data-mine] .bubble {
+  background-image: linear-gradient(135deg, #ffc8e1, #dcc6ff);
+}
+.chat[data-theme][data-bubble="kawaii"] .msg[data-last] .bubble::after,
+.chat-preview[data-bubble="kawaii"] .msg[data-last] .bubble::after {
+  content: "✦";
+  position: absolute;
+  right: -8px;
+  top: -9px;
+  font-size: 15px;
+  color: #ff8fc3;
+  text-shadow: 0 0 6px #fff;
+  pointer-events: none;
+  animation: bubble-twinkle 2.6s ease-in-out infinite;
+}
+.chat[data-theme][data-bubble="kawaii"] .msg[data-mine][data-last] .bubble::after,
+.chat-preview[data-bubble="kawaii"] .msg[data-mine][data-last] .bubble::after {
+  right: auto;
+  left: -8px;
+  color: #a77cf0;
+}
+
+/* ---------- kitty: ears on the first bubble, a paw by the last ---------- */
+.chat[data-theme][data-bubble="cat"],
+.chat-preview[data-bubble="cat"] {
+  --chat-radius: 22px;
+}
+.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble,
+.chat-preview[data-bubble="cat"] .msg[data-first] .bubble {
+  margin-top: 9px;
+}
+.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble::before,
+.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble::after,
+.chat-preview[data-bubble="cat"] .msg[data-first] .bubble::before,
+.chat-preview[data-bubble="cat"] .msg[data-first] .bubble::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 11px solid var(--ear);
+  pointer-events: none;
+}
+.chat[data-theme][data-bubble="cat"] .bubble,
+.chat-preview[data-bubble="cat"] .bubble {
+  --ear: var(--chat-theirs);
+}
+.chat[data-theme][data-bubble="cat"] .msg[data-mine] .bubble,
+.chat-preview[data-bubble="cat"] .msg[data-mine] .bubble {
+  --ear: var(--chat-mine);
+}
+.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble::before,
+.chat-preview[data-bubble="cat"] .msg[data-first] .bubble::before {
+  left: 12px;
+  transform: rotate(-12deg);
+}
+.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble::after,
+.chat-preview[data-bubble="cat"] .msg[data-first] .bubble::after {
+  left: 30px;
+  transform: rotate(12deg);
+}
+.chat[data-theme][data-bubble="cat"] .msg[data-last] .msg__status::before {
+  content: "🐾 ";
+}
+
+/* ---------- flowers: a dotted petal edge and a small bloom in the corner ---------- */
+.chat[data-theme][data-bubble="flowers"],
+.chat-preview[data-bubble="flowers"] {
+  --chat-radius: 22px;
+}
+.chat[data-theme][data-bubble="flowers"] .bubble,
+.chat-preview[data-bubble="flowers"] .bubble {
+  outline: 1.5px dotted color-mix(in srgb, var(--chat-accent) 45%, transparent);
+  outline-offset: 2px;
+}
+.chat[data-theme][data-bubble="flowers"] .msg[data-last] .bubble::after,
+.chat-preview[data-bubble="flowers"] .msg[data-last] .bubble::after {
+  content: "✿";
+  position: absolute;
+  right: -7px;
+  bottom: -9px;
+  font-size: 17px;
+  line-height: 1;
+  color: #ee8fb4;
+  text-shadow: 0 0 0 #fff, 1px 1px 0 #ffffffaa;
+  pointer-events: none;
+}
+.chat[data-theme][data-bubble="flowers"] .msg[data-mine][data-last] .bubble::after,
+.chat-preview[data-bubble="flowers"] .msg[data-mine][data-last] .bubble::after {
+  right: auto;
+  left: -7px;
+  color: #8fbf6f;
+}
+
+/* ---------- fairy dust: soft iridescence and drifting sparkles ---------- */
+.chat[data-theme][data-bubble="fairy"],
+.chat-preview[data-bubble="fairy"] {
+  --chat-mine: #ecdfff;
+  --chat-mine-ink: #3a2858;
+  --chat-theirs: #fdfbff;
+  --chat-theirs-ink: #3a2858;
+  --chat-radius: 24px;
+}
+.chat[data-theme][data-bubble="fairy"] .bubble,
+.chat-preview[data-bubble="fairy"] .bubble {
+  background-image: linear-gradient(120deg, #fdfbff, #f1eaff);
+  box-shadow: 0 0 0 1px #ffffffcc inset, 0 3px 12px -4px #9f7fe066;
+}
+.chat[data-theme][data-bubble="fairy"] .msg[data-mine] .bubble,
+.chat-preview[data-bubble="fairy"] .msg[data-mine] .bubble {
+  background-image: linear-gradient(120deg, #e6d8ff, #ffe2f3 48%, #dcf3ff);
+}
+.chat[data-theme][data-bubble="fairy"] .msg[data-last] .bubble::after,
+.chat-preview[data-bubble="fairy"] .msg[data-last] .bubble::after {
+  content: "⋆ ˚ ✧";
+  position: absolute;
+  right: 8px;
+  top: -12px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #b796f2;
+  pointer-events: none;
+  animation: bubble-drift 4s ease-in-out infinite;
+}
+
+/* ---------- dark & gothic: ink-dark bubbles, a fine double edge, a fleuron ---------- */
+.chat[data-theme][data-bubble="gothic"],
+.chat-preview[data-bubble="gothic"] {
+  --chat-mine: #3a1730;
+  --chat-mine-ink: #f6dbe8;
+  --chat-theirs: #1d1622;
+  --chat-theirs-ink: #ebdff2;
+  --chat-radius: 3px;
+}
+.chat[data-theme][data-bubble="gothic"] .bubble,
+.chat-preview[data-bubble="gothic"] .bubble {
+  border-radius: 3px !important;
+  border: 3px double #7d5a86;
+  font-family: var(--font-literary, Georgia), serif;
+  box-shadow: 0 2px 10px -4px #000000aa;
+}
+.chat[data-theme][data-bubble="gothic"] .msg[data-mine] .bubble,
+.chat-preview[data-bubble="gothic"] .msg[data-mine] .bubble {
+  border-color: #9c4b74;
+}
+.chat[data-theme][data-bubble="gothic"] .msg[data-last] .bubble::after,
+.chat-preview[data-bubble="gothic"] .msg[data-last] .bubble::after {
+  content: "❦";
+  position: absolute;
+  right: -6px;
+  bottom: -10px;
+  font-size: 15px;
+  color: #c48aa8;
+  pointer-events: none;
+}
+
+/* ---------- lovey-dovey: hot-pink candy and a heart for a tail ---------- */
+.chat[data-theme][data-bubble="lovey"],
+.chat-preview[data-bubble="lovey"] {
+  --chat-mine: #c42d64;
+  --chat-mine-ink: #ffffff;
+  --chat-theirs: #ffe3ee;
+  --chat-theirs-ink: #66193b;
+  --chat-radius: 22px;
+}
+.chat[data-theme][data-bubble="lovey"] .msg[data-mine] .bubble,
+.chat-preview[data-bubble="lovey"] .msg[data-mine] .bubble {
+  background-image: linear-gradient(135deg, #cc3169, #ad1c53);
+}
+.chat[data-theme][data-bubble="lovey"] .msg[data-last] .bubble::after,
+.chat-preview[data-bubble="lovey"] .msg[data-last] .bubble::after {
+  content: "♥";
+  position: absolute;
+  left: -6px;
+  bottom: -7px;
+  font-size: 15px;
+  line-height: 1;
+  color: #ffb5cf;
+  pointer-events: none;
+}
+.chat[data-theme][data-bubble="lovey"] .msg[data-mine][data-last] .bubble::after,
+.chat-preview[data-bubble="lovey"] .msg[data-mine][data-last] .bubble::after {
+  left: auto;
+  right: -6px;
+  color: #ad1c53;
+}
+
+/* ---------- shared motion ---------- */
+@keyframes bubble-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+@keyframes bubble-drift {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat[data-theme] .bubble::after,
+  .chat-preview .bubble::after {
+    animation: none !important;
+  }
+}

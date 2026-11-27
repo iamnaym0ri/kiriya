@@ -211,6 +211,8 @@ async function adoptIdentity(info, passphrase, { verified, readOnly = false }) {
     return createIdentity(me, passphrase, { replace: true });
   }
   if (readOnly) throw new CryptoError("preview");
+  // A typo here would make a key that the real passphrase never opens: check it first.
+  if (!verified) await api("/me/passphrase/check", { method: "POST", body: { passphrase } });
   return createIdentity(me, passphrase, { replace: false });
 }
 

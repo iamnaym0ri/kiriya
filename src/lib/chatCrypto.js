@@ -10,7 +10,7 @@
 // (and are sealed in place later, ./chatCrypto/history.js).
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { apiUrl, authHeaders, isBundledApp } from "./api.js";
-import { CryptoError, isSealedMessage, openBytes, openMessage, openPreview, sealBytes, sealMessage } from "./chatCrypto/core.js";
+import { CryptoError, aadFor, isSealedMessage, openBytes, openMessage, openPreview, openValue, sealBytes, sealMessage, sealValue } from "./chatCrypto/core.js";
 import { chatKeyState, currentKey, ensureChatKeys, hasChatKey, keyFor, subscribeChatKeys } from "./chatCrypto/keyring.js";
 
 export { rememberPassphrase, unlockChatKeys, rewrapForPassphraseChange, ensureChatKeys, chatKeyState } from "./chatCrypto/keyring.js";
@@ -141,6 +141,25 @@ export async function openIncoming(message) {
 export async function openMemorySnapshot(snapshot) {
   if (!snapshot || !isSealedMessage(snapshot)) return snapshot;
   return openIncoming(snapshot);
+}
+
+// ---------- small private values (her chat background photo's key) ----------
+
+/** Seals a small value under the chat key: { k, sealed }, or null before the chat is sealed. */
+export async function sealPrivate(field, value) {
+  await ensureChatKeys();
+  const key = currentKey();
+  if (chatKeyState().status !== "ready" || !key?.key) return null;
+  return { k: key.keyId, sealed: await sealValue(key.key, value, aadFor(field, "prefs", "value")) };
+}
+
+/** Opens what sealPrivate made; null when this device can't. */
+export async function openPrivate(field, envelope) {
+  if (!envelope?.k || !envelope?.sealed) return null;
+  if (!hasChatKey(envelope.k)) await ensureChatKeys();
+  const key = await keyFor(envelope.k);
+  if (!key) return null;
+  return openValue(key, envelope.sealed, aadFor(field, "prefs", "value")).catch(() => null);
 }
 
 /** The words of a sealed notification preview (for tests and the in-app banner). */

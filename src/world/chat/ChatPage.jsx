@@ -7,6 +7,7 @@ import { haptic, isAppShell } from "../../lib/native.js";
 import PageLoader from "../../shared/PageLoader.jsx";
 import Composer from "./Composer.jsx";
 import ChatLook from "./ChatLook.jsx";
+import { useChatRoom } from "./lock/useChatRoom.jsx";
 import { WALLPAPERS, wallpaperUrl } from "./wallpapers.js";
 import { ChatIcon, Message, MessageActions, TypingIndicator } from "./parts.jsx";
 import "./Chat.css";
@@ -113,6 +114,7 @@ export default function ChatPage() {
   const names = first?.names ?? { admin: "Josh", kiriya: "Kiriya" };
   const other = me === "kiriya" ? "admin" : "kiriya";
   const prefs = useChatPrefs().data ?? { bubble: "lilac", background: "petals", typing: "hearts" };
+  const room = useChatRoom(prefs); // chat-room: its look, the Face ID lock, the keys (lock/useChatRoom.jsx)
   const live = useChatLive({ live: first?.live, me, enabled: Boolean(first) });
   const send = useSendMessage(me);
   const react = useReact();
@@ -199,7 +201,8 @@ export default function ChatPage() {
   const replyLabel = replyTo ? (replyTo.kind === "text" ? `“${replyTo.body.slice(0, 60)}”` : `a ${replyTo.kind}`) : "";
 
   return (
-    <div ref={shell} className="chat" data-app={app || undefined} data-theme={prefs.theme ?? "lilac"} data-bubble={prefs.bubble} data-background={background} style={style}>
+    <div ref={shell} className="chat" data-app={app || undefined} {...room.look} data-locked={room.screen ? "" : undefined}>
+      {room.screen ?? room.overlay}
       <div className="chat__backdrop" aria-hidden="true" />
       {WALLPAPERS[background] && !app && <p className="chat__credit">{WALLPAPERS[background].credit}</p>}
       <header className="chat__head">
