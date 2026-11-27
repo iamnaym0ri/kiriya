@@ -41,6 +41,9 @@ const FACES = {
   proud: { eyes: "happy", mouth: "smirk", blush: 0.4, brow: -2 },
   sulky: { lid: 3, look: [-3, 0], mouth: "pout", brow: 2, browTilt: 3, blush: 0.4 },
   curious: { look: [3, -1], mouth: "o", brow: -2, browTilt: -1, blush: 0.35 },
+  sing: { eyes: "happy", mouth: "open", blush: 0.5, brow: -2.5 },
+  flirty: { lid: 3, look: [2, 0.5], shine: 3.8, mouth: "smirk", blush: 0.65, brow: -1.5, browTilt: -0.5 },
+  shy: { look: [-3, 2], lid: 1.5, mouth: "cat", blush: 0.85, brow: -1, browTilt: -2 },
 };
 
 export const BAMBY_EXPRESSIONS = Object.keys(FACES);

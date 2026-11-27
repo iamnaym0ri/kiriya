@@ -1,14 +1,16 @@
-// Rotten Girl Miku's colours. Her hair is a grassy green, warmer than classic Miku's teal, so the two
-// read apart at a glance when they share the screen; crimson crosses where stock Miku has square
-// ties; a white school blouse, a red bow and a navy plaid skirt. Outlines sit one shade darker than
-// their fill, like Maomao's.
+// Rotten Girl Miku's colours, matched to SAWTOWNE's concept art and reference sheet (2025): a
+// muted forest green, not stock Miku's teal, darkening towards the tips; dark-red cross hair ties;
+// violet eyes behind round glasses; a white short-sleeved shirt, a crimson ribbon crossed in an X
+// (white edge stripe, dark button), a charcoal-navy plaid skirt with faint red lines, white crew
+// socks, black loafers; her wooden SINNER paddle and her black "Yaoi Note". Outlines sit one shade darker
+// than their fill, like Maomao's.
 export const C = {
-  hair: "#3f9e6c",
-  hairLight: "#7fcb98",
-  hairTop: "#5bb682",
-  hairDark: "#2b7356",
-  hairDeep: "#1f5543",
-  hairLine: "#266148",
+  hair: "#4a8f69",
+  hairLight: "#9fd0ad",
+  hairTop: "#6aab84",
+  hairDark: "#2e6450",
+  hairDeep: "#21473b",
+  hairLine: "#28543f",
   skin: "#ffe7d6",
   skinShade: "#f4cdb8",
   skinLine: "#d6a48e",
@@ -16,19 +18,19 @@ export const C = {
   shirt: "#fdfbff",
   shirtShade: "#ddd3f0",
   shirtLine: "#9a8cba",
-  bow: "#cc3150",
-  bowDark: "#86203a",
-  cross: "#8e1c39",
+  bow: "#c22a48",
+  bowDark: "#7c1832",
+  cross: "#a01c38",
   crossDark: "#530f21",
   crossLight: "#d0637a",
-  skirt: "#3e4769",
+  skirt: "#3a4060",
   skirtDark: "#2a3150",
   skirtCheck: "#6b76a0",
   skirtRed: "#a3385a",
   sock: "#fbf9ff",
   sockLine: "#b9b0d1",
-  shoe: "#4f2434",
-  shoeLight: "#86495d",
+  shoe: "#2b2430",
+  shoeLight: "#5d5266",
   glasses: "#3a2a40",
   irisTop: "#3a2366",
   irisMid: "#7448bd",
@@ -38,8 +40,9 @@ export const C = {
   brow: "#245a47",
   mouth: "#b2526e",
   mouthLine: "#8f4560",
-  book: "#cbb7ef",
-  bookDark: "#8c76bf",
+  book: "#2a2530", // the Yaoi Note: plain black, white title
+  bookDark: "#141118",
+  noteInk: "#f7f3fb",
   bookRing: "#5e5182",
   paper: "#fffdf8",
   paperLine: "#c9d8f2",
@@ -48,4 +51,16 @@ export const C = {
   wood: "#c89466",
   woodDark: "#8a5a3c",
   ink: "#6a5a8e",
+  tipDark: "#1d3b31",
+  bowStripe: "#fbeef0",
+  button: "#3b1c2a",
+  paddle: "#d8ad74",
+  paddleLight: "#ecca98",
+  paddleDark: "#a2713f",
+  paddleLine: "#7d5530",
+  paddleInk: "#b0283a",
+  phone: "#3b3150",
+  screen: "#fde7f3",
+  blood: "#d8394f",
+  guilt: "#3b2350",
 };

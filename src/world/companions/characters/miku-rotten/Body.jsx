@@ -1,7 +1,7 @@
 import { useId, useSyncExternalStore } from "react";
 import { C } from "./palette.js";
 import Face from "./Face.jsx";
-import { Arm, Cross, Heart, OpenBook, Paddle, Sketchbook, Tail, Twinkle } from "./parts.jsx";
+import { Arm, Cross, Heart, OpenBook, Paddle, Phone, Sketchbook, SmackBurst, Tail, Twinkle } from "./parts.jsx";
 import "./miku-rotten.css";
 
 // Rotten Girl Miku: the fangirl from SAWTOWNE's "Confessions of a Rotten Girl", drawn from scratch
@@ -16,16 +16,22 @@ export const VIEW = { width: 220, height: 240 };
 export const SIZE = { width: 110, height: 120 }; // same aspect as VIEW, so she fills the box exactly
 
 const SEATED = new Set(["sit", "sleep", "sketch"]);
+// Her skirt's plaid, inside the skirt's outline (M85 186h50l11 26q-36 10-72 0Z).
+const PLAID_CHECK = "M75 210.8V211.1M87 187.2V213.8M99 187.2V215.3M111 187.2V215.8M123 187.2V215.1M135 187.2V213.4M82.4 195H137.6M77.3 207H142.7";
+const PLAID_RED = "M81.5 195.5V212.7M93.5 187.2V214.7M105.5 187.2V215.7M117.5 187.2V215.6M129.5 187.2V214.3M141.5 202.6V212.0M84.7 189.5H135.3M79.6 201.5H140.4";
+// Which arms to swap in when the engine hands her a prop for a pose that doesn't carry it.
+const PROP_ARMS = { paddle: { stand: "behind", seat: "leaning" }, phone: { stand: "phone", seat: "phone" } };
 const ALIASES = { picked: "held", dangle: "held", carried: "held", stand: "idle", hop: "jump" };
 
 /** What each pose does with her arms and face when nobody asks for a particular expression. */
 const POSES = {
-  idle: { arms: "hug", face: "soft" },
-  walk: { arms: "hug", face: "soft" },
-  crouch: { arms: "hug", face: "focused" },
+  // Standing about, she carries the paddle behind her back across her hips, as in the concept art.
+  idle: { arms: "behind", face: "soft" },
+  walk: { arms: "behind", face: "soft" },
+  crouch: { arms: "behind", face: "focused" },
   jump: { arms: "up", face: "gasp" },
   fall: { arms: "up", face: "flustered" },
-  land: { arms: "hug", face: "happy" },
+  land: { arms: "behind", face: "happy" },
   sit: { arms: "plant", face: "happy" },
   wave: { arms: "wave", face: "happy" },
   react: { arms: "cheeks", face: "flustered" },
@@ -40,6 +46,12 @@ const POSES = {
   glint: { arms: "glasses", face: "smug" },
   giggle: { arms: "giggle", face: "giggle" },
   show: { arms: "show", face: "sparkle" },
+  hug: { arms: "hug", face: "dreamy" }, // the sketchbook (her doujinshi) clutched to her chest
+  paddle: { arms: "brandish", face: "smug" }, // the paddle held up for all to see
+  smack: { arms: "smack", face: "feral" }, // winds up and slams it down on a ship: SMACK
+  penance: { arms: "penance", face: "wince" }, // paddles herself for her sins, as in the MV
+  phone: { arms: "phone", face: "feral" }, // squealing at her phone, feet kicking
+  dance: { arms: "dance", face: "giggle" }, // a little hop-and-wave dance on the spot
 };
 export const POSE_NAMES = Object.keys(POSES);
 
@@ -54,26 +66,100 @@ function subscribeReduced(listener) {
 
 /* --- Arms and props, per pose. `back` is drawn behind her head, `front` over it. ------------- */
 
-const sideBook = (
+const sideBook = (facing) => (
   <g className="mr-sidebook">
     <Arm d="M82 168Q77 180 84 189" />
-    <Sketchbook x={86} y={194} w={20} h={25} rotate={12} />
+    <Sketchbook x={86} y={194} w={20} h={25} rotate={12} facing={facing} />
     <circle cx="85" cy="188" r="4.8" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
   </g>
 );
 
+/** The paddle behind her back, gripped in both hands, the blade poking out past her left hip. */
+const behind = ({ facing }) => ({
+  under: (
+    <>
+      <Paddle x={131} y={186} rotate={-110} facing={facing} tipFirst />
+      <Arm d="M82 168Q80 182 96 190" />
+      <Arm d="M138 168Q140 180 128 187" />
+    </>
+  ),
+});
+
 const ARMS = {
-  hug: {
+  behind,
+  brandish: ({ facing }) => ({
+    back: <Arm d="M82 168Q66 180 86 190" hand={[87, 190]} handR={5} />,
+    front: (
+      <g className="mr-brandish-arm">
+        <Arm d="M138 168Q158 166 162 150" />
+        <Paddle x={163} y={148} rotate={24} facing={facing} grip={10} />
+        <circle cx="163" cy="149" r="5.4" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
+      </g>
+    ),
+  }),
+  smack: ({ facing }) => ({
+    back: <Arm className="mr-smack-off" d="M82 168Q68 176 70 160" hand={[70, 157]} handR={5} />,
+    front: (
+      <>
+        <g className="mr-smack-arm">
+          <Arm d="M138 168Q156 164 160 148" />
+          <Paddle x={161} y={146} rotate={18} facing={facing} grip={10} />
+          <circle cx="161" cy="147" r="5.4" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
+        </g>
+        <SmackBurst x={226} y={222} facing={facing} className="mr-smack-burst" />
+      </>
+    ),
+  }),
+  // Penance: her hand behind her back swings the paddle into her own behind. SMACK. Ow.
+  penance: ({ facing }) => ({
+    under: (
+      <>
+        <g className="mr-penance-paddle">
+          <Paddle x={146} y={192} rotate={-100} facing={facing} tipFirst grip={6} />
+        </g>
+        <Arm d="M138 168Q152 180 146 192" hand={[146, 192]} handR={5} />
+      </>
+    ),
+    back: <Arm className="mr-penance-off" d="M82 168Q66 172 70 156" hand={[70, 153]} handR={5} />,
+    front: <SmackBurst x={60} y={204} facing={facing} className="mr-penance-burst" />,
+  }),
+  leaning: ({ facing }) => ({
+    back: (
+      <>
+        <Paddle x={160} y={238} rotate={10} facing={facing} grip={0} />
+        <Arm d="M82 168Q73 188 75 208" hand={[75, 209]} />
+        <Arm d="M138 168Q150 184 156 196" hand={[157, 197]} />
+      </>
+    ),
+  }),
+  phone: {
+    front: (
+      <g className="mr-phone">
+        <Phone x={110} y={161} rotate={-4} />
+        <Arm d="M82 168Q84 182 99 170" hand={[100, 167]} handR={5.2} />
+        <Arm d="M138 168Q136 182 121 170" hand={[120, 166]} handR={5.2} />
+      </g>
+    ),
+  },
+  dance: {
+    front: (
+      <>
+        <Arm className="mr-dance-l" d="M82 168Q64 164 58 146" hand={[57, 143]} handR={5.2} />
+        <Arm className="mr-dance-r" d="M138 168Q156 164 162 146" hand={[163, 143]} handR={5.2} />
+      </>
+    ),
+  },
+  hug: ({ facing }) => ({
     back: (
       <>
         <Arm d="M82 168Q79 184 96 191" />
         <Arm d="M138 168Q143 180 128 178" />
-        <Sketchbook x={112} y={182} w={30} h={34} rotate={-10} className="mr-book" />
+        <Sketchbook x={112} y={182} w={30} h={34} rotate={-10} className="mr-book" facing={facing} />
         <circle cx="96" cy="191" r="4.8" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
         <circle cx="127" cy="176" r="4.8" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
       </>
     ),
-  },
+  }),
   up: {
     front: (
       <>
@@ -82,15 +168,15 @@ const ARMS = {
       </>
     ),
   },
-  wave: {
-    back: sideBook,
+  wave: ({ facing }) => ({
+    back: sideBook(facing),
     front: (
       <g className="mr-wave-arm">
         <Arm d="M138 168Q160 162 163 140" hand={[163, 136]} handR={5.4} />
         <path d="M159 131.5l-1.5-3m5.3 2.3v-3.4m4 4.2 1.6-2.8" stroke={C.skinLine} strokeWidth="1.2" strokeLinecap="round" />
       </g>
     ),
-  },
+  }),
   plant: {
     back: (
       <>
@@ -99,17 +185,17 @@ const ARMS = {
       </>
     ),
   },
-  cuddle: {
+  cuddle: ({ facing }) => ({
     back: (
       <>
         <Arm d="M82 168Q80 192 97 199" />
         <Arm d="M138 168Q140 192 123 199" />
-        <Sketchbook x={110} y={196} w={34} h={26} rotate={-4} />
+        <Sketchbook x={110} y={196} w={34} h={26} rotate={-4} facing={facing} />
         <circle cx="98" cy="199" r="4.8" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
         <circle cx="122" cy="199" r="4.8" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
       </>
     ),
-  },
+  }),
   dangle: {
     back: (
       <>
@@ -162,7 +248,7 @@ const ARMS = {
       </g>
     ),
   },
-  peek: {
+  peek: ({ facing }) => ({
     back: (
       <>
         <Arm d="M82 168Q76 160 82 151" />
@@ -171,22 +257,22 @@ const ARMS = {
     ),
     front: (
       <g className="mr-peek-book">
-        <Sketchbook x={110} y={150} w={58} h={38} rotate={-2} />
+        <Sketchbook x={110} y={150} w={58} h={38} rotate={-2} facing={facing} />
         <circle cx="82" cy="150" r="5" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
         <circle cx="138" cy="149" r="5" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
       </g>
     ),
-  },
-  cheer: {
+  }),
+  cheer: ({ facing }) => ({
     back: <Arm d="M82 168Q80 180 92 178" hand={[93, 177]} handR={5.2} />,
     front: (
       <g className="mr-cheer-arm">
-        <Arm d="M138 168Q160 162 164 142" />
-        <Paddle x={166} y={138} rotate={16} />
-        <circle cx="165" cy="139" r="5" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
+        <Arm d="M138 168Q158 166 162 150" />
+        <Paddle x={163} y={148} rotate={20} facing={facing} grip={10} />
+        <circle cx="163" cy="149" r="5.4" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
       </g>
     ),
-  },
+  }),
   cross: {
     front: (
       <g className="mr-cross-arms">
@@ -195,8 +281,8 @@ const ARMS = {
       </g>
     ),
   },
-  glasses: {
-    back: sideBook,
+  glasses: ({ facing }) => ({
+    back: sideBook(facing),
     front: (
       <g className="mr-glasses-hand">
         <Arm d="M138 168Q137 146 118 131" hand={[116, 129]} handR={5} />
@@ -204,15 +290,15 @@ const ARMS = {
         <path d="M114.5 125.5l-3.5-9" stroke={C.skin} strokeWidth="2.6" strokeLinecap="round" />
       </g>
     ),
-  },
-  giggle: {
-    back: sideBook,
+  }),
+  giggle: ({ facing }) => ({
+    back: sideBook(facing),
     front: (
       <g className="mr-giggle-hand">
         <Arm d="M138 168Q134 152 116 145" hand={[113, 142]} handR={6} />
       </g>
     ),
-  },
+  }),
   show: {
     back: (
       <>
@@ -264,7 +350,7 @@ function Marks({ pose, expression }) {
           <circle cx="183.6" cy="54" r="2.6" fill={C.cross} />
         </g>
       )}
-      {(pose === "fluster" || pose === "nope" || pose === "fall" || expression === "flustered") && (
+      {(pose === "fluster" || pose === "nope" || pose === "fall" || pose === "phone" || pose === "penance" || expression === "flustered" || expression === "feral") && (
         <g className="mr-steam" fill="none" stroke="#c8bde0" strokeWidth="2.2" strokeLinecap="round">
           <path d="M168 22q6-4 4-10q-2-5 3-8" />
           <path d="M184 36q6-2 6-8q0-5 5-6" />
@@ -276,13 +362,13 @@ function Marks({ pose, expression }) {
           <path className="mr-z2" d="M190 18h6l-6 7h6" />
         </g>
       )}
-      {(pose === "show" || pose === "cheer" || expression === "dreamy") && (
+      {(pose === "show" || pose === "cheer" || pose === "phone" || pose === "hug" || pose === "dance" || expression === "dreamy" || expression === "nosebleed") && (
         <g className="mr-hearts">
           <Heart className="mr-heart1" x={190} y={58} size={11} />
           <Heart className="mr-heart2" x={28} y={74} size={8} />
         </g>
       )}
-      {(pose === "pray" || expression === "sparkle") && (
+      {(pose === "pray" || pose === "paddle" || expression === "sparkle") && (
         <g className="mr-twinkles">
           <Twinkle className="mr-tw1" x={190} y={60} r={6} />
           <Twinkle className="mr-tw2" x={28} y={84} r={4.5} fill="#bfe3c9" />
@@ -302,11 +388,22 @@ function Marks({ pose, expression }) {
 /* --- The body. -------------------------------------------------------------------------------- */
 
 /** Picks the drawing for a pose: arms, legs, default face. Shared by Body and Thumb. */
-export function resolvePose(pose, expression) {
+export function resolvePose(pose, expression, prop = null, facing = 1) {
   const name = POSES[pose] ? pose : POSES[ALIASES[pose]] ? ALIASES[pose] : "idle";
   const spec = POSES[name];
-  return { name, face: expression ?? spec.face, arms: ARMS[spec.arms], seated: SEATED.has(name) };
+  const seated = SEATED.has(name);
+  let armsName = spec.arms;
+  // A prop from the engine (the tap menu's action) replaces whatever her hands were doing, unless
+  // the pose already holds it.
+  const swap = PROP_ARMS[prop];
+  if (swap && !PROP_HOLDERS[prop].has(armsName)) armsName = seated ? swap.seat : swap.stand;
+  const arms = ARMS[armsName];
+  return { name, face: expression ?? spec.face, arms: typeof arms === "function" ? arms({ facing }) : arms, seated };
 }
+const PROP_HOLDERS = {
+  paddle: new Set(["behind", "brandish", "smack", "penance", "cheer", "leaning"]),
+  phone: new Set(["phone"]),
+};
 
 export function useReducedMotion() {
   return useSyncExternalStore(subscribeReduced, readReduced, () => true);
@@ -318,9 +415,9 @@ export function useReducedMotion() {
  * is a set of Motion values that she doesn't need: her steps are timed to her own walkSpeed. A
  * number `frame` (seconds) with `playing` off freezes every clock at that moment, for stills.
  */
-export default function Body({ pose = "idle", expression, playing = true, frame, talking, className, style }) {
+export default function Body({ pose = "idle", expression, prop = null, facing = 1, playing = true, frame, talking, className, style }) {
   const reduced = useReducedMotion();
-  const { name, face, seated } = resolvePose(pose, expression);
+  const { name, face, seated } = resolvePose(pose, expression, prop, facing);
   const still = typeof frame === "number";
   const motion = reduced ? "off" : playing ? "on" : still ? "still" : "off";
   return (
@@ -335,19 +432,20 @@ export default function Body({ pose = "idle", expression, playing = true, frame,
       data-seated={seated ? "yes" : "no"}
       data-motion={motion}
       data-talking={talking ? "yes" : "no"}
+      data-prop={prop ?? undefined}
       style={still ? { "--mr-at": `${-frame}s`, ...style } : style}
       aria-hidden="true"
       overflow="visible"
     >
-      <Figure pose={name} expression={face} moving={motion === "on"} />
+      <Figure pose={name} expression={face} prop={prop} facing={facing} moving={motion === "on"} />
     </svg>
   );
 }
 
 /** Everything inside the SVG, so the thumb can frame the same drawing with its own viewBox. */
-export function Figure({ pose, expression, moving }) {
+export function Figure({ pose, expression, prop = null, facing = 1, moving }) {
   const id = useId();
-  const { name, face, arms, seated } = resolvePose(pose, expression);
+  const { name, face, arms, seated } = resolvePose(pose, expression, prop, facing);
   return (
     <>
       <defs>
@@ -356,10 +454,12 @@ export function Figure({ pose, expression, moving }) {
           <stop offset=".5" stopColor={C.hair} />
           <stop offset="1" stopColor={C.hairDark} />
         </linearGradient>
+        {/* The tails darken towards their tips, as on her reference sheet. */}
         <linearGradient id={`${id}-tail`} x1="0" y1="0" x2=".25" y2="1">
           <stop stopColor={C.hairTop} />
-          <stop offset=".45" stopColor={C.hair} />
-          <stop offset="1" stopColor={C.hairDark} />
+          <stop offset=".4" stopColor={C.hair} />
+          <stop offset=".78" stopColor={C.hairDark} />
+          <stop offset="1" stopColor={C.tipDark} />
         </linearGradient>
         <radialGradient id={`${id}-skin`} cx=".45" cy=".4" r=".7">
           <stop offset=".45" stopColor="#ffece0" />
@@ -374,11 +474,6 @@ export function Figure({ pose, expression, moving }) {
           <stop stopColor={C.shirt} />
           <stop offset="1" stopColor={C.shirtShade} />
         </linearGradient>
-        <pattern id={`${id}-plaid`} width="12" height="12" patternUnits="userSpaceOnUse">
-          <rect width="12" height="12" fill={C.skirt} />
-          <path d="M0 3h12M3 0v12" stroke={C.skirtCheck} strokeWidth="2.2" opacity=".55" />
-          <path d="M0 9.5h12M9.5 0v12" stroke={C.skirtRed} strokeWidth=".9" opacity=".8" />
-        </pattern>
         <radialGradient id={`${id}-ground`} cx=".5" cy=".5" r=".5">
           <stop stopColor="#5d4a7a" stopOpacity=".28" />
           <stop offset="1" stopColor="#5d4a7a" stopOpacity="0" />
@@ -413,10 +508,15 @@ export function Figure({ pose, expression, moving }) {
                     </g>
                   </g>
                 </g>
+                {arms.under}
                 <g className="mr-torso">
                   {/* Skirt: navy plaid, pleated, a little A-line. */}
                   <g className="mr-skirt">
-                    <path d="M85 186h50l11 26q-36 10-72 0Z" fill={`url(#${id}-plaid)`} stroke={C.skirtDark} strokeWidth="1.5" strokeLinejoin="round" />
+                    {/* The plaid as plain lines, not a <pattern>: a pattern fill made every frame of her
+                        CSS animation repaint far slower in WebKit (.lab bench, 2026-11-27). */}
+                    <path d="M85 186h50l11 26q-36 10-72 0Z" fill={C.skirt} stroke={C.skirtDark} strokeWidth="1.5" strokeLinejoin="round" />
+                    <path d={PLAID_CHECK} stroke={C.skirtCheck} strokeWidth="2.2" opacity=".55" />
+                    <path d={PLAID_RED} stroke={C.skirtRed} strokeWidth=".9" opacity=".8" />
                     <path d="M96 189l-6 25m14-25-1 27m13-27 2 27m12-26 6 24" stroke={C.skirtDark} strokeWidth="1.3" opacity=".7" />
                   </g>
                   {/* Blouse with short puffed sleeves. */}
@@ -426,14 +526,21 @@ export function Figure({ pose, expression, moving }) {
                   <circle cx="110" cy="184" r="1.1" fill={C.shirtLine} />
                   <path d="M88 161q-12 1-14 13q7 6 15 2Z" fill={C.shirt} stroke={C.shirtLine} strokeWidth="1.4" strokeLinejoin="round" />
                   <path d="M132 161q12 1 14 13q-7 6-15 2Z" fill={C.shirt} stroke={C.shirtLine} strokeWidth="1.4" strokeLinejoin="round" />
+                  {/* Rolled cuffs on the short sleeves. */}
+                  <path d="M75.5 170.5q6.5 4.6 13.6 1.6" fill="none" stroke={C.shirtLine} strokeWidth="1.1" opacity=".8" />
+                  <path d="M144.5 170.5q-6.5 4.6-13.6 1.6" fill="none" stroke={C.shirtLine} strokeWidth="1.1" opacity=".8" />
                   <path d="M104 152h12v8q-6 3-12 0Z" fill={C.skinShade} />
-                  {/* Pointed collar and the red bow. */}
+                  {/* Pointed collar and her crimson ribbon, crossed in an X with a white stripe near each
+                      cut end and a dark button where the bands cross. */}
                   <path d="M102 156l8 8-12 6-3-9Z" fill={C.shirt} stroke={C.shirtLine} strokeWidth="1.3" strokeLinejoin="round" />
                   <path d="M118 156l-8 8 12 6 3-9Z" fill={C.shirt} stroke={C.shirtLine} strokeWidth="1.3" strokeLinejoin="round" />
                   <g className="mr-bow">
-                    <path d="M108 167l-5 13 4-2 3 4Zm4 0 5 13-4-2-3 4Z" fill={C.bow} stroke={C.bowDark} strokeWidth="1.1" strokeLinejoin="round" />
-                    <path d="M110 165q-9-8-13-2q-1 6 13 4Zm0 0q9-8 13-2q1 6-13 4Z" fill={C.bow} stroke={C.bowDark} strokeWidth="1.2" strokeLinejoin="round" />
-                    <rect x="107" y="163" width="6" height="5" rx="1.6" fill={C.bowDark} />
+                    <path d="M116.0 156.9L96.5 175.9L101.3 176.3L101.5 181.1L121.0 162.1Z" fill={C.bow} stroke={C.bowDark} strokeWidth="1.1" strokeLinejoin="round" />
+                    <path d="M99.6 172.9L104.4 173.2L104.7 178.0" fill="none" stroke={C.bowStripe} strokeWidth="1.1" strokeLinejoin="round" />
+                    <path d="M99.0 162.1L118.5 181.1L118.7 176.3L123.5 175.9L104.0 156.9Z" fill={C.bow} stroke={C.bowDark} strokeWidth="1.1" strokeLinejoin="round" />
+                    <path d="M115.3 178.0L115.6 173.2L120.4 172.9" fill="none" stroke={C.bowStripe} strokeWidth="1.1" strokeLinejoin="round" />
+                    <circle cx="110" cy="168" r="2.9" fill={C.button} />
+                    <circle cx="109.2" cy="167.2" r=".9" fill="#fff" opacity=".5" />
                   </g>
                 </g>
                 {arms.back}

@@ -4,7 +4,9 @@ import { C } from "./palette.js";
 
 // Her face rig: eyes behind big round glasses, the glasses themselves (which turn into white
 // spirals when she's flustered and flash white when she's being smug), brows, mouth, blush and
-// sweat. One set of numbers per expression, eased between, like Maomao's face.
+// sweat. One set of numbers per expression, eased between, like Maomao's face. From her reference
+// sheet: the nervous open grin with a sweat drop, the spiral lenses, and the guilty face in shadow
+// with a heavy blush. From fujoshi canon: the nosebleed and the feral grin.
 
 const EYES = [87, 133];
 const EYE_Y = 115;
@@ -38,6 +40,9 @@ const BASE = {
   sparkle: 0,
   heart: 0,
   sweat: 0,
+  grin: 0, // a wide open grin with teeth (feral, nervous)
+  shadow: 0, // the upper face in shadow (guilty)
+  bleed: 0, // a nosebleed
 };
 
 const FACES = {
@@ -55,6 +60,11 @@ const FACES = {
   dreamy: { heart: 1, lid: 2, blush: 0.75, mouthW: 6, smile: 4.5, mouthOpen: 2.5, browTilt: 2 },
   worried: { browTilt: 7, browY: 88, wavy: 1, mouthW: 5, sweat: 1, lookX: -2, lookY: 1, blush: 0.35, lid: 1.5 },
   pout: { browTilt: -6, browY: 93, mouthW: 2.5, smile: -3, blush: 0.8, hatch: 0.4, lookX: 3, lid: 2 },
+  feral: { grin: 1, sparkle: 1, iris: 0.86, shine: 1.3, blush: 0.95, hatch: 0.9, browY: 86, browArch: 5, browTilt: -1.5, top: 104, arch: 99, bottom: 123, lower: 129 },
+  guilty: { shadow: 1, grin: 0.65, iris: 0.8, lookX: 2.5, lookY: -1, blush: 1, hatch: 1, sweat: 1, browTilt: 5, browY: 89 },
+  nervous: { grin: 0.75, sweat: 1, browTilt: 6, browY: 88, browArch: 3.5, blush: 0.42, iris: 0.92 },
+  wince: { open: 0, closedCurve: 2.5, wavy: 1, blush: 0.85, hatch: 0.9, sweat: 1, browTilt: 6, browY: 88, mouthW: 6 },
+  nosebleed: { heart: 1, bleed: 1, lid: 1.5, blush: 1, hatch: 1, mouthW: 7, smile: 4.5, mouthOpen: 4, browTilt: 3, browY: 89 },
 };
 
 export const EXPRESSIONS = Object.keys(FACES);
@@ -105,7 +115,8 @@ export default function Face({ expression = "soft", moving, children }) {
     right = 110 + f.mouthW;
   const topMouth = `M${left} ${MOUTH_Y}Q110 ${MOUTH_Y + f.smile} ${right} ${MOUTH_Y}`;
   const mouth = `${topMouth}Q110 ${MOUTH_Y + f.smile + f.mouthOpen * 1.6} ${left} ${MOUTH_Y}Z`;
-  const plain = 1 - Math.max(f.wavy, f.cat);
+  const plain = 1 - Math.max(f.wavy, f.cat, f.grin);
+  const gw = 6 + f.grin * 7;
   const eyesShow = f.open * (1 - f.spiral * 0.85) * (1 - f.glint * 0.85);
   return (
     <g className="mr-face">
@@ -183,12 +194,37 @@ export default function Face({ expression = "soft", moving, children }) {
           </g>
         );
       })}
+      {/* Guilty: the top of her face falls into shadow; the lenses still catch the light. */}
+      {f.shadow > 0 && (
+        <g opacity={f.shadow}>
+          <defs>
+            <linearGradient id={`${id}-shadow`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset=".25" stopColor={C.guilt} stopOpacity=".72" />
+              <stop offset="1" stopColor={C.guilt} stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M56 84q54-14 108 0v44q-54 8-108 0Z" fill={`url(#${id}-shadow)`} />
+        </g>
+      )}
       <path d="M109 129.5l1.6 1.2-1.6.8" fill="none" stroke="#d8a690" strokeWidth="1.1" strokeLinecap="round" />
+      {/* The fujoshi nosebleed: a thin trickle from one nostril and a drop. */}
+      {f.bleed > 0 && (
+        <g opacity={f.bleed} className="mr-bleed">
+          <path d="M108.2 131.6q-1.4 3.4-.4 6.4" fill="none" stroke={C.blood} strokeWidth="2.2" strokeLinecap="round" />
+          <path className="mr-bleed-drop" d="M107.6 139.6q2.4 3.4 0 4.6-2.4-1.2 0-4.6Z" fill={C.blood} />
+        </g>
+      )}
       <g className="mr-mouth">
         <path d={mouth} fill={C.mouth} opacity={Math.min(1, f.mouthOpen) * plain} />
         <path d={topMouth} fill="none" stroke={C.mouthLine} strokeWidth="1.9" strokeLinecap="round" opacity={plain} />
         <path d="M102 141q2-3 4 0t4 0 4 0 4 0" fill="none" stroke={C.mouthLine} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" opacity={f.wavy} />
-        <path d="M103 139q3.5 4.5 7 0q3.5 4.5 7 0" fill="none" stroke={C.mouthLine} strokeWidth="1.9" strokeLinecap="round" opacity={f.cat * (1 - f.wavy)} />
+        <path d="M103 139q3.5 4.5 7 0q3.5 4.5 7 0" fill="none" stroke={C.mouthLine} strokeWidth="1.9" strokeLinecap="round" opacity={f.cat * (1 - f.wavy) * (1 - f.grin)} />
+        {/* The wide grin: a D of a mouth, top teeth, a little tongue. */}
+        <g opacity={Math.min(1, f.grin * 1.4)}>
+          <path d={`M${110 - gw} 138.2Q110 ${139 + f.grin * 17} ${110 + gw} 138.2Z`} fill={C.mouth} stroke={C.mouthLine} strokeWidth="1.5" strokeLinejoin="round" />
+          <path d={`M${110 - gw + 1.6} 138.8Q110 ${140.6} ${110 + gw - 1.6} 138.8L${110 + gw - 2.4} 140.6Q110 142.6 ${110 - gw + 2.4} 140.6Z`} fill="#fff" />
+          <path d={`M${110 - 5} ${138 + f.grin * 7.4}q5-4.4 10 0q-5 2.6-10 0Z`} fill="#f39ab4" />
+        </g>
         {/* While her bubble is up the mouth opens and closes (CSS, data-talking). */}
         <path className="mr-talk" d="M105.5 139.5q4.5-2 9 0q-1 6-4.5 6t-4.5-6Z" fill={C.mouth} stroke={C.mouthLine} strokeWidth="1.3" strokeLinejoin="round" />
       </g>
