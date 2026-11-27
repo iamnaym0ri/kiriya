@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { api, appToken, isBundledApp } from "../lib/api.js";
 import { checkForUpdate, markAppReady } from "../lib/appUpdates.js";
 import { forgetSession, sessionKey, useSession } from "../lib/session.js";
+import { appPath } from "../lib/appLinks.js";
 import {
   enrolledDevice,
   enrollThisPhone,
@@ -159,12 +160,13 @@ export default function NativeApp() {
     if (!open || !pending || onFrontPage) return;
     const next = pending;
     setPending(null);
+    // Old website paths land on the right tab (lib/appLinks.js).
     if (next.to) {
-      navigate(next.to);
+      navigate(appPath(next.to));
       return;
     }
     if (next.action === "chat") navigate("/world/chat");
-    else if (next.action === "pull-note") navigate("/world#note-jar");
+    else if (next.action === "pull-note") navigate(appPath("/world#note-jar"));
     else if (next.action === "heart") {
       const clientId = `q-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}`;
       api("/me/chat/messages", { method: "POST", body: { clientId, kind: "tap", body: "thinking" } })
