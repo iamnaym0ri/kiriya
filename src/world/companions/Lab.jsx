@@ -10,7 +10,7 @@ import "./lab.css";
 // shows every pose and every platform state side by side. Also on window.__companionStage for scripts.
 //
 // Query options (handy for screenshots): levels=2..6, speed=0.25..3, quiet=1|0, debug=1, bg=home|text|plain,
-// open=1 (panel open), tab=stage|poses, scale=0.7..1.2.
+// open=1 (panel open), tab=stage|poses, scale=0.7..1.2, ride=1|0 (try riding or trailing clouds).
 
 const HomeBackdrop = lazy(() => import("../home/HomeSection.jsx"));
 
@@ -109,9 +109,19 @@ export default function CompanionLab() {
   const debug = params.get("debug") === "1";
   const avoidText = params.get("avoid") !== "0";
   const bg = params.get("bg") ?? "home";
+  const ride = params.get("ride");
   const options = useMemo(
-    () => ({ levels, speed, scale, quiet, debug, avoidText, visits: { enabled: false } }),
-    [levels, speed, scale, quiet, debug, avoidText],
+    () => ({
+      levels,
+      speed,
+      scale,
+      quiet,
+      debug,
+      avoidText,
+      visits: { enabled: false },
+      movement: ride === "1" ? { platform: "ride", walkPose: "sit", restPose: "sit" } : ride === "0" ? { platform: "trail" } : undefined,
+    }),
+    [levels, speed, scale, quiet, debug, avoidText, ride],
   );
 
   useEffect(() => {
@@ -239,6 +249,14 @@ export default function CompanionLab() {
                 <option value="">as her setting</option>
                 <option value="0">lively</option>
                 <option value="1">quiet</option>
+              </select>
+            </label>
+            <label>
+              cloud
+              <select value={ride ?? ""} onChange={(e) => set({ ride: e.target.value })}>
+                <option value="">its own</option>
+                <option value="0">trail</option>
+                <option value="1">ride (sitting)</option>
               </select>
             </label>
             <label className="clab-check">

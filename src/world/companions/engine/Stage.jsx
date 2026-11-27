@@ -99,15 +99,22 @@ export default function Stage({ hostId = "maomao", active = true, options, contr
     onLayout?.(levels, sim.band);
   }, [levels, onLayout, sim]);
 
+  // The lab can try a character with other movement settings (`options.movement`).
+  const tweak = options?.movement ? JSON.stringify(options.movement) : "";
   useEffect(() => {
     let live = true;
     loadHost(hostId).then((character) => {
-      if (live) sim.setHost(character);
+      if (!live) return;
+      if (character && tweak) {
+        const movement = { ...character.movement, hop: null, bob: null, ...JSON.parse(tweak) };
+        character = normaliseCharacter({ ...character, movement });
+      }
+      sim.setHost(character);
     });
     return () => {
       live = false;
     };
-  }, [sim, hostId]);
+  }, [sim, hostId, tweak]);
 
   return (
     <div

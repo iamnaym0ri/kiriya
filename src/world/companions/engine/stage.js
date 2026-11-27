@@ -68,6 +68,7 @@ export class StageSim {
     this.scrollAt = null;
     this.relayoutAt = 0;
     this.lastAvoid = -Infinity;
+    this.lastComfort = 0;
   }
 
   get chatGap() {
@@ -431,18 +432,24 @@ export class StageSim {
   }
 
   /**
-   * Home scrolls under the characters. Once it settles, if the host is now standing over text or a
-   * button and a clearly better spot exists, it walks (or hops) there.
+   * Home scrolls under the characters, and its content arrives and changes. Once a scroll settles,
+   * and every few seconds while it rests, the host checks what it is standing over; if that is
+   * text or a button and a clearly clearer spot exists, it walks (or hops) there.
    */
   avoidAfterScroll() {
-    if (this.scrollAt == null || this.time - this.scrollAt < 0.7) return;
-    this.scrollAt = null;
-    this.relayoutAt = this.time;
+    const scrolled = this.scrollAt != null && this.time - this.scrollAt >= 0.7;
+    if (this.scrollAt != null && !scrolled) return;
+    if (scrolled) {
+      this.scrollAt = null;
+      this.relayoutAt = this.time;
+    } else if (this.time - this.lastComfort < 5) return;
+    this.lastComfort = this.time;
     const host = this.host;
-    if (!host || !this.lively || this.visit || host.level == null || host.mode !== "rest" || this.time - this.lastAvoid < 6) return;
+    if (!host || !this.lively || this.visit || host.level == null || host.mode !== "rest" || host.step?.type === "wait" || this.time - this.lastAvoid < 6) return;
+    if (!this.options.avoidText) return;
     const here = this.spotScore(host, host.level, host.x);
     if (here < 0.35) return;
-    const steps = host.planMove(null, { force: true });
+    const steps = host.planMove(null, { force: true, better: here - 0.25 });
     if (!steps.length) return;
     this.lastAvoid = this.time;
     host.interrupt([...steps, { type: "rest" }]);
