@@ -8,8 +8,10 @@ import "./Platform.css";
  * off the back as if something is always brewing somewhere in it.
  *
  * The engine anchors the box's top centre at her feet, offset by `surface` (the puffs rise a few
- * pixels behind her heels). States: "forming" (puffs pop in from the middle out and the sprigs
- * sprout), "steady" (breathing, steam, a swaying lantern), "fading" (puffs shrink away into steam).
+ * pixels behind her heels). She animates her own states (movement.platformFx "own"; the timings in
+ * Platform.css fit movement.platformForm/platformFade): "forming" (puffs pop in from the middle out
+ * and the sprigs sprout), "steady" (breathing, steam, a swaying lantern), "fading" (puffs shrink
+ * away into steam). Not playing (quiet mode, reduced motion): it only fades in and out.
  */
 
 const SURFACE = 9;
@@ -31,20 +33,21 @@ const BOTTOMS = [
   [0.77, 23, 6.5],
 ];
 
-export default function Platform({ width = 100, state = "steady" }) {
+export default function Platform({ width = 100, state = "steady", playing = true }) {
   const uid = `mmc${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const w = Math.max(56, width);
   // The flat belly between the end puffs, so a wide cloud stays one cloud.
   const belly = { x: w * 0.1, y: 13, width: w * 0.8, height: 13, rx: 7 };
   const puffs = [
-    ...TOPS.map(([fx, y, r], i) => ({ cx: fx * w, cy: y, r: r * Math.min(1.25, Math.max(0.8, w / 100)), delay: Math.abs(i - 2) * 60 })),
-    ...BOTTOMS.map(([fx, y, r], i) => ({ cx: fx * w, cy: y, r, delay: 40 + Math.abs(i - 1.5) * 60 })),
+    ...TOPS.map(([fx, y, r], i) => ({ cx: fx * w, cy: y, r: r * Math.min(1.25, Math.max(0.8, w / 100)), delay: Math.abs(i - 2) * 40 })),
+    ...BOTTOMS.map(([fx, y, r], i) => ({ cx: fx * w, cy: y, r, delay: 20 + Math.abs(i - 1.5) * 40 })),
   ];
   const lantern = w * 0.76;
   return (
     <svg
       className="mm-cloud"
       data-state={state}
+      data-playing={playing ? "on" : "off"}
       viewBox={`0 0 ${w} ${HEIGHT}`}
       width={w}
       height={HEIGHT}

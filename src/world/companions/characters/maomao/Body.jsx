@@ -40,8 +40,9 @@ import "./Body.css";
  * transform on an SVG group (Body.css): cheap on an iPhone 11, and all of it stops when `playing`
  * is false or the phone asks for reduced motion.
  *
- * Drawn facing the viewer in a 200 x 236 box; she turns to her direction of travel by mirroring
- * the figure, while marks such as "?" and "z" stay unmirrored in an overlay.
+ * Drawn facing the viewer (turned a touch to her right when walking) in a 200 x 236 box that fills
+ * the engine's body box, feet on the bottom edge. The engine mirrors the whole body to face left;
+ * marks such as "?" and "z" flip themselves back so they still read.
  */
 
 /** Her face for each pose when the engine doesn't ask for one. */
@@ -65,6 +66,7 @@ export const POSE_FACE = {
   inspect: "curious",
   tea: "pleased",
   yawn: "sleepy",
+  crouch: "focused",
 };
 export const POSES = Object.keys(POSE_FACE);
 
@@ -486,6 +488,8 @@ function armsFor(pose) {
       return { front: <RaisedArms /> };
     case "land":
       return { back: <RestArms spread={14} /> };
+    case "crouch":
+      return { back: <RestArms spread={22} /> };
     case "fall":
       return { front: <FlungArms /> };
     case "react":
@@ -514,45 +518,51 @@ function armsFor(pose) {
  * ------------------------------------------------------------------------------------------- */
 
 function Marks({ pose, face, facing }) {
-  const side = (x) => (facing < 0 ? 200 - x : x);
+  // The engine mirrors the whole body to face left; text-like marks flip back so they still read.
+  const at = (x, y) => `translate(${x} ${y})${facing < 0 ? " scale(-1 1)" : ""}`;
   const marks = [];
   if (face === "curious" || pose === "inspect")
     marks.push(
-      <g key="q" className="mm-mark mm-mark--question" transform={`translate(${side(172)} 78)`} fill="none" stroke="#9c7fae" strokeWidth="2.6" strokeLinecap="round">
-        <path d="M-6 0q0-9 7-9 9 1 4 9l-5 6v4" />
-        <path d="M0 16v.5" />
+      <g key="q" transform={at(172, 78)}>
+        <g className="mm-mark mm-mark--question" fill="none" stroke="#9c7fae" strokeWidth="2.6" strokeLinecap="round">
+          <path d="M-6 0q0-9 7-9 9 1 4 9l-5 6v4" />
+          <path d="M0 16v.5" />
+        </g>
       </g>,
     );
   if (face === "startled" || face === "alarmed" || pose === "react")
     marks.push(
-      <g key="s" className="mm-mark mm-mark--surprise" transform={`translate(${side(168)} 62)`} stroke="#b4a05e" strokeWidth="3" strokeLinecap="round">
-        <path d="m0 0 7-10m-3 22 12-2m-19 13 9 5" transform={facing < 0 ? "scale(-1 1)" : undefined} />
+      <g key="s" transform="translate(168 62)">
+        <g className="mm-mark mm-mark--surprise" stroke="#b4a05e" strokeWidth="3" strokeLinecap="round">
+          <path d="m0 0 7-10m-3 22 12-2m-19 13 9 5" />
+        </g>
       </g>,
     );
-  if (face === "ew")
-    marks.push(<path key="w" className="mm-mark mm-mark--sweat" d={`M${side(168)} 104q9 13 0 15-9-2 0-15Z`} fill="#a1bfd3" />);
+  if (face === "ew") marks.push(<path key="w" className="mm-mark mm-mark--sweat" d="M168 104q9 13 0 15-9-2 0-15Z" fill="#a1bfd3" />);
   if (face === "herb" || face === "poison" || face === "sparkle" || face === "delighted")
     marks.push(
       <g key="g" className="mm-mark mm-mark--glints" fill={face === "poison" ? "#aa89bc" : "#c6b054"}>
-        <path d={`M${side(24)} 86l3 8 8 3-8 3-3 8-3-8-8-3 8-3Z`} />
-        <path d={`M${side(176)} 62l3 7 7 3-7 3-3 7-3-7-7-3 7-3Z`} />
-        <path d={`M${side(186)} 116l2 4 4 2-4 2-2 4-2-4-4-2 4-2Z`} />
+        <path d="M24 86l3 8 8 3-8 3-3 8-3-8-8-3 8-3Z" />
+        <path d="M176 62l3 7 7 3-7 3-3 7-3-7-7-3 7-3Z" />
+        <path d="M186 116l2 4 4 2-4 2-2 4-2-4-4-2 4-2Z" />
       </g>,
     );
   if (pose === "sleep" || (face === "sleepy" && pose !== "yawn"))
     marks.push(
-      <g key="z" className="mm-mark mm-mark--z" transform={`translate(${side(160)} ${pose === "sleep" ? 92 : 64})`} fill="none" stroke="#9778ab" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-        <path className="mm-z mm-z--1" d="M0 0h8l-8 9h8" />
-        <path className="mm-z mm-z--2" d="M12-14h6l-6 7h6" />
-        <path className="mm-z mm-z--3" d="M22-26h5l-5 5h5" />
+      <g key="z" transform={at(160, pose === "sleep" ? 92 : 64)}>
+        <g className="mm-mark mm-mark--z" fill="none" stroke="#9778ab" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <path className="mm-z mm-z--1" d="M0 0h8l-8 9h8" />
+          <path className="mm-z mm-z--2" d="M12-14h6l-6 7h6" />
+          <path className="mm-z mm-z--3" d="M22-26h5l-5 5h5" />
+        </g>
       </g>,
     );
   if (pose === "ponder")
     marks.push(
-      <g key="t" className="mm-mark mm-mark--thought" fill="#a596b8" transform={`translate(${side(150)} 36)`}>
+      <g key="t" className="mm-mark mm-mark--thought" fill="#a596b8" transform="translate(150 36)">
         <circle className="mm-dot mm-dot--1" cx="0" cy="12" r="2.4" />
-        <circle className="mm-dot mm-dot--2" cx={facing < 0 ? -8 : 8} cy="5" r="3" />
-        <circle className="mm-dot mm-dot--3" cx={facing < 0 ? -18 : 18} cy="-2" r="3.6" />
+        <circle className="mm-dot mm-dot--2" cx="8" cy="5" r="3" />
+        <circle className="mm-dot mm-dot--3" cx="18" cy="-2" r="3.6" />
       </g>,
     );
   return marks.length ? <g className="mm-marks">{marks}</g> : null;
@@ -568,7 +578,10 @@ function PartyHat() {
   );
 }
 
-export default function Body({ pose = "idle", expression, facing = 1, playing = true }) {
+/** Faces whose mouth is already open: no extra talking mouth over them. */
+const OPEN_MOUTH = new Set(["herb", "startled", "alarmed", "ew", "sparkle", "sleepy", "delighted", "party"]);
+
+export default function Body({ pose = "idle", expression, facing = 1, playing = true, talking = false }) {
   const uid = `mm${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const shape = POSE_FACE[pose] ? pose : "idle";
   const face = expression ?? POSE_FACE[shape];
@@ -580,45 +593,43 @@ export default function Body({ pose = "idle", expression, facing = 1, playing = 
       data-pose={shape}
       data-face={face}
       data-playing={playing ? "on" : "off"}
+      data-talking={talking ? "on" : undefined}
       viewBox="0 -3 200 236"
-      width="100"
-      height="118"
       aria-hidden="true"
       focusable="false"
     >
       <MaomaoDefs id={uid} />
-      <g transform={facing < 0 ? "matrix(-1 0 0 1 200 0)" : undefined}>
-        <g className="mm-whole">
-          <g className="mm-breath">
-            {cat && (
-              <path className="mm-tail" d={shape === "held" ? "M118 214q30 14 26 40" : "M141 205q45 4 43-32"} fill="none" stroke={HAIR} strokeWidth="9" strokeLinecap="round" />
-            )}
-            <g className="mm-lower">
-              <Shoes pose={shape} />
-              <Skirt pose={shape} />
-            </g>
-            <g className="mm-up">
-              <g className="mm-head">
-                <MaomaoBackHair id={uid} />
-              </g>
-              <Torso id={uid} />
-              {arms.back}
-            </g>
-            {shape === "inspect" && <KneeMound />}
-            <g className="mm-up">
-              <g className="mm-head">
-                <MaomaoBun id={uid} />
-                {cat && <MaomaoCatEars />}
-                <MaomaoHead id={uid} expression={face} moving={playing} />
-                {face === "party" && <PartyHat />}
-              </g>
-              <g className="mm-braids">
-                <MaomaoBraids />
-              </g>
-              {arms.front}
-            </g>
-            {arms.free}
+      <g className="mm-whole">
+        <g className="mm-breath">
+          {cat && (
+            <path className="mm-tail" d={shape === "held" ? "M118 214q30 14 26 40" : "M141 205q45 4 43-32"} fill="none" stroke={HAIR} strokeWidth="9" strokeLinecap="round" />
+          )}
+          <g className="mm-lower">
+            <Shoes pose={shape} />
+            <Skirt pose={shape} />
           </g>
+          <g className="mm-up">
+            <g className="mm-head">
+              <MaomaoBackHair id={uid} />
+            </g>
+            <Torso id={uid} />
+            {arms.back}
+          </g>
+          {shape === "inspect" && <KneeMound />}
+          <g className="mm-up">
+            <g className="mm-head">
+              <MaomaoBun id={uid} />
+              {cat && <MaomaoCatEars />}
+              <MaomaoHead id={uid} expression={face} moving={playing} />
+              {talking && !OPEN_MOUTH.has(face) && <ellipse className="mm-talk" cx="100" cy="134.8" rx="3.6" ry="2.8" fill="#a86076" />}
+              {face === "party" && <PartyHat />}
+            </g>
+            <g className="mm-braids">
+              <MaomaoBraids />
+            </g>
+            {arms.front}
+          </g>
+          {arms.free}
         </g>
       </g>
       <Marks pose={shape} face={face} facing={facing} />
