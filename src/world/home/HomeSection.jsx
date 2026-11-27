@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { usePublicProfile } from "../../lib/profile.js";
 import { useToday } from "../../lib/world.js";
-import CornerWidget from "./CornerWidget.jsx";
 import GlanceCard from "./GlanceCard.jsx";
 import CentreStage from "./CentreStage.jsx";
 import SongCard from "./SongCard.jsx";
@@ -11,9 +10,9 @@ import { useHome } from "./useHome.js";
 import "./home.css";
 
 // The app's home section (docs/refactor/RENOVATION.md, owner: the home agent). The website keeps
-// TodayPage as it is. Top to bottom: her little corner and what's new, then her, centre stage, with
-// a song and the pinboard, then events & merch. A companion walks over all of it, so the blocks
-// leave it room to breathe.
+// TodayPage as it is. Top to bottom: her, centre stage (the greeting, her name, the photos and their
+// caption), then what's new, a song, the pinboard, and events & merch. Her little corner sits in the
+// header (WorldShell). A companion walks over all of it, so the blocks leave it room to breathe.
 export default function HomeSection() {
   const query = useHome();
   const home = query.data;
@@ -36,9 +35,8 @@ export default function HomeSection() {
             <span aria-hidden="true">✧</span>
           </span>
         </p>
-        <CornerWidget />
-        <GlanceCard home={home} />
         <CentreStage home={home} name={profile?.name ?? "kiriya"} birthday={birthday} avatarUrl={profile?.avatarUrl} />
+        <GlanceCard home={home} />
         <SongCard home={home} fresh={query.isFetchedAfterMount} />
         <Pinboard home={home} signature={today?.signature ?? "Josh"} todayNote={todayNote} />
         <EventsBlock />
