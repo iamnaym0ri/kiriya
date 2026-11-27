@@ -3,7 +3,7 @@ import { getDb, schema } from "../db/client.js";
 import { readPersonState, resolvePrefs } from "./personState.js";
 import { UPLOAD_FOLDERS } from "../../shared/uploadFolders.js";
 const FOLDERS = UPLOAD_FOLDERS.join("|");
-const LOCAL_FILE = new RegExp(`^\\/api\\/uploads\\/file\\/(${FOLDERS})-[a-f0-9]{16}\\.(png|jpg|webp|gif|mp3|m4a|aac|wav|webm)$`);
+const LOCAL_FILE = new RegExp(`^\\/api\\/uploads\\/file\\/(${FOLDERS})-[a-f0-9]{16}\\.(png|jpg|webp|gif|mp3|m4a|aac|wav|webm|mp4|mov|bin)$`);
 const BLOB_PATH = new RegExp(`^(${FOLDERS})\\/[a-zA-Z0-9._-]+$`);
 /** A private upload URL this site issued, optionally limited to some folders. */
 export function isUploadUrl(url, folders = UPLOAD_FOLDERS) {

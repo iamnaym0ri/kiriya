@@ -342,7 +342,9 @@ export const chatMessages = pgTable(
     sender: text("sender").notNull(), // kiriya | admin
     kind: text("kind").notNull().default("text"), // text | image | gif | sticker | voice | tap
     body: text("body").notNull().default(""),
-    media: jsonb("media"), // { url, width, height, duration, peaks, mime, alt }
+    media: jsonb("media"), // { url, width, height, duration, peaks, mime, alt } or { items: [{ type, url, … }] } (1–10 photos/videos)
+    // End-to-end encryption (round 3): opaque to the server; set when `body`/`media` are sealed.
+    enc: jsonb("enc"),
     replyTo: uuid("reply_to"),
     createdAt: createdAt(),
     editedAt: timestamp("edited_at", { withTimezone: true }),
