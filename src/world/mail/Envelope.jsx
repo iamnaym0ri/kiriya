@@ -102,3 +102,47 @@ export default function EnvelopeArt({ tone = "blush", open = false, locked = fal
     </svg>
   );
 }
+
+/**
+ * The first opening of a sealed letter: the seal lifts, the flap folds back and the letter slides
+ * out. Transform and opacity only; the caller skips it for Reduce Motion.
+ */
+export function EnvelopeOpening({ tone = "blush", onDone }) {
+  const id = useId().replace(/:/g, "");
+  const t = TONES[tone] ?? TONES.blush;
+  return (
+    <div className="envelope-opening" onAnimationEnd={(event) => event.animationName === "envelope-opening-out" && onDone?.()} onClick={() => onDone?.()}>
+      <svg className="envelope-opening__art" viewBox="0 -10 200 160" aria-hidden="true">
+        <defs>
+          <linearGradient id={`${id}-body`} x1="0" y1="0" x2="0.3" y2="1">
+            <stop offset="0" stopColor={t.light} />
+            <stop offset="1" stopColor={t.paper} />
+          </linearGradient>
+          <radialGradient id={`${id}-wax`} cx="0.38" cy="0.32" r="0.75">
+            <stop offset="0" stopColor={t.waxLight} />
+            <stop offset="1" stopColor={t.wax} />
+          </radialGradient>
+          <clipPath id={`${id}-inside`}>
+            <rect x="0" y="-40" width="200" height="186" />
+          </clipPath>
+        </defs>
+        <ellipse cx="100" cy="146" rx="84" ry="4" fill="#6b4a80" opacity="0.12" />
+        <rect x="4" y="40" width="192" height="104" rx="9" fill={t.inner} />
+        <path className="envelope-opening__flap-back" d="M6 41 L100 3 L194 41 Z" fill={t.light} stroke={t.line} strokeWidth="1.4" strokeLinejoin="round" />
+        <g className="envelope-opening__paper">
+          <rect x="26" y="48" width="148" height="92" rx="3" fill="#fffdf8" stroke="#e2d4dc" strokeWidth="1" />
+          <path d="M40 66h88M40 78h112M40 90h104M40 102h70" stroke="#d9c6dd" strokeWidth="2.4" strokeLinecap="round" />
+        </g>
+        <path d="M4 44 L100 92 L196 44 V138 Q196 144 190 144 H10 Q4 144 4 138 Z" fill={`url(#${id}-body)`} stroke={t.line} strokeWidth="1.4" strokeLinejoin="round" />
+        <path d="M6 142 L84 86 M194 142 L116 86" stroke={t.line} strokeWidth="1.2" opacity="0.7" />
+        <path className="envelope-opening__flap" d="M5 44 Q5 40 10 40 H190 Q195 40 195 44 L106 99 Q100 103 94 99 Z" fill={t.light} stroke={t.line} strokeWidth="1.4" strokeLinejoin="round" />
+        <g className="envelope-opening__seal">
+          <path d={SEAL} fill={`url(#${id}-wax)`} />
+          <circle cx="100" cy="98" r="10.5" fill="none" stroke={t.waxLight} strokeWidth="1.2" opacity="0.7" />
+          <path d="M100 104.5c-6.5-4.2-8.4-8.3-6.4-10.9 1.6-2.1 4.7-1.7 6.4.8 1.7-2.5 4.8-2.9 6.4-.8 2 2.6.1 6.7-6.4 10.9Z" fill="#ffeaf3" opacity="0.92" />
+        </g>
+      </svg>
+      <p className="envelope-opening__skip">tap to open</p>
+    </div>
+  );
+}
