@@ -48,8 +48,9 @@ export function priceUsage(model, usage = {}) {
 
 /** The ceiling in force: the env/admin value, never above US$20. */
 export async function ceilingUsd(db) {
-  const fromEnv = Number(process.env.EVENTS_CLAUDE_CEILING_USD);
-  const fromAdmin = Number((await readSetting(db, "events_budget", {}))?.ceilingUsd);
+  const asNumber = (v) => (v === undefined || v === null || v === "" ? NaN : Number(v));
+  const fromEnv = asNumber(process.env.EVENTS_CLAUDE_CEILING_USD);
+  const fromAdmin = asNumber((await readSetting(db, "events_budget", {}))?.ceilingUsd);
   const values = [HARD_CEILING_USD, fromEnv, fromAdmin].filter((n) => Number.isFinite(n) && n >= 0);
   return Math.min(...values);
 }

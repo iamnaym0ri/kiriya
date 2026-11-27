@@ -68,7 +68,7 @@ export async function investigate(claude, { signals, current = null, today, refr
   let nudged = false;
   let corrected = false;
   for (let turn = 1; turn <= MAX_TURNS; turn++) {
-    const { response, spent } = await claude.call({ purpose: refresh ? "refresh" : "investigate", params: { ...params, messages }, signalId, eventId });
+    const { response, spent } = await claude.call({ purpose: refresh ? "refresh" : "investigate", params: { ...params, messages: [...messages] }, signalId, eventId });
     usd += spent.usd;
     if (response.stop_reason === "refusal") return { draft: null, usd, turns: turn, outcome: "refused" };
     const submit = response.content?.find((b) => b.type === "tool_use" && b.name === "submit_dossier");
