@@ -194,7 +194,7 @@ function LockSheet({ open, onClose }) {
     >
       <p className="me-sheet-text">
         {isNativeApp()
-          ? "your world closes on this phone. next time it opens with your passphrase, then Face ID again."
+          ? "your world closes on this phone. next time your passphrase opens it, and you can choose Face ID again."
           : "your world closes on this device until your passphrase opens it again."}
       </p>
     </EditSheet>

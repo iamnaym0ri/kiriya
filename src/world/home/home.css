@@ -1412,3 +1412,9 @@ textarea.home-edit__input {
   color: var(--mist-600, #6f6879);
   font-size: 13px;
 }
+
+/* The tiny heart by her name sat on the k's swash tail: in the app it floats higher and further out. */
+html.app-shell .home-stage__name .name-charm--tiny {
+  left: -26px;
+  bottom: 52%;
+}

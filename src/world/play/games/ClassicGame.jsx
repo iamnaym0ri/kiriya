@@ -1,8 +1,8 @@
 import "./ClassicGame.css";
 
-// The five games from before the library (Maomao's colour club, memory drawer, odd jar, herb
-// sequence and lantern puzzle) keep their own look inside the game sheet: their card scrolls in the
-// stage, with room around it. Owner: the frame agent.
+// A game from before the library that keeps its website look inside the game sheet (today: Maomao's
+// colour club on the artsy shelf; the four brain-shelf classics have their own app versions now).
+// Its card scrolls in the stage, with room around it.
 export default function ClassicGame({ children }) {
   return <div className="classic-game">{children}</div>;
 }

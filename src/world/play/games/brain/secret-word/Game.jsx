@@ -306,7 +306,7 @@ export default function SecretWord({ onReward }) {
           "today’s word"
         )
       }
-      tools={<AdminEdit compact label="the secret words" onClick={() => setEditing(true)} className="sw-admin" />}
+      tools={<AdminEdit compact label="the secret words" onClick={() => setEditing(true)} className="sw-admin-edit" />}
       howToTitle="the secret word"
       howTo={
         <ul>
