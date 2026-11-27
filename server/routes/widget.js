@@ -8,6 +8,7 @@ import { unreadTotals } from "../lib/appBadge.js";
 import { background } from "../lib/background.js";
 import { chatSummary, names, sendMessage } from "../lib/chat.js";
 import { encSchema, isSealed, sealedPreview } from "../lib/chatKeys.js";
+import { mediaPhrase } from "../../shared/chatPreview.js";
 import { env } from "../env.js";
 import { ADDRESS_OPTIONS, ENERGY_LEVELS, FEELINGS, MOODS } from "../content/moods.js";
 import { readCheckin, saveCheckin } from "../lib/checkin.js";
@@ -182,7 +183,7 @@ function chatPreview(last, who, person) {
   // End-to-end sealed: the phone opens it (ios/App/KiriyaShared/KiriyaChatCrypto.swift).
   if (isSealed(last)) return { from: who[last.sender], mine: last.sender === person, kind: last.kind, at: last.createdAt, ...sealedPreview(last) };
   const tap = last.kind === "tap" ? tapByKey[last.body] : null;
-  const preview = last.kind === "text" ? notificationPreview(last.body, 120) : tap ? `${tap.emoji} ${tap.label}` : KIND_PREVIEW[last.kind] ?? "a message";
+  const preview = last.kind === "text" ? notificationPreview(last.body, 120) : tap ? `${tap.emoji} ${tap.label}` : last.kind === "deleted" ? KIND_PREVIEW.deleted : mediaPhrase(last.kind, last.media);
   return { from: who[last.sender], mine: last.sender === person, preview, at: last.createdAt };
 }
 

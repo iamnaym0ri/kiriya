@@ -403,7 +403,7 @@ try {
     assert(Buffer.byteLength(apns.compile()) < 4096, "fits in a push");
     assert(!apns.compile().includes("sunset"));
     const preview = await herPhone.openNotificationPreview({ enc: { v: 1, k: payload.sealed.k, n: payload.sealed.n }, sender: payload.sealed.s, kind: payload.sealed.t, clientId: payload.sealed.c });
-    assert.equal(preview, "📷 sent you a photo: look at this sunset");
+    assert.equal(preview, "📷 a photo: look at this sunset");
     assert(!buildPayload(push).includes("sunset"));
     // Signals stay what they were: a known key, no words.
     const tap = chatNotification({ kind: "tap", body: "hug", id: randomUUID() }, "Josh");

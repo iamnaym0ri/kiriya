@@ -10,6 +10,7 @@
 // (and are sealed in place later, ./chatCrypto/history.js).
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { apiUrl, authHeaders, isBundledApp } from "./api.js";
+import { previewText } from "../../shared/chatPreview.js";
 import { CryptoError, aadFor, isSealedMessage, openBytes, openMessage, openPreview, openValue, sealBytes, sealMessage, sealValue } from "./chatCrypto/core.js";
 import { chatKeyState, currentKey, ensureChatKeys, hasChatKey, keyFor, subscribeChatKeys } from "./chatCrypto/keyring.js";
 
@@ -34,25 +35,8 @@ export function useChatKeys() {
 
 // ---------- notification previews ----------
 
-const KIND_LINE = { image: "📷 sent you a photo", gif: "sent you a GIF", sticker: "sent you a sticker", voice: "🎙️ sent you a voice note", video: "🎬 sent you a video" };
-
 /** The line her notification shows, made on the phone (the server only ever sees it sealed). */
-export function previewLine({ kind, body = "", media }) {
-  const text = String(body ?? "").replace(/\s+/g, " ").trim();
-  if (kind === "text") return text.slice(0, 180);
-  const items = Array.isArray(media?.items) ? media.items : null;
-  let line = KIND_LINE[kind] ?? "sent you something";
-  if (items?.length) {
-    const videos = items.filter((item) => item.type === "video").length;
-    const photos = items.length - videos;
-    line =
-      videos && photos ? `📷 sent you ${items.length} photos & videos`
-      : videos ? (videos > 1 ? `🎬 sent you ${videos} videos` : KIND_LINE.video)
-      : photos > 1 ? `📷 sent you ${photos} photos`
-      : KIND_LINE.image;
-  }
-  return text ? `${line}: ${text}`.slice(0, 180) : line;
-}
+export const previewLine = (message) => previewText(message, 180);
 
 // ---------- sending ----------
 

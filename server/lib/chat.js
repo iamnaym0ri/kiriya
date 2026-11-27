@@ -10,6 +10,7 @@ import { publish } from "./realtime.js";
 import { sendToSubscribers } from "../push/webpush.js";
 import { interceptTestSend } from "./appTestMode.js";
 import { forgetUploads, refusePlain, sealedNotification } from "./chatKeys.js";
+import { previewText } from "../../shared/chatPreview.js";
 
 // The private chat between Kiriya ("kiriya") and Josh ("admin"), docs/refactor/PLAN.md phase 4.
 
@@ -262,20 +263,14 @@ export async function chatSummary(db, role) {
 // ---------- writing ----------
 
 export function chatNotification(message, from) {
-  const preview = {
-    text: notificationPreview(message.body, 140),
-    image: "📷 sent you a photo",
-    gif: "sent you a GIF",
-    sticker: "sent you a sticker",
-    voice: "🎙️ sent you a voice note",
-  };
-  // Sealed (end-to-end): the words are only on the phones; the notification carries them sealed.
+  // Sealed (end to end): the words are only on the phones; the notification carries them sealed.
   if (message.enc && message.kind !== "tap") return sealedNotification(message, from);
   if (message.kind === "tap") {
     const tap = tapByKey[message.body];
     return { title: tap.push.replace("{from}", from), body: `${tap.kaomoji}  ${tap.note}`, navigate: "/world/chat", kind: "tap", tap: tap.key, threadId: "chat", messageId: message.id };
   }
-  const body = message.kind === "text" ? preview.text : message.body ? `${preview[message.kind]}: ${notificationPreview(message.body, 100)}` : preview[message.kind];
+  // From before both of them had keys: "📷 4 photos: look!!", "🎬 a video", or the words of a text.
+  const body = message.kind === "text" ? notificationPreview(message.body, 140) : previewText({ kind: message.kind, body: notificationPreview(message.body, 100), media: message.media });
   return { title: from, body, navigate: "/world/chat", kind: "chat", threadId: "chat", messageId: message.id };
 }
 
