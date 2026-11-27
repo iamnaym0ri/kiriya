@@ -27,7 +27,7 @@
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
 }
-.artsy button {
+.artsy :where(button) {
   font-family: inherit;
   color: inherit;
   -webkit-tap-highlight-color: transparent;

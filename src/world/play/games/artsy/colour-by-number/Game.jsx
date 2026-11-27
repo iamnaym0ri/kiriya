@@ -177,6 +177,7 @@ function ShareButtons({ partner, toChat, toDoodles, onChat, onKeep }) {
 
 function Easel({ picture, filled, finishedBefore, onPaint, onFinish, onAgain, onClose }) {
   const calm = useCalm();
+  const [paintedBefore] = useState(finishedBefore);
   const stageRef = useRef(null), svgRef = useRef(null), confettiRef = useRef(null), paletteRef = useRef(null);
   const stage = useElementSize(stageRef);
   const done = useMemo(() => new Set(filled), [filled]);
@@ -322,8 +323,10 @@ function Easel({ picture, filled, finishedBefore, onPaint, onFinish, onAgain, on
     const i = hintRegion(picture, done, selected, spots);
     if (i < 0 || !spots) return;
     const spot = spots[i];
+    // Close enough that its number reads at about 22 px, never further out than she already is.
     const fit = Math.min(stage.width / picture.width, stage.height / picture.height);
-    const z = Math.min(MAX_ZOOM, Math.max(view.current.z, 26 / (Math.max(spot.r, 2) * 1.9 * fit)));
+    const size = Math.min(16, Math.max(3.4, spot.r * 0.95));
+    const z = Math.min(6, Math.max(1.6, 22 / (size * fit)));
     animateTo({ z, cx: spot.x, cy: spot.y });
     setPulse(-1);
     requestAnimationFrame(() => setPulse(i));
@@ -425,7 +428,7 @@ function Easel({ picture, filled, finishedBefore, onPaint, onFinish, onAgain, on
         <canvas ref={confettiRef} className="cbn-confetti" aria-hidden="true" />
       </div>
       {celebrating || state.complete ? (
-        <Finished picture={picture} again={finishedBefore} onAgain={onAgain} onClose={onClose} showing={celebrating} />
+        <Finished picture={picture} again={paintedBefore} onAgain={onAgain} onClose={onClose} showing={celebrating} />
       ) : (
         <div className="artsy-tray cbn-tray">
           <div className="artsy-scroller cbn-palette" ref={paletteRef} role="radiogroup" aria-label="paint pots">
@@ -433,7 +436,7 @@ function Easel({ picture, filled, finishedBefore, onPaint, onFinish, onAgain, on
               const { done: n, total } = state.colours[c];
               return (
                 <button
-                  key={c}
+                  key={nudge?.c === c ? `${c}-${nudge.key}` : c}
                   type="button"
                   role="radio"
                   data-c={c}
@@ -441,8 +444,7 @@ function Easel({ picture, filled, finishedBefore, onPaint, onFinish, onAgain, on
                   aria-label={`${c + 1}, ${paint.name}${colourDone(c) ? ", all painted" : `, ${total - n} left`}`}
                   className="cbn-pot"
                   data-done={colourDone(c)}
-                  data-nudge={nudge?.c === c ? nudge.key : undefined}
-                  key-nudge={nudge?.c === c ? nudge.key : undefined}
+                  data-nudge={nudge?.c === c ? "yes" : undefined}
                   onClick={() => {
                     setSelected(c);
                     haptic("light");
@@ -451,7 +453,7 @@ function Easel({ picture, filled, finishedBefore, onPaint, onFinish, onAgain, on
                 >
                   <svg viewBox="0 0 56 56" aria-hidden="true">
                     <circle cx="28" cy="28" r="25" className="cbn-pot__track" />
-                    <circle cx="28" cy="28" r="25" className="cbn-pot__ring" pathLength="100" strokeDasharray={`${(n / total) * 100} 100`} />
+                    {n > 0 && <circle cx="28" cy="28" r="25" className="cbn-pot__ring" pathLength="100" strokeDasharray={`${(n / total) * 100} 100`} />}
                   </svg>
                   <span className="cbn-pot__blob" style={{ color: readableOn(paint.hex) }}>
                     {colourDone(c) ? "✓" : c + 1}
@@ -461,7 +463,8 @@ function Easel({ picture, filled, finishedBefore, onPaint, onFinish, onAgain, on
             })}
           </div>
           <p className="cbn-tray__hint">
-            {picture.palette[selected]?.name} · {state.colours[selected]?.total - state.colours[selected]?.done} left
+            {picture.palette[selected]?.name} ·{" "}
+            {colourDone(selected) ? "all done ✓" : `${state.colours[selected].total - state.colours[selected].done} left`}
             <span aria-hidden="true"> · pinch to zoom</span>
           </p>
         </div>
@@ -476,7 +479,7 @@ function Finished({ picture, again, onAgain, onClose, showing }) {
   const make = () => canvasFile(paintPicture(picture), `colour-by-number-${picture.id}`);
   return (
     <div className="artsy-tray cbn-done" data-show={showing}>
-      <p className="cbn-done__title artsy-hand">{again ? "finished again, so pretty ♡" : "all painted, it’s lovely ♡"}</p>
+      <p className="cbn-done__title artsy-hand">{again ? "finished again, so pretty ♡" : "all painted, so lovely ♡"}</p>
       <ShareButtons
         partner={partner}
         toChat={toChat}

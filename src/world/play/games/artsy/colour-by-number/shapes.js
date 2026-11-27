@@ -78,7 +78,7 @@ export function star(cx, cy, R, r = R * 0.45, n = 5, rot = -90) {
 }
 
 /** A four-point twinkle. */
-export const sparkle = (cx, cy, R) => star(cx, cy, R, R * 0.28, 4, -90);
+export const sparkle = (cx, cy, R) => star(cx, cy, R, R * 0.36, 4, -90);
 
 /** Several shapes as one region (they fill together). */
 export const join = (...paths) => paths.join("");
@@ -153,6 +153,6 @@ export function flag([ax, ay], [bx, by], drop) {
 
 /** A capital Z (for sleepy cats), size s at its top-left corner (x, y). */
 export function zee(x, y, s, tilt = -8) {
-  const pts = [[0, 0], [1, 0], [1, 0.2], [0.38, 0.8], [1, 0.8], [1, 1], [0, 1], [0, 0.8], [0.62, 0.2], [0, 0.2]];
+  const pts = [[0, 0], [1, 0], [1, 0.27], [0.45, 0.73], [1, 0.73], [1, 1], [0, 1], [0, 0.73], [0.55, 0.27], [0, 0.27]];
   return smooth(place(pts.map(([px, py]) => [px - 0.5, py - 0.5, 1]), x + s / 2, y + s / 2, tilt, s));
 }

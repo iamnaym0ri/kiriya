@@ -102,12 +102,14 @@ const spotCache = new Map();
 /** Paints each region in its own code colour, outlines in black, and reads the map back. */
 export async function regionSpots(picture, labelSpots, decodeIds) {
   if (spotCache.has(picture.id)) return spotCache.get(picture.id);
-  const { width: w, height: h } = picture;
+  const k = 2; // two map pixels per picture unit
+  const w = picture.width * k, h = picture.height * k;
   const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  ctx.lineWidth = 2.2;
+  ctx.scale(k, k);
+  ctx.lineWidth = 1.4;
   ctx.lineJoin = "round";
   ctx.strokeStyle = "#000";
   picture.regions.forEach((region, i) => {
@@ -116,10 +118,10 @@ export async function regionSpots(picture, labelSpots, decodeIds) {
     ctx.fill(path, region.rule ?? "nonzero");
     ctx.stroke(path);
   });
-  ctx.lineWidth = 1.8;
+  ctx.lineWidth = 1.2;
   for (const d of picture.lines) ctx.stroke(new Path2D(d));
   const ids = decodeIds(ctx.getImageData(0, 0, w, h).data, picture.regions.length);
-  const spots = labelSpots(ids, w, h, picture.regions.length);
+  const spots = labelSpots(ids, w, h, picture.regions.length).map((spot) => ({ x: spot.x / k, y: spot.y / k, r: spot.r / k, area: spot.area / (k * k) }));
   spotCache.set(picture.id, spots);
   return spots;
 }
