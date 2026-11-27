@@ -193,6 +193,20 @@ merged, what still needs Josh's phone, and the keys still to come.
   `EVENTS_PUSH_AUDIENCE` is set in Vercel. Confirm the 8 Instagram handles in
   `server/lib/events/registry.js` before the first paid Apify run.
 
+- **Round 2 (2026-11-27, Josh's first review on his iPhone):** see "Round 2" in
+  [`RENOVATION.md`](RENOVATION.md) for who does what. Done by the coordinator:
+  - **Chat, memories and quizzes refused every request in production:** Vercel's rewrite now also
+    echoes the source's named parameter (`route=<path>`) next to our `__route`, and the endpoints
+    that accept only their own query keys turned it away. `api/index.js` drops it
+    (`scripts/test-chat.mjs` sends it too, so it stays caught).
+  - **"See it as kiriya"** (first row of Josh's desk): `src/lib/viewAs.js` keeps the flag in
+    sessionStorage; `api()` adds `x-view-as: kiriya` to reads (not to `/session`, `/app/*`,
+    `/push/*`, so his phone's widgets and badges stay his) and refuses writes; `requireRole`
+    answers Josh's reads as hers and returns 403 `preview` for any write; live chat is off in the
+    preview (a token would let his phone speak as her). `useSession()` reports `role: "kiriya"`,
+    `realRole: "admin"`. `shared/ViewAsBanner.jsx` floats above the tab bar with "back to josh".
+    Tests: `scripts/test-view-as.mjs`.
+
 ## 6. Conventions that kept things working
 
 - **Tests:**
