@@ -71,6 +71,13 @@
       "when": 1795580593183,
       "tag": "0009_app_widget_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795748479191,
+      "tag": "0010_events_engine",
+      "breakpoints": true
     }
   ]
 }

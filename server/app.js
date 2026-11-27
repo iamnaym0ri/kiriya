@@ -15,6 +15,7 @@ import { adminLoveNoteRoutes } from "./routes/loveNotes.js";
 import { adminNoteJarRoutes } from "./routes/noteJarAdmin.js";
 import { widgetRoutes } from "./routes/widget.js";
 import { appRoutes, appSessionRoutes } from "./routes/app.js";
+import { eventRoutes, eventAdminRoutes, eventJobRoutes } from "./routes/events.js";
 
 const app = new Hono().basePath("/api");
 
@@ -74,6 +75,8 @@ app.route("/session/app", appSessionRoutes);
 app.route("/session", sessionRoutes);
 app.route("/public", publicRoutes);
 
+app.route("/events", eventRoutes);
+
 app.use("/me/*", requireRole("kiriya", "admin"));
 app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
@@ -86,11 +89,13 @@ app.route("/push", pushRoutes);
 
 app.use("/admin/*", requireRole("admin"));
 app.route("/admin/feeds", feedAdminRoutes);
+app.route("/admin/events", eventAdminRoutes);
 app.route("/admin/love-notes", adminLoveNoteRoutes);
 app.route("/admin/note-jar", adminNoteJarRoutes);
 app.route("/admin", adminRoutes);
 
 app.route("/jobs/feeds", feedJobRoutes);
+app.route("/jobs/events", eventJobRoutes);
 app.route("/jobs", jobRoutes);
 app.route("/uploads", uploadRoutes);
 app.route("/widget", widgetRoutes);
