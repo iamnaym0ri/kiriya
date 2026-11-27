@@ -40,8 +40,11 @@ export async function shrinkImage(file, maxEdge = 1600, quality = 0.86) {
  */
 export async function uploadFile(file, { folder = "art", onProgress } = {}) {
   const config = await uploadConfig();
-  if (file.size > config.maxBytes)
-    throw new ApiError(413, { message: "Files can be up to 15 MB." });
+  // Chat videos (and sealed chat files, which may be videos) may be bigger than anything else.
+  const big = folder === "chat" && (file.type.startsWith("video/") || file.type === "application/octet-stream");
+  const limit = big ? (config.maxVideoBytes ?? config.maxBytes) : config.maxBytes;
+  if (file.size > limit)
+    throw new ApiError(413, { message: big ? `Videos can be up to ${Math.round(limit / 1048576)} MB.` : "Files can be up to 15 MB." });
 
   if (config.mode === "blob") {
     const { upload, uploadPresigned } = await import("@vercel/blob/client");
@@ -55,6 +58,8 @@ export async function uploadFile(file, { folder = "art", onProgress } = {}) {
       // Inside the iPhone app the handshake carries the bearer token (there's no cookie there).
       headers: authHeaders(),
       contentType: file.type,
+      // Big files go up in parts, so a wobbly connection retries a part instead of the whole video.
+      multipart: file.size > 8 * 1024 * 1024,
       onUploadProgress: onProgress
         ? ({ percentage }) => onProgress(percentage)
         : undefined,
@@ -66,17 +71,28 @@ export async function uploadFile(file, { folder = "art", onProgress } = {}) {
   }
 
   if (config.mode === "local") {
-    const response = await fetch(
-      apiUrl(`/uploads/local?folder=${encodeURIComponent(folder)}`),
-      {
-        method: "POST",
-        credentials: isBundledApp ? "omit" : "same-origin",
-        headers: { "Content-Type": file.type, "x-kw": "1", ...authHeaders() },
-        body: file,
-      },
-    );
-    const data = await response.json().catch(() => null);
-    if (!response.ok) throw new ApiError(response.status, data);
+    // XHR rather than fetch, so local development shows upload progress like Blob does.
+    const { status, data } = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", apiUrl(`/uploads/local?folder=${encodeURIComponent(folder)}`));
+      xhr.withCredentials = !isBundledApp;
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+      xhr.setRequestHeader("x-kw", "1");
+      for (const [name, value] of Object.entries(authHeaders())) xhr.setRequestHeader(name, value);
+      if (onProgress) xhr.upload.onprogress = (event) => event.lengthComputable && onProgress((event.loaded / event.total) * 100);
+      xhr.onload = () => {
+        let parsed = null;
+        try {
+          parsed = JSON.parse(xhr.responseText);
+        } catch {
+          parsed = null;
+        }
+        resolve({ status: xhr.status, data: parsed });
+      };
+      xhr.onerror = () => reject(new ApiError(0, { message: "The upload didn’t get through. Check your connection?" }));
+      xhr.send(file);
+    });
+    if (status < 200 || status >= 300) throw new ApiError(status, data);
     return { url: data.url, pathname: data.pathname };
   }
 

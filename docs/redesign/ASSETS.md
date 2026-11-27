@@ -125,3 +125,11 @@ Four games in `src/world/play/games/artsy/`. No maintained, permissively license
 | [perfect-freehand](https://github.com/steveruizok/perfect-freehand) 1.2 (already in the sketchbook) | Steve Ruiz, MIT | Brush outlines in the kaleidoscope; the outline-to-path step follows its README. |
 | [canvas-confetti](https://github.com/catdad/canvas-confetti) (already in the site) | Kiril Vatev, ISC | The small burst when a colour-by-number picture is finished, a kaleidoscope or a paper doll look is kept, or a bouquet is tied. |
 | Six colour-by-number pictures; the chibi paper doll, 17 hairstyles, 12 hair colours, 95 wardrobe pieces, 8 themed sets and 8 scenes; 23 flowers, 8 wraps and 6 ribbons; the new stickers (st-wardrobe, st-bouquet, st-vase, st-prism); game icons | Original, drawn for kiriya.love (the apothecary, court-robe and idol sets are original outfits in the spirit of what she likes, not copies of any character's design) | `colour-by-number/pictures.js`, `paper-doll/` (`body.jsx`, `hair.jsx`, `sew.jsx`, `clothes.jsx`, `accessories.jsx`, `wardrobe.jsx`), `bouquet/` (`flowers.jsx`, `wraps.jsx`), each game's `stickers.js` and `index.js`. |
+
+## Chat, round 3 (2026-11-27)
+
+| Asset | Source and licence | Use |
+| --- | --- | --- |
+| Photo and video viewer (`src/world/chat/viewer.js`) | [PhotoSwipe](https://github.com/dimsemenov/PhotoSwipe) 5.4.4 © Dmytro Semenov (MIT) with [photoswipe-video-plugin](https://github.com/dimsemenov/photoswipe-video-plugin) 1.0.2 (ISC), unmodified npm packages | Full-screen viewer for chat photos and videos: pinch and double-tap zoom, swipe between a message's photos, swipe down to close. Styled in `Chat.css` (`.chat-viewer`). |
+| GIFs | [GIPHY](https://developers.giphy.com) API (key server-side); "Powered by GIPHY" shown in the picker as GIPHY's terms ask | The picker shows GIPHY's 200w WebP previews; sent GIFs play GIPHY's own MP4 rendition with its 480w still. `scripts/fixtures/giphy-search.json` is a local-development stand-in shaped like GIPHY's responses (real public media.giphy.com links). |
+| Chat icons (paper clip, reply, edit, trash, copy, save, expand, search) | Original line icons drawn for this site | `src/world/chat/parts.jsx` `ChatIcon`. |

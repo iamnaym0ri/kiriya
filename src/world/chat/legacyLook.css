@@ -1,0 +1,256 @@
+/* The chat's original looks (phase 4): six backgrounds and nine bubble themes, chosen in the design
+   sheet. Kept as they were so nothing changes until chat-room's themes and bubble designs (round 3,
+   src/world/chat/theme/**) replace them; then this file and its import in ChatPage.jsx can go.
+   They only set the --chat-* colours and decorate .bubble, so the chat's layout never depends on it. */
+
+/* ---------- backgrounds ---------- */
+.chat__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #f3eaf7;
+}
+.chat[data-background="petals"] .chat__backdrop {
+  background:
+    linear-gradient(#f6eefbcc, #ede0f4d9),
+    url("/images/branches.webp") center / cover no-repeat;
+}
+.chat[data-background="night"] .chat__backdrop {
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 32% 42%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 58% 12%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 76% 34%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 88% 68%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 22% 78%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 46% 88%, #fff 50%, transparent 51%),
+    radial-gradient(circle at 70% 120%, #6b3f8f 0, transparent 60%),
+    linear-gradient(165deg, #2a1640 0%, #1a0d2b 60%, #120820 100%);
+  --chat-meta: #cdb8e0;
+}
+.chat[data-background="night"] .chat__backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1.5px 1.5px at 40% 25%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 66% 58%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 18% 52%, #fff 50%, transparent 51%);
+  animation: chat-twinkle 3.4s ease-in-out infinite;
+}
+.chat[data-background="night"] .chat__backdrop::after {
+  content: "";
+  position: absolute;
+  top: 12%;
+  left: -20%;
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #fff);
+  transform: rotate(-18deg);
+  opacity: 0;
+  animation: chat-shooting-star 11s ease-in 2s infinite;
+}
+.chat[data-background="notebook"] .chat__backdrop {
+  background:
+    linear-gradient(90deg, transparent 46px, #f0a9c3 46px, #f0a9c3 48px, transparent 48px),
+    repeating-linear-gradient(#fffdf6 0 27px, #d9e4f2 27px 28px);
+}
+.chat[data-background="notebook"] .chat__backdrop::before {
+  content: "✿   ♡";
+  position: absolute;
+  right: 18px;
+  bottom: 96px;
+  font: 22px var(--font-hand);
+  color: #c9a3c5;
+  letter-spacing: 8px;
+}
+.chat[data-background="photo"] .chat__backdrop {
+  background: linear-gradient(#f8f2fbb3, #f1e6f6bf), var(--chat-photo) center / cover no-repeat;
+}
+.chat[data-background="miku"] .chat__backdrop,
+.chat[data-background="maomao"] .chat__backdrop {
+  background: linear-gradient(#f8f2fba6, #f1e6f6b3), var(--chat-wallpaper) center / cover no-repeat;
+}
+
+
+/* ---------- bubble themes ---------- */
+.chat[data-bubble="paper"] {
+  --chat-mine: #fff3df;
+  --chat-mine-ink: #4a3156;
+  --chat-theirs: #fffdf7;
+}
+.chat[data-bubble="paper"] .bubble {
+  border-radius: 4px;
+  font: 19px/1.3 var(--font-hand);
+  border: 1px solid #e3cfb8;
+  box-shadow: 2px 3px 0 #e8dccb;
+  clip-path: polygon(0 3%, 6% 0, 14% 2%, 24% 0, 38% 2%, 52% 0, 66% 2%, 80% 0, 92% 2%, 100% 0, 99% 50%, 100% 97%, 90% 100%, 74% 98%, 58% 100%, 42% 98%, 26% 100%, 10% 98%, 0 100%, 1% 50%);
+  padding: 12px 16px;
+}
+.chat[data-bubble="paper"] .msg[data-first] .bubble::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  width: 46px;
+  height: 14px;
+  translate: -50% 0;
+  rotate: -4deg;
+  background: #e9bfd8b3;
+}
+
+.chat[data-bubble="pixel"] {
+  --chat-mine: #c9b3e6;
+  --chat-mine-ink: #2a1640;
+  --chat-theirs: #fff;
+}
+.chat[data-bubble="pixel"] .bubble {
+  border-radius: 0 !important;
+  font: 14px/1.5 var(--font-pixel);
+  border: 3px solid #4e2f63;
+  box-shadow: 4px 4px 0 #4e2f63;
+  margin: 0 4px 4px 0;
+}
+
+.chat[data-bubble="kawaii"] {
+  --chat-mine: linear-gradient(135deg, #ffb8d9, #d7b8ff);
+  --chat-mine-ink: #4a1f45;
+  --chat-theirs: linear-gradient(135deg, #fffaff, #e8f7ff);
+}
+.chat[data-bubble="kawaii"] .bubble {
+  border-radius: 24px;
+  box-shadow: 0 4px 0 #f1d3ea, 0 6px 14px #c48fbf33;
+}
+.chat[data-bubble="kawaii"] .msg[data-last] .bubble::after {
+  content: "✦";
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  font-size: 13px;
+  color: #ff8cc6;
+}
+.chat[data-bubble="kawaii"] .msg[data-mine][data-last] .bubble::after {
+  content: "♡";
+  left: -8px;
+  right: auto;
+}
+
+.chat[data-bubble="cat"] {
+  --chat-mine: #f6c28b;
+  --chat-mine-ink: #4a2a12;
+  --chat-theirs: #eef0f4;
+  --chat-theirs-ink: #2e3140;
+}
+.chat[data-bubble="cat"] .bubble {
+  border-radius: 22px;
+  margin-top: 10px;
+}
+.chat[data-bubble="cat"] .msg[data-first] .bubble::before,
+.chat[data-bubble="cat"] .msg[data-first] .bubble::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  width: 18px;
+  height: 16px;
+  background: inherit;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.chat[data-bubble="cat"] .msg[data-first] .bubble::before {
+  left: 14px;
+  rotate: -12deg;
+}
+.chat[data-bubble="cat"] .msg[data-first] .bubble::after {
+  left: 36px;
+  rotate: 12deg;
+}
+.chat[data-bubble="cat"] .msg[data-last] .msg__status::before {
+  content: "🐾 ";
+}
+
+.chat[data-bubble="flowers"] {
+  --chat-mine: #f9d7e3;
+  --chat-mine-ink: #5a2341;
+  --chat-theirs: #e9f5e4;
+  --chat-theirs-ink: #2c4a2a;
+}
+.chat[data-bubble="flowers"] .bubble {
+  border-radius: 22px 6px 22px 6px !important;
+  border: 1px solid #f0bfd2;
+}
+.chat[data-bubble="flowers"] .msg[data-last] .bubble::after {
+  content: "✿";
+  position: absolute;
+  right: -10px;
+  bottom: -10px;
+  font-size: 18px;
+  color: #e88db0;
+}
+.chat[data-bubble="flowers"] .msg[data-mine][data-last] .bubble::after {
+  content: "❀";
+  left: -10px;
+  right: auto;
+}
+
+.chat[data-bubble="fairy"] {
+  --chat-mine: linear-gradient(120deg, #e8d9ff, #ffe0f4 45%, #d9f4ff);
+  --chat-mine-ink: #3d2a5c;
+  --chat-theirs: linear-gradient(120deg, #fffaff, #f3ecff);
+}
+.chat[data-bubble="fairy"] .bubble {
+  border: 1px solid #ffffffb3;
+  box-shadow: 0 0 14px #c9a6ff66, inset 0 0 10px #ffffff99;
+}
+.chat[data-bubble="fairy"] .msg[data-last] .bubble::after {
+  content: "✧ ⋆";
+  position: absolute;
+  top: -12px;
+  right: 8px;
+  font-size: 11px;
+  color: #b58cff;
+  animation: chat-twinkle 2.2s ease-in-out infinite;
+}
+
+.chat[data-bubble="gothic"] {
+  --chat-mine: #3a1730;
+  --chat-mine-ink: #f6dbe8;
+  --chat-theirs: #1d1622;
+  --chat-theirs-ink: #e9ddf1;
+}
+.chat[data-bubble="gothic"] .bubble {
+  border-radius: 10px;
+  border: 1px dotted #a5577f;
+  font-family: Georgia, serif;
+  box-shadow: 0 0 0 3px #1d162233;
+}
+.chat[data-bubble="gothic"] .msg[data-last] .bubble::after {
+  content: "☾";
+  position: absolute;
+  right: -8px;
+  top: -10px;
+  font-size: 14px;
+  color: #c2417d;
+}
+
+.chat[data-bubble="lovey"] {
+  --chat-mine: linear-gradient(135deg, #ff7aa8, #ff4f8b);
+  --chat-mine-ink: #fff;
+  --chat-theirs: #ffe3ee;
+  --chat-theirs-ink: #6b1d3e;
+}
+.chat[data-bubble="lovey"] .bubble {
+  border-radius: 24px;
+}
+.chat[data-bubble="lovey"] .msg[data-last] .bubble::after {
+  content: "♥";
+  position: absolute;
+  bottom: -9px;
+  left: 10px;
+  font-size: 16px;
+  color: #ff6f9f;
+}
+.chat[data-bubble="lovey"] .msg[data-mine][data-last] .bubble::after {
+  left: auto;
+  right: 10px;
+  color: #ff4f8b;
+}
+
