@@ -19,6 +19,7 @@ import { appRoutes, appSessionRoutes } from "./routes/app.js";
 import { homeEmbedRoutes, homeRoutes } from "./routes/home.js";
 import { glanceRoutes, hubRoutes } from "./routes/meSection.js";
 import { pastimeRoutes } from "./routes/gamesPastime.js";
+import { quizRoutes } from "./routes/quizzes.js";
 
 const app = new Hono().basePath("/api");
 
@@ -81,6 +82,7 @@ app.route("/public", publicRoutes);
 app.use("/me/*", requireRole("kiriya", "admin"));
 app.route("/me/home", homeRoutes);
 app.route("/me/glance", glanceRoutes);
+app.route("/me/quizzes", quizRoutes);
 app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
 app.route("/me", playRoutes);

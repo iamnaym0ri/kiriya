@@ -93,3 +93,10 @@ The new brush previews and shape/stamp paths are original code-native SVG/canvas
 ## Companion: Rotten Girl Miku
 
 `src/world/companions/characters/miku-rotten/` is original SVG/CSS fan art: Hatsune Miku as she appears in "Confessions of a Rotten Girl" (SAWTOWNE, 2025; [MV](https://www.youtube.com/watch?v=sV2H712ldOI)), redrawn from scratch in the house chibi style. Nothing from the MV is traced or embedded, and her dialogue is original (no lyrics). Hatsune Miku © Crypton Future Media, INC. www.piapro.net, used under the [Piapro Character License](https://piapro.net/intl/en_character.html) (non-commercial fan creation).
+## Quiz photos (2026-11-26)
+
+Quizzes for each other (`src/world/play/quizzes/openverse.js`) can use a stock photo found through the
+[Openverse API](https://api.openverse.org/v1/) (no key; any origin). Searches ask StockSnap, WordPress
+Photo Directory, Nappy and rawpixel first (mostly CC0), then Flickr; licences CC0, PDM, BY, BY-SA,
+BY-NC and BY-NC-SA only (no "no derivatives", since cards crop). A picked photo is copied into the
+private `quizzes/` upload folder and keeps its title, creator, licence and source, shown on the card.
