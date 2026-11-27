@@ -1,0 +1,71 @@
+/* Odd jar: Maomao's wooden shelf of glass jars. */
+.oj {
+  --shelf-w: min(calc(100cqw - 32px), 440px, calc((100cqh - 200px) / var(--rows, 3) * 0.86 * var(--cols, 3)));
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  gap: 12px;
+  padding: 10px 16px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.oj-shelf {
+  flex: none;
+  width: var(--shelf-w);
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 8px 6px;
+  padding: 12px 10px 6px;
+  box-sizing: border-box;
+  border-radius: 20px 18px 22px 18px;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 calc(100% / var(--rows) - 10px), #c99f78 calc(100% / var(--rows) - 10px) calc(100% / var(--rows) - 4px), transparent calc(100% / var(--rows) - 4px) calc(100% / var(--rows))),
+    linear-gradient(180deg, #f6ece2, #efe0d2);
+  border: 2px solid #b48a6a;
+  box-shadow: 0 6px 0 #e3d2c4;
+  touch-action: manipulation;
+  animation: brain-fade 0.3s ease-out;
+}
+.oj-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 72 / 94;
+  min-width: 0;
+  padding: 4% 6% 10%;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  cursor: pointer;
+}
+.oj-cell:active:not(:disabled) { background: rgb(255 255 255 / 0.5); }
+.oj-cell:disabled { cursor: default; }
+.oj-cell:focus-visible { outline: 2.5px solid #51375f; outline-offset: -2px; }
+.oj-jar { width: 100%; height: 100%; transform: rotate(var(--wobble, 0deg)); transform-origin: 50% 92%; overflow: visible; }
+.oj-shelf .oj-jar { animation: oj-arrive 0.35s cubic-bezier(0.3, 1.4, 0.5, 1) both; animation-delay: calc(var(--i) * 25ms); }
+@keyframes oj-arrive { from { transform: translateY(10px) rotate(var(--wobble, 0deg)); opacity: 0; } }
+.oj-cell[data-missed] .oj-jar { opacity: 0.35; }
+.oj-cell[data-missed] { animation: brain-shake 0.35s ease; }
+.oj-cell__mark {
+  position: absolute;
+  top: 4%;
+  right: 6%;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fffafd;
+  border: 1.5px solid #d6bfe2;
+  color: #a17fb0;
+  font: 700 13px/1 var(--font-ui);
+}
+.oj-cell[data-found] { box-shadow: 0 0 0 3px #e48bb3, 0 0 0 7px rgb(228 139 179 / 0.25); background: rgb(255 255 255 / 0.65); }
+.oj-cell[data-found] .oj-jar { animation: oj-found 0.6s ease-in-out; }
+@keyframes oj-found { 40% { transform: translateY(-8%) rotate(-6deg) scale(1.06); } 70% { transform: rotate(4deg); } }
+.oj-cell__mark--found { background: #e48bb3; border-color: #b9487c; color: #fff; font-size: 14px; }
+.oj-foot { flex: none; align-items: center; }
+.oj-best { font: 500 12.5px/1 var(--font-ui); color: var(--b-ink-soft); padding-inline: 8px; }
+.oj-done { flex: none; width: 100%; max-width: 440px; animation: brain-rise 0.35s 0.25s ease-out both; }
