@@ -72,7 +72,7 @@ export default function Platform({ width = 96, state = "steady" }) {
         pathLength="100"
         fill="none"
         stroke="#8c7bb5"
-        strokeWidth="1"
+        strokeWidth=".8"
         strokeLinejoin="round"
         transform="translate(.9 .7)"
         opacity=".35"
@@ -83,7 +83,7 @@ export default function Platform({ width = 96, state = "steady" }) {
         pathLength="100"
         fill="none"
         stroke="#8c7bb5"
-        strokeWidth="1.5"
+        strokeWidth="1.15"
         strokeLinejoin="round"
         strokeLinecap="round"
       />

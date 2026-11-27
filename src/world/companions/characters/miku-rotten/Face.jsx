@@ -53,8 +53,8 @@ const FACES = {
   pray: { open: 0, closedCurve: -3, mouthW: 3, smile: 2, blush: 0.38, browTilt: 1.5 },
   sleepy: { open: 0, closedCurve: 3.5, mouthW: 2.5, smile: 0, mouthOpen: 3, blush: 0.3, browY: 93 },
   dreamy: { heart: 1, lid: 2, blush: 0.75, mouthW: 6, smile: 4.5, mouthOpen: 2.5, browTilt: 2 },
-  worried: { browTilt: 5, browY: 89, wavy: 1, mouthW: 5, sweat: 1, lookX: -2, blush: 0.35 },
-  pout: { browTilt: -4.5, browY: 93, mouthW: 2.5, smile: -2.5, blush: 0.6, lookX: 2 },
+  worried: { browTilt: 7, browY: 88, wavy: 1, mouthW: 5, sweat: 1, lookX: -2, lookY: 1, blush: 0.35, lid: 1.5 },
+  pout: { browTilt: -6, browY: 93, mouthW: 2.5, smile: -3, blush: 0.8, hatch: 0.4, lookX: 3, lid: 2 },
 };
 
 export const EXPRESSIONS = Object.keys(FACES);

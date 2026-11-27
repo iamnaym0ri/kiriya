@@ -22,18 +22,34 @@ export function Tail({ fill }) {
   return (
     <g>
       <path
-        d="M72 52C46 54 24 84 19 124C14 160 16 192 23 212Q25 218 28 219Q33 214 36 200C41 178 43 152 45 128C47 106 56 92 76 84Z"
+        d="M72 52C46 54 24 84 19 124C15 156 15 184 19 200C21 208 16 213 10 212C6 211 5 207 7 204C2 206 0 214 5 220C11 227 26 228 33 216C38 206 42 180 44 150C45 120 54 96 76 84Z"
         fill={fill}
         stroke={C.hairLine}
         strokeWidth="1.4"
         strokeLinejoin="round"
       />
-      <path d="M44 132C42 160 39 184 33 205" fill="none" stroke={C.hairDeep} strokeWidth="2.4" opacity=".45" strokeLinecap="round" />
-      <path d="M54 66C36 90 28 124 27 160" fill="none" stroke={C.hairLight} strokeWidth="2.4" opacity=".6" strokeLinecap="round" />
-      <path d="M38 104C32 134 31 170 30 196" fill="none" stroke={C.hairDark} strokeWidth="1.4" opacity=".75" strokeLinecap="round" />
-      <Lined className="mr-tail-tip" d="M27 216q-1 12-11 13q-8 0-8-7q1-6 7-4" core={C.hair} line={C.hairLine} width={4} />
-      <Lined d="M60 57q-12-4-17-15q-3-9 5-10q7 0 5 7" core={C.hair} line={C.hairLine} width={4} />
+      {/* Strands follow the fall of the hair; the shine is broken, like anime hair. */}
+      <g fill="none" strokeLinecap="round">
+        <path d="M43 140C41 170 37 196 29 214" stroke={C.hairDeep} strokeWidth="2.2" opacity=".45" />
+        <path d="M37 96C29 124 26 160 27 188" stroke={C.hairDark} strokeWidth="1.3" opacity=".7" />
+        <path d="M33 150C32 176 30 196 22 208" stroke={C.hairDark} strokeWidth="1.2" opacity=".6" />
+        <path d="M50 70C38 86 31 104 28 122m-1 12q-1 8-1 14" stroke={C.hairLight} strokeWidth="2.6" opacity=".6" />
+      </g>
+      <FlickCurl />
     </g>
+  );
+}
+
+/** The little horn of hair that curls up out of each tail where it leaves the head. */
+export function FlickCurl() {
+  return (
+    <path
+      d="M64 60C52 58 42 50 40 40C38 31 45 27 51 30C55 33 54 39 49 39C51 36 48 33 46 35C44 39 47 47 56 52C60 54 63 55 66 55Z"
+      fill={C.hair}
+      stroke={C.hairLine}
+      strokeWidth="1.3"
+      strokeLinejoin="round"
+    />
   );
 }
 

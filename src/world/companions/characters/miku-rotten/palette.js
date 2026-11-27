@@ -8,7 +8,7 @@ export const C = {
   hairTop: "#5bb682",
   hairDark: "#2b7356",
   hairDeep: "#1f5543",
-  hairLine: "#1d4c3c",
+  hairLine: "#266148",
   skin: "#ffe7d6",
   skinShade: "#f4cdb8",
   skinLine: "#d6a48e",

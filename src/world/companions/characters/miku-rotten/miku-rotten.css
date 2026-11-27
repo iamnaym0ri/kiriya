@@ -201,6 +201,13 @@
 .mr[data-pose="walk"] .mr-head {
   animation: mr-head-walk 0.56s ease-in-out infinite;
 }
+/* A cheap three-quarter turn: the face slides towards where she's going. */
+.mr-face {
+  transition: translate 0.3s ease;
+}
+.mr:is([data-pose="walk"], [data-pose="jump"], [data-pose="fall"]) .mr-face {
+  translate: 4px 0;
+}
 @keyframes mr-walk-bob {
   0%,
   50%,
@@ -220,12 +227,12 @@
     rotate: 0deg;
   }
   20% {
-    translate: 0 -6px;
-    rotate: 7deg;
+    translate: 0 -8px;
+    rotate: 12deg;
   }
   38% {
-    translate: 0 -2px;
-    rotate: 3deg;
+    translate: 0 -3px;
+    rotate: 5deg;
   }
 }
 @keyframes mr-tail-walk {
@@ -263,7 +270,7 @@
 }
 .mr:is([data-pose="jump"], [data-pose="fall"]) .mr-tail--l,
 .mr:is([data-pose="jump"], [data-pose="fall"]) .mr-tail--r {
-  rotate: 16deg;
+  rotate: 11deg;
   scale: 1 0.94;
 }
 .mr[data-pose="jump"] .mr-ahoge {
@@ -285,8 +292,8 @@
 /* --- Fall: arms and feet flailing, tails floating up --------------------------------------- */
 .mr[data-pose="fall"] .mr-tail--l,
 .mr[data-pose="fall"] .mr-tail--r {
-  rotate: 30deg;
-  scale: 1 0.9;
+  rotate: 19deg;
+  scale: 1 0.88;
 }
 .mr[data-pose="fall"] .mr-leg--l {
   rotate: 16deg;
@@ -390,8 +397,17 @@
   rotate: 7deg;
   scale: 1 0.9;
 }
+.mr[data-seated="yes"] .mr-skirt {
+  transform-origin: 110px 196px;
+  scale: 1.1 1;
+}
+/* Resting angles, so a still frame still reads as legs dangling over the edge. */
 .mr[data-seated="yes"] .mr-shin--l {
+  rotate: 9deg;
   animation: mr-swing 1.7s ease-in-out infinite;
+}
+.mr[data-seated="yes"] .mr-shin--r {
+  rotate: -5deg;
 }
 .mr[data-seated="yes"] .mr-shin--r {
   animation: mr-swing 1.7s ease-in-out infinite;
@@ -551,7 +567,7 @@
   animation: mr-tail-land 0.8s ease-out both;
 }
 .mr-bang {
-  transform-origin: 172px 60px;
+  transform-origin: 186px 40px;
   animation: mr-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) both;
 }
 @keyframes mr-startle {
@@ -709,7 +725,7 @@
   rotate: 5deg;
 }
 .mr-question {
-  transform-origin: 170px 52px;
+  transform-origin: 186px 34px;
   animation: mr-bob-mark 1.6s ease-in-out infinite;
 }
 @keyframes mr-peek {
@@ -992,6 +1008,11 @@
   .mr-cloud[data-state="fading"] {
     opacity: 0;
   }
+}
+
+/* The picker thumb waves with an empty hand. */
+.mr-thumb .mr-sidebook {
+  display: none;
 }
 
 /* --- Stills and quiet ---------------------------------------------------------------------------

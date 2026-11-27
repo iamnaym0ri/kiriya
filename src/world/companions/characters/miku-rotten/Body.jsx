@@ -1,7 +1,7 @@
 import { useId, useSyncExternalStore } from "react";
 import { C } from "./palette.js";
 import Face from "./Face.jsx";
-import { Arm, Cross, Heart, Lined, OpenBook, Paddle, Sketchbook, Tail, Twinkle } from "./parts.jsx";
+import { Arm, Cross, Heart, OpenBook, Paddle, Sketchbook, Tail, Twinkle } from "./parts.jsx";
 import "./miku-rotten.css";
 
 // Rotten Girl Miku: the fangirl from SAWTOWNE's "Confessions of a Rotten Girl", drawn from scratch
@@ -54,11 +54,11 @@ function subscribeReduced(listener) {
 /* --- Arms and props, per pose. `back` is drawn behind her head, `front` over it. ------------- */
 
 const sideBook = (
-  <>
+  <g className="mr-sidebook">
     <Arm d="M82 168Q77 180 84 189" />
     <Sketchbook x={86} y={194} w={20} h={25} rotate={12} />
     <circle cx="85" cy="188" r="4.8" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
-  </>
+  </g>
 );
 
 const ARMS = {
@@ -74,21 +74,20 @@ const ARMS = {
     ),
   },
   up: {
-    back: (
+    front: (
       <>
-        <Arm className="mr-arm-l" d="M82 168Q70 162 65 147" hand={[64, 145]} />
-        <Arm className="mr-arm-r" d="M138 168Q150 162 155 147" hand={[156, 145]} />
+        <Arm className="mr-arm-l" d="M82 168Q64 164 58 146" hand={[57, 143]} />
+        <Arm className="mr-arm-r" d="M138 168Q156 164 162 146" hand={[163, 143]} />
       </>
     ),
   },
   wave: {
-    back: (
-      <>
-        {sideBook}
-        <g className="mr-wave-arm">
-          <Arm d="M138 168Q153 160 153 141" hand={[153, 138]} handR={5.4} />
-        </g>
-      </>
+    back: sideBook,
+    front: (
+      <g className="mr-wave-arm">
+        <Arm d="M138 168Q160 162 163 140" hand={[163, 136]} handR={5.4} />
+        <path d="M159 131.5l-1.5-3m5.3 2.3v-3.4m4 4.2 1.6-2.8" stroke={C.skinLine} strokeWidth="1.2" strokeLinecap="round" />
+      </g>
     ),
   },
   plant: {
@@ -178,15 +177,13 @@ const ARMS = {
     ),
   },
   cheer: {
-    back: (
-      <>
-        <Arm d="M82 168Q80 180 92 178" hand={[93, 177]} handR={5.2} />
-        <g className="mr-cheer-arm">
-          <Arm d="M138 168Q153 158 154 140" />
-          <Paddle x={155} y={136} rotate={14} />
-          <circle cx="155" cy="137" r="5" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
-        </g>
-      </>
+    back: <Arm d="M82 168Q80 180 92 178" hand={[93, 177]} handR={5.2} />,
+    front: (
+      <g className="mr-cheer-arm">
+        <Arm d="M138 168Q160 162 164 142" />
+        <Paddle x={166} y={138} rotate={16} />
+        <circle cx="165" cy="139" r="5" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
+      </g>
     ),
   },
   cross: {
@@ -246,7 +243,8 @@ function Leg({ x, className }) {
 function SeatLeg({ x, className }) {
   return (
     <g className={className}>
-      <rect x={x - 4} y="232" width="8" height="15" rx="3.5" fill={C.skin} stroke={C.skinLine} strokeWidth="1" />
+      <ellipse cx={x} cy="233" rx="6.2" ry="5" fill={C.skin} stroke={C.skinLine} strokeWidth="1" />
+      <rect x={x - 4.5} y="232" width="9" height="15" rx="4" fill={C.skin} stroke={C.skinLine} strokeWidth="1" />
       <rect x={x - 5} y="244" width="10" height="11" rx="3.2" fill={C.sock} stroke={C.sockLine} strokeWidth="1.1" />
       <path d={`M${x - 8} 258q0-6 8-6t8 6q0 3.2-8 3.2t-8-3.2Z`} fill={C.shoe} />
       <path d={`M${x - 4.5} 255.5q3-2 6.5-1.4`} stroke={C.shoeLight} strokeWidth="1.3" strokeLinecap="round" fill="none" />
@@ -261,39 +259,39 @@ function Marks({ pose, expression }) {
     <g className="mr-marks">
       {pose === "react" && (
         <g className="mr-bang">
-          <path d="M176 44l-3 20" stroke={C.cross} strokeWidth="4.4" strokeLinecap="round" />
-          <circle cx="171.6" cy="72" r="2.6" fill={C.cross} />
+          <path d="M188 26l-3 20" stroke={C.cross} strokeWidth="4.4" strokeLinecap="round" />
+          <circle cx="183.6" cy="54" r="2.6" fill={C.cross} />
         </g>
       )}
       {(pose === "fluster" || pose === "nope" || pose === "fall" || expression === "flustered") && (
         <g className="mr-steam" fill="none" stroke="#c8bde0" strokeWidth="2.2" strokeLinecap="round">
-          <path d="M150 30q6-4 4-10q-2-5 3-8" />
-          <path d="M166 42q6-2 6-8q0-5 5-6" />
+          <path d="M168 22q6-4 4-10q-2-5 3-8" />
+          <path d="M184 36q6-2 6-8q0-5 5-6" />
         </g>
       )}
       {pose === "sleep" && (
         <g className="mr-zzz" fill="none" stroke="#9a86c4" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-          <path className="mr-z1" d="M160 46h9l-9 10h9" />
-          <path className="mr-z2" d="M174 26h7l-7 8h7" />
+          <path className="mr-z1" d="M176 34h8l-8 9h8" />
+          <path className="mr-z2" d="M190 18h6l-6 7h6" />
         </g>
       )}
       {(pose === "show" || pose === "cheer" || expression === "dreamy") && (
         <g className="mr-hearts">
-          <Heart className="mr-heart1" x={170} y={60} size={11} />
-          <Heart className="mr-heart2" x={52} y={44} size={8} />
+          <Heart className="mr-heart1" x={190} y={58} size={11} />
+          <Heart className="mr-heart2" x={28} y={74} size={8} />
         </g>
       )}
       {(pose === "pray" || expression === "sparkle") && (
         <g className="mr-twinkles">
-          <Twinkle className="mr-tw1" x={168} y={58} r={6} />
-          <Twinkle className="mr-tw2" x={50} y={70} r={4.5} fill="#bfe3c9" />
-          <Twinkle className="mr-tw3" x={60} y={36} r={3.5} />
+          <Twinkle className="mr-tw1" x={190} y={60} r={6} />
+          <Twinkle className="mr-tw2" x={28} y={84} r={4.5} fill="#bfe3c9" />
+          <Twinkle className="mr-tw3" x={84} y={22} r={3.5} />
         </g>
       )}
       {pose === "peek" && (
         <g className="mr-question" fill="none" stroke={C.bow} strokeWidth="3" strokeLinecap="round">
-          <path d="M163 44q0-9 8-9 9 1 5 9l-5 6v3" />
-          <path d="M171 60v.5" />
+          <path d="M178 30q0-9 8-9 9 1 5 9l-5 6v3" />
+          <path d="M186 46v.5" />
         </g>
       )}
     </g>
@@ -409,8 +407,10 @@ export function Figure({ pose, expression, facing = 1, moving }) {
                 </g>
                 <g className="mr-torso">
                   {/* Skirt: navy plaid, pleated, a little A-line. */}
-                  <path d="M85 186h50l11 26q-36 10-72 0Z" fill={`url(#${id}-plaid)`} stroke={C.skirtDark} strokeWidth="1.5" strokeLinejoin="round" />
-                  <path d="M96 189l-6 25m14-25-1 27m13-27 2 27m12-26 6 24" stroke={C.skirtDark} strokeWidth="1.3" opacity=".7" />
+                  <g className="mr-skirt">
+                    <path d="M85 186h50l11 26q-36 10-72 0Z" fill={`url(#${id}-plaid)`} stroke={C.skirtDark} strokeWidth="1.5" strokeLinejoin="round" />
+                    <path d="M96 189l-6 25m14-25-1 27m13-27 2 27m12-26 6 24" stroke={C.skirtDark} strokeWidth="1.3" opacity=".7" />
+                  </g>
                   {/* Blouse with short puffed sleeves. */}
                   <path d="M87 160q23-7 46 0l4 30q-27 6-54 0Z" fill={`url(#${id}-shirt)`} stroke={C.shirtLine} strokeWidth="1.4" strokeLinejoin="round" />
                   <path d="M110 166v22" stroke={C.shirtLine} strokeWidth="1" opacity=".6" />
@@ -439,12 +439,13 @@ export function Figure({ pose, expression, facing = 1, moving }) {
                   </Face>
                   <Cross x={59} y={66} rotate={-18} />
                   <Cross x={161} y={66} rotate={18} />
-                  <Lined
+                  <path
                     className="mr-ahoge"
-                    d="M108 46C101 32 106 18 119 18c10 0 12 12 4 15-6 2-9-4-4-7"
-                    core={C.hair}
-                    line={C.hairLine}
-                    width={4.2}
+                    d="M104 48C97 36 100 21 114 18C127 15 133 29 124 34C117 38 111 31 116 27C118 25 121 26 121 29C123 24 117 21 112 24C106 29 107 40 111 48Z"
+                    fill={C.hair}
+                    stroke={C.hairLine}
+                    strokeWidth="1.3"
+                    strokeLinejoin="round"
                   />
                 </g>
                 {arms.front}

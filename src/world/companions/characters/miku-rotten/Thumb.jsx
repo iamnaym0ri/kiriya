@@ -9,25 +9,27 @@ export default function Thumb({ size = 64, expression = "happy", className }) {
   return (
     <svg
       className={`mr mr-thumb${className ? ` ${className}` : ""}`}
-      viewBox="30 14 160 160"
+      viewBox="20 6 180 180"
       width={size}
       height={size}
-      data-pose="idle"
+      data-pose="wave"
       data-motion="off"
       aria-hidden="true"
     >
       <defs>
+        {/* The disc cuts her off at the shoulders; above its middle she pops out of it. */}
         <clipPath id={`${id}-disc`}>
-          <circle cx="110" cy="94" r="80" />
+          <circle cx="110" cy="102" r="84" />
+          <rect x="0" y="0" width="220" height="102" />
         </clipPath>
         <radialGradient id={`${id}-bg`} cx=".5" cy=".42" r=".6">
           <stop stopColor="#fbf8ff" />
           <stop offset="1" stopColor="#e6dcf8" />
         </radialGradient>
       </defs>
-      <circle cx="110" cy="94" r="80" fill={`url(#${id}-bg)`} />
+      <circle cx="110" cy="102" r="84" fill={`url(#${id}-bg)`} />
       <g clipPath={`url(#${id}-disc)`}>
-        <Figure pose="idle" expression={expression} moving={false} />
+        <Figure pose="wave" expression={expression} moving={false} />
       </g>
     </svg>
   );
