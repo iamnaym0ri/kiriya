@@ -393,7 +393,7 @@ export function timelineFor({ timeline = [], startsOn, endsOn, status, dossier =
     };
   });
   // The first stage that hasn't happened yet is "next" (unless the day already is).
-  if (!steps.some((s) => s.state === "now")) {
+  if (!steps.some((s) => s.state === "now" || (s.state === "next" && s.stage !== "day"))) {
     const next = steps.find((s) => s.state === "unknown" && s.stage !== "after");
     if (next && next.stage !== "day") next.state = "next";
   }

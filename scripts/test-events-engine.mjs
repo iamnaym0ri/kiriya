@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import * as schema from "../server/db/schema.js";
 
 for (const name of ["DATABASE_URL", "kData_DATABASE_URL", "ANTHROPIC_API_KEY", "APIFY_TOKEN", "GMAIL_CLIENT_ID", "LTA_DATAMALL_KEY", "VAPID_PUBLIC_KEY", "VITE_VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "APNS_KEY", "BLOB_READ_WRITE_TOKEN", "BLOB_STORE_ID", "EVENTS_PUSH_AUDIENCE", "EVENTS_CLAUDE_CEILING_USD", "CRON_SECRET"])
@@ -40,6 +40,8 @@ const weather = await import("../server/lib/events/weather.js");
 const instagram = await import("../server/lib/events/instagram.js");
 const gmail = await import("../server/lib/events/gmail.js");
 const store = await import("../server/lib/events/store.js");
+const images = await import("../server/lib/events/images.js");
+const present = await import("../server/lib/events/present.js");
 const dossier = await import("../server/lib/events/dossier.js");
 const { setTestMode } = await import("../server/lib/appTestMode.js");
 const { checkSources, refreshWeather, tick } = await import("../worker/tick.js");
@@ -63,6 +65,9 @@ const rss = (items) => ({
   body: `<?xml version="1.0"?><rss version="2.0"><channel><title>t</title>${items.map((i) => `<item><title>${i.title}</title><link>${i.link}</link><guid>${i.link}</guid><pubDate>${i.date}</pubDate><description><![CDATA[${i.text}]]></description></item>`).join("")}</channel></rss>`,
 });
 const NOW = new Date("2026-11-27T04:00:00Z"); // Friday 12:00 in Singapore
+// A real (tiny) JPEG header: enough for the picture checks, which read the first bytes.
+const JPEG = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01]), Buffer.alloc(64, 7)]);
+const jpeg = (n) => Buffer.concat([JPEG, Buffer.from([n])]);
 const usage = (input = 1000, output = 100, extra = {}) => ({ input_tokens: input, output_tokens: output, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, ...extra });
 
 try {
@@ -312,6 +317,170 @@ try {
     assert.equal(s.message, "a review of a past concert");
   });
 
+
+  await test("An event never vanishes: ids are minted once, a different event can't overwrite it, dates never jump into the past", async () => {
+    const ffName = "FINAL FANTASY XIV ORCHESTRA CONCERT 2027 -Eorzean Symphony- (Singapore)";
+    const ffId = pipeline.newEventId({ name: ffName, startsOn: "2027-05-14" }, new Set());
+    assert.equal(ffId, "ev-final-fantasy-xiv-orchestra-concert-2027-eorzean", "cut on a whole word, never mid-word");
+    assert.equal(pipeline.newEventId({ name: "Konbini", startsOn: "2027-06-05" }, new Set(["ev-konbini-2027"])), "ev-konbini-2027-2");
+    const lodestone = "https://na.finalfantasyxiv.com/lodestone/topics/detail/6980c068417272551bdafc3f215858b2bb08a3a8";
+    await store.saveEvent(db, { id: ffId, name: ffName, kind: "concert", tagline: "one night only", city: "Singapore", country: "Singapore", tier: "sg", venue: "The Star Theatre", startsOn: "2027-05-14", endsOn: "2027-05-14", url: lodestone, confidence: "official", dossier: draft().dossier, origin: "crawler" }, { now: NOW });
+    const ff = await store.getEventRow(db, ffId);
+
+    // The old matcher let "Final Fantasy XIV" (no dates) match the concert and overwrite it.
+    assert.equal(pipeline.sameEvent(ff, { name: "Final Fantasy XIV", startsOn: null }), false);
+    assert.equal(pipeline.findSameEvent([ff], { name: "FINAL FANTASY XIV pop-up store", startsOn: "2026-12-10", endsOn: "2026-12-20" }), null);
+    assert.equal(pipeline.sameEvent({ name: "Doujin Market 2026", startsOn: "2026-12-12", endsOn: "2026-12-13" }, { name: "Doujin Market Mini 2026 (Doumini)", startsOn: "2026-12-12", endsOn: "2026-12-13" }), true);
+    assert.equal(pipeline.sameEvent(ff, { name: "Eorzean Symphony World Tour", startsOn: "2027-05-14", officialUrl: lodestone }), true, "same official page and the same day");
+    assert.equal(pipeline.sameEvent({ name: "Cosfest", startsOn: null, url: "https://cosfest.sg/" }, { name: "Cosfest XXV", startsOn: "2027-07-04", officialUrl: "https://cosfest.sg/" }), false, "a lone shared word is not enough");
+    assert.equal(pipeline.draftFitsTarget(ff, { name: "FINAL FANTASY pop-up store", startsOn: "2026-12-10", endsOn: "2026-12-20" }), false);
+    assert.equal(pipeline.draftFitsTarget(ff, { name: ffName, startsOn: "2027-06-01", endsOn: "2027-06-01" }), true, "a postponed show is still the same show");
+
+    // Triage points a pop-up's news at the concert by mistake: the pop-up becomes its own event.
+    const before = await store.getEventRow(db, ffId);
+    await store.enqueueSignal(db, { origin: "crawler", sourceId: "geekculture", url: "https://geekculture.co/ff-popup", title: "FINAL FANTASY pop-up store", excerpt: "FF pop-up 10–20 Dec" });
+    const triageTo = (eventId) => ({ stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify({ verdict: "update", eventId, singapore: true, name: "FF pop-up", kind: "popup", startsOn: null, fandoms: [], importance: "normal", change: "pop-up", investigate: true, reason: "x" }) }], usage: usage(1500, 80) });
+    const popup = draft({ event: { name: "FINAL FANTASY pop-up store", kind: "popup", tagline: "a pop-up shop", startsOn: "2026-12-10", endsOn: "2026-12-20", officialUrl: "https://geekculture.co/ff-popup" } });
+    let answers = [triageTo(ffId), { stop_reason: "tool_use", content: [tool(popup)], usage: usage(8000, 900) }];
+    let summary = await pipeline.processQueue(db, claudeFor(db, { responder: async () => answers.shift(), now: () => NOW }), { now: () => NOW });
+    assert.equal(summary.added, 1, JSON.stringify(summary));
+    const after = await store.getEventRow(db, ffId);
+    assert.deepEqual([after.name, after.startsOn, after.status], [before.name, before.startsOn, "upcoming"], "the concert is untouched");
+
+    // A refresh that misreads the year keeps the concert's dates; a rename keeps its id.
+    const misread = draft({ event: { name: "Eorzean Symphony World Tour – Singapore", kind: "concert", tagline: "one night only", startsOn: "2026-05-14", endsOn: "2026-05-14", officialUrl: lodestone } });
+    await store.enqueueSignal(db, { origin: "refresh", eventId: ffId, url: lodestone, title: ffName, hash: store.sha("refresh-test", ffId) });
+    answers = [{ stop_reason: "tool_use", content: [tool(misread)], usage: usage(8000, 900) }];
+    summary = await pipeline.processQueue(db, claudeFor(db, { responder: async () => answers.shift(), now: () => NOW }), { now: () => NOW });
+    assert.equal(summary.updated, 1, JSON.stringify(summary));
+    const renamed = await store.getEventRow(db, ffId);
+    assert.equal(renamed.name, "Eorzean Symphony World Tour – Singapore", "renamed in place");
+    assert.equal(renamed.startsOn, "2027-05-14", "never moved into the past on one pass");
+    const listed = present.filterRows(await store.listEventRows(db), { when: "upcoming", today: "2026-11-27" }).rows.map((r) => r.id);
+    assert.ok(listed.includes(ffId), "still on her list");
+  });
+
+  await test("Duplicates fold into the one first spotted; the old id keeps opening it and her saves follow", async () => {
+    const base = { name: "Cosfest XXV", kind: "con", tagline: "cosplay festival", city: "Singapore", country: "Singapore", tier: "sg", startsOn: "2027-07-04", endsOn: "2027-07-05", url: "https://cosfest.sg/", confidence: "official", origin: "crawler", dossier: { merch: [{ id: "m-badge", name: "Cosfest badge" }] } };
+    await store.saveEvent(db, { ...base, id: "ev-cosfest-xxv" }, { now: new Date("2026-10-01T00:00:00Z") });
+    await store.saveEvent(db, { ...base, id: "ev-cosfest-xxv-2", tagline: "newer research" }, { now: NOW });
+    await store.addLogEntries(db, "ev-cosfest-xxv-2", [{ kind: "new", title: "first spotted" }, { kind: "tickets", title: "tickets on sale" }], { now: NOW });
+    await store.updateMe(db, (me) => ((me.saved.events["ev-cosfest-xxv-2"] = NOW.toISOString()), (me.saved.merch["ev-cosfest-xxv-2~m-badge"] = NOW.toISOString()), me));
+    const rows = await store.listEventRows(db, { includeHidden: true });
+    const survivor = await pipeline.foldDuplicates(db, await store.getEventRow(db, "ev-cosfest-xxv-2"), rows, { now: NOW });
+    assert.equal(survivor, "ev-cosfest-xxv", "the first one spotted stays");
+    assert.equal((await store.getEventRow(db, "ev-cosfest-xxv")).tagline, "newer research", "and takes the freshest research");
+    const { row, from } = await store.resolveEventRow(db, "ev-cosfest-xxv-2");
+    assert.deepEqual([row.id, from], ["ev-cosfest-xxv", "ev-cosfest-xxv-2"]);
+    const me = await store.readMe(db);
+    assert.ok(me.saved.events["ev-cosfest-xxv"] && !me.saved.events["ev-cosfest-xxv-2"]);
+    assert.ok(me.saved.merch["ev-cosfest-xxv~m-badge"]);
+    const log = await store.logFor(db, ["ev-cosfest-xxv"]);
+    assert.deepEqual(log.map((e) => e.kind), ["tickets"], "its news moved over, without a second 'first spotted'");
+    assert.ok((await store.getEventRow(db, "ev-cosfest-xxv-2")), "nothing is deleted");
+    const listed = present.filterRows(await store.listEventRows(db), { when: "all", today: "2026-11-27" }).rows.map((r) => r.id);
+    assert.ok(listed.includes("ev-cosfest-xxv") && !listed.includes("ev-cosfest-xxv-2"));
+  });
+
+  await test("Housekeeping rules out the old overseas rows explicitly and deletes nothing; statuses say why something left", async () => {
+    for (const id of ["comiket:de67209c", "comiket:6b27de1d", "animejapan:2027"])
+      await db.insert(schema.events).values({ id, name: "Comic Market", tier: "regional", url: "https://www.comiket.co.jp/", status: "upcoming", startsOn: id.endsWith("2027") ? "2027-03-27" : null });
+    const count = async () => (await db.select({ id: schema.events.id }).from(schema.events)).length;
+    const n = await count();
+    assert.equal(await store.ruleOutOverseas(db, { now: NOW }), 3);
+    assert.equal(await store.ruleOutOverseas(db, { now: NOW }), 0, "idempotent");
+    assert.equal(await count(), n);
+    assert.equal((await store.getEventRow(db, "comiket:de67209c")).status, "out_of_scope");
+
+    const today = "2026-11-27";
+    const row = (o) => ({ id: "x", name: "x", kind: "con", status: "upcoming", ...o });
+    assert.equal(present.eventStatus(row({ status: "cancelled", startsOn: "2026-12-04", endsOn: "2026-12-06" }), today), "cancelled");
+    assert.equal(present.eventStatus(row({ status: "cancelled", startsOn: "2026-11-01", endsOn: "2026-11-02" }), today), "past");
+    assert.equal(present.eventStatus(row({ kind: "popup", startsOn: "2026-11-20", endsOn: null }), today), "on_now", "an open-ended pop-up doesn't end on its first day");
+    assert.equal(present.eventStatus(row({ kind: "concert", startsOn: "2026-11-20", endsOn: null }), today), "past");
+    const { rows } = present.filterRows([row({ id: "a", status: "cancelled", startsOn: "2026-12-04" }), row({ id: "b", status: "merged", startsOn: "2026-12-04" }), row({ id: "c", status: "out_of_scope", startsOn: "2026-12-04" })], { when: "upcoming", today });
+    assert.deepEqual(rows.map((r) => r.id), ["a"], "cancelled stays (marked) until its day; merged and ruled-out rows don't show");
+    const card = present.eventCard(row({ kind: "popup", startsOn: "2026-11-20", endsOn: null }), { today, me: null });
+    assert.deepEqual([card.openEnded, card.dateLabel, card.endsOn], [true, "from 20 nov", "2027-01-19"]);
+    const steps = dossier.timelineFor({ timeline: [{ stage: "tickets", at: "2026-12-02 12:00", title: "tickets on sale", text: "SISTIC", sourceIds: [] }], startsOn: "2027-05-14", endsOn: "2027-05-14", status: "upcoming", dossier: {} }, today);
+    assert.equal(steps.find((x) => x.stage === "tickets").state, "next", "a sale date still to come isn't 'done'");
+  });
+
+  await test("Pictures: share pictures and Instagram posts, copied through the site's API, robots.txt obeyed, no Claude calls", async () => {
+    assert.equal(images.sniffImage(JPEG), "image/jpeg");
+    assert.equal(images.sniffImage(Buffer.from("<html>not a picture</html>")), null);
+    assert.equal(images.shareImageOf(`<head><meta property="og:image" content="/img/key-visual.jpg?v=2&amp;w=1200"></head>`, "https://cosfest.sg/2027/"), "https://cosfest.sg/img/key-visual.jpg?v=2&w=1200");
+    assert.equal(images.shareImageOf(`<meta name="twitter:image" content="http://insecure.example/x.jpg">`, "https://a.sg/"), null, "https only");
+    assert.equal(images.captionMentions("AFA exclusive: Miku acrylic stand, one per person!", "AFA × Hatsune Miku acrylic stand"), true);
+    assert.equal(images.captionMentions("happy friday ☕", "Hatsune Miku acrylic stand"), false);
+
+    // The worker's store hands pictures to the site's API with CRON_SECRET and keeps the plain link.
+    const posted = [];
+    const store_ = images.imageStore({ apiOrigin: "https://kiriya.love", cronSecret: "s3cret", post: async (url, init) => (posted.push({ url, auth: init.headers.authorization, type: init.headers["content-type"], n: init.body.length }), { ok: true, json: async () => ({ url: `/api/uploads/media?path=events%2F${posted.length}.jpg` }) }) });
+    assert.equal(store_.via, "api");
+    assert.equal(images.imageStore({}), null, "no key, no store: pictures simply wait");
+    const web = fakeWeb([
+      [/cosfest\.sg\/robots\.txt$/, okRobots()],
+      [/cdn\.cosfest\.sg\/robots\.txt$/, okRobots()],
+      [/news\.example\/robots\.txt$/, okRobots("Disallow: /private")],
+      ["https://cosfest.sg/2027/", { body: `<html><head><meta property="og:image" content="https://cdn.cosfest.sg/kv.jpg"></head></html>` }],
+      ["https://cdn.cosfest.sg/kv.jpg", { type: "image/jpeg", body: jpeg(1) }],
+      ["https://news.example/badges", { body: `<meta property="og:image" content="https://cdn.cosfest.sg/badges.jpg">` }],
+      ["https://cdn.cosfest.sg/badges.jpg", { type: "image/jpeg", body: jpeg(2) }],
+      ["https://news.example/private/plush", { body: `<meta property="og:image" content="https://cdn.cosfest.sg/plush.jpg">` }],
+    ]);
+    const fetcher = politeFetcher({ db, send: web.send, now: (() => { let t = 0; return () => (t += 5000); })() });
+    const row = {
+      id: "ev-pictures", name: "Cosfest 2027", url: "https://cosfest.sg/2027/", image: null,
+      dossier: {
+        about: { summary: { text: "x", sourceIds: ["s1"] } },
+        sources: [
+          { id: "s1", url: "https://cosfest.sg/2027/", kind: "official" },
+          { id: "s2", url: "https://www.instagram.com/p/POST1/", kind: "social" },
+          { id: "s3", url: "https://news.example/badges", kind: "news", publisher: "News" },
+          { id: "s4", url: "https://news.example/private/plush", kind: "news" },
+        ],
+        merch: [
+          { id: "m-tote", name: "Cosfest tote", sourceIds: ["s2"] },
+          { id: "m-stand", name: "Hatsune Miku acrylic stand", sourceIds: ["s1"] },
+          { id: "m-badges", name: "Cosfest badge set", sourceIds: ["s3"] },
+          { id: "m-plush", name: "Cosfest plush", sourceIds: ["s4"] },
+        ],
+      },
+    };
+    const posts = [
+      { url: "https://www.instagram.com/p/POST1/", account: "cosfest", caption: "our tote!", images: ["/api/uploads/media?path=events%2Fpost1.jpg"] },
+      { url: "https://www.instagram.com/p/POST2/", account: "cosfest", caption: "Miku acrylic stand revealed", images: ["/api/uploads/media?path=events%2Fpost2.jpg"] },
+    ];
+    let claudeCalls = 0;
+    const result = await images.picturesFor(row, { posts, fetcher, store: { put: async (b) => (claudeCalls += 0, store_.put(b)) } });
+    assert.equal(result.image.url, "/api/uploads/media?path=events%2F1.jpg", "the official page's share picture");
+    assert.equal(result.image.credit, "cosfest.sg");
+    const by = Object.fromEntries(result.merch.map((m) => [m.id, m]));
+    assert.deepEqual(by["m-tote"].images, ["/api/uploads/media?path=events%2Fpost1.jpg"], "its own Instagram post");
+    assert.equal(by["m-tote"].imageCredit, "@cosfest");
+    assert.deepEqual(by["m-stand"].images, ["/api/uploads/media?path=events%2Fpost2.jpg"], "a post whose caption names it");
+    assert.deepEqual(by["m-badges"].images, ["/api/uploads/media?path=events%2F2.jpg"], "a page cited only for the merch");
+    assert.equal(by["m-plush"].images?.length ?? 0, 0, "robots.txt said no");
+    assert.ok(!web.calls.some((c) => c.href.includes("/private/")), "the disallowed page was never fetched");
+    assert.ok(posted.every((p) => p.auth === "Bearer s3cret" && p.type === "image/jpeg"));
+    assert.equal(claudeCalls, 0);
+
+    // A later investigation keeps the pictures; the worker step retries a few days later at most.
+    const carried = images.carryMerchImages([{ id: "m-new-id", name: "Cosfest Tote", images: [] }], result.merch);
+    assert.deepEqual(carried[0].images, ["/api/uploads/media?path=events%2Fpost1.jpg"]);
+    await store.saveEvent(db, { id: "ev-pictures", name: "Cosfest 2027", kind: "con", tier: "sg", city: "Singapore", url: "https://cosfest.sg/2027/", startsOn: "2027-07-04", dossier: { merch: [{ id: "m-x", name: "Mystery charm", sourceIds: [] }], sources: [] } }, { now: NOW });
+    const save = (r, patch) => db.update(schema.events).set(patch).where(eq(schema.events.id, r.id));
+    const first = await images.refreshPictures(db, [await store.getEventRow(db, "ev-pictures")], { fetcher, store: store_, postsFor: async () => [], save, now: NOW });
+    assert.deepEqual([first.looked, first.covers], [1, 1]);
+    assert.match((await store.getEventRow(db, "ev-pictures")).image.url, /^\/api\/uploads\/media\?path=events/);
+    const second = await images.refreshPictures(db, [await store.getEventRow(db, "ev-pictures")], { fetcher, store: store_, postsFor: async () => [], save, now: new Date(NOW.getTime() + 3600_000) });
+    assert.equal(second.looked, 0, "not again within three days when nothing changed");
+    assert.equal((await images.refreshPictures(db, [], { store: null })).ran, false);
+    // Keep the push test below about Konbini's news only.
+    await db.update(schema.eventLog).set({ push: "none" }).where(sql`${schema.eventLog.eventId} <> 'ev-konbini-6-0-2027'`);
+  });
+
   await test("Spend: priced from usage, dry runs excluded, and the US$20 ceiling pauses instead of overspending", async () => {
     assert.equal(spend.priceUsage("claude-opus-5-5", { input_tokens: 1_000_000 }).microUsd, 4_000_000);
     assert.equal(spend.priceUsage("claude-haiku-5-5", { input_tokens: 50_000, output_tokens: 50_000 }).microUsd, 30_000);
@@ -418,23 +587,39 @@ try {
     assert.ok(!web.calls.some((c) => c.href.includes("mytransport")), "no LTA key, no LTA call");
   });
 
-  await test("Instagram via Apify: trigger-only, images copied to our Blob, each post queued once", async () => {
+  await test("Instagram via Apify: trigger-only, pictures copied to our storage, each post queued once, old posts' pictures filled once", async () => {
+    // A post queued before pictures were stored (production until now): it has no pictures.
+    await store.enqueueSignal(db, { origin: "instagram", sourceId: "ig:animefestivalasia", url: "https://www.instagram.com/p/OLD111/", title: "@animefestivalasia: exclusives", excerpt: "AFA exclusives", payload: { caption: "AFA exclusives", images: [] }, hash: store.sha("instagram", "OLD111") });
+    await store.writeKv(db, "events:instagram", { seen: ["OLD111"], lastRunAt: new Date(NOW.getTime() - 9 * 3600_000).toISOString() });
     const items = [
       { shortCode: "ABC123", url: "https://www.instagram.com/p/ABC123/", caption: "AFA 2026 exclusive Miku merch revealed! See you at Suntec 27-29 Nov", timestamp: "2026-11-26T10:00:00.000Z", ownerUsername: "animefestivalasia", displayUrl: "https://scontent-sin6-1.cdninstagram.com/v/t51/abc.jpg?x=1", images: [] },
       { shortCode: "DEF456", url: "https://www.instagram.com/p/DEF456/", caption: "happy friday ☕", timestamp: "2026-11-26T11:00:00.000Z", ownerUsername: "anipluscafesg", displayUrl: "https://scontent-sin6-1.cdninstagram.com/v/t51/def.jpg" },
+      { shortCode: "OLD111", url: "https://www.instagram.com/p/OLD111/", caption: "AFA exclusives", timestamp: "2026-11-20T11:00:00.000Z", ownerUsername: "animefestivalasia", displayUrl: "https://scontent-sin6-1.cdninstagram.com/v/t51/old.jpg" },
     ];
     const posts = instagram.readPosts(items);
     assert.equal(posts[0].account, "animefestivalasia");
-    const web = fakeWeb([[/cdninstagram\.com/, { type: "image/jpeg", body: Buffer.from([0xff, 0xd8, 0xff, 0xe0]) }], [/api\.apify\.com/, ({ headers, body }) => (assert.match(headers.authorization, /^Bearer /), assert.equal(JSON.parse(body).resultsType, "posts"), json(items))]]);
+    const inputs = [];
+    const web = fakeWeb([[/cdninstagram\.com\/v\/t51\/abc/, { type: "image/jpeg", body: jpeg(10) }], [/cdninstagram\.com/, { type: "image/jpeg", body: jpeg(11) }], [/api\.apify\.com/, ({ headers, body }) => (assert.match(headers.authorization, /^Bearer /), inputs.push(JSON.parse(body)), json(items))]]);
     const puts = [];
     const blob = { put: async (p, buf, type) => puts.push({ p, type, n: buf.length }) };
     const first = await instagram.checkInstagram(db, { token: "apify-test", now: NOW, blob, send: web.send });
-    assert.deepEqual([first.posts, first.queued], [2, 1], "the coffee post isn't an event lead");
-    assert.deepEqual(puts.map((x) => x.p), ["events/ig-ABC123-0.jpg"]);
-    const [signal] = await store.signalsByOrigin(db, "instagram");
-    assert.deepEqual(signal.payload.images, ["/api/uploads/media?path=events%2Fig-ABC123-0.jpg"]);
+    assert.deepEqual([first.posts, first.queued, first.backfilled], [3, 1, 1], "the coffee post isn't an event lead; the old post got its picture");
+    assert.equal(inputs[0].resultsLimit, 8, "the one-time look back reads a few more posts");
+    assert.ok(puts.every((x) => /^events\/[0-9a-f]{32}\.jpg$/.test(x.p) && x.type === "image/jpeg"), JSON.stringify(puts));
+    const signals = await store.signalsByOrigin(db, "instagram");
+    const fresh = signals.find((x) => x.url.includes("ABC123"));
+    assert.equal(fresh.payload.images.length, 1);
+    assert.match(fresh.payload.images[0], /^\/api\/uploads\/media\?path=events%2F[0-9a-f]{32}\.jpg$/);
+    assert.deepEqual(fresh.payload.remoteImages, ["https://scontent-sin6-1.cdninstagram.com/v/t51/abc.jpg?x=1"], "kept for the investigation to look at");
+    assert.equal(signals.find((x) => x.url.includes("OLD111")).payload.images.length, 1);
     assert.equal((await instagram.checkInstagram(db, { token: "apify-test", now: new Date(NOW.getTime() + 3600_000), blob, send: web.send })).reason, "not due");
+    const later = await instagram.checkInstagram(db, { token: "apify-test", now: new Date(NOW.getTime() + 9 * 3600_000), blob, send: web.send });
+    assert.equal(later.backfilled, undefined, "the look back happens once");
+    assert.equal(inputs.at(-1).resultsLimit, 3);
     assert.equal((await instagram.checkInstagram(db, { token: "", now: NOW })).ran, false);
+    // Linked to an event, a post's pictures are that event's (the picture step reads them).
+    await store.updateSignal(db, fresh.id, { eventId: "ev-pictures" });
+    assert.deepEqual((await instagram.postsForEvent(db, "ev-pictures")).map((p) => p.images.length), [1]);
   });
 
   await test("Newsletters from the Gmail inbox become signals (read-only API, refresh token)", async () => {

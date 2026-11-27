@@ -82,8 +82,10 @@ export function imageStore({ blob = null, apiOrigin = null, cronSecret = null, p
       });
       if (!response.ok) throw Object.assign(new Error(`image upload ${response.status}`), { code: `upload_${response.status}` });
       const data = await response.json();
-      if (!isOurImage(data?.url)) throw Object.assign(new Error("bad upload answer"), { code: "upload_bad_answer" });
-      return data.url;
+      // Stored as the plain relative link the website uses, whatever form the answer took.
+      const url = String(data?.url ?? "").replace(/^https?:\/\/[^/]+/, "").replace(/[?&]s=[A-Za-z0-9_-]{22}$/, "");
+      if (!isOurImage(url)) throw Object.assign(new Error("bad upload answer"), { code: "upload_bad_answer" });
+      return url;
     },
   };
 }

@@ -7,6 +7,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import * as schema from "../server/db/schema.js";
+import { eq } from "drizzle-orm";
 import { hashPassphrase } from "../server/auth/passphrase.js";
 
 for (const name of ["DATABASE_URL", "kData_DATABASE_URL", "BLOB_READ_WRITE_TOKEN", "QSTASH_TOKEN", "VAPID_PUBLIC_KEY", "VITE_VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "OPENAI_API_KEY", "APNS_KEY", "ANTHROPIC_API_KEY", "EVENTS_PUSH_AUDIENCE"])
@@ -30,6 +31,11 @@ globalThis.__kiriyaDb = Promise.resolve({ db, driver: "pglite" });
 const handlers = await import("../api/index.js");
 const { seedFixtures, fixturesAllowed } = await import("../server/lib/events/fixtures.js");
 
+function rawRequest(route, { method = "POST", body, headers = {} } = {}) {
+  const rewritten = new URL("/api", "https://kiriya.love");
+  rewritten.searchParams.set("__route", route);
+  return handlers[method](new Request(rewritten, { method, headers, body }));
+}
 function request(route, { method = "GET", cookie, body, headers = {} } = {}) {
   const original = new URL(`/api/${route}`, "https://kiriya.love");
   const rewritten = new URL("/api", original);
@@ -141,7 +147,9 @@ try {
     const home = await json(await request("events/home", { cookie: her }));
     assert.ok(home.onNow.some((e) => e.id === afa));
     assert.ok(home.next && home.next.status === "upcoming");
-    assert.ok(home.merch.length <= 3);
+    assert.ok(home.merch.length <= 6);
+    assert.ok(home.merch[0].image, "pieces with a picture lead");
+    assert.ok(home.merch.every((m) => m.status !== "sold_out"));
     const merch = await json(await request("events/merch", { cookie: her }));
     assert.ok(merch.merch.every((m) => m.event && m.id.includes("~")));
     assert.ok(merch.merch.find((m) => m.id.endsWith("m-afa-miku-acrylic")).saved);
@@ -170,6 +178,71 @@ try {
     assert.ok(!(await json(await request("events", { cookie: her }))).events.some((e) => e.id === "fx-jjk-concert"));
     const refresh = await json(await request(`admin/events/${afa}/refresh`, { method: "POST", cookie: josh, body: {} }), 202);
     assert.equal(refresh.eventId, afa);
+  });
+
+
+  await test("Ids never die: an old id opens the event it became; saves and the calendar follow; merged and overseas rows stay off the list", async () => {
+    const store = await import("../server/lib/events/store.js");
+    const [row] = await db.select().from(schema.events).where(eq(schema.events.id, afa));
+    await db.insert(schema.events).values({ ...row, id: "fx-afa-older-id", firstSeenAt: new Date("2026-11-20T00:00:00Z") });
+    await store.mergeEvent(db, "fx-afa-older-id", afa, { reason: "test" });
+    const moved = await json(await request("events/fx-afa-older-id", { cookie: her }));
+    assert.equal(moved.event.id, afa);
+    assert.equal(moved.redirectedFrom, "fx-afa-older-id");
+    assert.equal((await json(await request("events/fx-afa-older-id/save", { method: "POST", cookie: her, body: { saved: true } }))).id, afa);
+    assert.equal((await request("events/fx-afa-older-id/calendar.ics")).status, 200);
+    const piece = await json(await request(`events/merch/${encodeURIComponent("fx-afa-older-id~m-afa-tote")}`, { cookie: her }));
+    assert.equal(piece.merch.id, `${afa}~m-afa-tote`);
+    assert.equal(piece.redirectedFrom, "fx-afa-older-id~m-afa-tote");
+    await db.insert(schema.events).values({ id: "comiket:de67209c", name: "Comic Market", tier: "regional", url: "https://www.comiket.co.jp/", status: "out_of_scope" });
+    assert.equal((await request("events/comiket%3Ade67209c", { cookie: her })).status, 404);
+    const all = await json(await request("events?when=all", { cookie: her }));
+    assert.ok(!all.events.some((e) => ["fx-afa-older-id", "comiket:de67209c"].includes(e.id)));
+    assert.equal(all.events.filter((e) => e.id === afa).length, 1);
+    // Cancelled: still on her list, marked, until its day has passed.
+    await db.update(schema.events).set({ status: "cancelled" }).where(eq(schema.events.id, "fx-doumini-2026"));
+    const upcoming = await json(await request("events", { cookie: her }));
+    assert.equal(upcoming.events.find((e) => e.id === "fx-doumini-2026")?.status, "cancelled");
+    await db.update(schema.events).set({ status: "upcoming" }).where(eq(schema.events.id, "fx-doumini-2026"));
+  });
+
+  await test("A merch piece on its own: pictures, price, kind, and where it is", async () => {
+    const id = `${afa}~m-afa-miku-acrylic`;
+    const { merch } = await json(await request(`events/merch/${encodeURIComponent(id)}`, { cookie: her }));
+    assert.equal(merch.name, "AFA × Hatsune Miku acrylic stand (sample)");
+    assert.equal(merch.images.length, 3);
+    assert.equal(merch.image, merch.images[0]);
+    assert.equal(merch.priceLabel, "S$25");
+    assert.equal(merch.kind, "exclusive");
+    assert.equal(merch.where, "official merch booth, hall 402");
+    assert.equal(merch.event.id, afa);
+    assert.equal(merch.event.venue.name, "Suntec Singapore Convention & Exhibition Centre");
+    assert.ok(merch.event.dateLabel && merch.event.tickets.status);
+    assert.ok(merch.more.length >= 4 && merch.more.every((m) => m.id !== id && m.id.startsWith(`${afa}~`)));
+    assert.ok(merch.sources.every((s) => s.url.startsWith("https://")));
+    const list = await json(await request("events/merch", { cookie: her }));
+    assert.ok(list.merch.filter((m) => m.images.length).length >= 4, "pictures on the merch list");
+    assert.ok(list.merch.every((m) => m.images.every((u) => /^\/api\/(uploads|events\/fixture-art)\//.test(u))), "only our own copies are ever shown");
+    assert.equal((await request(`events/merch/${encodeURIComponent(`${afa}~m-nope`)}`, { cookie: her })).status, 404);
+    assert.equal((await request(`events/merch/${encodeURIComponent(id)}`)).status, 401);
+  });
+
+  await test("Pictures from the worker: CRON_SECRET only, pictures only, stored with the other private uploads", async () => {
+    const auth = { authorization: `Bearer ${process.env.CRON_SECRET}` };
+    const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 16, 0x4a, 0x46, 0x49, 0x46, 0, 1]), Buffer.alloc(40, 1)]);
+    assert.equal((await rawRequest("jobs/events/images", { body: jpeg, headers: { "content-type": "image/jpeg" } })).status, 401);
+    assert.equal((await rawRequest("jobs/events/images", { body: Buffer.from("hello"), headers: { ...auth, "content-type": "text/plain" } })).status, 415);
+    assert.equal((await rawRequest("jobs/events/images", { body: Buffer.from("<svg/> pretending to be a jpeg"), headers: { ...auth, "content-type": "image/jpeg" } })).status, 415);
+    // Production with no Blob store connected (as in these tests) says so instead of pretending.
+    const none = await rawRequest("jobs/events/images", { body: jpeg, headers: { ...auth, "content-type": "image/jpeg" } });
+    assert.equal(none.status, 503);
+    assert.equal((await none.json()).error, "not_configured");
+    const { storeImageBytes } = await import("../server/lib/events/images.js");
+    const puts = [];
+    const stored = await storeImageBytes(jpeg, { blob: { put: async (p, b, t) => puts.push([p, t]) } });
+    assert.match(stored.url, /^\/api\/uploads\/media\?path=events%2F[0-9a-f]{32}\.jpg$/);
+    assert.deepEqual(puts[0][1], "image/jpeg");
+    assert.equal((await storeImageBytes(jpeg, { blob: { put: async () => puts.push(1) } })).url, stored.url, "the same picture is stored once, under one name");
   });
 
   await test("Push delivery is for the worker only (CRON_SECRET)", async () => {
