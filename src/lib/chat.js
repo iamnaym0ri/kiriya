@@ -471,16 +471,26 @@ export function useSaveChatPrefs() {
   });
 }
 
-export function useChatSummary({ enabled = true } = {}) {
+// This phone's time zone, so the other one can tell when it's night here ("sleep").
+const timeZone = () => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+  } catch {
+    return "";
+  }
+};
+
+export function useChatSummary({ enabled = true, every } = {}) {
   return useQuery({
     queryKey: chatSummaryKey,
     queryFn: async () => {
-      const summary = await api("/me/chat/summary");
+      const tz = timeZone();
+      const summary = await api(`/me/chat/summary${tz ? `?tz=${encodeURIComponent(tz)}` : ""}`);
       return summary.last ? { ...summary, last: await openIncoming(summary.last) } : summary;
     },
     staleTime: 30_000,
     enabled,
-    refetchInterval: 60_000,
+    refetchInterval: every ?? 60_000,
   });
 }
 
