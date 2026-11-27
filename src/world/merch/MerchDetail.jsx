@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { useAppBack } from "../../shared/AppFrame.jsx";
-import { MERCH_KIND, MERCH_STATUS, displayName, handSafe, mapsLinks, merchChips, siteOf, titleLength } from "../events/eventFormat.js";
+import { MERCH_KIND, MERCH_STATUS, displayName, handSafe, mapsLinks, merchChips, merchPrice, siteOf, titleLength } from "../events/eventFormat.js";
 import { MERCH_LIST, eventPath, useMerchItem } from "../events/eventsData.js";
 import { Chips, KindDoodle, MerchCard, SaveButton, Toaster } from "../events/EventPieces.jsx";
 import Glyph from "../events/Glyph.jsx";
@@ -192,7 +192,7 @@ export default function MerchDetail() {
             <section className="app-card mx-facts" aria-label="About this piece">
               <div className="mx-facts__top">
                 <div className="mx-facts__price">
-                  <strong>{item.priceLabel ?? (item.price === 0 ? "free" : "price tbc")}</strong>
+                  <strong>{merchPrice(item)}</strong>
                   <Chips chips={merchChips(item)} />
                 </div>
                 <SaveButton item={item} merch />

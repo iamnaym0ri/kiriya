@@ -398,6 +398,9 @@ export function ticketFacts(tickets, now = new Date()) {
 export const MERCH_STATUS = { revealed: "revealed", preorder: "pre-order open", on_sale: "on sale", sold_out: "sold out" };
 export const MERCH_KIND = { exclusive: "exclusive: only sold here", merch: "event merch", collab: "collab goods", limited: "limited run", freebie: "freebie" };
 
+/** A merch piece's price in words: a freebie (a coaster with every drink) is free, not "tbc". */
+export const merchPrice = (item) => item.priceLabel ?? (item.price === 0 || item.kind === "freebie" ? "free" : "price tbc");
+
 /**
  * Text for the hand-lettered font: it has no "×" (iOS draws a box), so collabs read "AFA x Miku"
  * there. Other fonts keep the real character.

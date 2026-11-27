@@ -8,6 +8,7 @@ import {
   displayName,
   kindLabel,
   merchChips,
+  merchPrice,
   monthShort,
   phaseOf,
   siteOf,
@@ -377,7 +378,7 @@ export function MerchCard({ item, where = true, save = true }) {
           )}
         </span>
         <span className="ev-mcard__name">{item.name}</span>
-        <span className="ev-mcard__price">{item.priceLabel ?? (item.price === 0 ? "free" : "price tbc")}</span>
+        <span className="ev-mcard__price">{merchPrice(item)}</span>
         {where && (event.name || item.where) && <span className="ev-mcard__where">{displayName(event.name) || item.where}</span>}
       </Link>
       {save && <SaveButton item={item} merch className="ev-mcard__save" />}
