@@ -5,6 +5,7 @@ import { seeded } from "../src/world/play/games/dexterity/_kit/random.js";
 import { zzfxSamples } from "../src/world/play/games/dexterity/_kit/zzfx.js";
 import * as petals from "../src/world/play/games/dexterity/petal-catch/logic.js";
 import * as boop from "../src/world/play/games/dexterity/boop-the-cats/logic.js";
+import * as tower from "../src/world/play/games/dexterity/mochi-tower/logic.js";
 
 const run = (step, state, seconds, dt = 1 / 60, each) => {
   for (let t = 0; t < seconds; t += dt) {
@@ -188,5 +189,85 @@ describe("boop the cats", () => {
     const p = boop.pace(45);
     assert.ok(p.stay >= 0.85 && p.gap >= 0.45);
     assert.ok(boop.pace(60, true).stay > p.stay);
+  });
+});
+
+describe("mochi tower", () => {
+  const fresh = (seed = 1, calm = false) => {
+    const s = tower.createTower({ width: 414, calm, random: seeded(seed) });
+    tower.layoutTower(s, 414, 680);
+    return s;
+  };
+  const settle = (s) => {
+    for (let i = 0; i < 240 && s.piece.mode !== "hang"; i++) tower.stepTower(s, 1 / 60);
+    for (let i = 0; i < 30; i++) tower.stepTower(s, 1 / 60); // the breath before the next drop
+  };
+  // swing until the piece is `offset` px from the top floor's centre, then let go
+  const dropAt = (s, offset) => {
+    let found = false;
+    for (let i = 0; i < 4000 && !found; i++) {
+      tower.stepTower(s, 1 / 240);
+      found = s.piece.wait === 0 && Math.abs(s.piece.x - tower.topX(s) - offset) < 1.2;
+    }
+    assert.ok(found, `the swing reaches ${offset}`);
+    assert.equal(tower.dropPiece(s), true);
+    settle(s);
+  };
+
+  test("the first mochi hangs still and lands on the plate", () => {
+    const s = fresh();
+    tower.stepTower(s, 0.5);
+    assert.equal(s.piece.x, 0);
+    tower.dropPiece(s);
+    settle(s);
+    assert.equal(s.floors, 1);
+    assert.equal(s.lives, tower.LIVES);
+  });
+
+  test("dead centre is perfect and snaps; a little off lands; past the edge tips off", () => {
+    const s = fresh(2);
+    tower.dropPiece(s);
+    settle(s);
+    dropAt(s, 3);
+    assert.equal(s.floors, 2);
+    assert.equal(s.perfects, 1);
+    assert.ok(Math.abs(s.xs[1] - s.xs[0]) < 0.01, "a perfect lands exactly on top");
+    dropAt(s, s.w * 0.3);
+    assert.equal(s.floors, 3);
+    assert.equal(s.combo, 0);
+    dropAt(s, -s.w * 0.62);
+    assert.equal(s.floors, 3);
+    assert.equal(s.lives, tower.LIVES - 1);
+  });
+
+  test("three tumbles end the round", () => {
+    const s = fresh(3);
+    tower.dropPiece(s);
+    settle(s);
+    for (let i = 0; i < 3; i++) dropAt(s, s.w * 0.56);
+    for (let i = 0; i < 120 && !s.over; i++) tower.stepTower(s, 1 / 60);
+    assert.equal(s.over, true);
+    assert.equal(s.floors, 1);
+  });
+
+  test("swing and sway grow gently; calm mode is gentler", () => {
+    assert.equal(tower.swing(0).angle, 0);
+    assert.ok(tower.swing(25).angle > tower.swing(5).angle);
+    assert.ok(tower.swing(25).period > 1.5);
+    assert.equal(tower.sway(3), 0);
+    assert.ok(tower.sway(30) <= 20);
+    assert.ok(tower.swing(25, true).angle < tower.swing(25).angle);
+    assert.ok(tower.sway(30, true) < tower.sway(30));
+  });
+
+  test("a steady hand builds a tall tower and earns both stickers", () => {
+    const s = fresh(4);
+    tower.dropPiece(s);
+    settle(s);
+    for (let i = 0; i < 24; i++) dropAt(s, 0);
+    assert.equal(s.floors, 25);
+    assert.ok(s.bestCombo >= 5);
+    assert.deepEqual(tower.rewardsFor(s).map((r) => r.sticker), ["st-mochi", "st-star"]);
+    assert.ok(tower.cameraHeight(s) > 0, "the view follows the tower up");
   });
 });

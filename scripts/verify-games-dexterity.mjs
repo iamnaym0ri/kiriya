@@ -63,6 +63,16 @@ const BOTS = {
     }
     await page.mouse.up();
   },
+  async "mochi-tower"(page, box, seconds) {
+    const until = Date.now() + seconds * 1000;
+    while (Date.now() < until && (await phase(page)) === "playing") {
+      const s = await state(page);
+      if (s.piece.mode === "hang" && s.piece.wait === 0 && Math.abs(s.piece.x - s.topX) < s.w * 0.07) {
+        await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height - 60);
+        await page.waitForTimeout(300);
+      } else await page.waitForTimeout(12);
+    }
+  },
   async "boop-the-cats"(page, box, seconds) {
     const until = Date.now() + seconds * 1000;
     while (Date.now() < until && (await phase(page)) === "playing") {

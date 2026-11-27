@@ -257,6 +257,10 @@ export default function GameShell({
       if (phaseRef.current !== "playing" || event.target.closest("button")) return;
       event.preventDefault();
       stage.setPointerCapture?.(event.pointerId);
+      // the sheet may have slid in since the last measure
+      const rect = stage.getBoundingClientRect();
+      size.current.left = rect.left;
+      size.current.top = rect.top;
       const [x, y] = at(event);
       engineRef.current?.pointer("down", x, y, event.pointerId, event.timeStamp);
     };
@@ -276,11 +280,6 @@ export default function GameShell({
     };
     const keys = (event) => {
       if (event.repeat) return;
-      if (event.key === "Escape" && event.type === "keydown") {
-        if (phaseRef.current === "playing") pause();
-        else if (phaseRef.current === "paused") resume();
-        return;
-      }
       if (phaseRef.current !== "playing" || !engineRef.current?.key) return;
       if (engineRef.current.key(event.code, event.type === "keydown")) event.preventDefault();
     };
@@ -302,7 +301,7 @@ export default function GameShell({
       window.removeEventListener("keydown", keys);
       window.removeEventListener("keyup", keys);
     };
-  }, [pause, resume]);
+  }, []);
 
   function toggleSound() {
     const next = !sound;
