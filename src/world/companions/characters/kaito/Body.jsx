@@ -446,11 +446,6 @@ function Defs({ id }) {
         <stop stopColor="#2a4cb8" />
         <stop offset="1" stopColor="#172d7a" />
       </linearGradient>
-      <linearGradient id={`${id}-sheen`} x1="0" y1="0" x2=".2" y2="1">
-        <stop offset=".12" stopColor="#bcd0ff" stopOpacity="0" />
-        <stop offset=".34" stopColor="#bcd0ff" stopOpacity=".5" />
-        <stop offset=".5" stopColor="#bcd0ff" stopOpacity="0" />
-      </linearGradient>
       <radialGradient id={`${id}-skin`} cx=".45" cy=".38" r=".7">
         <stop offset=".4" stopColor="#ffeada" />
         <stop offset="1" stopColor="#f2cdb8" />
@@ -562,7 +557,7 @@ export function KaitoThumb({ size = 56, expression = "wink" }) {
   const reduced = useReducedMotion();
   return (
     <div className="kaito kaito--thumb" data-pose="portrait" data-expression={expression} data-motion={reduced ? "off" : "on"} style={{ width: size, height: size }} aria-hidden="true">
-      <svg viewBox="22 20 156 156" className="kaito__svg">
+      <svg viewBox="14 22 168 168" className="kaito__svg" overflow="hidden">
         <Defs id={id} />
         <Figure id={id} pose="icecream" face={expression} motion={!reduced} />
       </svg>

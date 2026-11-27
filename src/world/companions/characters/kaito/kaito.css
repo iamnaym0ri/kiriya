@@ -16,6 +16,14 @@
   height: 100%;
   overflow: visible;
 }
+.kaito--thumb {
+  flex: none;
+  border-radius: 50%;
+}
+.kaito--thumb .kaito__svg {
+  overflow: hidden;
+  border-radius: 50%;
+}
 
 /* ---------- always: breath, blink, the scarf drifting, the odd glance ------------------------- */
 .kaito__root {
