@@ -60,6 +60,10 @@
   width: 100%;
   height: 100%;
 }
+/* While the engine looks at what is under a spot, the bodies let hit-testing through. */
+.cs-stage[data-probing] .cs-body {
+  pointer-events: none;
+}
 .cs-body:focus-visible {
   outline: 2px dashed var(--theme-accent, #9a6cba);
   outline-offset: 2px;

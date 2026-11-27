@@ -152,11 +152,12 @@ function textUnder(el, x, y) {
 }
 
 /** 1 if what is at (x, y) under the stage is text, a control or a picture; 0 if it is just paper. */
-function busyPoint(x, y, stage) {
+function busyPoint(x, y) {
   if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return 0;
-  const hits = document.elementsFromPoint(x, y);
-  const el = hits.find((hit) => !stage?.contains(hit));
+  // The stage's bodies are made untouchable while probing (see busyScore), so this is the page.
+  const el = document.elementFromPoint(x, y);
   if (!el || el === document.body || el === document.documentElement) return 0;
+  if (el.closest("[data-companion-stage]")) return 0;
   if (el.closest("[data-companion-ok]")) return 0;
   if (el.closest(INTERACTIVE)) return 1;
   if (el.closest(MEDIA)) return 0.7;
@@ -169,9 +170,11 @@ function busyPoint(x, y, stage) {
  * per frame.
  */
 export function busyScore(rect, stage) {
+  if (stage) stage.dataset.probing = "";
   const xs = [rect.left + (rect.right - rect.left) * 0.25, rect.left + (rect.right - rect.left) * 0.75];
   const ys = [rect.top + (rect.bottom - rect.top) * 0.2, rect.top + (rect.bottom - rect.top) * 0.55, rect.top + (rect.bottom - rect.top) * 0.9];
-  let sum = busyPoint((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2, stage);
-  for (const x of xs) for (const y of ys) sum += busyPoint(x, y, stage);
+  let sum = busyPoint((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2);
+  for (const x of xs) for (const y of ys) sum += busyPoint(x, y);
+  if (stage) delete stage.dataset.probing;
   return sum / 7;
 }

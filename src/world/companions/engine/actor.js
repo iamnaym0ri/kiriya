@@ -294,31 +294,40 @@ export class Actor {
   }
 
   /** A path to a good spot: a walk on this level, or hops (or a float) to another one. */
-  planMove(b = null, { force = false } = {}) {
+  planMove(b = null, { force = false, better = null } = {}) {
     const levels = this.stage.levels;
     if (this.level == null || !levels.length) return [];
-    let target = this.level;
-    if (b?.level === "top") target = levels.length - 1;
-    else if (b?.level === "bottom") target = 0;
-    else if (levels.length > 1 && Math.random() < this.m.jumpiness) {
+    let targets;
+    if (b?.level === "top") targets = [levels.length - 1];
+    else if (b?.level === "bottom") targets = [0];
+    else if (better != null) {
+      // Getting off something she wants to read: look here and on the levels either side.
+      targets = [this.level, this.level + 1, this.level - 1].filter((i) => i >= 0 && i < levels.length);
+    } else if (levels.length > 1 && Math.random() < this.m.jumpiness) {
       const up = this.level + 1 < levels.length;
       const down = this.level > 0;
-      target = up && down ? this.level + (Math.random() < 0.5 ? 1 : -1) : up ? this.level + 1 : this.level - 1;
-    }
-    const level = levels[target];
+      targets = [up && down ? this.level + (Math.random() < 0.5 ? 1 : -1) : up ? this.level + 1 : this.level - 1];
+    } else targets = [this.level];
     const reach = this.stage.band.width * this.m.wander;
-    // A handful of candidates along the target level, judged by what's underneath and how far.
+    // A handful of candidates along each level, judged by what's underneath and how far away.
     const candidates = [];
-    for (let i = 0; i < 6; i++) {
-      const x = i < 3
-        ? clamp(this.x + (Math.random() * 2 - 1) * reach, level.x0, level.x1)
-        : level.x0 + Math.random() * (level.x1 - level.x0);
-      const busy = this.stage.spotScore(this, target, x);
-      const cost = busy * 2 + (Math.abs(x - this.x) / this.stage.band.width) * 0.5 + Math.random() * 0.25;
-      candidates.push({ x, cost });
+    for (const target of targets) {
+      const level = levels[target];
+      const count = targets.length > 1 ? 4 : 6;
+      for (let i = 0; i < count; i++) {
+        const x = i < count / 2
+          ? clamp(this.x + (Math.random() * 2 - 1) * reach, level.x0, level.x1)
+          : level.x0 + Math.random() * (level.x1 - level.x0);
+        const busy = this.stage.spotScore(this, target, x);
+        const cost = busy * 2 + (Math.abs(x - this.x) / this.stage.band.width) * 0.5 + (target === this.level ? 0 : 0.2) + Math.random() * 0.25;
+        candidates.push({ target, x, cost, busy });
+      }
     }
-    candidates.sort((a, b2) => a.cost - b2.cost);
-    const tx = candidates[0].x;
+    // Moving off something only makes sense if the new spot is clearly clearer.
+    const pool = better != null ? candidates.filter((c) => c.busy <= better) : candidates;
+    if (!pool.length) return [];
+    pool.sort((a, c) => a.cost - c.cost);
+    const { target, x: tx } = pool[0];
     if (target === this.level) {
       if (!force && Math.abs(tx - this.x) < 24 * this.scale) return [];
       return [{ type: "walk", to: tx }];
@@ -824,7 +833,7 @@ export class Actor {
         const step = this.step;
         const target = step.off ? step.to : this.levelObj ? clamp(step.to, this.levelObj.x0, this.levelObj.x1) : step.to;
         const dist = Math.abs(target - this.x);
-        const max = this.m.walkSpeed * this.scale * (step.speed ?? 1) * (step.off ? 1.3 : 1);
+        const max = this.m.walkSpeed * this.scale * (step.speed ?? 1) * (step.off ? 1.6 : 1);
         const accel = max / 0.28;
         const brake = (this.speed * this.speed) / (2 * accel);
         this.speed = dist <= brake + 0.5 ? Math.max(this.speed - accel * dt, 10 * this.scale) : Math.min(this.speed + accel * dt, max);
