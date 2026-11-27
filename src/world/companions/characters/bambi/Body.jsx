@@ -333,6 +333,9 @@ export default function BambyBody({
   // its own as well (the fairy's finger heart, the mic when he sings), so the two add up.
   const carried = new Set([prop, POSE_PROP[known]].filter(Boolean));
   const rightArm = carried.has("heart") ? <HeartArm /> : carried.has("mic") ? <MicArm /> : <Arm side="r" />;
+  // The engine passes `frame` as live motion values (ignored here: the walk is a CSS cycle). A plain
+  // number is the lab's way to freeze a pose at that point of its cycle, for screenshots.
+  const frozen = typeof frame === "number";
   return (
     <svg
       viewBox="0 0 200 236"
