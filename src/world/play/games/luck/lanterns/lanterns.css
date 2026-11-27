@@ -1,0 +1,120 @@
+.lanterns-game {
+  background: linear-gradient(#3e2c5e 0%, #5d4386 30%, #9a77b8 62%, #e3b4cf 86%, #f7cfd3 100%);
+  color: #fff;
+}
+.lanterns-game .luck-chip { background: #ffffff24; border-color: #ffffff4d; color: #fff8ff; }
+.lanterns-game .luck-chip small { color: #f1e3ff; }
+.lanterns-game .luck-round { background: #ffffff24; border-color: #ffffff4d; color: #fff8ff; }
+.lanterns-count { gap: 6px; }
+.lanterns-count > span { width: 10px; height: 13px; border-radius: 45% 45% 40% 40%; border: 1.6px dashed #ffffff99; }
+.lanterns-count > span[data-on="true"] { background: #ffcf8a; border: 1.6px solid #fff3d6; box-shadow: 0 0 8px #ffcf8a; }
+
+.lanterns-sky { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.lanterns-stars {
+  position: absolute;
+  inset: 0 0 30% 0;
+  background:
+    radial-gradient(circle, #fff 0 1px, transparent 1.6px) 12px 18px / 67px 53px,
+    radial-gradient(circle, #fffbe8 0 1.2px, transparent 2px) 40px 7px / 91px 71px,
+    radial-gradient(circle, #ffffffb3 0 .8px, transparent 1.4px) 0 0 / 37px 29px;
+  opacity: .8;
+  animation: lanterns-twinkle 5s ease-in-out infinite alternate;
+}
+@keyframes lanterns-twinkle { from { opacity: .55; } to { opacity: .95; } }
+.lanterns-hills { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 22%; }
+
+.lantern {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 58px;
+  height: 80px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  will-change: transform;
+  touch-action: manipulation;
+}
+.lantern::after { content: ""; position: absolute; inset: -10px; }
+.lantern:disabled { cursor: default; opacity: 1; }
+.lantern-art { width: 100%; height: 100%; overflow: visible; }
+.lantern-art__halo { animation: lanterns-flicker 1.8s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+.lantern:nth-of-type(2n) .lantern-art__halo { animation-delay: -.7s; }
+.lantern:nth-of-type(3n) .lantern-art__halo { animation-delay: -1.2s; }
+@keyframes lanterns-flicker { from { opacity: .7; transform: scale(.95); } to { opacity: 1; transform: scale(1.12); } }
+.lantern[data-kind="golden"] .lantern-art__halo { opacity: 1; }
+.lantern[data-caught="true"] .lantern-art { animation: lanterns-caught .5s ease-in forwards; }
+@keyframes lanterns-caught { 40% { transform: scale(1.35); opacity: 1; } to { transform: scale(.2) translateY(-30px); opacity: 0; } }
+.lanterns-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 9%;
+  margin: 0;
+  text-align: center;
+  font-size: 23px;
+  color: #fff8ff;
+  text-shadow: 0 2px 6px #3e2c5e88;
+  pointer-events: none;
+}
+
+.lanterns-card {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #2c1d4466;
+  animation: lanterns-fade .25s ease-out;
+}
+@keyframes lanterns-fade { from { opacity: 0; } }
+.lanterns-card__paper {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(330px, 100%);
+  padding: 26px 22px 22px;
+  border-radius: 18px;
+  background: repeating-linear-gradient(transparent 0 29px, #f1e4f5 29px 30px), #fffaf3;
+  border: 2px solid #e8d3ef;
+  box-shadow: 0 0 0 6px #ffcf8a44, 0 20px 40px #2c1d4466;
+  color: var(--luck-ink);
+  text-align: center;
+  animation: lanterns-unfurl .45s cubic-bezier(.25, 1.3, .45, 1);
+}
+.lanterns-card[data-kind="coin"] .lanterns-card__paper, .lanterns-card[data-kind="golden"] .lanterns-card__paper { box-shadow: 0 0 0 6px #ffd16688, 0 0 40px #ffd16699, 0 20px 40px #2c1d4466; border-color: #f2d68f; }
+@keyframes lanterns-unfurl { from { transform: scale(.6) translateY(30px); opacity: 0; } }
+.lanterns-card__text { margin: 0; font: 26px/1.2 var(--font-hand); color: #4a2f57; text-wrap: balance; }
+
+.lanterns-done {
+  position: absolute;
+  inset: 48px 0 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px 22px 28px;
+  text-align: center;
+}
+.lanterns-done h2 { margin: 0; font-size: 36px; font-weight: 700; color: #fff8ff; text-shadow: 0 2px 8px #3e2c5e99; }
+.lanterns-done ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; width: min(340px, 100%); }
+.lanterns-done li {
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #fffaf3f2;
+  color: #4a2f57;
+  font: 21px/1.15 var(--font-hand);
+  box-shadow: 0 0 18px #ffcf8a55;
+}
+.lanterns-done li[data-kind="coin"], .lanterns-done li[data-kind="golden"] { background: #fff6d8; box-shadow: 0 0 20px #ffd16699; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lanterns-stars, .lantern-art__halo, .lantern[data-caught="true"] .lantern-art, .lanterns-card, .lanterns-card__paper { animation: none !important; }
+  .lantern[data-caught="true"] .lantern-art { opacity: .25; }
+}
+html[data-little-motion="off"] :is(.lanterns-stars, .lantern-art__halo, .lanterns-card, .lanterns-card__paper) { animation: none !important; }

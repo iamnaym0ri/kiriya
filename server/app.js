@@ -21,6 +21,7 @@ import { homeEmbedRoutes, homeRoutes } from "./routes/home.js";
 import { glanceRoutes, hubRoutes } from "./routes/meSection.js";
 import { pastimeRoutes } from "./routes/gamesPastime.js";
 import { quizRoutes } from "./routes/quizzes.js";
+import { gamesLuckRoutes } from "./routes/gamesLuck.js";
 
 const app = new Hono().basePath("/api");
 
@@ -85,6 +86,7 @@ app.route("/me/games/secret-word", secretWordRoutes);
 app.route("/me/home", homeRoutes);
 app.route("/me/glance", glanceRoutes);
 app.route("/me/quizzes", quizRoutes);
+app.route("/me/games/luck", gamesLuckRoutes);
 app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
 app.route("/me", playRoutes);

@@ -211,6 +211,7 @@ export function Credits({ onClose }) {
         (Creative Commons and public domain), each credited on its quiz card.
       </p>
       <p>Brain games: guess words from the ENABLE2K list (public domain); colour maths after Björn Ottosson’s Oklab (public domain); picture-stitch line solving adapted from nonogram-solver by Thomas Rosenau (Apache-2.0).</p>
+      <p>Luck games: little sounds made with <a href="https://github.com/KilledByAPixel/ZzFX" target="_blank" rel="noreferrer">ZzFX</a> by Frank Force (MIT); confetti by canvas-confetti (ISC).</p>
       <h3>Reference collection</h3>
       <p>
         Maomao portraits and botanical images are from the supplied reference
