@@ -50,7 +50,8 @@ export const apiUrl = (path) => `${API_ORIGIN}/api${path}`;
 export const authHeaders = () => (isBundledApp && token ? { Authorization: `Bearer ${token}` } : {});
 
 export async function api(path, { method = "GET", body, signal } = {}) {
-  const session = path === "/session" || path.startsWith("/session/");
+  // Changing the passphrase also hands back a fresh session (the old one may be signed out with it).
+  const session = path === "/session" || path.startsWith("/session/") || path.startsWith("/me/passphrase");
   const response = await fetch(apiUrl(path), {
     method,
     signal,

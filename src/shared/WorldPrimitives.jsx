@@ -200,6 +200,7 @@ export function Credits({ onClose }) {
         </a>{" "}
         © Microsoft, MIT licence. GIF search powered by GIPHY.
       </p>
+      <p>Bamby (PLAVE) © VLAST — fan art, drawn for this app.</p>
       <h3>Reference collection</h3>
       <p>
         Maomao portraits and botanical images are from the supplied reference
@@ -222,9 +223,10 @@ export function Credits({ onClose }) {
         <a href="https://vocadb.net" target="_blank" rel="noreferrer">
           VocaDB
         </a>
-        . Music belongs to its credited creators and plays through the original
+        . Song details read with music-metadata (MIT); album covers found through MusicBrainz and the Cover Art Archive. Music belongs to its credited creators and plays through the original
         providers. The small mascot and stickers are fan-inspired illustrations.
       </p>
+      <p>Rotten Girl Miku: original fan art of Hatsune Miku as in “Confessions of a Rotten Girl” (SAWTOWNE, 2025). Hatsune Miku © Crypton Future Media, INC. <a href="https://piapro.net" target="_blank" rel="noreferrer">www.piapro.net</a>, <a href="https://piapro.net/intl/en_character.html" target="_blank" rel="noreferrer">Piapro Character License</a>.</p>
       <h3>Daily feeds</h3>
       <p>
         Every picture, clip, post and product in the daily feeds is credited to

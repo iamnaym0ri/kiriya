@@ -560,7 +560,7 @@ Object.assign(MAOMAO_REMARKS, {
   working: [
     line(
       "writing",
-      "Three drops, no more. Written down, so I can stop rehearsing it.",
+      "Steep, strain, label. Written down, so I can stop rehearsing it.",
     ),
     line(
       "sniff",

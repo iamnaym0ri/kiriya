@@ -6,6 +6,7 @@ import { signMediaLinks, unsignMediaLinks } from "./lib/mediaLinks.js";
 import { sessionRoutes } from "./routes/session.js";
 import { publicRoutes } from "./routes/public.js";
 import { meRoutes } from "./routes/me.js";
+import { playRoutes } from "./routes/play.js";
 import { adminRoutes } from "./routes/admin.js";
 import { jobRoutes } from "./routes/jobs.js";
 import { pushRoutes } from "./routes/push.js";
@@ -15,6 +16,8 @@ import { adminLoveNoteRoutes } from "./routes/loveNotes.js";
 import { adminNoteJarRoutes } from "./routes/noteJarAdmin.js";
 import { widgetRoutes } from "./routes/widget.js";
 import { appRoutes, appSessionRoutes } from "./routes/app.js";
+import { homeEmbedRoutes, homeRoutes } from "./routes/home.js";
+import { glanceRoutes, hubRoutes } from "./routes/meSection.js";
 import { gamesLuckRoutes } from "./routes/gamesLuck.js";
 
 const app = new Hono().basePath("/api");
@@ -76,9 +79,12 @@ app.route("/session", sessionRoutes);
 app.route("/public", publicRoutes);
 
 app.use("/me/*", requireRole("kiriya", "admin"));
+app.route("/me/home", homeRoutes);
+app.route("/me/glance", glanceRoutes);
 app.route("/me/games/luck", gamesLuckRoutes);
 app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
+app.route("/me", playRoutes);
 
 app.use("/app/*", requireRole("kiriya", "admin"));
 app.route("/app", appRoutes);
@@ -90,12 +96,14 @@ app.use("/admin/*", requireRole("admin"));
 app.route("/admin/feeds", feedAdminRoutes);
 app.route("/admin/love-notes", adminLoveNoteRoutes);
 app.route("/admin/note-jar", adminNoteJarRoutes);
+app.route("/admin/hub", hubRoutes);
 app.route("/admin", adminRoutes);
 
 app.route("/jobs/feeds", feedJobRoutes);
 app.route("/jobs", jobRoutes);
 app.route("/uploads", uploadRoutes);
 app.route("/widget", widgetRoutes);
+app.route("/embed", homeEmbedRoutes);
 
 app.notFound((c) => c.json({ error: "not_found", message: "Nothing lives at this address." }, 404));
 app.onError((error, c) => {

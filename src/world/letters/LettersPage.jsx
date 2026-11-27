@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router";
+import { Navigate, useSearchParams } from "react-router";
 import SaveMemory from "../chat/SaveMemory.jsx";
 import { AnimatePresence, motion } from "motion/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +13,7 @@ import { useToday } from "../../lib/world.js";
 import { useSession } from "../../lib/session.js";
 import { HEART } from "../../../shared/reactions.js";
 import ReactionBar from "../../shared/ReactionBar.jsx";
+import { isAppShell } from "../../lib/native.js";
 import "./LettersPage.css";
 
 const dateFormat = new Intl.DateTimeFormat("en-SG", {
@@ -70,7 +71,7 @@ function LetterSheet({ letter, onClose, reactions }) {
   );
 }
 
-export default function LettersPage() {
+function LettersPageWeb() {
   const today = useToday();
   const queryClient = useQueryClient();
   const letters = useQuery({
@@ -207,4 +208,15 @@ export default function LettersPage() {
       </AnimatePresence>
     </div>
   );
+}
+
+/**
+ * Inside the app, letters live in the notes & letters tab (MailSection); the website keeps this page.
+ * Old links and notifications (?open=<id>) land there with that one open.
+ */
+export default function LettersPage() {
+  const [params] = useSearchParams();
+  if (!isAppShell()) return <LettersPageWeb />;
+  const id = params.get("open");
+  return <Navigate replace to={id ? `/world/mail?letter=${encodeURIComponent(id)}` : "/world/mail"} />;
 }
