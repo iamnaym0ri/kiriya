@@ -24,6 +24,8 @@ export default function Sheet({ title, onClose, children, className = "", header
     const dialog = ref.current;
     const previous = document.activeElement;
     dialog.showModal();
+    // Start on the sheet itself, not on its ✕ (VoiceOver reads the title first).
+    panel.current?.focus({ preventScroll: true });
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -72,7 +74,7 @@ export default function Sheet({ title, onClose, children, className = "", header
         if (event.target === event.currentTarget) close();
       }}
     >
-      <div ref={panel} className="chat-sheet__panel">
+      <div ref={panel} className="chat-sheet__panel" tabIndex={-1}>
         <div className="chat-sheet__grab" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
           <span className="chat-sheet__grabber" aria-hidden="true" />
           <div className="chat-sheet__head">

@@ -33,7 +33,7 @@
   --paper-line: #f6eadb1f;
   --paper-tape: #c9a8ea66;
 }
-.chat[data-theme][data-bubble="paper"] .bubble,
+.chat[data-theme][data-bubble="paper"] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="paper"] .bubble {
   border-radius: 4px 7px 5px 6px;
   background-image: repeating-linear-gradient(transparent 0 23px, var(--paper-line) 23px 24px);
@@ -43,7 +43,7 @@
   font-size: 17px;
   line-height: 24px;
 }
-.chat[data-theme][data-bubble="paper"] .msg[data-first] .bubble::before,
+.chat[data-theme][data-bubble="paper"] .msg[data-first] .bubble:not(.chat-preview *)::before,
 .chat-preview[data-bubble="paper"] .msg[data-first] .bubble::before {
   content: "";
   position: absolute;
@@ -56,7 +56,7 @@
   border-radius: 1px;
   pointer-events: none;
 }
-.chat[data-theme][data-bubble="paper"] .msg[data-mine][data-first] .bubble::before,
+.chat[data-theme][data-bubble="paper"] .msg[data-mine][data-first] .bubble:not(.chat-preview *)::before,
 .chat-preview[data-bubble="paper"] .msg[data-mine][data-first] .bubble::before {
   left: auto;
   right: 14px;
@@ -68,7 +68,7 @@
 .chat-preview[data-bubble="pixel"] {
   --chat-radius: 0px;
 }
-.chat[data-theme][data-bubble="pixel"] .bubble,
+.chat[data-theme][data-bubble="pixel"] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="pixel"] .bubble {
   --px: color-mix(in srgb, var(--chat-theirs-ink) 72%, transparent);
   margin: 4px;
@@ -83,7 +83,7 @@
     4px 0 0 0 var(--px),
     5px 8px 0 0 #00000026;
 }
-.chat[data-theme][data-bubble="pixel"] .msg[data-mine] .bubble,
+.chat[data-theme][data-bubble="pixel"] .msg[data-mine] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="pixel"] .msg[data-mine] .bubble {
   --px: color-mix(in srgb, var(--chat-mine) 55%, #1b1024);
 }
@@ -97,17 +97,17 @@
   --chat-theirs-ink: #3d2a52;
   --chat-radius: 22px;
 }
-.chat[data-theme][data-bubble="kawaii"] .bubble,
+.chat[data-theme][data-bubble="kawaii"] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="kawaii"] .bubble {
   background-image: linear-gradient(135deg, #fdfaff, #e6f4ff);
   border: 1.5px solid #ffffff;
   box-shadow: 0 2px 8px -2px #b77ad466;
 }
-.chat[data-theme][data-bubble="kawaii"] .msg[data-mine] .bubble,
+.chat[data-theme][data-bubble="kawaii"] .msg[data-mine] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="kawaii"] .msg[data-mine] .bubble {
   background-image: linear-gradient(135deg, #ffc8e1, #dcc6ff);
 }
-.chat[data-theme][data-bubble="kawaii"] .msg[data-last] .bubble::after,
+.chat[data-theme][data-bubble="kawaii"] .msg[data-last] .bubble:not(.chat-preview *)::after,
 .chat-preview[data-bubble="kawaii"] .msg[data-last] .bubble::after {
   content: "✦";
   position: absolute;
@@ -119,7 +119,7 @@
   pointer-events: none;
   animation: bubble-twinkle 2.6s ease-in-out infinite;
 }
-.chat[data-theme][data-bubble="kawaii"] .msg[data-mine][data-last] .bubble::after,
+.chat[data-theme][data-bubble="kawaii"] .msg[data-mine][data-last] .bubble:not(.chat-preview *)::after,
 .chat-preview[data-bubble="kawaii"] .msg[data-mine][data-last] .bubble::after {
   right: auto;
   left: -8px;
@@ -131,12 +131,12 @@
 .chat-preview[data-bubble="cat"] {
   --chat-radius: 22px;
 }
-.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble,
+.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="cat"] .msg[data-first] .bubble {
   margin-top: 9px;
 }
-.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble::before,
-.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble::after,
+.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble:not(.chat-preview *)::before,
+.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble:not(.chat-preview *)::after,
 .chat-preview[data-bubble="cat"] .msg[data-first] .bubble::before,
 .chat-preview[data-bubble="cat"] .msg[data-first] .bubble::after {
   content: "";
@@ -149,25 +149,25 @@
   border-bottom: 11px solid var(--ear);
   pointer-events: none;
 }
-.chat[data-theme][data-bubble="cat"] .bubble,
+.chat[data-theme][data-bubble="cat"] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="cat"] .bubble {
   --ear: var(--chat-theirs);
 }
-.chat[data-theme][data-bubble="cat"] .msg[data-mine] .bubble,
+.chat[data-theme][data-bubble="cat"] .msg[data-mine] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="cat"] .msg[data-mine] .bubble {
   --ear: var(--chat-mine);
 }
-.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble::before,
+.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble:not(.chat-preview *)::before,
 .chat-preview[data-bubble="cat"] .msg[data-first] .bubble::before {
   left: 12px;
   transform: rotate(-12deg);
 }
-.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble::after,
+.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble:not(.chat-preview *)::after,
 .chat-preview[data-bubble="cat"] .msg[data-first] .bubble::after {
   left: 30px;
   transform: rotate(12deg);
 }
-.chat[data-theme][data-bubble="cat"] .msg[data-last] .msg__status::before {
+.chat[data-theme][data-bubble="cat"] .msg[data-last] .msg__status:not(.chat-preview *)::before {
   content: "🐾 ";
 }
 
@@ -176,12 +176,12 @@
 .chat-preview[data-bubble="flowers"] {
   --chat-radius: 22px;
 }
-.chat[data-theme][data-bubble="flowers"] .bubble,
+.chat[data-theme][data-bubble="flowers"] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="flowers"] .bubble {
   outline: 1.5px dotted color-mix(in srgb, var(--chat-accent) 45%, transparent);
   outline-offset: 2px;
 }
-.chat[data-theme][data-bubble="flowers"] .msg[data-last] .bubble::after,
+.chat[data-theme][data-bubble="flowers"] .msg[data-last] .bubble:not(.chat-preview *)::after,
 .chat-preview[data-bubble="flowers"] .msg[data-last] .bubble::after {
   content: "✿";
   position: absolute;
@@ -193,7 +193,7 @@
   text-shadow: 0 0 0 #fff, 1px 1px 0 #ffffffaa;
   pointer-events: none;
 }
-.chat[data-theme][data-bubble="flowers"] .msg[data-mine][data-last] .bubble::after,
+.chat[data-theme][data-bubble="flowers"] .msg[data-mine][data-last] .bubble:not(.chat-preview *)::after,
 .chat-preview[data-bubble="flowers"] .msg[data-mine][data-last] .bubble::after {
   right: auto;
   left: -7px;
@@ -209,16 +209,16 @@
   --chat-theirs-ink: #3a2858;
   --chat-radius: 24px;
 }
-.chat[data-theme][data-bubble="fairy"] .bubble,
+.chat[data-theme][data-bubble="fairy"] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="fairy"] .bubble {
   background-image: linear-gradient(120deg, #fdfbff, #f1eaff);
   box-shadow: 0 0 0 1px #ffffffcc inset, 0 3px 12px -4px #9f7fe066;
 }
-.chat[data-theme][data-bubble="fairy"] .msg[data-mine] .bubble,
+.chat[data-theme][data-bubble="fairy"] .msg[data-mine] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="fairy"] .msg[data-mine] .bubble {
   background-image: linear-gradient(120deg, #e6d8ff, #ffe2f3 48%, #dcf3ff);
 }
-.chat[data-theme][data-bubble="fairy"] .msg[data-last] .bubble::after,
+.chat[data-theme][data-bubble="fairy"] .msg[data-last] .bubble:not(.chat-preview *)::after,
 .chat-preview[data-bubble="fairy"] .msg[data-last] .bubble::after {
   content: "⋆ ˚ ✧";
   position: absolute;
@@ -240,18 +240,18 @@
   --chat-theirs-ink: #ebdff2;
   --chat-radius: 3px;
 }
-.chat[data-theme][data-bubble="gothic"] .bubble,
+.chat[data-theme][data-bubble="gothic"] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="gothic"] .bubble {
   border-radius: 3px !important;
   border: 3px double #7d5a86;
   font-family: var(--font-literary, Georgia), serif;
   box-shadow: 0 2px 10px -4px #000000aa;
 }
-.chat[data-theme][data-bubble="gothic"] .msg[data-mine] .bubble,
+.chat[data-theme][data-bubble="gothic"] .msg[data-mine] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="gothic"] .msg[data-mine] .bubble {
   border-color: #9c4b74;
 }
-.chat[data-theme][data-bubble="gothic"] .msg[data-last] .bubble::after,
+.chat[data-theme][data-bubble="gothic"] .msg[data-last] .bubble:not(.chat-preview *)::after,
 .chat-preview[data-bubble="gothic"] .msg[data-last] .bubble::after {
   content: "❦";
   position: absolute;
@@ -271,11 +271,11 @@
   --chat-theirs-ink: #66193b;
   --chat-radius: 22px;
 }
-.chat[data-theme][data-bubble="lovey"] .msg[data-mine] .bubble,
+.chat[data-theme][data-bubble="lovey"] .msg[data-mine] .bubble:not(.chat-preview *),
 .chat-preview[data-bubble="lovey"] .msg[data-mine] .bubble {
   background-image: linear-gradient(135deg, #cc3169, #ad1c53);
 }
-.chat[data-theme][data-bubble="lovey"] .msg[data-last] .bubble::after,
+.chat[data-theme][data-bubble="lovey"] .msg[data-last] .bubble:not(.chat-preview *)::after,
 .chat-preview[data-bubble="lovey"] .msg[data-last] .bubble::after {
   content: "♥";
   position: absolute;
@@ -286,7 +286,7 @@
   color: #ffb5cf;
   pointer-events: none;
 }
-.chat[data-theme][data-bubble="lovey"] .msg[data-mine][data-last] .bubble::after,
+.chat[data-theme][data-bubble="lovey"] .msg[data-mine][data-last] .bubble:not(.chat-preview *)::after,
 .chat-preview[data-bubble="lovey"] .msg[data-mine][data-last] .bubble::after {
   left: auto;
   right: -6px;
@@ -317,7 +317,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .chat[data-theme] .bubble::after,
+  .chat[data-theme] .bubble:not(.chat-preview *)::after,
   .chat-preview .bubble::after {
     animation: none !important;
   }

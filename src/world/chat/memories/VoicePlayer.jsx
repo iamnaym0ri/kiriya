@@ -13,9 +13,9 @@ export function VoicePlayer({ media }) {
   const peaks = media?.peaks?.length ? media.peaks : Array.from({ length: 32 }, (_, i) => 0.3 + 0.5 * Math.abs(Math.sin(i * 1.7)));
   useEffect(() => {
     const stopOthers = (event) => event.detail !== audio.current && audio.current?.pause();
-    window.addEventListener("kiriya:memory-voice", stopOthers);
+    window.addEventListener("kiriya:mem-voice", stopOthers);
     return () => {
-      window.removeEventListener("kiriya:memory-voice", stopOthers);
+      window.removeEventListener("kiriya:mem-voice", stopOthers);
       audio.current?.pause();
     };
   }, []);
@@ -31,13 +31,13 @@ export function VoicePlayer({ media }) {
     }
     if (playing) audio.current.pause();
     else {
-      window.dispatchEvent(new CustomEvent("kiriya:memory-voice", { detail: audio.current }));
+      window.dispatchEvent(new CustomEvent("kiriya:mem-voice", { detail: audio.current }));
       audio.current.play().catch(() => setPlaying(false));
     }
   }
   const progress = duration ? Math.min(1, at / duration) : 0;
   return (
-    <div className="memory-voice" data-playing={playing || undefined}>
+    <div className="mem-voice" data-playing={playing || undefined}>
       <button type="button" onClick={toggle} disabled={!src} aria-label={!src ? "opening the voice note…" : playing ? "Pause voice note" : "Play voice note"}>
         {playing ? (
           <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
@@ -49,12 +49,12 @@ export function VoicePlayer({ media }) {
           </svg>
         )}
       </button>
-      <span className="memory-voice__bars" aria-hidden="true">
+      <span className="mem-voice__bars" aria-hidden="true">
         {peaks.map((peak, i) => (
           <i key={i} style={{ height: `${Math.max(14, peak * 100)}%` }} data-played={i / peaks.length < progress || undefined} />
         ))}
       </span>
-      <span className="memory-voice__time">{time(playing || at ? at : duration)}</span>
+      <span className="mem-voice__time">{time(playing || at ? at : duration)}</span>
     </div>
   );
 }

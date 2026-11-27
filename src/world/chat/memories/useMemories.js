@@ -5,10 +5,10 @@ import { api } from "../../../lib/api.js";
 import { openMemorySnapshot } from "../../../lib/chatCrypto.js";
 
 export const SHELVES = [
-  { key: "messages", label: "messages", empty: "hold a message in the chat and tap “save to our memories” ✿" },
-  { key: "pictures", label: "pictures", empty: "photos, videos, GIFs and stickers you save from the chat live here" },
-  { key: "voice", label: "voice notes", empty: "save a voice note from the chat to hear it again any time ♡" },
-  { key: "letters", label: "letters & notes", empty: "the ♡ under a letter, a little note or a jar note keeps it here" },
+  { key: "messages", label: "messages", icon: "message", empty: "hold a message in the chat and tap “save to our memories” ✿" },
+  { key: "pictures", label: "pictures", icon: "picture", empty: "photos, videos, GIFs and stickers you save from the chat live here" },
+  { key: "voice", label: "voice notes", icon: "voice", empty: "save a voice note from the chat to hear it again any time ♡" },
+  { key: "letters", label: "letters & notes", icon: "letter", empty: "the ♡ under a letter, a little note or a jar note keeps it here" },
 ];
 
 export const memoriesKey = (shelf) => ["me", "memories", shelf];

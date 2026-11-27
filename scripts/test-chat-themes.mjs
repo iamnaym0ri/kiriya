@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readFileSync } from "node:fs";
-import { parse, wcagContrast } from "culori";
+import { formatHex, interpolate, parse, wcagContrast } from "culori";
 
 const read = (name) => readFileSync(new URL(`../src/world/chat/theme/${name}`, import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 const rules = (css) =>
@@ -44,7 +44,7 @@ for (const { selector, decls } of bubblesCss) {
     const vars = Object.fromEntries(Object.entries(decls).filter(([name]) => name.startsWith("--chat-")));
     if (theme) comboVars[`${theme}/${bubble}`] = { ...(comboVars[`${theme}/${bubble}`] ?? {}), ...vars };
     else bubbleVars[bubble] = { ...(bubbleVars[bubble] ?? {}), ...vars };
-  } else if (/ \.bubble$/.test(first) && decls["background-image"]) {
+  } else if (/ \.bubble(?::not\(\.chat-preview \*\))?$/.test(first) && decls["background-image"]) {
     const side = first.includes("[data-mine]") ? "mine" : "theirs";
     paint[`${theme ?? "*"}/${bubble}/${side}`] = decls["background-image"].match(/#[0-9a-f]{3,8}\b/gi) ?? [];
   }
@@ -60,10 +60,18 @@ const solid = (value) => {
   assert(color, `not a colour: ${value}`);
   return color;
 };
+/** A see-through colour as it shows over `under` (the bar and menus sit over the chat). */
+const over = (value, under) => {
+  const color = solid(value);
+  if (color.alpha === undefined || color.alpha >= 1) return formatHex(color);
+  return formatHex(interpolate([solid(under), { ...color, alpha: 1 }], "rgb")(color.alpha));
+};
+/** `amount` of a colour mixed into another (CSS color-mix in srgb). */
+const mix = (value, amount, into) => formatHex(interpolate([solid(into), solid(value)], "rgb")(amount));
 const ratio = (a, b) => wcagContrast(solid(a), solid(b));
 
 test("Every theme defines the whole palette the chat takes", () => {
-  const contract = ["--chat-bg", "--chat-ink", "--chat-meta", "--chat-line", "--chat-accent", "--chat-accent-ink", "--chat-mine", "--chat-mine-ink", "--chat-theirs", "--chat-theirs-ink", "--chat-bar", "--chat-bar-ink", "--chat-field", "--chat-field-ink", "--chat-menu", "--chat-menu-ink", "--chat-reply"];
+  const contract = ["--chat-danger", "--chat-bg", "--chat-ink", "--chat-meta", "--chat-line", "--chat-accent", "--chat-accent-ink", "--chat-mine", "--chat-mine-ink", "--chat-theirs", "--chat-theirs-ink", "--chat-bar", "--chat-bar-ink", "--chat-field", "--chat-field-ink", "--chat-menu", "--chat-menu-ink", "--chat-reply"];
   assert(THEMES.length >= 8);
   for (const key of ["white", "cream", "dark", "love", "lilac"]) assert(THEMES.some((theme) => theme.key === key), key);
   for (const { key } of THEMES) for (const name of contract) assert(themeVars[key]?.[name], `${key} is missing ${name}`);
@@ -72,7 +80,10 @@ test("Every theme defines the whole palette the chat takes", () => {
 test("Header, composer, menus, quotes and the background's own words pass WCAG AA in every theme", () => {
   const failures = [];
   for (const { key } of THEMES) {
-    const v = themeVars[key];
+    const raw = themeVars[key];
+    const v = { ...raw, "--chat-bar": over(raw["--chat-bar"], raw["--chat-bg"]), "--chat-menu": over(raw["--chat-menu"], raw["--chat-bg"]) };
+    // A quote in the composer: a little of the reply colour behind the words.
+    v["--chat-quote"] = mix(v["--chat-reply"], 0.14, v["--chat-bar"]);
     const pairs = [
       ["bg", "ink", 4.5],
       ["bg", "meta", 4.5],
@@ -84,8 +95,10 @@ test("Header, composer, menus, quotes and the background's own words pass WCAG A
       ["menu", "menu-ink", 4.5],
       ["menu", "meta", 4.5],
       ["accent", "accent-ink", 4.5],
-      ["reply", "ink", 4.5],
-      ["reply", "meta", 4.5],
+      ["quote", "meta", 4.5],
+      ["quote", "ink", 4.5],
+      ["menu", "danger", 4.5],
+      ["ink", "bg", 4.5],
       ["mine", "mine-ink", 4.5],
       ["theirs", "theirs-ink", 4.5],
     ];
@@ -103,6 +116,7 @@ test("Every theme × bubble design keeps message text at WCAG AA on every colour
   for (const { key: theme } of THEMES)
     for (const { key: bubble } of BUBBLES) {
       const v = { ...themeVars[theme], ...(bubbleVars[bubble] ?? {}), ...(comboVars[`${theme}/${bubble}`] ?? {}) };
+      for (const side of ["mine", "theirs"]) v[`--chat-${side}`] = over(v[`--chat-${side}`], v["--chat-bg"]);
       for (const side of ["mine", "theirs"]) {
         const ink = v[`--chat-${side}-ink`];
         const backs = [v[`--chat-${side}`], ...(paint[`${theme}/${bubble}/${side}`] ?? paint[`*/${bubble}/${side}`] ?? [])];

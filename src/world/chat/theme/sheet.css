@@ -31,12 +31,16 @@
 .chat-sheet[data-closing]::backdrop {
   animation: chat-sheet-fade 0.22s ease reverse both;
 }
+.chat-sheet__panel:focus {
+  outline: none;
+}
 .chat-sheet__panel {
   display: flex;
   flex-direction: column;
   height: 100%;
   border-radius: inherit;
-  background: var(--sheet-bg);
+  /* the menu colour can be a little see-through: laid on the theme's own background, never on the chat */
+  background: linear-gradient(var(--sheet-bg), var(--sheet-bg)), var(--chat-bg, #fffaff);
   box-shadow: 0 -12px 40px -12px #1b122266;
   overflow: hidden;
   animation: chat-sheet-up 0.34s cubic-bezier(0.2, 0.9, 0.3, 1) both;
@@ -67,7 +71,7 @@
 }
 .chat-sheet__head h2 {
   margin: 0;
-  font: 400 27px/1.1 "Parisienne", var(--font-literary, Georgia), cursive;
+  font: 400 25px/1.1 "Parisienne", var(--font-literary, Georgia), cursive;
   color: var(--sheet-ink);
 }
 .chat-sheet__close {
@@ -123,13 +127,13 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 2px;
-  margin: 12px 0 12px;
+  margin: 10px 0 10px;
   padding: 3px;
   border-radius: 14px;
   background: color-mix(in srgb, var(--sheet-ink) 7%, transparent);
 }
 .look-tabs button {
-  min-height: 40px;
+  min-height: 44px;
   border: 0;
   border-radius: 11px;
   background: transparent;
@@ -178,8 +182,8 @@
 }
 .chat-preview--live {
   display: grid;
-  grid-template-rows: 40px minmax(0, 1fr) 38px;
-  height: clamp(176px, 26dvh, 214px);
+  grid-template-rows: 34px minmax(0, 1fr) 36px;
+  height: clamp(150px, 21dvh, 184px);
   border-radius: 20px;
   border: 1px solid var(--chat-line);
   box-shadow: 0 8px 22px -14px #1b122299;
@@ -201,8 +205,8 @@
 .chat-preview__avatar {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: var(--chat-accent);
   color: var(--chat-accent-ink);
@@ -212,9 +216,12 @@
 .chat-preview__name {
   font: 400 19px/1 "Parisienne", cursive;
 }
+/* Like the chat itself: the newest at the bottom, older ones slipping away at the top. */
 .chat-preview__list {
-  display: block;
-  padding: 0 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 10px 6px;
   overflow: hidden;
 }
 .chat-preview__list .chat__day {
@@ -246,7 +253,7 @@
 .chat-preview__composer {
   display: flex;
   align-items: center;
-  margin: 0 8px 6px;
+  margin: 0 8px 7px;
   padding: 0 14px;
   border-radius: 999px;
   background: var(--chat-field);
