@@ -1,7 +1,232 @@
-import PlayDesk from "./PlayDesk.jsx";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
+import { useIsAdmin } from "../../lib/session.js";
+import { tabDepth } from "../../shared/AppFrame.jsx";
+import PageLoader from "../../shared/PageLoader.jsx";
+import { GAMES, SHELVES, gameById } from "./games/registry.js";
+import GameSheet from "./games/GameSheet.jsx";
+import DoodleCard from "./DoodleCard.jsx";
+import { StickerBook, StickerMoment } from "./Stickers.jsx";
+import { useMarkPlayed, usePlayState, useReward } from "./playState.js";
+import "./PlaySection.css";
 
-// The app's play section (docs/refactor/RENOVATION.md, owner: the frame agent): doodle, the game
-// library's five shelves and quizzes for each other.
+const MiniSketchbook = lazy(() => import("./MiniSketchbook.jsx"));
+// The quizzes agent's entry card (src/world/play/quizzes/index.js exports QuizzesEntry); until it
+// lands, a quiet placeholder holds its place.
+const quizModules = import.meta.glob("./quizzes/index.{js,jsx}", { eager: true });
+const QuizzesEntry = Object.values(quizModules)[0]?.QuizzesEntry ?? null;
+
+// The params that open the sketchbook: links to a doodle (a note's notification), the gallery, and
+// colour-club paints all land here (lib/appLinks.js).
+const SKETCH_PARAMS = ["doodle", "gallery", "paint"];
+
+/**
+ * The app's play section (docs/refactor/RENOVATION.md, owner: the frame agent): doodle, quizzes
+ * for each other, and the game library's five shelves. Games and the sketchbook open in a
+ * full-screen sheet; the URL says which (?game=<id>, ?sketchbook=1), so the tab comes back to it.
+ */
 export default function PlaySection() {
-  return <PlayDesk />;
+  const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
+  const admin = useIsAdmin();
+  const state = usePlayState();
+  const markPlayed = useMarkPlayed();
+  const reward = useReward();
+  const [book, setBook] = useState(false);
+  const [moment, setMoment] = useState(null);
+  const endMoment = useCallback(() => setMoment(null), []);
+
+  // A doodle link (?doodle=, ?gallery=1, ?paint=) opens the sketchbook, and keeps it open while the
+  // gallery tidies its own params away.
+  useEffect(() => {
+    if (params.get("sketchbook") !== "1" && SKETCH_PARAMS.some((key) => params.has(key))) {
+      setParams((next) => {
+        next.set("sketchbook", "1");
+        return next;
+      }, { replace: true });
+    }
+  }, [params, setParams]);
+
+  const gameId = params.get("game");
+  const game = gameById(gameId);
+  const sketchbook = params.get("sketchbook") === "1";
+
+  // Opening something pushes a history entry, so the back button and the edge swipe close it.
+  const open = useCallback(
+    (entries) => {
+      const next = new URLSearchParams();
+      for (const [key, value] of Object.entries(entries)) if (value !== undefined && value !== null) next.set(key, value);
+      navigate({ pathname: "/world/play", search: `?${next}` });
+    },
+    [navigate],
+  );
+  const close = useCallback(() => {
+    if (tabDepth() > 0) navigate(-1);
+    else navigate("/world/play", { replace: true });
+  }, [navigate]);
+
+  const openGame = (id) => {
+    open({ game: id });
+  };
+  useEffect(() => {
+    if (game && !state.data?.played?.includes(game.id) && state.isSuccess) markPlayed.mutate(game.id);
+  }, [game?.id, state.isSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const onReward = useCallback(
+    (value) => {
+      const sticker = value?.sticker;
+      if (!sticker) return;
+      const key = `${Date.now()}`;
+      // The capsule machine (luck shelf) saves its own prize; the hub just celebrates it.
+      if (value.saved) {
+        setMoment({ key, sticker: typeof sticker === "string" ? { id: sticker } : sticker, preview: false });
+        state.refetch();
+        return;
+      }
+      reward.mutate(
+        { sticker, game: value.game ?? gameId, reason: value.reason ?? "played" },
+        {
+          onSuccess: (result) => {
+            if (result.saved || result.preview) setMoment({ key, sticker: result.sticker, preview: result.preview });
+          },
+        },
+      );
+    },
+    [gameId, reward, state],
+  );
+
+  return (
+    <div className="app-section app-section--play">
+      <header className="app-section__head">
+        <h1 className="app-section__title">play</h1>
+        <div className="app-section__actions">
+          <button type="button" className="app-action play-stickers-button" onClick={() => setBook(true)} aria-label={admin ? "Her sticker book" : `Your sticker book, ${state.data?.collected?.length ?? 0} stickers`}>
+            <StickerBookIcon />
+            {state.data?.collected?.length > 0 && <span className="play-stickers-button__count">{state.data.collected.length}</span>}
+          </button>
+        </div>
+      </header>
+      <div className="app-section__body">
+        <DoodleCard onOpenSketchbook={({ gallery }) => open({ sketchbook: 1, gallery: gallery ? 1 : undefined })} onOpenDoodle={(id) => open({ sketchbook: 1, gallery: 1, doodle: id })} />
+        {QuizzesEntry ? <QuizzesEntry /> : <QuizzesPlaceholder />}
+        <GameLibrary played={state.data?.played} ready={state.isSuccess} onOpen={openGame} />
+      </div>
+
+      <GameStage game={game} onClose={close} onReward={onReward} />
+      <GameSheet open={sketchbook} title="lets doodle<3" onClose={close} stageClassName="game-sheet__stage--scroll play-sketch-stage">
+        <Suspense fallback={<PageLoader />}>
+          <MiniSketchbook />
+        </Suspense>
+      </GameSheet>
+      <StickerMoment moment={moment} onDone={endMoment} />
+      <StickerBook open={book} onClose={() => setBook(false)} state={state.data} admin={admin} />
+    </div>
+  );
+}
+
+/** The open game, kept on screen while its sheet slides away. */
+function GameStage({ game, onClose, onReward }) {
+  const [shown, setShown] = useState(game);
+  useEffect(() => {
+    if (game) setShown(game);
+  }, [game]);
+  const Game = useMemo(() => (shown ? lazy(shown.load) : null), [shown]);
+  return (
+    <GameSheet open={Boolean(game)} title={shown?.title ?? ""} onClose={onClose}>
+      {Game && (
+        <Suspense fallback={<PageLoader />}>
+          <Game key={shown.id} onExit={onClose} onReward={(value) => onReward({ game: shown.id, ...value })} />
+        </Suspense>
+      )}
+    </GameSheet>
+  );
+}
+
+function QuizzesPlaceholder() {
+  return (
+    <section className="app-card play-quizzes-soon" aria-labelledby="play-quizzes-title">
+      <header className="app-card__head">
+        <h2 className="app-card__title" id="play-quizzes-title">
+          quizzes for each other
+        </h2>
+      </header>
+      <div className="app-card__body">
+        <p>little questions about each other, with scores and streaks. almost ready ♡</p>
+      </div>
+    </section>
+  );
+}
+
+/** The game library: one row per shelf, newest-to-her games marked "new". Works with 2 games or 30. */
+function GameLibrary({ played, ready, onOpen }) {
+  const seen = useMemo(() => new Set(played ?? []), [played]);
+  const shelves = SHELVES.map((shelf) => ({ ...shelf, games: GAMES.filter((game) => game.shelf === shelf.id) })).filter((shelf) => shelf.games.length);
+  if (!shelves.length) {
+    return (
+      <section className="app-card app-empty">
+        <strong>games are on their way</strong>
+        <span>a whole library of little games is being set up for you.</span>
+      </section>
+    );
+  }
+  return (
+    <section className="play-library" aria-labelledby="play-library-title">
+      <h2 className="play-library__title" id="play-library-title">
+        games
+      </h2>
+      {shelves.map((shelf) => (
+        <Shelf key={shelf.id} shelf={shelf} seen={seen} ready={ready} onOpen={onOpen} />
+      ))}
+    </section>
+  );
+}
+
+function Shelf({ shelf, seen, ready, onOpen }) {
+  const row = useRef(null);
+  const fresh = ready ? shelf.games.filter((game) => !seen.has(game.id)).length : 0;
+  return (
+    <section className="play-shelf" data-shelf={shelf.id} aria-labelledby={`play-shelf-${shelf.id}`}>
+      <header className="play-shelf__head">
+        <span className="play-shelf__mark" aria-hidden="true">
+          {shelf.mark}
+        </span>
+        <h3 id={`play-shelf-${shelf.id}`}>{shelf.title}</h3>
+        <span className="play-shelf__blurb">{shelf.blurb}</span>
+        <span className="play-shelf__count">
+          {fresh > 0 ? `${fresh} new` : `${shelf.games.length} ${shelf.games.length === 1 ? "game" : "games"}`}
+        </span>
+      </header>
+      <ul className="play-shelf__row app-bleed" ref={row} data-few={shelf.games.length < 3 || undefined}>
+        {shelf.games.map((game) => {
+          const Icon = game.Icon;
+          const isNew = ready && !seen.has(game.id);
+          return (
+            <li key={game.id}>
+              <button type="button" className="play-tile" onClick={() => onOpen(game.id)} aria-label={`${game.title}${isNew ? ", new" : ""}. ${game.blurb ?? ""}`}>
+                <span className="play-tile__art" aria-hidden="true">
+                  {Icon ? <Icon /> : <span className="play-tile__glyph">{shelf.mark}</span>}
+                  {isNew && <span className="play-tile__new">new</span>}
+                </span>
+                <span className="play-tile__text" aria-hidden="true">
+                  <strong>{game.title}</strong>
+                  {game.blurb && <span>{game.blurb}</span>}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+function StickerBookIcon() {
+  // A die-cut sticker with its corner peeling up.
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14.6 19.6c-2.9.2-5.6.2-8.4-.1-1.2-.1-1.8-.8-1.9-2-.3-3.6-.3-7.3 0-10.9.1-1.2.8-1.9 2-2 3.7-.3 7.4-.3 11.1 0 1.2.1 1.9.8 2 2 .2 2.8.2 5.5 0 8.3Z" />
+      <path d="M14.6 19.6c.1-1.7.2-2.9.9-3.7.8-.8 2-1 4-1.1" />
+      <path d="M11.9 14.3c-2.1-1.4-3-2.5-2.8-3.7.2-1.2 1.8-1.5 2.8-.4 1-1.1 2.6-.8 2.8.4.2 1.2-.7 2.3-2.8 3.7Z" fill="currentColor" stroke="none" />
+    </svg>
+  );
 }

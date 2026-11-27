@@ -1,0 +1,549 @@
+/*
+  Her tab (src/world/me, owner: the me agent). The frame (src/styles/app-shell.css) draws the
+  section, the large titles, cards and grouped rows; this file only styles what is the tab's own:
+  the profile card, row icons and switches, the companion and icon pickers, the widget previews.
+*/
+
+/* ---------- rows ---------- */
+.me-icon {
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+html.app-shell .me-tile {
+  --tile-bg: #ece0f6;
+  --tile-ink: #7a4f93;
+  background: var(--tile-bg);
+  color: var(--tile-ink);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--tile-ink) 18%, transparent);
+}
+html.app-shell .me-tile[data-tone="pink"] { --tile-bg: #fbe1ea; --tile-ink: #a8466f; }
+html.app-shell .me-tile[data-tone="mint"] { --tile-bg: #dcf1ea; --tile-ink: #2f7c6a; }
+html.app-shell .me-tile[data-tone="peach"] { --tile-bg: #fde6d8; --tile-ink: #a55c3a; }
+html.app-shell .me-tile[data-tone="sky"] { --tile-bg: #e0e8fa; --tile-ink: #4a62a3; }
+html.app-shell .me-tile[data-tone="plum"] { --tile-bg: #e7d9ee; --tile-ink: #5c3b6c; }
+html.app-shell .me-tile[data-tone="butter"] { --tile-bg: #fbf0cf; --tile-ink: #8f6b17; }
+
+.me-row__label { overflow-wrap: anywhere; }
+html.app-shell .me-row .app-row__detail {
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+}
+html.app-shell .me-row--danger { color: #a53a62; }
+html.app-shell .me-row--danger .me-row__label { color: #a53a62; font-weight: 600; }
+.me-emoji { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Reaction Emoji", sans-serif; }
+
+/* A row that holds a switch: the whole row is its label. */
+html.app-shell .me-row--switch { padding: 0; }
+.me-row__switch-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 16px;
+  box-sizing: border-box;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.me-switch {
+  flex: none;
+  position: relative;
+  width: 51px;
+  height: 31px;
+  margin: 0 0 0 auto;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-line) 75%, #e9e2ee);
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  transition: background-color 200ms ease;
+}
+.me-switch::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 5px rgb(60 30 80 / 0.22), 0 0 0 0.5px rgb(60 30 80 / 0.06);
+  transition: transform 220ms cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+.me-switch:checked { background: var(--theme-accent); }
+.me-switch:checked::before { transform: translateX(20px); }
+.me-switch:disabled { opacity: 0.45; cursor: default; }
+.me-switch:focus-visible { outline: 2px solid var(--theme-accent); outline-offset: 2px; }
+
+/* A titled group of rows, and the small print under it. */
+.me-group { display: grid; gap: 7px; min-width: 0; }
+html.app-shell .me-group > .app-group-title { margin: 8px 16px 0; }
+.me-group__note,
+.me-note {
+  margin: 0 16px;
+  color: var(--theme-muted);
+  font: 400 13px/1.45 var(--font-ui);
+}
+.me-note { margin: -6px 16px 0; }
+.me-note--error { color: #a3265f; font-weight: 600; }
+html.app-shell .app-section__body > .app-group-title { margin: 8px 16px -8px; }
+
+.me-sheet-text { margin: 0; font: 400 15px/1.55 var(--font-ui); color: var(--theme-ink); }
+.me-card-text { margin: 0; font: 400 15px/1.55 var(--font-ui); color: var(--theme-ink); }
+
+/* ---------- the profile card ---------- */
+html.app-shell .me-profile {
+  position: relative;
+  overflow: hidden;
+  padding: 18px 16px 4px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--theme-soft) 70%, transparent) 0%, transparent 60%),
+    radial-gradient(90% 70% at 0% 100%, color-mix(in srgb, #f8d9e8 55%, transparent) 0%, transparent 70%),
+    var(--app-card-bg);
+}
+/* A few hand-drawn sparkles in the corner. */
+.me-profile::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 64px;
+  height: 46px;
+  opacity: 0.55;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 46' fill='none' stroke='%23a07fb3' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M48 4c.6 4 2.2 6 6.4 7-4.2 1-5.8 3-6.4 7-.6-4-2.2-6-6.4-7 4.2-1 5.8-3 6.4-7z'/%3E%3Cpath d='M28 26c.3 2.2 1.2 3.3 3.5 3.8-2.3.5-3.2 1.6-3.5 3.8-.3-2.2-1.2-3.3-3.5-3.8 2.3-.5 3.2-1.6 3.5-3.8z'/%3E%3Cpath d='M58 33h.01M20 10h.01'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+.me-profile__top {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+.me-profile__avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  padding: 3px;
+  box-sizing: border-box;
+  border: 1.5px dashed color-mix(in srgb, var(--theme-accent) 45%, transparent);
+  background: var(--theme-paper);
+}
+.me-profile__avatar img,
+.me-profile__monogram {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.me-profile__monogram {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(150deg, #efe1f8, #f9dbe9);
+  color: var(--theme-accent);
+  font: 700 38px/1 var(--font-hand);
+  padding-bottom: 4px;
+  box-sizing: border-box;
+}
+.me-profile__bloom {
+  position: absolute;
+  right: -5px;
+  bottom: -3px;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--theme-paper);
+  fill: #f6c9dc;
+  stroke: #c0628d;
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+.me-profile__who { display: grid; gap: 4px; justify-items: start; min-width: 0; }
+.me-profile__tag {
+  font: 10px/1 var(--font-pixel);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--theme-hand);
+}
+.me-profile__name {
+  margin: 0;
+  color: var(--theme-ink);
+  font: 700 32px/1 var(--font-hand);
+  letter-spacing: -0.01em;
+}
+.me-profile__feeling {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-height: 30px;
+  padding: 3px 11px 3px 6px;
+  border: 1px solid color-mix(in srgb, var(--theme-line) 85%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-paper) 80%, transparent);
+  color: var(--theme-muted);
+  font: 500 13px/1.2 var(--font-ui);
+  cursor: pointer;
+  position: relative;
+}
+.me-profile__feeling::after { content: ""; position: absolute; inset: -7px -2px; }
+.me-profile__feeling > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.me-profile__feeling:active { background: var(--app-press); }
+.me-profile__feeling-face {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--theme-soft) 80%, transparent);
+  color: var(--theme-accent);
+  /* System emoji only: the site's subset emoji font has no glyph for some of them on iOS. */
+  font: 15px/1 "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+.me-profile__edit { align-self: start; }
+
+.me-profile__stats {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 16px -16px 0;
+  border-top: 1px dashed color-mix(in srgb, var(--theme-line) 90%, transparent);
+}
+.me-stat {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 10px 2px 11px;
+  color: var(--theme-ink);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.me-stat + .me-stat::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  border-left: 1px dashed color-mix(in srgb, var(--theme-line) 90%, transparent);
+}
+.me-stat:active { background: var(--app-press); }
+.me-stat strong { font: 700 29px/1 var(--font-hand); color: var(--theme-accent); font-variant-numeric: tabular-nums; }
+.me-stat span { font: 500 12px/1.2 var(--font-ui); color: var(--theme-muted); }
+
+.me-profile__ribbon {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  min-height: 44px;
+  margin: 0 -16px;
+  padding: 4px 16px;
+  border-top: 1px dashed color-mix(in srgb, var(--theme-line) 90%, transparent);
+  color: var(--theme-accent);
+  font: 700 19px/1.2 var(--font-hand);
+}
+.me-profile__ribbon .admin-edit { margin-left: auto; }
+.me-profile__days span { color: #c0628d; }
+.me-profile__days--unset { color: var(--theme-muted); font-weight: 400; }
+.me-profile__birthday { color: #b0507f; }
+
+/* ---------- her companion ---------- */
+.me-cast {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.me-cast__choice {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 3px;
+  min-width: 0;
+  padding: 14px 4px 12px;
+  border: 1px solid var(--app-card-line, var(--theme-line));
+  border-radius: 18px;
+  background: var(--app-card-bg, var(--theme-paper));
+  box-shadow: var(--app-card-shadow);
+  color: var(--theme-ink);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 140ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+.me-cast__choice:active { transform: scale(0.96); }
+.me-cast__choice[aria-checked="true"] {
+  border-color: color-mix(in srgb, var(--theme-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--theme-soft) 45%, var(--theme-paper));
+}
+.me-cast__portrait { position: relative; display: grid; place-items: center; width: 76px; height: 76px; margin-bottom: 4px; }
+.me-cast__portrait > svg { width: 72px; height: 72px; display: block; }
+.me-cast__choice[aria-checked="true"] .me-cast__portrait::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 2.5px solid var(--theme-accent);
+}
+.me-cast__check {
+  position: absolute;
+  right: -2px;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--theme-accent);
+  box-shadow: 0 0 0 2.5px var(--theme-paper);
+}
+.me-cast__check svg { fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.me-cast__name { font: 700 19px/1.1 var(--font-hand); text-align: center; overflow-wrap: anywhere; }
+.me-cast__from { font: 400 11.5px/1.3 var(--font-ui); color: var(--theme-muted); text-align: center; padding: 0 4px; }
+.me-cast__choice--none .me-cast__name { color: var(--theme-muted); }
+
+/* ---------- app icon ---------- */
+html.app-shell .me-icons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 8px;
+  padding: 20px 10px 16px;
+}
+.me-icons__choice {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--theme-ink);
+  font: 500 13px/1.2 var(--font-ui);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.me-icons__choice img {
+  width: 64px;
+  height: 64px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgb(73 54 83 / 0.18);
+  transition: transform 150ms ease;
+}
+.me-icons__choice:active img { transform: scale(0.92); }
+.me-icons__choice[aria-checked="true"] img { outline: 3px solid var(--theme-accent); outline-offset: 3px; }
+.me-icons__choice[aria-checked="true"] span { color: var(--theme-accent); font-weight: 700; }
+
+/* ---------- small controls ---------- */
+.me-select {
+  flex: none;
+  max-width: 50%;
+  min-height: 36px;
+  padding: 0 28px 0 12px;
+  border: 1px solid var(--theme-line);
+  border-radius: 10px;
+  background: var(--theme-paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23785383' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M3 4.5l3 3 3-3'/%3E%3C/svg%3E") no-repeat right 9px center / 12px;
+  color: var(--theme-ink);
+  font: 500 16px/1 var(--font-ui);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.me-segments {
+  display: inline-flex;
+  flex: none;
+  padding: 2px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--theme-soft) 75%, transparent);
+}
+.me-segments button {
+  min-width: 44px;
+  min-height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--theme-ink);
+  font: 600 15px/1 var(--font-ui);
+  cursor: pointer;
+}
+.me-segments button[aria-checked="true"] { background: var(--theme-paper); box-shadow: 0 1px 4px rgb(60 30 80 / 0.16); color: var(--theme-accent); }
+
+/* Passphrase fields: label on the left, the field filling the row. */
+html.app-shell .me-field { gap: 10px; padding-block: 0; }
+.me-field__label { flex: none; width: 82px; font: 500 15px/1.2 var(--font-ui); color: var(--theme-ink); }
+.me-field__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 50px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--theme-ink);
+  font: 16px/1.2 var(--font-ui);
+  outline: none;
+}
+.me-field__input[aria-invalid="true"] { color: #a3265f; }
+.me-passphrase { display: grid; gap: 16px; min-width: 0; }
+.me-button {
+  justify-self: stretch;
+  min-height: 50px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--theme-accent);
+  color: #fff9ff;
+  font: 700 17px/1 var(--font-ui);
+  box-shadow: 0 3px 0 var(--theme-deep);
+  cursor: pointer;
+}
+.me-button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--theme-deep); }
+.me-button:disabled { opacity: 0.45; cursor: default; transform: none; box-shadow: 0 3px 0 var(--theme-deep); }
+
+.me-dot { flex: none; width: 10px; height: 10px; margin: 0 11px; border-radius: 50%; background: var(--mist-300, #c6c2cd); }
+.me-dot--ok { background: #5fb08f; box-shadow: 0 0 0 3px #dcf1ea; }
+
+/* Photos in the admin's list. */
+.me-photo__thumb {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--theme-soft);
+  color: var(--theme-accent);
+}
+.me-photo__thumb--round { border-radius: 50%; }
+.me-photo__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.me-photo__pick {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-soft) 80%, transparent);
+  color: var(--theme-accent);
+  font: 700 14px/1 var(--font-ui);
+  cursor: pointer;
+}
+.me-photo__pick::after { content: ""; position: absolute; inset: -5px; }
+.me-photo__pick input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.me-photo__pick:has(input:focus-visible) { outline: 2px solid var(--theme-accent); outline-offset: 2px; }
+
+/* ---------- widget previews ---------- */
+.me-widgets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.me-widget {
+  position: relative;
+  aspect-ratio: 1;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 14px;
+  border-radius: 22px;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--theme-paper);
+  box-shadow: 0 1px 2px rgb(84 56 95 / 0.08), 0 10px 24px -12px rgb(84 56 95 / 0.4);
+  color: var(--theme-ink);
+}
+.me-widget small { font: 10px/1 var(--font-pixel); letter-spacing: 0.1em; text-transform: uppercase; color: var(--theme-hand); }
+.me-widget strong { font: 700 19px/1.1 var(--font-hand); overflow-wrap: anywhere; }
+.me-widget p { margin: 0; font: 12.5px/1.4 var(--font-ui); color: var(--theme-muted); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.me-widget em { font: 600 11px/1.2 var(--font-ui); font-style: normal; color: #b0507f; margin-top: auto; }
+.me-widget__empty { color: var(--theme-muted); }
+.me-widget--note {
+  background:
+    linear-gradient(90deg, transparent 0 22px, color-mix(in srgb, #f0a7c4 55%, transparent) 22px 23px, transparent 23px) 0 0 / 100% 100% no-repeat,
+    #fffaf3;
+  padding: 20px 14px 14px 32px;
+}
+.me-widget__tape {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 54px;
+  height: 18px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: color-mix(in srgb, #f4bfd6 70%, transparent);
+  border-radius: 2px;
+}
+.me-widget--jar { background: linear-gradient(170deg, #e5f5ef, #fdf8ff 75%); justify-items: start; }
+.me-widget__jar { position: relative; color: #3b8a74; margin: 6px 0 2px; }
+.me-widget__heart { position: absolute; right: -8px; top: -2px; color: #e0476f; font-size: 15px; }
+.me-widget--signals { background: linear-gradient(165deg, #fde4ee, #f6efff 80%); }
+.me-widget__taps { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+.me-widget__taps span {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 6px 2px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.75);
+  font: 500 10px/1.15 var(--font-ui);
+  color: var(--theme-muted);
+  text-align: center;
+}
+.me-widget__taps b { font: 20px/1 "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+.me-widget--con {
+  border: 0;
+  background:
+    radial-gradient(circle at 0 62%, var(--theme-page) 0 8px, transparent 8.5px),
+    radial-gradient(circle at 100% 62%, var(--theme-page) 0 8px, transparent 8.5px),
+    linear-gradient(165deg, #efe4fb, #fff8fc 80%);
+}
+
+/* ---------- the website's settings pieces, dressed for the app ---------- */
+html.app-shell .me-screen--legacy .settings-card {
+  padding: 16px;
+  border: 1px solid var(--app-card-line);
+  border-radius: var(--app-card-radius);
+  background: var(--app-card-bg);
+  box-shadow: var(--app-card-shadow);
+}
+/* The screen's large title already says what this is. */
+html.app-shell .me-screen--legacy .settings-card > h2:first-child,
+html.app-shell .me-screen--legacy .settings-card__head h2 { display: none; }
+html.app-shell .me-screen--legacy .settings-card__head { grid-template-columns: auto minmax(0, 1fr); }
+
+/* ---------- the foot of the tab ---------- */
+.me-foot {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 18px 0 4px;
+  color: var(--theme-muted);
+  font: 400 11.5px/1.4 var(--font-ui);
+  text-align: center;
+}
+.me-foot__line { font: 400 21px/1.2 var(--font-hand); color: var(--theme-hand); }
+
+@media (prefers-reduced-motion: reduce) {
+  .me-switch,
+  .me-switch::before,
+  .me-cast__choice,
+  .me-icons__choice img { transition: none; }
+}
+
+/* Her song shelf (src/world/stage/SongShelf.jsx) as one card; the screen's title names it. */
+html.app-shell .me-screen--legacy .settings-songs { margin: 0; padding: 0; max-width: none; background: none; }
+html.app-shell .me-screen--legacy .shelf {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--app-card-line);
+  border-radius: var(--app-card-radius);
+  background: var(--app-card-bg);
+  box-shadow: var(--app-card-shadow);
+}
+html.app-shell .me-screen--legacy .shelf > .stage__section-title { display: none; }
