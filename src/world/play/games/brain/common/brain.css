@@ -184,7 +184,17 @@
 .brain-howto__body { display: grid; gap: 10px; font-size: 14px; line-height: 1.55; color: #6a5276; }
 .brain-howto__body ul { display: grid; gap: 7px; padding-left: 0; list-style: none; }
 .brain-howto__body li { position: relative; padding-left: 22px; }
-.brain-howto__body li::before { content: "✿"; position: absolute; left: 0; color: #c18bb4; }
+/* The bullet is a drawn blossom (a glyph like ✿ can fall back to a box on some iPhones). */
+.brain-howto__body li::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: 0.32em;
+  width: 14px;
+  height: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cg fill='%23e7b3d2' stroke='%23c18bb4' stroke-width='1.2'%3E%3Cellipse cx='10' cy='5' rx='3.4' ry='4.4'/%3E%3Cellipse cx='10' cy='5' rx='3.4' ry='4.4' transform='rotate(72 10 10)'/%3E%3Cellipse cx='10' cy='5' rx='3.4' ry='4.4' transform='rotate(144 10 10)'/%3E%3Cellipse cx='10' cy='5' rx='3.4' ry='4.4' transform='rotate(216 10 10)'/%3E%3Cellipse cx='10' cy='5' rx='3.4' ry='4.4' transform='rotate(288 10 10)'/%3E%3C/g%3E%3Ccircle cx='10' cy='10' r='2.4' fill='%23ffe08f'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.brain-heart-glyph { width: 0.95em; height: 0.95em; vertical-align: -0.12em; margin-left: 0.2em; fill: none; stroke: currentColor; stroke-width: 2; }
 .brain-howto__body b { color: var(--b-ink); }
 .brain-howto .brain-btn { justify-self: stretch; }
 
@@ -203,6 +213,74 @@
 .brain-done h3 { font: 700 28px/1 var(--font-hand); color: var(--b-ink); }
 .brain-done p { font-size: 13.5px; line-height: 1.5; color: var(--b-ink-soft); }
 .brain-done__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 4px; }
+
+/* ---------- Maomao's running commentary (MaomaoSays.jsx) ---------- */
+.brain-mao {
+  flex: none;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+.brain-mao .mascot { flex: none; border: 0; background: none; padding: 0; }
+.brain-mao__bubble {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  margin: 0 0 18px;
+  padding: 8px 13px;
+  display: flex;
+  align-items: center;
+  border-radius: 18px 20px 18px 6px;
+  background: var(--b-paper);
+  border: 1.5px solid #cbb3d8;
+  box-shadow: 0 3px 0 #e4d5ec;
+  font: 700 17.5px/1.15 var(--font-hand);
+  color: #5d3f69;
+  animation: brain-say 0.25s ease-out;
+}
+.brain-mao__bubble::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  bottom: 9px;
+  width: 13px;
+  height: 13px;
+  background: var(--b-paper);
+  border-left: 1.5px solid #cbb3d8;
+  border-bottom: 1.5px solid #cbb3d8;
+  transform: rotate(45deg) skew(10deg, 10deg);
+  border-radius: 0 0 0 4px;
+}
+@keyframes brain-say { from { opacity: 0; transform: translateY(4px) scale(0.98); } }
+
+/* A row of small text actions under a board (undo, nudge, start over). */
+.brain-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 6px; }
+.brain-action {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: #6f4f7c;
+  font: 700 17px/1 var(--font-hand) !important;
+  cursor: pointer;
+}
+.brain-action:active { background: #efe3f5; }
+.brain-action:disabled { opacity: 0.4; }
+.brain-action:focus-visible { outline: 2px solid var(--b-plum); outline-offset: -3px; }
+
+/* Hearts left in a run (odd jar, herb sequence). */
+.brain-hearts { display: inline-flex; gap: 2px; margin-left: 2px; }
+.brain-heart { fill: none; stroke: #c98aa9; }
+.brain-heart[data-full] { fill: #ec9fc2; stroke: #c2668f; }
 
 @keyframes brain-fade { from { opacity: 0; } }
 @keyframes brain-rise { from { transform: translateY(24px); opacity: 0; } }

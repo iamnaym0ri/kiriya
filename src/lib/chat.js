@@ -41,6 +41,7 @@ function cleanMedia(media) {
 
 /** Keeps this phone's own previews of what it just sent, so the picture never flickers. */
 function keepLocal(saved, local) {
+  if (local?.media?.localUrl && saved?.media && !Array.isArray(saved.media.items)) return { ...saved, media: { ...saved.media, localUrl: local.media.localUrl } };
   const savedItems = saved?.media?.items;
   const localItems = local?.media?.items;
   if (!Array.isArray(savedItems) || !Array.isArray(localItems)) return saved;
@@ -303,9 +304,18 @@ export function useSendMessage(me) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (message) => {
-      const attachments = message.attachments ?? outbox.get(message.clientId);
+      // `after`: what was sent just before this in the same go (a sticker before her words); this
+      // one is posted only once that has been, so both phones keep the order she sent them in.
+      const before = message.after;
+      const attachments = message.attachments ?? (message.sticker ? null : outbox.get(message.clientId));
       let media = message.media;
-      if (attachments?.length) {
+      // A sticker or Genmoji from the iPhone keyboard: one see-through PNG, sealed like a photo.
+      const sticker = message.sticker ?? (message.kind === "sticker" ? outbox.get(message.clientId)?.[0] : null);
+      if (sticker?.file) {
+        outbox.set(message.clientId, [sticker]);
+        const stored = await storeFile(sticker.file);
+        media = { ...stored, width: Math.round(sticker.width), height: Math.round(sticker.height), mime: sticker.file.type || "image/png", ...(sticker.alt ? { alt: sticker.alt } : {}) };
+      } else if (attachments?.length) {
         outbox.set(message.clientId, attachments);
         let frame = 0;
         media = await uploadAlbum(attachments, (progress) => {
@@ -318,12 +328,14 @@ export function useSendMessage(me) {
         });
         cancelAnimationFrame(frame);
       }
-      const saved = await postMessage({ ...message, media });
+      const { sticker: _sticker, after: _after, ...rest } = message; // eslint-disable-line no-unused-vars
+      if (before) await Promise.resolve(before).catch(() => {});
+      const saved = await postMessage({ ...rest, media });
       outbox.delete(message.clientId);
       return saved;
     },
     onMutate: (message) => {
-      const { attachments, ...rest } = message;
+      const { attachments, sticker, after: _after, ...rest } = message; // eslint-disable-line no-unused-vars
       mergeMessages(queryClient, [
         {
           reactions: {},
@@ -331,6 +343,7 @@ export function useSendMessage(me) {
           media: null,
           ...rest,
           ...(attachments?.length ? { media: localAlbum(attachments) } : {}),
+          ...(sticker?.previewUrl ? { media: { url: sticker.previewUrl, localUrl: sticker.previewUrl, width: sticker.width, height: sticker.height } } : {}),
           id: `pending-${message.clientId}`,
           sender: me,
           pending: true,

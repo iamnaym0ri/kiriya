@@ -33,8 +33,12 @@ export default function PlaySection() {
   const state = usePlayState();
   const markPlayed = useMarkPlayed();
   const reward = useReward();
-  const [moment, setMoment] = useState(null);
-  const endMoment = useCallback(() => setMoment(null), []);
+  // Sticker moments wait their turn: a game can give two at once (her first word, found in two
+  // tries), and each gets its own few seconds.
+  const [moments, setMoments] = useState([]);
+  const moment = moments[0] ?? null;
+  const setMoment = useCallback((next) => setMoments((queue) => [...queue, next]), []);
+  const endMoment = useCallback(() => setMoments((queue) => queue.slice(1)), []);
 
   // A colour-club link (?paint=) opens the sketchbook, and keeps it open while the sketchbook
   // tidies the param away.
@@ -77,7 +81,7 @@ export default function PlaySection() {
     (value) => {
       const sticker = value?.sticker;
       if (!sticker) return;
-      const key = `${Date.now()}`;
+      const key = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       // The capsule machine (luck shelf) saves its own prize; the hub just celebrates it.
       if (value.saved) {
         setMoment({ key, sticker: typeof sticker === "string" ? { id: sticker } : sticker, preview: false });
@@ -93,7 +97,7 @@ export default function PlaySection() {
         },
       );
     },
-    [gameId, reward, state],
+    [gameId, reward, state, setMoment],
   );
 
   if (gallery) {

@@ -155,11 +155,9 @@ export default function QuizScreen() {
                 next quiz ›
               </Link>
             ) : (
-              answererOf(quiz) === me && (
-                <Link className="quiz-button quiz-button--primary" to={`${HOME}/new`} replace>
-                  write one back ✎
-                </Link>
-              )
+              <Link className="quiz-button quiz-button--primary" to={`${HOME}/new`} replace>
+                {answererOf(quiz) === me ? "write one back ✎" : "ask another ✎"}
+              </Link>
             )}
             <button type="button" className="quiz-button" onClick={back}>
               back to quizzes

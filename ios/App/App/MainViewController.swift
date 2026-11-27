@@ -13,7 +13,18 @@ import WebKit
 ///   starts (KiriyaNotifications.swift). Taps and "Open" are still forwarded to that router.
 /// - the app's own small plugins (KiriyaKeychainPlugin below, and the chat's keys and privacy cover
 ///   in KiriyaChatPlugin.swift).
+/// - the iPhone keyboard's own stickers and Genmoji in the chat's field (iOS 18+): WebKit offers and
+///   inserts them ("adaptive image glyphs") only when the web view allows it and the field is a
+///   rich contenteditable (src/world/chat/RichField.jsx takes each one out as a picture).
 class MainViewController: CAPBridgeViewController {
+    override func webViewConfiguration(for instanceConfiguration: InstanceConfiguration) -> WKWebViewConfiguration {
+        let configuration = super.webViewConfiguration(for: instanceConfiguration)
+        if #available(iOS 18.0, *) {
+            configuration.supportsAdaptiveImageGlyph = true
+        }
+        return configuration
+    }
+
     override func capacitorDidLoad() {
         super.capacitorDidLoad()
         bridge?.registerPluginInstance(KiriyaKeychainPlugin())

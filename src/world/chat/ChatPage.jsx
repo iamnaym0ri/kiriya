@@ -387,8 +387,11 @@ export default function ChatPage() {
   const doSend = useCallback(
     (message) => {
       haptic("light");
-      send.mutate(message, { onError: (error) => error?.code === "chat_locked" && say(lockedHint) });
       setReplyTo(null);
+      // Resolves once it's posted (or has failed), so a composer can keep several sends in order.
+      return send.mutateAsync(message).catch((error) => {
+        if (error?.code === "chat_locked") say(lockedHint);
+      });
     },
     [send, say],
   );
@@ -501,7 +504,7 @@ export default function ChatPage() {
       {held &&
         // On <body>, above the tab bar, in a layer that carries the chat's look (theme, bubbles).
         createPortal(
-          <div className="chat chat--layer" data-theme={prefs.theme ?? "lilac"} data-bubble={prefs.bubble} data-background={background} style={style}>
+          <div className="chat chat--layer" {...room.look}>
             <HoldMenu
           held={held}
           me={me}

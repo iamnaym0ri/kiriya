@@ -1,0 +1,93 @@
+/* Herb sequence: Maomao's note on cream paper, slots for her copy, and a tray of herbs to pick. */
+.hs {
+  --w: min(calc(100cqw - 32px), 440px);
+  --slot: min(60px, calc((var(--w) - 40px - 5 * 6px) / 6));
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  gap: 12px;
+  padding: 10px 16px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.hs-note {
+  flex: none;
+  width: var(--w);
+  box-sizing: border-box;
+  padding: 12px 14px 14px;
+  border-radius: 18px 16px 20px 16px;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 25px, #efe0cf 25px 26px),
+    #fffaf1;
+  border: 1.5px dashed #cbb092;
+  box-shadow: 0 5px 0 #eadfd2;
+  transition: background-color 0.25s ease;
+}
+.hs[data-phase="recall"] .hs-note,
+.hs[data-phase="copied"] .hs-note { border-style: solid; border-color: #c9aed8; background: #fffafd; box-shadow: 0 5px 0 #e6d6ee; }
+.hs-note__label { margin-bottom: 10px; text-align: center; font: 700 17px/1.1 var(--font-hand); color: #8a6a96; }
+.hs-slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 6px; margin: 0; padding: 0; list-style: none; }
+.hs-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--slot);
+  height: calc(var(--slot) + 12px);
+  padding-bottom: 12px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  background: #fff;
+  border: 1.5px solid #e3d3eb;
+}
+.hs-slot .game-symbol { width: 78%; height: 78%; }
+.hs-slot[data-filled] .game-symbol { animation: brain-pop 0.25s ease-out; }
+.hs-slot small { position: absolute; bottom: 2px; font: 600 10px/1 var(--font-ui); color: #a58fb0; }
+.hs-slot__q { font: 700 22px/1 var(--font-hand); color: #cdb7d9; }
+.hs-slot[data-right] { background: #f4fbef; border-color: #9cbf8f; }
+.hs-slot[data-wrong] { background: #fff0f5; border-color: #e48bb3; animation: brain-shake 0.35s ease; }
+.hs-slot__mine {
+  position: absolute;
+  top: -10px;
+  right: -8px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid #e48bb3;
+  box-shadow: 0 2px 4px rgb(160 40 90 / 0.15);
+}
+.hs-slot__mine .game-symbol { width: 18px; height: 18px; }
+.hs[data-phase="copied"] .hs-slot { animation: hs-hop 0.5s ease-in-out both; animation-delay: calc(var(--n, 0) * 40ms); }
+@keyframes hs-hop { 45% { transform: translateY(-6px); } }
+
+/* Every phase's foot (and the result card) fills one fixed-height slot, so the note stays put. */
+.hs-foot { flex: none; width: var(--w); display: grid; justify-items: center; align-content: start; gap: 8px; min-height: 196px; }
+.hs-foot > .brain-btn { min-width: 70%; }
+.hs-tip { text-align: center; font: 700 17px/1.2 var(--font-hand); color: #a1577f; }
+.hs-choices { width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.hs-choices[data-six] { grid-template-columns: repeat(3, 1fr); }
+.hs-choice {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  min-height: 76px;
+  padding: 8px 4px 6px;
+  border: 1.5px solid #d6c2e1;
+  border-radius: 16px 14px 17px 14px;
+  background: #fffafd;
+  box-shadow: 0 3px 0 #ddcbe7;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.hs-choices[data-six] .hs-choice { min-height: 68px; }
+.hs-choice:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #ddcbe7; }
+.hs-choice:disabled { opacity: 0.5; }
+.hs-choice:focus-visible { outline: 2px solid var(--b-plum); outline-offset: 2px; }
+.hs-choice .game-symbol { width: 40px; height: 40px; }
+.hs-choice small { font: 500 11px/1.2 var(--font-ui); color: #8d7697; }
+.hs-done { flex: none; width: var(--w); min-height: 196px; box-sizing: border-box; align-content: center; animation: brain-rise 0.35s 0.25s ease-out both; }
