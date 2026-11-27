@@ -91,7 +91,9 @@ const sealedOnly = z.object({ ...dims, sealed: opaque(SEALED_MAX) }).strict();
 const MEDIA = {
   image: z.union([z.object({ items: z.array(albumItem).min(1).max(ALBUM_MAX) }).strict(), legacyImage]),
   gif: z.object({ url: giphyUrl, mp4: giphyUrl.optional(), webp: giphyUrl.optional(), still: giphyUrl.optional(), giphyId: z.string().max(80).optional(), ...dims, ...alt, ...sealed }).strict(),
-  sticker: z.object({ url: z.union([builtInSticker, z.string().refine((u) => isUploadUrl(u, ["stickers"]))]), ...dims, ...alt, ...sealed }).strict(),
+  // Built-in and uploaded stickers (phase 4), and the iPhone's own stickers and Genmoji (round 3: a
+  // PNG in the chat folder, sealed like a photo once the chat is).
+  sticker: z.object({ url: z.union([builtInSticker, z.string().refine((u) => isUploadUrl(u, ["stickers", "chat"]))]), ...dims, ...alt, ...mime, ...sealed }).strict(),
   voice: z
     .object({
       url: chatUpload,

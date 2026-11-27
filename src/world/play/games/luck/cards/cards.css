@@ -143,3 +143,7 @@
 html[data-little-motion="off"] :is(.cards-flip__back, .cards-flip__face, .cards-current, .cards-badge) { animation: none !important; }
 html[data-little-motion="off"] .cards-flip__back { opacity: 0; }
 html[data-little-motion="off"] .cards-flip__face { transform: none; }
+
+/* How many cards left in the deck would make each guess right. */
+.cards-btn__text { display: grid; justify-items: start; gap: 4px; line-height: 1; }
+.cards-btn__text small { font: 10px/1 var(--font-pixel); letter-spacing: .06em; color: #f3e6ff; opacity: .85; }

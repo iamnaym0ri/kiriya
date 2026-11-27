@@ -43,14 +43,16 @@ export default function CharmGrid({ onReward }) {
 
   useEffect(() => writeStore(SAVE, state), [state]);
 
-  // The clock runs only while she's playing and the app is in front.
+  // The clock starts with her first charm (not while she reads how to play) and runs only while
+  // she's playing and the app is in front.
+  const started = entries.some(Boolean) || notes.some(Boolean);
   useEffect(() => {
-    if (solved || !visible) return undefined;
+    if (solved || !visible || !started) return undefined;
     const id = setInterval(() => {
       setState((s) => ({ ...s, games: { ...s.games, [s.tier]: { ...s.games[s.tier], seconds: s.games[s.tier].seconds + 1 } } }));
     }, 1000);
     return () => clearInterval(id);
-  }, [solved, visible, tier]);
+  }, [solved, visible, started, tier]);
 
   useEffect(() => {
     if (!flash) return undefined;
@@ -213,8 +215,10 @@ export default function CharmGrid({ onReward }) {
                   aria-label={`row ${r + 1}, column ${c + 1}: ${v ? charmName(v) : "empty"}${puzzle[i] ? ", given" : ""}${clash.has(i) ? ", repeats" : ""}`}
                   aria-selected={sel === i}
                   onClick={() => {
-                    feel("tap");
-                    setSelected(sel === i ? null : i);
+                    // Tapping the chosen square again keeps it chosen (a nudge selects a square,
+                    // and her natural next move is to tap it).
+                    if (sel !== i) feel("tap");
+                    setSelected(i);
                   }}
                 >
                   {v ? (
@@ -279,7 +283,17 @@ export default function CharmGrid({ onReward }) {
               </button>
             </div>
             <p className="cg-tip" role="status">
-              {flash?.kind === "pick" ? "tap a square first ♡" : flash?.kind === "wrong" ? "this one doesn’t quite fit" : flash?.kind === "nudge" ? "that one could only be there ✧" : noting ? "notes: tap charms to pencil them in" : ""}
+              {flash?.kind === "pick"
+                ? "tap a square first ♡"
+                : flash?.kind === "wrong"
+                  ? "this one doesn’t quite fit"
+                  : flash?.kind === "nudge"
+                    ? "that one could only be there ✧"
+                    : noting
+                      ? "notes: tap charms to pencil them in"
+                      : filled === n * n
+                        ? "all filled! the dashed ones repeat ✧"
+                        : ""}
             </p>
           </div>
         )}

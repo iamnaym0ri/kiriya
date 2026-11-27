@@ -406,7 +406,13 @@ export default function BambyBody({
   ) : carried.has("mic") ? (
     <MicArm />
   ) : (
-    <Arm side="r">{known === "lift" && <Dumbbell />}</Arm>
+    <Arm side="r">
+      {known === "lift" && (
+        <g data-cs-pop="">
+          <Dumbbell />
+        </g>
+      )}
+    </Arm>
   );
   // The engine passes `frame` as live motion values (ignored here: the walk is a CSS cycle). A plain
   // number is the lab's way to freeze a pose at that point of its cycle, for screenshots.
@@ -511,8 +517,16 @@ export default function BambyBody({
                 <Fringe ids={ids} />
                 <BambyBrows expression={face} />
                 <HeartShades down={shadesDown} />
-                {carried.has("headset") && <Headset />}
-                {known === "count" && <Earbuds />}
+                {carried.has("headset") && (
+                  <g data-cs-pop="" style={{ "--cs-pop-origin": "50% 50%" }}>
+                    <Headset />
+                  </g>
+                )}
+                {known === "count" && (
+                  <g data-cs-pop="" style={{ "--cs-pop-origin": "50% 50%" }}>
+                    <Earbuds />
+                  </g>
+                )}
                 {known === "bloom" && (
                   <g className="bamby__bloom">
                     <g className="bamby__bloom-squeeze">
@@ -534,7 +548,11 @@ export default function BambyBody({
                   </g>
                 )}
               </g>
-              {known === "snack" && <Peach />}
+              {known === "snack" && (
+                <g data-cs-pop="">
+                  <Peach />
+                </g>
+              )}
               <Arm side="l" />
               {rightArm}
             </>

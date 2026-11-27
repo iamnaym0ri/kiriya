@@ -37,8 +37,10 @@ export function LivePreview({ prefs, name, onMovePhoto }) {
     <div className="chat-preview chat-preview--live" {...look} data-movable={movable || undefined} {...handlers} aria-label="How your chat will look" role="img">
       <span className="chat__backdrop" aria-hidden="true" />
       <span className="chat-preview__bar" aria-hidden="true">
-        <span className="chat-preview__avatar">{(name ?? "").slice(0, 1).toUpperCase()}</span>
         <span className="chat-preview__name">{name}</span>
+        <span className="chat-preview__status">
+          <i /> active
+        </span>
       </span>
       <span className="chat-preview__list" aria-hidden="true">
         <span className="chat__day">
@@ -56,7 +58,7 @@ export function LivePreview({ prefs, name, onMovePhoto }) {
         </span>
       </span>
       <span className="chat-preview__composer" aria-hidden="true">
-        <span>message…</span>
+        <span>talk to me baby</span>
       </span>
       {movable && <span className="chat-preview__hint">drag to move your photo</span>}
     </div>

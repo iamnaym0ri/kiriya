@@ -53,14 +53,12 @@ function Tile({ cell, idx, w, state, selected, hint, drop }) {
 
 const HELP = (
   <>
-    <p>Swap two herbs next to each other (slide one, or tap one and then its neighbour) to line up three or more of a kind.</p>
+    <p>Swap two herbs side by side (slide one, or tap one and then its neighbour) to line up three of a kind.</p>
     <ul>
-      <li>Gather the herbs each garden asks for, and untangle any vines: match on them or right beside them.</li>
-      <li>Four in a row ties a <b>ribbon bundle</b>: match it to clear its whole line.</li>
-      <li>An L or a T leaves a <b>dew drop</b>: it clears the herbs around it.</li>
-      <li>Five in a row makes a <b>honey pot</b>: swap it with any herb to gather every one of those.</li>
+      <li>Gather the herbs the garden asks for, and untangle vines by matching on or beside them.</li>
+      <li>Four in a row ties a <b>ribbon bundle</b> (clears its line), an L or T leaves a <b>dew drop</b> (clears around it), five makes a <b>honey pot</b> (swap it to gather every herb of a kind).</li>
     </ul>
-    <p>There's no rush and no running out. Finish within the garden's par for three flowers.</p>
+    <p>No rush and no running out. Finish within par for three flowers ✿</p>
   </>
 );
 
@@ -91,8 +89,8 @@ export default function HerbMatch({ onReward }) {
   const armHint = useCallback(() => {
     timers.cancel(hintTimer.current);
     setHint(null);
-    hintTimer.current = timers.later(() => !busy.current && setHint(findMove(garden.board, Math.random)), 9000);
-  }, [garden.board, timers]);
+    hintTimer.current = timers.later(() => !busy.current && !gardenDone(garden) && setHint(findMove(garden.board, Math.random)), 9000);
+  }, [garden, timers]);
   useEffect(() => {
     if (!finished) armHint();
   }, [armHint, finished]);

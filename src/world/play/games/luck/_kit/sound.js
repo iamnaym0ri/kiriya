@@ -52,13 +52,40 @@ const MELODIES = {
   fanfare: [[659, 0], [784, 110], [988, 220], [1319, 360]],
 };
 
+// Ambient while a luck game is open: the silent switch mutes these sounds and they mix with her
+// other music instead of stopping it. The session is the whole page's, so it goes back to "auto"
+// when the game closes, and it's left alone while the app's own song is playing (an ambient song
+// would stop when the screen locks).
+let ambientSet = false;
+function ambientSession() {
+  try {
+    const session = navigator.audioSession;
+    if (!session || session.type !== "auto" || navigator.mediaSession?.playbackState === "playing") return;
+    session.type = "ambient";
+    ambientSet = true;
+  } catch {
+    // Older iOS: no audio session to set.
+  }
+}
+export function restoreAudioSession() {
+  if (!ambientSet) return;
+  ambientSet = false;
+  try {
+    if (navigator.audioSession?.type === "ambient") navigator.audioSession.type = "auto";
+  } catch {
+    // Nothing to undo.
+  }
+}
+
 export function unlockAudio() {
+  if (enabled) ambientSession();
   const context = enabled ? audioContext() : null;
   if (context?.state === "suspended") context.resume().catch(() => {});
 }
 
 export function play(name) {
   if (!enabled) return;
+  ambientSession();
   const context = audioContext();
   if (!context) return;
   if (context.state === "suspended") context.resume().catch(() => {});

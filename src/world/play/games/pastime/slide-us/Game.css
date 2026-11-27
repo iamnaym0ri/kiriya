@@ -41,13 +41,13 @@
   color: #fff;
   font: 8px/1.3 var(--font-pixel, monospace);
 }
-.slide-admin { flex: none; }
+.slide-admin { flex: none; min-height: 44px; }
 
 .slide-bar { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .slide-sizes { display: flex; padding: 3px; border-radius: 999px; background: #eadcf1; }
 .slide-sizes button {
   min-width: 52px;
-  min-height: 40px;
+  min-height: 44px;
   border: 0;
   border-radius: 999px;
   background: transparent;

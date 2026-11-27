@@ -27,8 +27,17 @@ function Ring({ diff }) {
 
 function Picture({ round, side, found, misses, hintId, onTap, label }) {
   const url = useMemo(() => svgUrl(sceneSvg(round, side)), [round, side]);
+  // A tap, not the end of a slide across the picture.
+  const down = useRef(null);
+  const onPointerUp = (event) => {
+    const start = down.current;
+    down.current = null;
+    if (start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 14) return;
+    onTap(event, side);
+  };
   return (
-    <div className="spot-pic" onPointerUp={(event) => onTap(event, side)} role="img" aria-label={label}>
+    <div className="spot-pic" onPointerDown={(event) => (down.current = { x: event.clientX, y: event.clientY })} onPointerUp={onPointerUp}
+      onPointerCancel={() => (down.current = null)} role="img" aria-label={label}>
       <img src={url} alt="" draggable="false" />
       <svg className="spot-marks" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} aria-hidden="true">
         {round.diffs.filter((diff) => found.includes(diff.id)).map((diff) => <Ring key={diff.id} diff={diff} />)}
@@ -65,6 +74,7 @@ export default function SpotDifference({ onReward }) {
   const [cheer, setCheer] = useState(null);
   const [shake, setShake] = useState(null);
   const [showDone, setShowDone] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const round = useMemo(() => buildRound(state.round), [state.round]);
   const done = state.found.length >= round.diffs.length;
   const { paused, resume } = usePause();
@@ -83,10 +93,10 @@ export default function SpotDifference({ onReward }) {
 
   // A gentle clock, stopped while she's away or the picture is done.
   useEffect(() => {
-    if (paused || done) return undefined;
+    if (paused || helpOpen || done) return undefined;
     const id = setInterval(() => setState((old) => ({ ...old, seconds: old.seconds + 1 })), 1000);
     return () => clearInterval(id);
-  }, [paused, done]);
+  }, [paused, helpOpen, done]);
 
   function onTap(event, side) {
     if (done || paused) return;
@@ -140,7 +150,7 @@ export default function SpotDifference({ onReward }) {
   }
 
   return (
-    <PastimeShell game={GAME} kicker={`picture ${state.round + 1} · ${round.title}`} help={HELP}>
+    <PastimeShell game={GAME} kicker={`picture ${state.round + 1} · ${round.title}`} help={HELP} onHelp={setHelpOpen}>
       <div className="spot">
         <div className="pastime-stats">
           <div className="pastime-stat spot-found">

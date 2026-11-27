@@ -202,16 +202,19 @@
   color: var(--chat-bar-ink);
   border-bottom: 1px solid var(--chat-line);
 }
-.chat-preview__avatar {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
+/* Like the real header: the name, then the green dot and "active". */
+.chat-preview__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: 400 10.5px/1 var(--font-ui);
+  color: var(--chat-meta);
+}
+.chat-preview__status i {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--chat-accent);
-  color: var(--chat-accent-ink);
-  font-size: 12px;
-  font-weight: 700;
+  background: var(--chat-active, #3fae74);
 }
 .chat-preview__name {
   font: 400 19px/1 "Parisienne", cursive;

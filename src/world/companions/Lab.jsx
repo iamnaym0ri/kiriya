@@ -14,7 +14,8 @@ import "./lab.css";
 // open=1 (panel open), tab=stage|poses, scale=0.7..1.2, ride=1|0 (try riding or trailing clouds),
 // stay=1|0 (start told to stay, or wandering; leave it out to keep what this phone remembers),
 // face=<expression> (the pose gallery with one expression on every pose), demo=menu|action|stay|
-// wander (once it has settled: opens the menu, or chooses that chip, for devices nothing can tap).
+// wander (once it has settled: opens the menu, or chooses that chip, for devices nothing can tap),
+// blend=0 (no cross-fade between poses: how it was before round 3, to compare).
 
 const HomeBackdrop = lazy(() => import("../home/HomeSection.jsx"));
 
@@ -153,6 +154,7 @@ export default function CompanionLab() {
   const quiet = quietParam === "1" ? true : quietParam === "0" ? false : undefined;
   const debug = params.get("debug") === "1";
   const avoidText = params.get("avoid") !== "0";
+  const blend = params.get("blend") !== "0";
   const bg = params.get("bg") ?? "home";
   const ride = params.get("ride");
   const stayParam = params.get("stay");
@@ -179,10 +181,11 @@ export default function CompanionLab() {
       quiet,
       debug,
       avoidText,
+      blend,
       visits: { enabled: false },
       movement: ride === "1" ? { platform: "ride", walkPose: "sit", restPose: "sit" } : ride === "0" ? { platform: "trail" } : undefined,
     }),
-    [levels, speed, scale, quiet, debug, avoidText, ride],
+    [levels, speed, scale, quiet, debug, avoidText, blend, ride],
   );
 
   // stay=… is a one-shot: drop it from the address so a reload keeps what the phone remembers.
@@ -349,6 +352,9 @@ export default function CompanionLab() {
             </label>
             <label className="clab-check">
               <input type="checkbox" checked={avoidText} onChange={(e) => set({ avoid: e.target.checked ? "" : 0 })} /> avoid text
+            </label>
+            <label className="clab-check">
+              <input type="checkbox" checked={blend} onChange={(e) => set({ blend: e.target.checked ? "" : 0 })} /> blend poses
             </label>
             <label>
               hold pose

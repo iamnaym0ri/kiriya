@@ -95,3 +95,18 @@ export function shuffle(items, random = Math.random) {
   }
   return result;
 }
+
+/**
+ * When a round ends, brings its result card into view if the board pushed it below the fold (a
+ * small phone, a big board): the game column scrolls on its own, never the page.
+ */
+export function useShowWhen(ref, show) {
+  useEffect(() => {
+    if (!show) return undefined;
+    const timer = setTimeout(() => {
+      const reduced = matchMedia(REDUCED).matches;
+      ref.current?.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [show, ref]);
+}
