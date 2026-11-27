@@ -16,20 +16,38 @@ export default {
     "Miku as in “Confessions of a Rotten Girl” (SAWTOWNE, 2025), original fan art. Hatsune Miku © Crypton Future Media, INC. www.piapro.net, under the Piapro Character License (piapro.net/intl/en_character.html).",
   size: SIZE,
   Body,
-  poses: POSE_NAMES,
+  poses: POSE_NAMES, // the shared ten, crouch, and her own: sketch, pray, fluster, peek, cheer, nope, glint, giggle, show
   expressions: EXPRESSIONS,
   Platform,
+  // Engine options: src/world/companions/README.md, "Movement". She walks on a trail of sketchbook
+  // clouds (drawn in ahead, rubbed out behind), hops between levels with a little wind-up, and when
+  // she stops she sits on her cloud, legs swinging, and draws.
   movement: {
     walkSpeed: 34, // small quick steps
-    jumpiness: 0.35, // a little hop-happy when excited
-    restPose: "sketch", // sits on her cloud, legs swinging, drawing
-    sitPose: "sit",
+    restPose: "sketch",
+    restSeconds: [3, 6],
+    restlessness: 0.45,
+    jumpiness: 0.35, // a bit hop-happy when excited
+    wander: 0.45,
+    platform: "trail",
+    platformWidth: 96,
+    platformForm: 440, // matches the pencil drawing the outline in
+    platformFade: 580, // matches the eraser rubbing it out
+    platformFx: "own",
+    anticipation: 220,
+    landing: 340,
+    squash: 0.6, // her land and jump poses squash already
+    heldAt: 0.36, // lifted by the back of her collar
+    sway: 1.1,
+    talkiness: 0.5,
+    expressions: { tapped: "gasp", picked: "flustered", putDown: "happy", walk: "soft", jump: "gasp" },
   },
   behaviours: [
     { id: "sketch", weight: 5, pose: "sketch", expression: "focused", seconds: [9, 16], topic: "sketching" },
     { id: "swing", weight: 3, pose: "sit", expression: "happy", seconds: [7, 12], topic: "idle" },
     { id: "show", weight: 2, pose: "show", expression: "sparkle", seconds: [4, 7], topic: "shipping" },
-    { id: "daydream", weight: 2, pose: "sit", expression: "dreamy", seconds: [6, 10], topic: "daydream" },
+    { id: "daydream", weight: 2, pose: "sit", expression: "dreamy", seconds: [6, 10], topic: "daydream", level: "top" },
+    { id: "stroll", weight: 1, pose: "walk", expression: "soft", seconds: [4, 7], topic: "idle", roam: true },
     { id: "confess", weight: 1.5, pose: "pray", expression: "pray", seconds: [4, 7], topic: "confess" },
     { id: "giggle", weight: 1.5, pose: "giggle", expression: "giggle", seconds: [3, 5], topic: "giggle" },
     { id: "peek", weight: 1.2, pose: "peek", expression: "shy", seconds: [4, 7], topic: "peeking" },
@@ -37,7 +55,8 @@ export default {
     { id: "fluster", weight: 0.8, pose: "fluster", expression: "flustered", seconds: [3, 5], topic: "fluster" },
     { id: "cheer", weight: 0.8, pose: "cheer", expression: "sparkle", seconds: [3, 6], topic: "cheer" },
     { id: "resist", weight: 0.6, pose: "nope", expression: "flustered", seconds: [2, 4], topic: "resist" },
-    { id: "nap", weight: 0.6, pose: "sleep", expression: "sleepy", seconds: [10, 18], topic: "sleepy" },
+    { id: "doze", weight: 0.4, pose: "sleep", expression: "sleepy", seconds: [8, 12], topic: "sleepy", stay: true },
+    { id: "nap", weight: 4, pose: "sleep", expression: "sleepy", seconds: [14, 24], topic: "sleepy", stay: true, hours: [22, 7] },
   ],
   lines,
   visit,

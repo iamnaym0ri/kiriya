@@ -963,7 +963,7 @@
 .mr-cloud[data-state="forming"] .mr-cloud__doodles {
   opacity: 0;
 }
-.mr-cloud[data-state="steady"] .mr-cloud__doodles path:last-child {
+.mr-cloud[data-state="steady"] .mr-cloud__doodles > :last-child {
   animation: mr-twinkle 2.4s ease-in-out infinite;
 }
 .mr-cloud[data-state="fading"] .mr-cloud__body {
@@ -1027,6 +1027,16 @@
     opacity: 0;
     translate: 3px 9px;
   }
+}
+/* Quiet mode or paused: no drawing, puffing or crumbs; the cloud simply fades in and out. */
+.mr-cloud[data-playing="off"] * {
+  animation: none !important;
+}
+.mr-cloud[data-playing="off"] {
+  transition: opacity 0.3s ease;
+}
+.mr-cloud[data-playing="off"][data-state="fading"] {
+  opacity: 0;
 }
 @media (prefers-reduced-motion: reduce) {
   /* No drawing or puffing: the cloud simply fades in and out. */

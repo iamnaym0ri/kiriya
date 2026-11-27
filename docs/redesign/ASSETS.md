@@ -78,3 +78,7 @@ The screenshots in `strawpage-references/` document four live Strawpages for res
 ## Unified doodle tools
 
 The new brush previews and shape/stamp paths are original code-native SVG/canvas work in `src/world/play/MiniSketchbook.jsx` and `src/world/studio/drawingTools.js`. The drawing surface generates its own dotted/lined paper and deterministic crayon texture. No additional downloaded artwork or image generator was used. Existing Mixbox pigment mixing retains its CC BY-NC 4.0 attribution in the folded paint box. Saved drawings and uploaded artwork continue to use private media storage.
+
+## Companion: Rotten Girl Miku
+
+`src/world/companions/characters/miku-rotten/` is original SVG/CSS fan art: Hatsune Miku as she appears in "Confessions of a Rotten Girl" (SAWTOWNE, 2025; [MV](https://www.youtube.com/watch?v=sV2H712ldOI)), redrawn from scratch in the house chibi style. Nothing from the MV is traced or embedded, and her dialogue is original (no lyrics). Hatsune Miku © Crypton Future Media, INC. www.piapro.net, used under the [Piapro Character License](https://piapro.net/intl/en_character.html) (non-commercial fan creation).

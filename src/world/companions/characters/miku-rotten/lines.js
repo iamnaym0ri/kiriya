@@ -1,21 +1,21 @@
 // What she says. Original lines in her voice: a sweet, flustered fangirl who "ships" everything
 // (two teacups, the sun and the moon, Kiriya and Josh), doodles in a secret sketchbook, makes tiny
 // dramatic confessions and giggles into her hand. Lowercase, soft, never spicy, no song lyrics.
-// The reader is Kiriya. Each line is a string or { text, expression }; the expression is one of
+// The reader is Kiriya ({name} becomes her name). Each line is a string or { text, expression }; the expression is one of
 // Face.jsx's (soft, happy, giggle, gasp, flustered, sparkle, smug, shy, focused, pray, sleepy,
 // dreamy, worried, pout) and shows on her while the bubble is up.
 const say = (expression, text) => ({ text, expression });
 
 export const lines = {
   greet: [
-    say("happy", "kiriya! hi! this sketchbook? nothing. no reason."),
+    say("happy", "{name}! hi! this sketchbook? nothing. no reason."),
     say("sparkle", "hi hi! i was just thinking about you. a normal amount!"),
     say("soft", "welcome back~ the cloud's comfier when you're around."),
     say("giggle", "oh! hello! you caught me mid-doodle. hehe."),
     say("happy", "you're here! i saved you the good side of the cloud."),
   ],
   greetMorning: [
-    say("happy", "good morning, kiriya! i saved you a fresh page."),
+    say("happy", "good morning, {name}! i saved you a fresh page."),
     say("sparkle", "morning! the light's perfect for sketching today~"),
     say("soft", "you're up! i drew the sunrise. it came out a bit purple."),
     say("giggle", "morning~ i only stayed up a little bit drawing. a little. hehe."),
@@ -24,14 +24,14 @@ export const lines = {
     say("shy", "o-oh, morning! i wasn't doodling you. i was doodling the sun. near you."),
   ],
   greetAfternoon: [
-    say("happy", "afternoon, kiriya! snack break? i brought crayons. not snacks. sorry."),
+    say("happy", "afternoon, {name}! snack break? i brought crayons. not snacks. sorry."),
     say("sparkle", "you're back! i have so much to show you. page one of… nine."),
     say("soft", "good afternoon~ i kept your spot on the cloud warm."),
     say("giggle", "afternoon! i may have shipped two pigeons while you were out."),
     say("focused", "hi hi! one second, finishing a line… there. perfect. hello!"),
   ],
   greetEvening: [
-    say("soft", "good evening, kiriya. the sky's doing its pink thing again."),
+    say("soft", "good evening, {name}. the sky's doing its pink thing again."),
     say("happy", "evening~ tell me everything. i'll take notes. in the margins."),
     say("dreamy", "evenings are for soft drawings and softer people. like you."),
     say("giggle", "you're home! well, app-home. cloud-home. hehe."),
@@ -39,7 +39,7 @@ export const lines = {
   ],
   greetNight: [
     say("sleepy", "it's late… sleeping soon? i'll close my sketchbook if you do."),
-    say("worried", "kiriya, it's past bedtime. says the girl with no bedtime."),
+    say("worried", "{name}, it's past bedtime. says the girl with no bedtime."),
     say("soft", "goodnight soon? i'll keep watch from the cloud. very seriously."),
     say("pray", "a tiny bedtime confession: i drew you a blanket. it's in the margin."),
     say("shy", "night owl twins? hehe. but you rest first, okay?"),
@@ -60,7 +60,7 @@ export const lines = {
     say("happy", "the cloud bounced when i sat down. i think it likes me."),
   ],
   tapped: [
-    say("gasp", "eep! oh, it's you. hi kiriya!"),
+    say("gasp", "eep! oh, it's you. hi {name}!"),
     say("flustered", "n-no, it's not what it looks like! …okay, it's two teacups in love."),
     say("giggle", "hehe, that tickles. are you checking i'm real?"),
     say("shy", "you want to see the sketchbook? …maybe. one page."),
@@ -83,14 +83,14 @@ export const lines = {
   ],
   putDown: [
     say("happy", "safe landing! ten points."),
-    say("soft", "phew. thank you for the lift, kiriya."),
+    say("soft", "phew. thank you for the lift, {name}."),
     say("flustered", "my tails are everywhere. give me a second."),
     say("giggle", "again? no. maybe. later. hehe."),
     say("gasp", "the cloud caught me! good cloud."),
     say("smug", "nailed it. please don't check the replay."),
   ],
   birthday: [
-    say("sparkle", "happy birthday, kiriya!! i drew you a cake with eleven layers!"),
+    say("sparkle", "happy birthday, {name}!! i drew you a cake with eleven layers!"),
     say("sparkle", "september seventeenth! the best page in the whole calendar!"),
     say("happy", "happy birthday~ every page of my sketchbook is yours today."),
     say("dreamy", "on your birthday, you're the main character of every story i draw."),
@@ -103,13 +103,26 @@ export const lines = {
     say("soft", "your cosplay is so good it makes my pencil nervous."),
     say("happy", "if i drew the best day ever, you'd be right in the middle."),
     say("dreamy", "josh keeps leaving you little notes. i'm not crying. the cloud is."),
-    say("sparkle", "you're my muse, kiriya. officially. i wrote it in pen."),
+    say("sparkle", "you're my muse, {name}. officially. i wrote it in pen."),
     say("soft", "whatever today was like, you did enough. you are enough."),
     say("shy", "you make this cloud feel like home. there. i said it."),
     say("giggle", "i drew a heart for every time you smiled today. i ran out of pages."),
     say("pray", "confession: i'm your number one fan. okay, josh is. i'm number two."),
     say("happy", "you, a cosplay and a con hall? my favourite kind of story."),
     say("soft", "drink some water, okay? artist's orders."),
+  ],
+  pester: [
+    say("flustered", "okay okay okay! i'm awake! i'm drawing! what is it?!"),
+    say("pout", "keep poking and i'm drawing you as a pigeon."),
+    say("giggle", "hehe, stop, stop! my glasses are all crooked now!"),
+    say("flustered", "eep! eep! eep! that's three eeps!"),
+    say("smug", "three taps. secret code for “draw me something”, right?"),
+  ],
+  bye: [
+    say("happy", "bye bye! i'll draw you something nice!"),
+    say("shy", "thanks for sharing your cloud~"),
+    say("giggle", "see you! i took notes on this visit. hehe."),
+    say("soft", "okay, back to my sketchbook. bye!"),
   ],
   visit: [
     say("sparkle", "ooh, company! quick, look natural!"),
@@ -169,7 +182,7 @@ export const lines = {
     say("smug", "heh. i've noticed something. those two? best friends. definitely."),
     say("smug", "my analysis is complete. the answer is: cute."),
     say("smug", "according to my notes, you smile more on con days."),
-    say("smug", "the glasses see everything, kiriya. everything."),
+    say("smug", "the glasses see everything, {name}. everything."),
     say("smug", "theory: every snack tastes better shared."),
   ],
   fluster: [
@@ -179,7 +192,7 @@ export const lines = {
     say("flustered", "i wasn't staring! i was sketching. with my eyes."),
   ],
   cheer: [
-    say("sparkle", "go go kiriya! you can do anything!"),
+    say("sparkle", "go go {name}! you can do anything!"),
     say("sparkle", "cheering for you! with my paddle! it has a heart on it!"),
     say("sparkle", "you're doing amazing! ten out of ten! eleven!"),
     say("sparkle", "fighting! i believe in you!"),
@@ -202,6 +215,11 @@ export const lines = {
 // classic Miku's sparkle, KAITO's gentle big-brother ease) and uses an expression from that
 // character's own face rig.
 export const visit = {
+  // Anyone without pairs of their own: she speaks first, the reply is plain so any face fits.
+  any: [
+    [say("sparkle", "ooh, a visitor! can i sketch you? quick, pose!"), "a pose? like… this?"],
+    [say("shy", "h-hi! don't mind the sketchbook. it's nothing. it's everything."), "can i see it?"],
+  ],
   with: {
     maomao: [
       [say("sparkle", "maomao! can i draw you holding a herb? for… science."), say("deadpan", "Fine. But you're blocking my light.")],
