@@ -200,6 +200,7 @@ export function Credits({ onClose }) {
         </a>{" "}
         © Microsoft, MIT licence. GIF search powered by GIPHY.
       </p>
+      <p>Bamby (PLAVE) © VLAST — fan art, drawn for this app.</p>
       <h3>Reference collection</h3>
       <p>
         Maomao portraits and botanical images are from the supplied reference
