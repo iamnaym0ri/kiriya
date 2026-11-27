@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api.js";
+import { useIsAdmin } from "../../lib/session.js";
 import { Group, Note, Row, SwitchRow } from "./parts.jsx";
 
 // Josh's desk inside his tab: shortcuts into the places where he edits what she sees in place
@@ -10,7 +11,8 @@ export const appTestKey = ["admin", "app-test"];
 
 export function useAppTest() {
   const queryClient = useQueryClient();
-  const state = useQuery({ queryKey: appTestKey, queryFn: () => api("/admin/app-test"), staleTime: 15_000 });
+  const admin = useIsAdmin();
+  const state = useQuery({ queryKey: appTestKey, queryFn: () => api("/admin/app-test"), staleTime: 15_000, enabled: admin });
   const mode = useMutation({
     mutationFn: (on) => api("/admin/app-test/mode", { method: "POST", body: { on } }),
     onMutate: async (on) => {

@@ -16,10 +16,14 @@ import { Group, MeIcon, Note, Row, Screen, SwitchRow } from "./parts.jsx";
 
 const sgTime = (value) => new Date(value).toLocaleString("en-SG", { timeZone: "Asia/Singapore", weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 
-/** Only for the admin: her phone never shows these screens, even from a typed link. */
-function AdminOnly({ children }) {
-  const admin = useIsAdmin();
-  if (!admin)
+/**
+ * Only for the admin: her phone never shows these screens (or makes their requests: an admin route
+ * answering her 401 would sign her out), even from a typed link.
+ */
+function adminOnly(Inner) {
+  return function AdminScreen() {
+    const admin = useIsAdmin();
+    if (admin) return <Inner />;
     return (
       <Screen title="just for josh">
         <div className="app-empty">
@@ -27,7 +31,7 @@ function AdminOnly({ children }) {
         </div>
       </Screen>
     );
-  return children;
+  };
 }
 
 /* ---------- try a notification ---------- */
@@ -59,12 +63,11 @@ function tryOutcome(result) {
   return `sent to ${app.sent} of ${app.targets} of your app phones${app.error ? ` · ${app.error}` : ""} ♡`;
 }
 
-export function TryScreen() {
+export const TryScreen = adminOnly(function TryScreen() {
   const test = useAppTest();
   const tryOne = useTry();
   const data = test.state.data;
   return (
-    <AdminOnly>
       <Screen title="try a notification" short="try one" subtitle="a sample of each, to your own phone only. trying one turns test mode on, so its buttons answer you instead of her.">
         <Group>
           <SwitchRow
@@ -99,9 +102,8 @@ export function TryScreen() {
           </Group>
         )}
       </Screen>
-    </AdminOnly>
   );
-}
+});
 
 /* ---------- widgets ---------- */
 
@@ -255,7 +257,7 @@ function PhotoRow({ label, url, round, busy, onPick }) {
   );
 }
 
-export function PhotosScreen() {
+export const PhotosScreen = adminOnly(function PhotosScreen() {
   const queryClient = useQueryClient();
   const admin = useIsAdmin();
   const profile = useQuery({ queryKey: ["admin", "profile"], queryFn: () => api("/admin/profile"), enabled: admin });
@@ -292,7 +294,6 @@ export function PhotosScreen() {
 
   const data = profile.data;
   return (
-    <AdminOnly>
       <Screen title="signature & photos" short="photos" subtitle="your signature ends every letter and note. the photos are on her public page.">
         <Group title="signature">
           <Row onClick={() => setEditing(true)} icon="pen" tone="peach" label={data?.signature ?? "…"} hint="how your letters are signed" more />
@@ -327,13 +328,12 @@ export function PhotosScreen() {
           </EditField>
         </EditSheet>
       </Screen>
-    </AdminOnly>
   );
-}
+});
 
 /* ---------- passphrases ---------- */
 
-export function PassphrasesScreen() {
+export const PassphrasesScreen = adminOnly(function PassphrasesScreen() {
   const queryClient = useQueryClient();
   const admin = useIsAdmin();
   const credentials = useQuery({ queryKey: ["admin", "credentials"], queryFn: () => api("/admin/credentials"), enabled: admin });
@@ -344,7 +344,6 @@ export function PassphrasesScreen() {
   });
   const kiriya = credentials.data?.kiriya;
   return (
-    <AdminOnly>
       <Screen title="passphrases" subtitle="she can change hers in her own tab. if she ever forgets it, put the original back here.">
         <Group title="hers">
           <Row
@@ -362,9 +361,8 @@ export function PassphrasesScreen() {
           <p className="me-sheet-text">her passphrase goes back to the original one, and every device of hers signs out. tell her the original before you do ♡</p>
         </EditSheet>
       </Screen>
-    </AdminOnly>
   );
-}
+});
 
 /* ---------- how everything is running ---------- */
 
@@ -379,13 +377,12 @@ const SERVICE_LABELS = {
   fileStorage: "file storage",
 };
 
-export function StatusScreen() {
+export const StatusScreen = adminOnly(function StatusScreen() {
   const admin = useIsAdmin();
   const status = useQuery({ queryKey: ["admin", "status"], queryFn: () => api("/admin/status"), enabled: admin, refetchOnWindowFocus: true });
   const test = useAppTest();
   const data = status.data;
   return (
-    <AdminOnly>
       <Screen title="how everything is running" short="status">
         {status.error && <Note tone="error">{status.error.message}</Note>}
         {data && (
@@ -416,6 +413,5 @@ export function StatusScreen() {
           </>
         )}
       </Screen>
-    </AdminOnly>
   );
-}
+});

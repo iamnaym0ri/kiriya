@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { COMPANIONS } from "../../../shared/companions.js";
 import { availableCompanions, loadCompanion } from "../companions/registry.js";
-import { usePrefs, useSetPrefs } from "../../lib/prefs.js";
+import { useQueryClient } from "@tanstack/react-query";
+import { prefsKey, usePrefs, useSetPrefs } from "../../lib/prefs.js";
 import { useIsAdmin } from "../../lib/session.js";
 import { haptic } from "../../lib/native.js";
 import { Note, Screen } from "./parts.jsx";
@@ -77,6 +78,11 @@ export default function CharacterScreen() {
   const admin = useIsAdmin();
   const thumbs = useThumbs();
   const [said, setSaid] = useState(null);
+  const queryClient = useQueryClient();
+  // Her pick may have changed on another phone: check the saved one whenever this screen opens.
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: prefsKey });
+  }, [queryClient]);
   const current = prefs.data?.companion ?? "maomao";
 
   function pick(id) {

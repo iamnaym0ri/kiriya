@@ -73,7 +73,10 @@ const togetherBody = z
     since: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)
-      .refine((day) => !Number.isNaN(Date.parse(`${day}T00:00:00Z`)), "not a real day")
+      .refine((day) => {
+        const date = new Date(`${day}T00:00:00Z`);
+        return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === day;
+      }, "not a real day")
       .nullable(),
   })
   .strict();
