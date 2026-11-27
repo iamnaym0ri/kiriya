@@ -82,27 +82,39 @@ export default function MailSection() {
   // then tidy the address so the section underneath is just the section.
   const linked = LINK_PARAMS.some((key) => params.has(key)) || location.hash === "#note-jar";
   const pullNow = params.get("jar") === "pull";
+  const recheck = useRef(false);
   useLayoutEffect(() => {
     if (!linked || mail.pending || (pullNow && jar.summary.isPending)) return;
     const letterId = params.get("letter");
     const noteId = params.get("note");
-    if (letterId) {
-      const letter = letterId === "maomao" ? (mail.maomao && { id: "maomao" }) : mail.letters.find((item) => item.id === letterId);
-      setReveal(letter ? { kind: "letter", id: letter.id, origin: null } : { kind: "message", title: "this letter isn’t here any more", text: "it may have been tucked away. everything else is right where you left it ♡" });
-    } else if (noteId) {
-      const note = mail.notes.find((item) => item.id === noteId);
-      const announcement = !note && mail.announcements.find((item) => item.id === noteId);
-      const announced = announcement && mail.letters.find((item) => item.id === letterIdOf(announcement));
-      const test = !note && !announced && mail.test.find((item) => item.id === noteId);
-      setReveal(
-        note
-          ? { kind: "note", id: note.id, origin: null }
-          : announced
-            ? { kind: "letter", id: announced.id, origin: null }
-            : test
-              ? { kind: "note", id: test.id, test: true, origin: null }
-              : { kind: "message", title: "this note isn’t here any more", text: "it may be an old one. all your little notes are right here ♡" },
-      );
+    if (letterId || noteId) {
+      let found = null;
+      if (letterId) {
+        const letter = letterId === "maomao" ? (mail.maomao && { id: "maomao" }) : mail.letters.find((item) => item.id === letterId);
+        if (letter) found = { kind: "letter", id: letter.id, origin: null };
+      } else {
+        const note = mail.notes.find((item) => item.id === noteId);
+        const announcement = !note && mail.announcements.find((item) => item.id === noteId);
+        const announced = announcement && mail.letters.find((item) => item.id === letterIdOf(announcement));
+        const test = !note && !announced && mail.test.find((item) => item.id === noteId);
+        if (note) found = { kind: "note", id: note.id, origin: null };
+        else if (announced) found = { kind: "letter", id: announced.id, origin: null };
+        else if (test) found = { kind: "note", id: test.id, test: true, origin: null };
+      }
+      if (!found) {
+        // A brand-new note may not be in what the phone kept from last time: ask once more first.
+        if (mail.fetching) return;
+        if (!recheck.current) {
+          recheck.current = true;
+          mail.refetch();
+          return;
+        }
+        found = letterId
+          ? { kind: "message", title: "this letter isn’t here any more", text: "it may have been tucked away. everything else is right where you left it ♡" }
+          : { kind: "message", title: "this note isn’t here any more", text: "it may be an old one. all your little notes are right here ♡" };
+      }
+      recheck.current = false;
+      setReveal(found);
     } else if (pullNow) {
       jar.pull(null);
       setReveal({ kind: "jar" });
@@ -111,7 +123,7 @@ export default function MailSection() {
     for (const key of LINK_PARAMS) next.delete(key);
     const search = next.toString();
     navigate({ pathname: "/world/mail", search: search ? `?${search}` : "" }, { replace: true });
-  }, [linked, mail.pending, pullNow && jar.summary.isPending]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [linked, mail.pending, mail.fetching, pullNow && jar.summary.isPending]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // What was new when she came in stays in "new for you" until she leaves the section, so the
   // list doesn't jump about under her thumb as she reads.
