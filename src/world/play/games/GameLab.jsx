@@ -1,4 +1,5 @@
 import { Suspense, lazy, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router";
 import { GAMES, gameById } from "./registry.js";
 
@@ -22,7 +23,9 @@ export default function GameLab() {
     );
   }
   const exit = () => setParams({});
-  return (
+  // Portalled to <body>: the page's content column is its own stacking context, so a sheet inside
+  // it would sit under the header, the ribbon, the little corner and the tab bar.
+  return createPortal(
     <div className="game-sheet" style={{ position: "fixed", inset: 0, zIndex: 2147482500, display: "flex", flexDirection: "column", background: "var(--purple-50)", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
       <header style={{ flex: "none", height: 44, display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
         <button type="button" onClick={exit} style={{ minHeight: 44, border: 0, background: "none", color: "var(--purple-700)", font: "500 16px var(--font-ui)" }}>‹ play</button>
@@ -33,6 +36,7 @@ export default function GameLab() {
           <Game onExit={exit} onReward={(reward) => console.info("reward", reward)} />
         </Suspense>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
