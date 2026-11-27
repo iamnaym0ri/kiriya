@@ -133,20 +133,24 @@ function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loading
     for (const m of visible) known.current.add(keyOf(m));
     newestAt.current = visible.reduce((latest, m) => (m.createdAt > latest ? m.createdAt : latest), newestAt.current);
     if (!fresh.length || !node) return;
-    // Something she just sent always comes into view, even if she'd scrolled back up.
-    const mineSent = visible.some((m) => fresh.includes(keyOf(m)) && m.sender === me);
-    const away = node.scrollHeight - node.scrollTop - node.clientHeight > 80;
-    if (mineSent && away) {
-      requestAnimationFrame(() => scrollToEnd({ behavior: reducedMotion() ? "auto" : "smooth" }));
-      return;
-    }
-    if (reducedMotion()) return;
+    const freshIds = new Set(visible.filter((m) => fresh.includes(keyOf(m))).map((m) => m.id));
+    const mineSent = visible.some((m) => freshIds.has(m.id) && m.sender === me);
+    // Was she reading at the bottom before these arrived? (Their own height doesn't count.)
+    let freshHeight = 0;
+    content.current?.querySelectorAll(".msg[data-id]").forEach((row) => freshIds.has(row.dataset.id) && (freshHeight += row.parentElement?.offsetHeight ?? row.offsetHeight));
+    const wasAtBottom = node.scrollHeight - freshHeight - node.scrollTop - node.clientHeight < 24;
     const top = node.scrollTop;
     // The scroller follows the bottom right after this (before the screen is drawn); measure how far it moved.
     requestAnimationFrame(() => {
       const delta = node.scrollTop - top;
-      if (delta <= 0) return;
-      const skip = new Set(visible.filter((m) => fresh.includes(keyOf(m))).map((m) => m.id));
+      const away = node.scrollHeight - node.scrollTop - node.clientHeight > 4;
+      // Something she just sent always comes into view, and so does what arrives while she's at the bottom.
+      if (away && (mineSent || wasAtBottom)) {
+        scrollToEnd({ behavior: reducedMotion() ? "auto" : "smooth" });
+        return;
+      }
+      if (delta <= 0 || reducedMotion()) return;
+      const skip = freshIds;
       content.current?.querySelectorAll(".msg[data-id]").forEach((row) => {
         if (skip.has(row.dataset.id)) return;
         const rect = row.getBoundingClientRect();
