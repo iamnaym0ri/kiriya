@@ -10,8 +10,8 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const HELP = {
   game: "cards",
   steps: [
-    ["↕", "will the next card be higher or lower? pick one"],
-    ["=", "the same number counts as right ♡"],
+    ["updown", "will the next card be higher or lower? pick one"],
+    ["same", "the same number counts as right, too"],
     ["5", "keep the streak going: 5 and 10 in a row earn a sticker"],
   ],
 };

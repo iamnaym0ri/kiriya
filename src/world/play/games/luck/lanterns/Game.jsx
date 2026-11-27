@@ -9,9 +9,9 @@ import "./lanterns.css";
 const HELP = {
   game: "lanterns",
   steps: [
-    ["✧", "tap a lantern to catch the wish it carries"],
+    ["lantern", "tap a lantern to catch the wish it carries"],
     ["3", "catch three and keep their wishes"],
-    ["✦", "a golden one sometimes carries a spare capsule coin"],
+    ["coin", "a golden one sometimes carries a spare capsule coin"],
   ],
 };
 const TINTS = {

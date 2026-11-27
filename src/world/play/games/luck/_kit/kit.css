@@ -189,7 +189,7 @@ html[data-little-motion="off"] .luck-panel, html[data-little-motion="off"] .luck
 .luck-round--q span { font: 700 24px/1 var(--font-hand); margin-top: -2px; }
 
 /* The first-time how-to (StatusBar's `help`). */
-.luck-howto .luck-panel__body { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+.luck-howto .luck-panel__body { padding-bottom: 20px; }
 .luck-howto__steps { list-style: none; margin: 4px 0 18px; padding: 0; display: grid; gap: 12px; }
 .luck-howto__steps li { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 12px; font: 21px/1.2 var(--font-hand); color: var(--luck-ink); }
 .luck-howto__mark {
@@ -203,5 +203,6 @@ html[data-little-motion="off"] .luck-panel, html[data-little-motion="off"] .luck
   color: var(--luck-plum);
   font: 700 20px/1 var(--font-hand);
 }
+.luck-howto__mark svg { width: 22px; height: 22px; }
 .luck-howto__go { width: 100%; }
 .luck-panel:focus { outline: none; }

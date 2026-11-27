@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
-import { unlockAudio, useSound } from "./sound.js";
+import { restoreAudioSession, unlockAudio, useSound } from "./sound.js";
 import "./kit.css";
 
 // Shared pieces for the luck shelf's games. Each game fills the hub's sheet (RENOVATION.md,
@@ -7,6 +7,7 @@ import "./kit.css";
 
 /** The game's stage: fills the sheet, never scrolls or zooms the page behind it. */
 export const LuckStage = forwardRef(function LuckStage({ className = "", children, ...rest }, ref) {
+  useEffect(() => restoreAudioSession, []);
   return (
     <div ref={ref} className={`luck-stage ${className}`} onPointerDownCapture={unlockAudio} {...rest}>
       {children}
@@ -29,6 +30,31 @@ export function SoundButton() {
     <button type="button" className="luck-round" aria-pressed={on} aria-label={on ? "sound on" : "sound off"} onClick={toggle}>
       <SpeakerIcon on={on} />
     </button>
+  );
+}
+
+// The how-to's little marks, drawn (a number is simply written).
+const MARK_PATHS = {
+  crank: <><path d="M18.4 9.2A7 7 0 1 0 19 14" /><path d="M19 4.5v5h-5" /></>,
+  capsule: <><circle cx="12" cy="12" r="8" /><path d="M4 12h16" /><path d="M8.5 8.5c.8-1 2-1.6 3.3-1.7" /></>,
+  coin: <><circle cx="12" cy="12" r="8" /><path d="M12 7.6l1.3 2.8 3 .4-2.2 2 .6 3-2.7-1.5-2.7 1.5.6-3-2.2-2 3-.4z" fill="currentColor" stroke="none" /></>,
+  updown: <><path d="M8 19V5M4.5 8.5L8 5l3.5 3.5" /><path d="M16 5v14M12.5 15.5L16 19l3.5-3.5" /></>,
+  same: <path d="M6 9.5h12M6 14.5h12" />,
+  heart: <path d="M12 19.5C6 15.6 3.5 12.7 3.5 9.6A4 4 0 0 1 12 7.8a4 4 0 0 1 8.5 1.8c0 3.1-2.5 6-8.5 9.9z" />,
+  star: <path d="M12 3.8l2.4 5 5.4.7-4 3.7 1 5.4L12 16l-4.8 2.6 1-5.4-4-3.7 5.4-.7z" />,
+  swap: <><path d="M4 9h15M15.5 5.5L19 9l-3.5 3.5" /><path d="M20 15H5M8.5 11.5L5 15l3.5 3.5" /></>,
+  tin: <><path d="M6.5 7.5h11l-1 12h-9z" /><path d="M6.5 7.5c0-1.4 2.5-2.3 5.5-2.3s5.5.9 5.5 2.3" /><path d="M12.6 5.2l1.2-3" /></>,
+  bow: <><path d="M12 12c-2.5-4-7.5-5-7.5-1.5S9.5 13 12 12zM12 12c2.5-4 7.5-5 7.5-1.5S14.5 13 12 12z" /><path d="M11 13l-2.5 6M13 13l2.5 6" /></>,
+  flower: <><circle cx="12" cy="12" r="2.4" /><path d="M12 9.6c-1.6-3.6 1.6-3.6 0 0M14.3 11.3c3.5-1.9 4.5 1.2.4 1.2M13.4 14.1c2.3 3.2-.4 5.1-1.4 1.2M10.6 14.1c-2.3 3.2.4 5.1 1.4 1.2M9.7 11.3c-3.5-1.9-4.5 1.2-.4 1.2" /></>,
+  lantern: <><path d="M8 7.5c0-2 1.8-3 4-3s4 1 4 3v7c0 2.2-1.8 4-4 4s-4-1.8-4-4z" /><path d="M10 4.5h4M10 18.5h4M12 18.5v2.5" /></>,
+};
+function Mark({ mark }) {
+  const drawing = MARK_PATHS[mark];
+  if (!drawing) return mark;
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {drawing}
+    </svg>
   );
 }
 
@@ -76,7 +102,7 @@ export function StatusBar({ children, help }) {
           <ol className="luck-howto__steps">
             {help.steps.map(([mark, text]) => (
               <li key={text}>
-                <span className="luck-howto__mark" aria-hidden="true">{mark}</span>
+                <span className="luck-howto__mark" aria-hidden="true"><Mark mark={mark} /></span>
                 <span>{text}</span>
               </li>
             ))}

@@ -13,9 +13,9 @@ const SWATCHES = {
 const HELP = {
   game: "fortune",
   steps: [
-    ["✦", "shake the tin for today's little slip (one a day)"],
-    ["♡", "untie the ribbon to unfold it"],
-    ["✿", "every slip is kept in your keepsakes"],
+    ["tin", "shake the tin for today's little slip (one a day)"],
+    ["bow", "untie the ribbon to unfold it"],
+    ["flower", "every slip is kept in your keepsakes"],
   ],
 };
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];

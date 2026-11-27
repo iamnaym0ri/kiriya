@@ -10,9 +10,9 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const HELP = {
   game: "cups",
   steps: [
-    ["★", "watch which cup the little star hides under"],
-    ["↔", "follow that cup while they shuffle, then tap it"],
-    ["♡", "three hearts; every round is a little quicker"],
+    ["star", "watch which cup the little star hides under"],
+    ["swap", "follow that cup while they shuffle, then tap it"],
+    ["heart", "three hearts; every round is a little quicker"],
   ],
 };
 const CHEERS = ["there it is!", "sharp eyes ♡", "you followed it perfectly", "yay, found it!", "nothing gets past you"];
