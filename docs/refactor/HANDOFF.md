@@ -214,6 +214,11 @@ merged, what still needs Josh's phone, and the keys still to come.
   background charms, the note jar up front. Status table and what's still to see on the phone:
   `RENOVATION.md`, "Round 2 status".
 
+- **The website is closed temporarily (2026-11-27)** so Kiriya doesn't see the new features before
+  Josh gives her the app. Browsers get `src/public/ClosedPage.jsx`; the app, `/api`, `/app-bundle`
+  and `/install` keep working. Reopen only when Josh says: `WEBSITE_CLOSED = false` in
+  `src/lib/siteClosed.js`, then deploy.
+
 ## 6. Conventions that kept things working
 
 - **Tests:**
