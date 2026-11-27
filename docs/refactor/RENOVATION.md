@@ -266,7 +266,8 @@ export default {
 bar, safe areas padded, a 44 pt top bar with "‹ play" and the game's title). `Game.jsx` fills its
 container (`height: 100%`, `position: relative`; measure the container, not the window) and does
 not draw its own back button or fixed full-screen layer; it calls `onExit()` only for its own "done"
-flows. The dev game lab mimics the sheet exactly.
+flows. The dev game lab mimics the sheet exactly. The sheet is portalled to `<body>`
+(`createPortal`), because the page's content column is its own stacking context.
 
 `Game.jsx` gets `({ onExit, onReward })`. A reward is `onReward({ sticker: "st-…", game: "<game-id>",
 reason: "first garden cleared" })`, with a sticker id from her collection's catalogue
@@ -300,6 +301,14 @@ the hub lands, open a game in the dev-only lab: `/world/game-lab?g=<id>`.
 - **No Xcode builds and no real phone**: the coordinator builds the app and tests on Josh's iPhone.
 - Run the tests that cover what you touched (`node --test scripts/test-<area>.mjs`) and add tests
   for new server code.
+
+## Git in a shared repository
+
+All worktrees share one repository, so **`git stash` is shared between agents**: one agent's
+`stash pop` can take another's changes (it happened on 2026-11-26). **Never use `git stash`.**
+Commit your work in progress on your own branch before merging anything (`git commit -am "wip …"`
+is fine; tidy later), then `git merge connection-refactor`. Never run `git checkout`/`reset`/
+`clean` on paths outside your own work, and never touch another worktree.
 
 ## Finishing
 
