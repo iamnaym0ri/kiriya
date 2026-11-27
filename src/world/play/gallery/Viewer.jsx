@@ -6,7 +6,7 @@ import { haptic } from "../../../lib/native.js";
 import { usePrefs, useSetPin } from "../../../lib/prefs.js";
 import { downloadBlob } from "../../studio/drawingTools.js";
 import { KINDS, artKind, artTitle } from "./kinds.js";
-import { KindIcon, savedOn } from "./GalleryParts.jsx";
+import { KindIcon, PinIcon as SmallPin, savedOn } from "./GalleryParts.jsx";
 import { isHeart, reactionGlyph, useRemoveArtwork, useSignature } from "./useArtworks.js";
 
 // One piece of her gallery, opened big: swipe sideways for the next one, down (or "done") to close.
@@ -132,7 +132,7 @@ export default function Viewer({ art, index, count, onPrev, onNext, onClose, onR
             <KindIcon kind={kind.id} size={15} />
             {kind.one}
             {savedOn(art.createdAt) && <> · {savedOn(art.createdAt)}</>}
-            {pinned && <> · 📌 on your profile</>}
+            {pinned && <> · <SmallPin size={13} /> on your profile</>}
           </p>
 
           {art.reaction && (

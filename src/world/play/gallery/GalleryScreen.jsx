@@ -8,7 +8,7 @@ import { useAppBack } from "../../../shared/AppFrame.jsx";
 import { AdminEdit, EditField, EditSheet } from "../../../shared/admin/AdminEdit.jsx";
 import { DoodleNotesSheet } from "../DoodleCard.jsx";
 import { KINDS, artKind, artTitle, groupByMonth, kindsIn } from "./kinds.js";
-import { KindIcon, KindMark } from "./GalleryParts.jsx";
+import { KindIcon, KindMark, LetterIcon } from "./GalleryParts.jsx";
 import { ARTWORKS_KEY, isHeart, reactionGlyph, useArtworks, useMarkNotesSeen, useSignature } from "./useArtworks.js";
 import Viewer from "./Viewer.jsx";
 import "./gallery.css";
@@ -81,7 +81,7 @@ export default function GalleryScreen({ onStartDoodle }) {
       <div className="app-section__body">
         {!admin && withNews.length > 0 && (
           <button type="button" className="gallery-news" onClick={() => openArt(withNews[0].id)}>
-            <span aria-hidden="true">💌</span>
+            <LetterIcon size={20} />
             <span>{withNews.length === 1 ? `a little note from ${signature} on “${artTitle(withNews[0])}”` : `little notes from ${signature} on ${withNews.length} of your things`}</span>
             <span className="gallery-news__go" aria-hidden="true">
               open
@@ -113,7 +113,7 @@ export default function GalleryScreen({ onStartDoodle }) {
           <section className="app-card app-empty">
             <strong>your pages didn’t open</strong>
             <button type="button" className="gallery-retry" onClick={() => query.refetch()}>
-              try again ↻
+              try again
             </button>
           </section>
         ) : artworks.length === 0 ? (
@@ -149,7 +149,7 @@ export default function GalleryScreen({ onStartDoodle }) {
                         )}
                         {art.notes?.length > 0 && (
                           <span className="gallery-tile__note" data-new={unread || undefined} aria-hidden="true">
-                            💌
+                            <LetterIcon />
                           </span>
                         )}
                       </button>

@@ -177,7 +177,7 @@ export default function Kaleidoscope({ onReward }) {
     save();
     rerender((n) => n + 1);
     haptic("medium");
-    if (!quiet) showToast("a fresh plate ✧ undo brings it back");
+    if (!quiet) showToast("a fresh plate · undo brings it back");
   }
 
   // Spinning rests while the app is in the background, and never runs for less motion.
@@ -231,7 +231,7 @@ export default function Kaleidoscope({ onReward }) {
               onContextMenu={(event) => event.preventDefault()}
             />
             {showCoach && <Coach n={settings.n} mirror={settings.mirror} calm={calm} leaving={coachLeaving} night={paper.id === "night"} />}
-            {!showCoach && blank && <p className="kal-hello artsy-hand">draw here ✧</p>}
+            {!showCoach && blank && <p className="kal-hello artsy-hand">draw here ♡</p>}
           </div>
         </div>
       </div>
@@ -340,7 +340,7 @@ export default function Kaleidoscope({ onReward }) {
         onFresh={() => {
           fresh({ quiet: true });
           setSharing(false);
-          showToast("a fresh plate ✧ undo brings the last one back");
+          showToast("a fresh plate · undo brings the last one back");
         }}
       />
       <canvas ref={confettiRef} className="kal-confetti" aria-hidden="true" />
@@ -411,7 +411,7 @@ function Coach({ n, mirror, calm, leaving, night }) {
       <p className="kal-coach__words artsy-hand">
         draw inside the circle
         <br />
-        <b>every stroke blooms ✧</b>
+        <b>every stroke blooms ♡</b>
       </p>
     </div>
   );

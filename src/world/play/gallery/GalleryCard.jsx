@@ -1,7 +1,7 @@
 import { useIsAdmin } from "../../../lib/session.js";
 import { artKind, artTitle } from "./kinds.js";
 import { isHeart, reactionGlyph, useArtworks, useSignature } from "./useArtworks.js";
-import { KindMark } from "./GalleryParts.jsx";
+import { KindMark, LetterIcon } from "./GalleryParts.jsx";
 import "./gallery.css";
 
 // The gallery's own entry near the top of the play section: her latest things in a strip, Josh's
@@ -38,7 +38,7 @@ export default function GalleryCard({ onOpen, onOpenArt, onStart }) {
 
       {!admin && withNews.length > 0 && (
         <button type="button" className="play-gallery__news" onClick={() => onOpenArt(withNews[0].id)}>
-          <span aria-hidden="true">💌</span>
+          <LetterIcon size={20} />
           <span>{withNews.length === 1 ? `a little note from ${signature} on “${artTitle(withNews[0])}”` : `little notes from ${signature} on ${withNews.length} of your things`}</span>
         </button>
       )}
@@ -59,7 +59,7 @@ export default function GalleryCard({ onOpen, onOpenArt, onStart }) {
                   )}
                   {art.notes?.length > 0 && (
                     <span className="gallery-tile__note" data-new={fresh || undefined} aria-hidden="true">
-                      💌
+                      <LetterIcon />
                     </span>
                   )}
                 </button>
@@ -87,7 +87,7 @@ export default function GalleryCard({ onOpen, onOpenArt, onStart }) {
       ) : query.isError ? (
         <div className="play-gallery__empty">
           <button type="button" className="play-gallery__start" onClick={() => query.refetch()}>
-            couldn’t open it. try again ↻
+            couldn’t open it. try again
           </button>
         </div>
       ) : (

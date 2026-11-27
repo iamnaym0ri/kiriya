@@ -20,7 +20,7 @@ import "./paper-doll.css";
 // any change, and save the look to her lookbook, her gallery, or Josh's chat.
 
 const START = { look: DEFAULT_LOOK, backdrop: "room", looks: [], tried: [] };
-const TABS = [{ id: "sets", name: "sets ✦" }, { id: "hair", name: "hair" }, ...DRAWERS, { id: "her", name: "her face" }, { id: "scene", name: "scene" }];
+const TABS = [{ id: "sets", name: "sets", Icon: Sparkle }, { id: "hair", name: "hair" }, ...DRAWERS, { id: "her", name: "her face" }, { id: "scene", name: "scene" }];
 const LOOK_RULES = {
   itemById,
   hairById,
@@ -104,7 +104,7 @@ export default function PaperDoll({ onReward }) {
     const tried = [...new Set([...(saved.tried ?? []), set.id])];
     setSaved((old) => ({ ...START, ...old, backdrop: set.backdrop, tried }));
     haptic("medium");
-    if (SETS.every((each) => tried.includes(each.id)) && rewardOnce(onReward, "paper-doll", "sets")) showToast("every outfit tried on ✦ what a wardrobe");
+    if (SETS.every((each) => tried.includes(each.id)) && rewardOnce(onReward, "paper-doll", "sets")) showToast("every outfit tried on · what a wardrobe ♡");
   }
   function saveLook() {
     const name = lookName(look, itemById, SETS);
@@ -217,13 +217,19 @@ export default function PaperDoll({ onReward }) {
         <div className="pd-doll" key={calm ? "doll" : bounce}>
           <Doll look={dressing} backdrop={backdrop} svgRef={dollRef} className="pd-doll__svg" label={`your paper doll: ${lookName(look, itemById, SETS)}`} />
         </div>
-        {setOn && <span className="pd-set-badge artsy-hand">✦ {setOn.name}</span>}
+        {setOn && (
+          <span className="pd-set-badge artsy-hand">
+            <Sparkle />
+            {setOn.name}
+          </span>
+        )}
       </div>
 
       <div className="artsy-tray pd-tray" ref={trayRef}>
         <div className="artsy-tabs" role="tablist" aria-label="wardrobe">
           {TABS.map((each) => (
             <button key={each.id} type="button" role="tab" className="artsy-tab" aria-selected={tab === each.id} onClick={() => setTab(each.id)}>
+              {each.Icon && <each.Icon />}
               {each.name}
               {DRAWERS.some((d) => d.id === each.id) && look.outfit?.[each.id] ? <i className="pd-dot" aria-label=" (wearing)" /> : null}
             </button>
@@ -409,7 +415,7 @@ function Lookbook({ open, looks, onClose, onWear, onKeep, onRemove }) {
   return (
     <Sheet open={open} title="your lookbook" onClose={onClose}>
       {looks.length === 0 ? (
-        <p className="pd-empty artsy-hand">save a look and it lives here, like a little closet diary ✿</p>
+        <p className="pd-empty artsy-hand">save a look and it lives here, like a little closet diary ♡</p>
       ) : (
         <div className="pd-looks">
           {looks.map((entry) => {
@@ -521,6 +527,14 @@ function KeepSheet({ keeping, onClose }) {
 }
 
 // ---------------------------------------------------------------- icons
+/** A four-point sparkle (themed sets). Drawn, because iOS has no glyph for ✦ in these fonts. */
+function Sparkle() {
+  return (
+    <svg className="pd-sparkle" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <path d="M8 1.5c.5 3.2 1.3 4 4.5 4.5-3.2.5-4 1.3-4.5 4.5-.5-3.2-1.3-4-4.5-4.5 3.2-.5 4-1.3 4.5-4.5Zm4.6 7.8c.2 1.3.6 1.7 1.9 1.9-1.3.2-1.7.6-1.9 1.9-.2-1.3-.6-1.7-1.9-1.9 1.3-.2 1.7-.6 1.9-1.9Z" fill="currentColor" />
+    </svg>
+  );
+}
 const line = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" };
 const UndoIcon = ({ flip }) => (
   <svg viewBox="0 0 24 24" {...line} strokeWidth="2.2" style={flip ? { transform: "scaleX(-1)" } : undefined} aria-hidden="true">

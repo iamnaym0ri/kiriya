@@ -12,7 +12,7 @@ export const MAX_SHELF = 24;
 export const MIN_SIZE = 0.45;
 export const MAX_SIZE = 1.9;
 export const CARD_MAX = 20;
-export const CARD_PRESETS = ["for you ♡", "ily", "just because", "my favourite", "happy day ✿", "thank you", "miss u", "always u"];
+export const CARD_PRESETS = ["for you ♡", "ily", "just because", "my favourite", "happy day ♡", "thank you", "miss u", "always u"];
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const round = (v, k = 10) => Math.round(v * k) / k;

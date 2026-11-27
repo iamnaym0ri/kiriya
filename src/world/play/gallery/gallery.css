@@ -149,6 +149,10 @@
   width: calc(100% - 32px);
   margin: 8px 16px 0;
 }
+.play-gallery__news svg,
+.gallery-news svg {
+  flex: none;
+}
 .play-gallery__news > span:last-child,
 .gallery-news > span:nth-child(2) {
   flex: 1;

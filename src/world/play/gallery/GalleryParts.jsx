@@ -46,6 +46,26 @@ export function KindMark({ kind }) {
   );
 }
 
+/** A little sealed letter: Josh left a note on this one. */
+export function LetterIcon({ size = 14 }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" focusable="false">
+      <rect x="3" y="6" width="18" height="13" rx="2.6" fill="#fffafd" stroke="#b23d6e" strokeWidth="1.8" />
+      <path d="M4 7.5 12 13l8-5.5" fill="none" stroke="#b23d6e" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M12 17.2c-2.4-1.5-3.2-2.7-2.6-3.6.5-.7 1.6-.6 2.6.4 1-1 2.1-1.1 2.6-.4.6.9-.2 2.1-2.6 3.6Z" fill="#e0457b" />
+    </svg>
+  );
+}
+
+/** A pin: this piece is on her public profile. */
+export function PinIcon({ size = 14 }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M9 3.5h6l-1 5 3.5 3.5h-11L10 8.5Zm3 8.5v8.5" />
+    </svg>
+  );
+}
+
 /** "27 nov 2026" for a saved date, in Singapore time like the rest of the site. */
 export function savedOn(value) {
   const date = value ? new Date(value) : null;

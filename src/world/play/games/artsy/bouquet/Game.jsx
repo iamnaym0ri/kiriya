@@ -238,7 +238,7 @@ export default function BouquetMaker({ onReward }) {
             <p className="artsy-hand">
               tap a flower below
               <br />
-              <b>and it lands just right ✿</b>
+              <b>and it lands just right ♡</b>
             </p>
           </div>
         )}
@@ -316,7 +316,7 @@ export default function BouquetMaker({ onReward }) {
         onAnother={() => {
           fresh();
           setFinished(null);
-          showToast("a fresh wrap ✿ undo brings the last one back");
+          showToast("a fresh wrap · undo brings the last one back");
         }}
       />
       <canvas ref={confettiRef} className="bq-confetti" aria-hidden="true" />
@@ -453,7 +453,7 @@ function ShelfSheet({ open, shelf, onClose, onOpen, onRemove }) {
   return (
     <Sheet open={open} title="your vase shelf" onClose={onClose}>
       {shelf.length === 0 ? (
-        <p className="bq-empty artsy-hand">tie up a bouquet and it stands here, fresh forever ✿</p>
+        <p className="bq-empty artsy-hand">tie up a bouquet and it stands here, fresh forever ♡</p>
       ) : (
         <div className="bq-vases">
           {shelf.map((entry) => (
@@ -511,7 +511,7 @@ function FinishedSheet({ entry, svgRef, onClose, onAnother }) {
           <div className="bq-finish__card">
             <div className="bq-finish__picture">{preview ? <img src={preview} alt={entry.name} /> : <span className="artsy-hand">wrapping it up…</span>}</div>
             <p className="bq-finish__name artsy-hand">{entry.name}</p>
-            <p className="bq-finish__line">on your vase shelf ✿</p>
+            <p className="bq-finish__line">on your vase shelf ♡</p>
           </div>
           {kept ? (
             <div className="bq-finish__buttons">
