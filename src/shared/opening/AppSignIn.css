@@ -1,0 +1,172 @@
+/* The app's sign-in screen (AppSignIn.jsx): the launch image's lilac, the cursive wordmark, Face ID
+   first when this phone has it, the passphrase under it. Full screen, safe areas padded, and it
+   scrolls if the keyboard leaves it short of room. */
+.app-signin {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482900;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  justify-content: safe center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom))
+    max(24px, env(safe-area-inset-left));
+  background:
+    radial-gradient(circle at 78% 18%, #ffe6f1d9 0, #ffe6f100 55%),
+    linear-gradient(162deg, #f3e9fa 0%, #e2cff0 55%, #cfb2e4 100%);
+  color: #4e2f63;
+  text-align: center;
+}
+/* While NativeApp decides (or the app is about to move on): just the lilac. */
+.app-signin--blank {
+  z-index: auto;
+}
+.app-signin__card {
+  display: grid;
+  justify-items: center;
+  width: min(100%, 340px);
+}
+.app-signin__word {
+  margin: 0 0 6px;
+  font: 400 78px/1.1 "Parisienne", cursive;
+  color: #4e2f63;
+}
+.app-signin__word span {
+  margin-left: 4px;
+  color: #9a6fb4;
+  font: 400 26px/1 Georgia, serif;
+  vertical-align: super;
+}
+.app-signin__title {
+  margin: 0;
+  font: 700 26px/1.15 var(--font-hand, cursive);
+  color: #4e2f63;
+}
+.app-signin__line {
+  margin: 6px 0 0;
+  color: #6b5279;
+  font: 14px/1.45 var(--font-ui, system-ui);
+}
+.app-signin__face {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 54px;
+  margin: 26px 0 0;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: #7a4f9a;
+  box-shadow: 0 3px 0 #5b3576, 0 12px 26px -12px rgb(73 40 99 / 0.6);
+  color: #fff9ff;
+  font: 700 17px/1 var(--font-ui, system-ui);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease;
+}
+.app-signin__face:active {
+  transform: translateY(2px) scale(0.98);
+}
+.app-signin__face:disabled {
+  opacity: 0.75;
+}
+.app-signin__glyph {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.app-signin__or {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 22px 0 12px;
+  color: #7d6489;
+  font: 12px/1 var(--font-ui, system-ui);
+}
+.app-signin__or::before,
+.app-signin__or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: color-mix(in srgb, #9a6fb4 35%, transparent);
+}
+.app-signin__form {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  margin-top: 24px;
+}
+.app-signin[data-face-id] .app-signin__form {
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-top: 0;
+}
+.app-signin__field {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 50px;
+  padding: 0 18px;
+  border: 1.5px solid color-mix(in srgb, #9a6fb4 45%, transparent);
+  border-radius: 16px;
+  background: rgb(255 250 255 / 0.85);
+  color: #4e2f63;
+  font: 16px/1.2 var(--font-ui, system-ui);
+  text-align: center;
+  letter-spacing: 0.04em;
+  outline: none;
+}
+.app-signin[data-face-id] .app-signin__field {
+  text-align: left;
+}
+.app-signin__field:focus {
+  border-color: #7a4f9a;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #9a6fb4 25%, transparent);
+}
+.app-signin__field[aria-invalid="true"] {
+  border-color: #a65377;
+}
+.app-signin__go {
+  min-height: 50px;
+  min-width: 50px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 16px;
+  background: #7a4f9a;
+  color: #fff9ff;
+  font: 700 16px/1 var(--font-ui, system-ui);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-signin[data-face-id] .app-signin__go {
+  padding: 0;
+  background: rgb(255 250 255 / 0.85);
+  border: 1.5px solid color-mix(in srgb, #9a6fb4 45%, transparent);
+  color: #7a4f9a;
+}
+.app-signin__go svg {
+  display: block;
+  margin: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.app-signin__go:disabled {
+  opacity: 0.55;
+}
+.app-signin__error {
+  min-height: 20px;
+  margin: 12px 0 0;
+  color: #914467;
+  font: 13px/1.45 var(--font-ui, system-ui);
+}

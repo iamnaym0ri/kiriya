@@ -1,22 +1,16 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useUnlock } from "../lib/session.js";
+import { isAppShell } from "../lib/native.js";
 import { Modal, Icon } from "./WorldPrimitives.jsx";
+import AppSignIn, { unlockErrorMessage } from "./opening/AppSignIn.jsx";
 
-function unlockErrorMessage(error) {
-  if (!error) return null;
-  if (error.code === "wrong_passphrase") {
-    return "Wrong passphrase. Please check it and try again.";
-  }
-  if (error.status === 429) {
-    return "Too many tries. Please wait 15 minutes, then try again.";
-  }
-  if (!error.status) {
-    return "Couldn't connect. Check your internet connection and try again.";
-  }
-  return "We couldn't check your passphrase right now. Please try again in a moment.";
+/** The passphrase sign-in: a dialog on the website; in the app, the app's own sign-in screen. */
+export default function UnlockSheet(props) {
+  if (isAppShell()) return props.open ? <AppSignIn onUnlocked={props.onUnlocked} /> : null;
+  return <WebUnlockSheet {...props} />;
 }
 
-export default function UnlockSheet({
+function WebUnlockSheet({
   open,
   onClose,
   onUnlocked,

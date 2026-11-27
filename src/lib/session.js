@@ -1,4 +1,4 @@
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, setAppToken } from "./api.js";
 import { setViewingAs, subscribeViewAs, viewingAs } from "./viewAs.js";
@@ -64,15 +64,28 @@ export async function forgetSession(queryClient) {
 /** A request the server turned away because the session ended (two days passed, or signed out elsewhere). */
 export const isSessionEnded = (error) => error?.status === 401 && error.code === "locked";
 
+/**
+ * The passphrase sign-in (every screen that takes a typed passphrase goes through here). The typed
+ * passphrase never outlives the moment: the mutation leaves the cache as soon as nothing watches
+ * it (gcTime 0), and a successful unlock is reset at once, which drops it from the mutation's state.
+ */
 export function useUnlock() {
   const queryClient = useQueryClient();
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (passphrase) =>
       api("/session/unlock", { method: "POST", body: { passphrase } }),
-    onSuccess: (data) => {
+    gcTime: 0,
+    onSuccess: (data, passphrase) => {
       queryClient.setQueryData(sessionKey, { role: data.role });
+      // ↓ Round 3 (r3-chat-room): hand `passphrase` to src/lib/chatCrypto.js here, in memory only,
+      //   before the reset below drops it.
     },
   });
+  const { isSuccess, reset } = mutation;
+  useEffect(() => {
+    if (isSuccess) reset();
+  }, [isSuccess, reset]);
+  return mutation;
 }
 
 export function useLock() {

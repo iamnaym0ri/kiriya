@@ -322,18 +322,3 @@ html.app-shell .home-corner__battery i[data-lit] {
 html.app-shell .home-corner__battery[data-energy="0"] i[data-lit] {
   background: #d1708f;
 }
-
-/* The check-in opens as a bottom sheet in the app (on the website it pops up by the corner). */
-html.app-shell .daily-style-panel {
-  inset: auto 0 0 0;
-  width: 100%;
-  max-width: 560px;
-  margin: 0 auto;
-  max-height: calc(100dvh - env(safe-area-inset-top) - 28px);
-  border-radius: 22px 22px 0 0;
-  padding-bottom: env(safe-area-inset-bottom);
-  box-shadow: 0 -8px 40px rgb(73 54 83 / 0.22);
-}
-html.app-shell .daily-style-panel::backdrop {
-  background: rgb(25 8 58 / 0.28);
-}

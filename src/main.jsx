@@ -22,6 +22,8 @@ import PageLoader from "./shared/PageLoader.jsx";
 import { isNativeApp, isAppShell } from "./lib/native.js";
 import { showClosedPage } from "./lib/siteClosed.js";
 import ClosedPage from "./public/ClosedPage.jsx";
+import { startOpening } from "./shared/opening/index.js";
+import AppEntry from "./shared/opening/AppEntry.jsx";
 
 // The private world and the admin desk are separate chunks: a visitor's phone never downloads them.
 const World = lazy(() => import("./world/World.jsx"));
@@ -51,6 +53,9 @@ const queryClient = new QueryClient({
   },
 });
 
+// The app's opening animation goes up before anything renders (shared/opening; app only).
+if (!showClosedPage()) startOpening();
+
 const root = createRoot(document.getElementById("root"));
 if (showClosedPage()) {
   // The website is closed (lib/siteClosed.js): browsers get the quiet page and nothing else.
@@ -74,7 +79,8 @@ if (showClosedPage()) {
               )}
               <Suspense fallback={<PageLoader />}>
                 <Routes>
-                  <Route path="/" element={<ProfilePage />} />
+                  {/* In the app the front door is the sign-in screen (or straight into her world). */}
+                  <Route path="/" element={isAppShell() ? <AppEntry /> : <ProfilePage />} />
                   <Route path="/world/*" element={<World />} />
                   <Route path="/admin/*" element={<Admin />} />
                   <Route path="*" element={<ProfilePage />} />

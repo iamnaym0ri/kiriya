@@ -104,11 +104,55 @@ export async function enrollThisPhone() {
   return true;
 }
 
-/** Face ID → Keychain secret → a fresh session. A 401 means this phone needs the passphrase again. */
+/**
+ * Face ID → Keychain secret → a fresh session. A 401 means this phone needs the passphrase again
+ * (also when the Keychain item is gone, plugin code "21"). A cancelled or failed scan rejects with
+ * `faceId: "cancelled"` / `"failed"` (isFaceIdMiss), so the app can offer the passphrase and a
+ * "try Face ID again". The secret only ever lives in this function's locals.
+ */
 export async function signInWithFaceId() {
   const { NativeBiometric } = await biometric();
-  const credentials = await NativeBiometric.getSecureCredentials({ server: SERVER, reason: "Open your little world" });
+  let credentials;
+  try {
+    credentials = await NativeBiometric.getSecureCredentials({ server: SERVER, reason: "Open your little world" });
+  } catch (error) {
+    const code = String(error?.code ?? "");
+    if (code === "21") {
+      await forgetThisPhoneLocally().catch(() => {});
+      throw Object.assign(new Error("This phone needs the passphrase again."), { status: 401 });
+    }
+    throw Object.assign(error ?? new Error("Face ID didn’t open it."), { faceId: code === "16" ? "cancelled" : "failed" });
+  }
   return signInWithSecret(credentials.username, credentials.password);
+}
+
+/** Face ID was cancelled or didn't match (rather than the phone or the network failing). */
+export const isFaceIdMiss = (error) => Boolean(error?.faceId);
+
+/** Whether this phone has Face ID (or Touch ID) set up and ready to use. */
+export async function biometryAvailable() {
+  if (!isNativeApp()) return false;
+  const { NativeBiometric } = await biometric();
+  const { isAvailable } = await NativeBiometric.isAvailable().catch(() => ({ isAvailable: false }));
+  return Boolean(isAvailable);
+}
+
+/**
+ * The first-run choice (NativeApp): how this phone should open from now on, then set it up. With
+ * Face ID, a scan first (it's also when iOS asks whether the app may use Face ID); without, the
+ * secret goes into the app's own Keychain item. Throws if she cancels the scan.
+ */
+export async function setUpThisPhone({ faceId }) {
+  if (!isNativeApp() || enrolledDevice()) return false;
+  if (faceId) {
+    const { NativeBiometric } = await biometric();
+    await NativeBiometric.verifyIdentity({ reason: "Open kiriya with Face ID" });
+    write(NO_FACE_ID, null);
+  } else {
+    if (!canOpenWithoutFaceId()) throw new Error("This needs the newest version of the app.");
+    write(NO_FACE_ID, "1");
+  }
+  return enrollThisPhone();
 }
 
 async function signInWithSecret(id, secret) {
