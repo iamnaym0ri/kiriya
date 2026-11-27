@@ -302,6 +302,14 @@ the hub lands, open a game in the dev-only lab: `/world/game-lab?g=<id>`.
 - Run the tests that cover what you touched (`node --test scripts/test-<area>.mjs`) and add tests
   for new server code.
 
+## Git in a shared repository
+
+All worktrees share one repository, so **`git stash` is shared between agents**: one agent's
+`stash pop` can take another's changes (it happened on 2026-11-26). **Never use `git stash`.**
+Commit your work in progress on your own branch before merging anything (`git commit -am "wip …"`
+is fine; tidy later), then `git merge connection-refactor`. Never run `git checkout`/`reset`/
+`clean` on paths outside your own work, and never touch another worktree.
+
 ## Finishing
 
 - Commit on your branch as you go (small commits, clear messages, ending with the session's
