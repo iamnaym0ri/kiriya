@@ -1,0 +1,142 @@
+/* kaleidoscope: a round plate, its live layer, slice guides and the tool tray. */
+.kal-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+.kal-plate {
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 0 6px #fffafd, 0 0 0 7px var(--a-line), 0 18px 40px -18px rgb(73 30 140 / 0.55);
+  touch-action: none;
+}
+.kal-plate[data-spin="true"] {
+  animation: kal-spin 16s linear infinite;
+}
+@keyframes kal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.kal-canvas,
+.kal-guides {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.kal-guides {
+  pointer-events: none;
+}
+.kal-plate[data-spin="true"] .kal-guides {
+  opacity: 0;
+}
+.kal-canvas--live {
+  touch-action: none;
+  cursor: crosshair;
+}
+.kal-hello {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 58%;
+  margin: 0;
+  text-align: center;
+  font-size: 22px;
+  color: #b9a6d6;
+  pointer-events: none;
+}
+.kal[data-paper="night"] .kal-hello {
+  color: #cdb9ef;
+}
+
+.kal-tray {
+  display: grid;
+  gap: 6px;
+}
+.kal-colours,
+.kal-tools {
+  align-items: center;
+}
+.kal-palette {
+  min-width: 120px;
+}
+.kal-brushes {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--a-wash);
+}
+.kal-brush {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--a-ink-soft);
+  cursor: pointer;
+}
+.kal-brush svg {
+  width: 26px;
+  height: 26px;
+}
+.kal-brush[aria-checked="true"] {
+  background: #fffafd;
+  color: var(--a-plum);
+  box-shadow: 0 1px 0 #e6d8ef, 0 0 0 1px var(--a-line);
+}
+.kal-size {
+  display: block;
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+  background: currentColor;
+}
+.kal-paper {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--a-line);
+}
+
+.kal-share {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+.kal-share__preview {
+  display: grid;
+  place-items: center;
+  width: min(100%, 300px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #f3ecfc;
+  color: var(--a-ink-soft);
+  font-size: 20px;
+}
+.kal-share__preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.kal-share__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.kal-share__buttons > * {
+  padding-inline: 10px;
+  font-size: 14px;
+}
+.kal-share__fresh {
+  justify-self: center;
+}
