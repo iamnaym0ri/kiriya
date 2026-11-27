@@ -687,7 +687,8 @@ try {
       vision: async () => assert.fail("a trusted platform's picture is never classified"),
     };
     const ytMeme = (sections, tags) => ({
-      ...yt(fresh),
+      // checkItem reads the real clock (the gate's 7-day freshness), so this playback is checked "now".
+      ...yt({ ...fresh, checkedAt: new Date().toISOString() }),
       kind: "meme",
       sections,
       tags: { characters: [], fandoms: [], voicebanks: [], producers: [], units: [], formats: [], topics: [], ...tags },
