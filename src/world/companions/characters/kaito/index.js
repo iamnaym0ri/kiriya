@@ -30,7 +30,7 @@ export default {
     heldAt: 0.66, // picked up by the back of the coat collar
     sway: 0.9,
     talkiness: 0.5,
-    expressions: { tapped: "surprised", picked: "sheepish", putDown: "happy", walk: "gentle", jump: "joyful" },
+    expressions: { tapped: "surprised", picked: "sheepish", putDown: "happy", walk: "gentle", jump: "joyful", stay: "proud", wander: "happy" },
   },
   behaviours: [
     { id: "eat", weight: 3, pose: "icecream", expression: "lick", seconds: [7, 12], topic: "icecream" },
@@ -45,7 +45,45 @@ export default {
     { id: "wave", weight: 1, pose: "wave", expression: "happy", seconds: [2.5, 4], topic: "greet" },
     { id: "nap", weight: 3, pose: "sleep", expression: "sleepy", seconds: [12, 20], topic: "sleepy", say: 0.3, hours: [22, 6] },
     { id: "doze", weight: 1, pose: "sleep", expression: "sleepy", seconds: [8, 12], topic: "sleepy", say: 0.2, hours: [13, 16] },
+    // Round 2, all in place (so staying still has him busy): the melt panic, a sweeping stage bow,
+    // catching snowflakes, and conducting with his cone.
+    {
+      id: "melt",
+      weight: 1.5,
+      steps: [
+        { pose: "icecream", expression: "worried", seconds: [1.2, 1.5], topic: "melt", bounce: { count: 3, height: 4, every: 0.26 } },
+        { pose: "icecream", expression: "lick", seconds: [1.4, 1.8] },
+        { pose: "icecream", expression: "blissful", seconds: [2, 3] },
+      ],
+    },
+    {
+      id: "bow",
+      weight: 1,
+      steps: [
+        { pose: "bow", expression: "proud", seconds: [2.2, 2.2], topic: "bow" },
+        { pose: "wave", expression: "wink", seconds: [1.4, 1.8] },
+      ],
+    },
+    { id: "snow", weight: 1.5, pose: "snow", expression: "joyful", seconds: [4, 6], topic: "snow", bounce: { count: 2, height: 5, every: 0.5 } },
+    { id: "conduct", weight: 1, pose: "hum", expression: "happy", prop: "icecream", seconds: [4, 6], topic: "conduct", bounce: { count: 4, height: 3, every: 0.55 } },
   ],
+  // The tap menu's own choice: give him an ice cream. Star eyes and a hop, the first lick, a brain
+  // freeze one time in three, then he offers it to her.
+  action: {
+    id: "icecream",
+    label: "give him ice cream",
+    icon: "🍦",
+    pose: "icecream",
+    prop: "icecream",
+    expression: "sparkle",
+    topic: "action",
+    steps: [
+      { pose: "icecream", expression: "sparkle", seconds: [1.3, 1.5], bounce: { count: 2, height: 7, every: 0.34 } },
+      { pose: "icecream", expression: "lick", seconds: [1.8, 2.2] },
+      { pose: "brainfreeze", expression: "brainfreeze", seconds: [1.6, 1.9], topic: "brainfreeze", chance: 0.35 },
+      { pose: "offer", expression: "fond", seconds: [2, 2.4], topic: "actionAfter" },
+    ],
+  },
   lines,
   visit,
   Thumb: KaitoThumb,
