@@ -316,15 +316,15 @@ export const visit = {
     ],
     "miku-rotten": [
       [l("thinking", "what are you writing in that notebook?"), l("surprised", "n-nothing! a shopping list! a very… dramatic shopping list.")],
-      [l("thinking", "you're staring at me and bamby again."), l("sparkle", "no reason! you two just… stand really nicely together.")],
+      [l("thinking", "you're staring at me and my ice cream again."), l("sparkle", "no reason! you two just… look really good together.")],
       [l("happy", "want some ice cream?"), l("sparkle", "only if you hand it to someone else first. slowly. for… research.")],
       [l("surprised", "your notebook fell— oh, is this a story?"), l("surprised", "DON'T READ PAGE FOUR. …okay. you can read page one.")],
       // Round 2: she ships him with everything; he thinks a ship is a boat.
       [l("thinking", "you keep saying 'ship'. are we going on a boat?"), "a b-boat! for two! *scribbles furiously*"],
       [l("sheepish", "I confess… two scoops before lunch."), "forgiven. i wrote a whole romance about you and that cone."],
-      [l("thinking", "is that drawing me? and… bamby?"), "a friendship study! purely academic! don't turn the page!"],
+      [l("thinking", "is that drawing me? and… someone with long purple hair?"), "g-gakupo! a friendship study! purely academic! don't turn the page!"],
       [l("fond", "you've got a nosebleed. here, my scarf."), "HIS SCARF. on my FACE. i'm going to need a minute. or a year."],
-      [l("happy", "I lent bamby my scarf earlier, he was cold."), "you WHAT. sinner paddle. i'm hitting myself with the sinner paddle."],
+      [l("happy", "gakupo borrowed my scarf earlier. he said he was cold."), "he WHAT. sinner paddle. i'm hitting myself with the sinner paddle."],
     ],
     bambi: [
       [l("sparkle", "bamby! teach me one dance move?"), l("wink", "okay hyung, step one: don't slip on your own cloud.")],
@@ -346,7 +346,7 @@ export const visit = {
       [l("surprised", "miku, did you lick my cone?"), l("giggle", "it was a quality check, nii-san!")],
       [l("thinking", "leek ice cream would never work."), l("wink", "you said that about leek bread. and look at us now.")],
       [l("happy", "harmony? I'll go low, you go high."), l("determined", "deal! but if you go flat, i'm telling meiko.")],
-      [l("fond", "you've grown up so fast, miku."), l("pout", "nii-san, you were released one year before me. ONE.")],
+      [l("fond", "you've grown up so fast, miku."), l("pout", "nii-san, you came out a year and a half before me. that's NOTHING.")],
     ],
   },
 };
