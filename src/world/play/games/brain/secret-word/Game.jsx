@@ -71,10 +71,11 @@ function Tile({ letter, state, index, reveal, row }) {
   );
 }
 
-function Board({ guesses, current, answer, shake, revealRow }) {
+function Board({ guesses, current, answer, shake, revealRow, done }) {
+  // Once the word is found, only the rows she used stay, so the result fits underneath.
   return (
     <div className="sw-board" role="group" aria-label="your guesses">
-      {Array.from({ length: MAX_TRIES }, (_, row) => {
+      {Array.from({ length: done ? guesses.length : MAX_TRIES }, (_, row) => {
         const guess = guesses[row];
         const typing = row === guesses.length ? current : "";
         const states = guess ? scoreGuess(guess, answer) : null;
@@ -249,7 +250,7 @@ function Play({ puzzle, onReward, offline }) {
 
   return (
     <div className="sw-play" data-done={done || undefined}>
-      <Board guesses={guesses} current={current} answer={answer} shake={shake} revealRow={revealRow} />
+      <Board guesses={guesses} current={current} answer={answer} shake={shake} revealRow={revealRow} done={done} />
       <p className="sw-message" role="status" key={message?.key}>
         {message?.text ?? (status === "playing" && guesses.length === 0 ? (puzzle.by === "josh" ? "josh picked this one for you ♡" : "a word from the little tin") : "")}
       </p>

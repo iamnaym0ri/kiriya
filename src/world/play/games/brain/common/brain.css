@@ -105,26 +105,26 @@
   gap: 8px;
   min-height: 46px;
   padding: 10px 20px;
-  border: 1px solid var(--b-plum);
+  border: 1px solid #755180;
   border-radius: 14px 12px 15px 12px;
-  background: var(--b-plum);
+  background: #755180;
   color: #fff9ff !important;
   font: 700 19px/1 var(--font-hand) !important;
   letter-spacing: 0.01em;
-  box-shadow: 0 3px 0 var(--b-plum-deep);
+  box-shadow: 0 3px 0 #51375f;
   cursor: pointer;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.brain-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--b-plum-deep); }
+.brain-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #51375f; }
 .brain-btn:disabled { opacity: 0.55; box-shadow: none; transform: none; }
 .brain-btn--soft {
-  background: var(--b-paper);
-  color: var(--b-plum) !important;
-  border: 1.5px solid var(--b-lilac-deep);
+  background: #fffafd;
+  color: #755180 !important;
+  border: 1.5px solid #c9aed8;
   box-shadow: 0 3px 0 #dccbe6;
 }
 .brain-btn--soft:active { box-shadow: 0 1px 0 #dccbe6; }
-.brain-btn:focus-visible { outline: 2px solid var(--b-plum-deep); outline-offset: 3px; }
+.brain-btn:focus-visible { outline: 2px solid #51375f; outline-offset: 3px; }
 
 /* A row of choices (sizes, difficulty) as a soft segmented control. */
 .brain-choice {
