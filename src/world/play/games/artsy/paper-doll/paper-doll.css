@@ -1,4 +1,29 @@
-/* paper doll: the doll on her backdrop, the wardrobe drawer, the drag ghost and the lookbook. */
+/* paper doll: the doll on her scene, the wardrobe drawer and its tiles, themed sets, the drag
+   ghost, the lookbook and the keep sheet. */
+.pd-bar {
+  gap: 6px;
+}
+.pd-bar .artsy-chip {
+  white-space: nowrap;
+}
+.pd-book-button {
+  position: relative;
+}
+.pd-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 9px;
+  background: var(--a-pink);
+  color: #fff;
+  font: 700 11px/18px var(--font-ui);
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--a-paper);
+}
 .pd-stage {
   position: relative;
   flex: 1;
@@ -35,6 +60,18 @@
     transform: scale(1.02, 0.98);
   }
 }
+.pd-set-badge {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgb(255 250 253 / 0.9);
+  color: var(--a-plum);
+  font-size: 18px;
+  box-shadow: 0 4px 12px -6px rgb(73 30 140 / 0.4);
+  pointer-events: none;
+}
 .pd-tray {
   display: grid;
   gap: 4px;
@@ -53,11 +90,12 @@
   padding-top: 0;
 }
 .pd-hint {
-  margin: 2px 16px 0;
+  margin: 0 16px;
   min-height: 44px;
   display: flex;
   align-items: center;
-  font: 20px/1 var(--font-hand);
+  font-size: 20px;
+  line-height: 1;
   color: var(--a-ink-soft);
 }
 .pd-shelf {
@@ -67,9 +105,10 @@
   display: grid;
   grid-template-rows: 64px auto;
   justify-items: center;
+  align-content: start;
   gap: 2px;
   width: 84px;
-  padding: 6px 4px 6px;
+  padding: 6px 4px;
   border: 1px solid var(--a-line-soft);
   border-radius: 16px;
   background: var(--a-wash);
@@ -82,7 +121,7 @@
   pointer-events: none;
 }
 .pd-tile span {
-  font: 600 11px/1.2 var(--font-ui);
+  font: 600 11px/1.15 var(--font-ui);
   color: var(--a-ink-soft);
   text-align: center;
 }
@@ -91,9 +130,65 @@
   border-color: #bd9fd6;
   box-shadow: 0 0 0 2px #e3d4ff;
 }
+.pd-tile--scene svg {
+  border-radius: 10px;
+}
+.pd-tile--off {
+  cursor: pointer;
+  background: transparent;
+  border-style: dashed;
+}
+.pd-off {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  color: var(--a-ink-soft);
+  font: 300 34px/1 var(--font-ui) !important;
+}
+.pd-set {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 4px;
+  width: 104px;
+  padding: 5px 5px 7px;
+  border: 1px solid var(--a-line-soft);
+  border-radius: 16px;
+  background: var(--a-wash);
+  cursor: pointer;
+}
+.pd-set__doll {
+  display: block;
+  width: 92px;
+  height: 101px;
+  border-radius: 12px;
+  pointer-events: none;
+}
+.pd-set span {
+  font: 700 16px/1 var(--font-hand);
+  color: var(--a-ink);
+  text-align: center;
+}
+.pd-set[aria-pressed="true"] {
+  background: #fffafd;
+  border-color: #bd9fd6;
+  box-shadow: 0 0 0 2px #e3d4ff;
+}
+.pd-set__new {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #e0457b;
+  color: #fff;
+  font: 700 10px/1 var(--font-ui);
+  font-style: normal;
+}
 .pd-her {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 .pd-ghost {
   position: absolute;
@@ -132,7 +227,7 @@
   display: grid;
   gap: 4px;
   width: 100%;
-  padding: 6px;
+  padding: 6px 6px 40px;
   border: 1px solid var(--a-line);
   border-radius: 16px;
   background: var(--a-paper);
@@ -148,15 +243,87 @@
   font: 600 11px/1.2 var(--font-ui);
   color: var(--a-ink-soft);
 }
-.pd-look__remove {
+.pd-look__actions {
   position: absolute;
-  top: 0;
-  right: 0;
+  left: 4px;
+  right: 4px;
+  bottom: 2px;
+  display: flex;
+  justify-content: space-between;
+}
+.pd-look__actions button {
+  display: grid;
+  place-items: center;
   min-width: 44px;
-  height: 44px;
+  height: 40px;
   border: 0;
   background: none;
   color: var(--a-plum);
-  font: 700 16px/1 var(--font-ui);
+  font: 700 15px/1 var(--font-ui);
   cursor: pointer;
+}
+.pd-look__actions svg {
+  width: 20px;
+  height: 20px;
+  color: var(--a-pink);
+}
+.pd-keep {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+.pd-keep__card {
+  justify-self: center;
+  width: min(100%, 230px);
+  padding: 10px 10px 8px;
+  border-radius: 8px;
+  background: #fffdfb;
+  box-shadow: 0 1px 0 #ebdff3, 0 14px 30px -16px rgb(73 30 140 / 0.45);
+  transform: rotate(-1.5deg);
+  animation: pd-card-in 0.5s cubic-bezier(0.2, 0.9, 0.25, 1.2);
+  text-align: center;
+}
+@keyframes pd-card-in {
+  from {
+    transform: translateY(24px) scale(0.92) rotate(3deg);
+    opacity: 0;
+  }
+}
+.pd-keep__picture {
+  aspect-ratio: 3 / 4;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f6eefb;
+}
+.pd-keep__picture img,
+.pd-keep__picture svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.pd-keep__name {
+  margin: 6px 0 0;
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--a-ink);
+}
+.pd-keep__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.pd-keep__buttons > * {
+  padding-inline: 10px;
+  font-size: 14px;
+}
+.pd-keep__also {
+  justify-self: center;
+}
+.pd-confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 46;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }

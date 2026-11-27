@@ -122,6 +122,12 @@
   border-radius: 22px 22px 0 0;
   box-shadow: 0 -8px 24px -14px rgb(73 30 140 / 0.28);
 }
+/* Rows inside a tray never grow past the screen (a grid item's automatic minimum width would let a
+   long row of tabs or tiles widen the tray, and the last ones could not be scrolled to). */
+.artsy-tray > * {
+  min-width: 0;
+  max-width: 100%;
+}
 .artsy-scroller {
   display: flex;
   gap: 8px;
