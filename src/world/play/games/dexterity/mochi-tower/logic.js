@@ -67,7 +67,7 @@ export function layoutTower(state, width, height) {
   state.startHeight = Math.max(state.h * 1.5, height - PLATE_GAP - PIVOT_Y - state.rope - state.h);
 }
 
-export const PIVOT_Y = 66;
+export const PIVOT_Y = 98;
 export const PLATE_GAP = 104;
 
 /** Height of the hanging piece's bottom when the rope is straight down. */

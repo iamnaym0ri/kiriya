@@ -88,7 +88,7 @@ export function paintSky(which) {
     } else {
       ctx.fillStyle = which === 0 ? "rgba(255, 241, 196, 0.7)" : "rgba(255, 214, 170, 0.8)";
       ctx.beginPath();
-      ctx.arc(width * 0.22, height * (which === 0 ? 0.24 : 0.62), which === 0 ? 30 : 40, 0, Math.PI * 2);
+      ctx.arc(width * 0.22, height * 0.3, which === 0 ? 30 : 38, 0, Math.PI * 2);
       ctx.fill();
     }
   };
