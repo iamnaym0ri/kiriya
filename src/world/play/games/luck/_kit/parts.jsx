@@ -73,11 +73,12 @@ const seenHowTo = () => {
  * opens the game, and again whenever she taps "?".
  */
 export function StatusBar({ children, help }) {
-  const [firstTime] = useState(() => Boolean(help) && !seenHowTo()[help.game]);
+  const [firstTime, setFirstTime] = useState(() => Boolean(help) && !seenHowTo()[help.game]);
   const [open, setOpen] = useState(firstTime);
   const close = () => {
     setOpen(false);
-    if (!help || seenHowTo()[help.game]) return;
+    if (!firstTime) return;
+    setFirstTime(false);
     try {
       localStorage.setItem(HOWTO_KEY, JSON.stringify({ ...seenHowTo(), [help.game]: Date.now() }));
     } catch {
@@ -108,7 +109,7 @@ export function StatusBar({ children, help }) {
             ))}
           </ol>
           <button type="button" className="luck-btn luck-howto__go" onClick={close}>
-            {firstTime && !seenHowTo()[help.game] ? "let's play ♡" : "okay ♡"}
+            {firstTime ? "let's play ♡" : "okay ♡"}
           </button>
         </Panel>
       )}

@@ -82,7 +82,7 @@ export function PastimeSheet({ open, title, children, onClose, closeLabel = "oka
  */
 export default function PastimeShell({ game, kicker, help, actions, children, className = "", onHelp }) {
   const muted = useMuted();
-  const [firstTime] = useState(() => Boolean(help) && !load("seen-help", {})[game]);
+  const [firstTime, setFirstTime] = useState(() => Boolean(help) && !load("seen-help", {})[game]);
   const [helpOpen, setHelpOpen] = useState(firstTime);
   const root = useRef(null);
   const onHelpRef = useRef(onHelp);
@@ -92,7 +92,9 @@ export default function PastimeShell({ game, kicker, help, actions, children, cl
   }, [helpOpen]);
   const closeHelp = () => {
     setHelpOpen(false);
-    if (firstTime) save("seen-help", { ...load("seen-help", {}), [game]: Date.now() });
+    if (!firstTime) return;
+    save("seen-help", { ...load("seen-help", {}), [game]: Date.now() });
+    setFirstTime(false);
   };
 
   useEffect(() => {
@@ -128,7 +130,7 @@ export default function PastimeShell({ game, kicker, help, actions, children, cl
       </div>
       <div className="pastime__body">{children}</div>
       {help && (
-        <PastimeSheet open={helpOpen} title="how to play" onClose={closeHelp} closeLabel={firstTime && !load("seen-help", {})[game] ? "let's play ♡" : "okay ♡"}>
+        <PastimeSheet open={helpOpen} title="how to play" onClose={closeHelp} closeLabel={firstTime ? "let's play ♡" : "okay ♡"}>
           {help}
         </PastimeSheet>
       )}
