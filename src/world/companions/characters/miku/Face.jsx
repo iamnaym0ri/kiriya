@@ -100,7 +100,9 @@ function useFace(expression, moving) {
 const LASH = "#24323d";
 const BROW = "#178f96";
 
-function Eye({ x, i, f, uid }) {
+// Drawn in three passes so each blink is one animation for both eyes: the open eyes, the blink
+// lines, then whatever stays put (closed arcs, > <, brows).
+function Eye({ x, i, f, uid, part }) {
   // i = 0 her right eye (viewer's left), 1 her left eye (viewer's right).
   const outer = i ? 1 : -1;
   const openness = Math.max(0, f.open * (i ? 1 - f.wink : 1) - f.cross);
@@ -114,15 +116,26 @@ function Eye({ x, i, f, uid }) {
   const crossPath = i
     ? `M${x + 9} ${EYE_Y - 6} l-12 6 12 6`
     : `M${x - 9} ${EYE_Y - 6} l12 6 -12 6`;
-  return (
-    <g className="hmiku__eye">
-      <defs>
-        <clipPath id={`${uid}-eye${i}`}>
-          <path d={outline} />
-        </clipPath>
-      </defs>
+  if (part === "blink") {
+    return (
+      <path
+        d={`M${x - 12} ${EYE_Y + 3}q12 3 24 0`}
+        opacity={openness}
+        fill="none"
+        stroke={LASH}
+        strokeWidth="2.8"
+        strokeLinecap="round"
+      />
+    );
+  }
+  if (part === "open") {
+    return (
       <g opacity={openness}>
-        <g className="hmiku__eye-open" style={{ transformOrigin: `${x}px ${EYE_Y + 4}px` }}>
+        <defs>
+          <clipPath id={`${uid}-eye${i}`}>
+            <path d={outline} />
+          </clipPath>
+        </defs>
           <path d={outline} fill="#fffdfb" />
           <g clipPath={`url(#${uid}-eye${i})`}>
             <ellipse cx={ix} cy={iy} rx={f.iris} ry="14.5" fill={`url(#${uid}-iris)`} />
@@ -154,16 +167,11 @@ function Eye({ x, i, f, uid }) {
             strokeLinecap="round"
             opacity=".55"
           />
-        </g>
-        <path
-          className="hmiku__blink"
-          d={`M${x - 12} ${EYE_Y + 3}q12 3 24 0`}
-          fill="none"
-          stroke={LASH}
-          strokeWidth="2.8"
-          strokeLinecap="round"
-        />
       </g>
+    );
+  }
+  return (
+    <g>
       <path
         d={closed}
         opacity={Math.max(0, 1 - openness - f.cross)}
@@ -183,7 +191,6 @@ function Eye({ x, i, f, uid }) {
       />
       <path
         d={`M${x - 11} ${f.browY + (i ? -f.browTilt : f.browTilt) * 0.2}q11 ${-f.browArch} 22 ${i ? -f.browTilt : f.browTilt}`}
-        transform={i ? undefined : undefined}
         fill="none"
         stroke={BROW}
         strokeWidth="1.9"
@@ -211,8 +218,18 @@ export default function MikuFace({ expression, moving, talking, uid }) {
           <path d="M64 133l-2 4m6-4-2 4m6-4-2 4M146 133l-2 4m6-4-2 4m6-4-2 4" />
         </g>
       )}
+      <g className="hmiku__eyes-open" style={{ transformOrigin: `110px ${EYE_Y + 4}px` }}>
+        {EYES.map((x, i) => (
+          <Eye key={x} x={x} i={i} f={f} uid={uid} part="open" />
+        ))}
+      </g>
+      <g className="hmiku__blinks">
+        {EYES.map((x, i) => (
+          <Eye key={x} x={x} i={i} f={f} uid={uid} part="blink" />
+        ))}
+      </g>
       {EYES.map((x, i) => (
-        <Eye key={x} x={x} i={i} f={f} uid={uid} />
+        <Eye key={x} x={x} i={i} f={f} uid={uid} part="rest" />
       ))}
       <path d="M109.4 131.6l1.4.9" stroke="#e2b3a2" strokeWidth="1.3" strokeLinecap="round" />
       <g className="hmiku__mouth" style={{ transformOrigin: `110px ${y}px` }}>

@@ -1,4 +1,4 @@
-import { useId, useSyncExternalStore } from "react";
+import { memo, useId, useSyncExternalStore } from "react";
 import MikuFace from "./Face.jsx";
 import "./miku.css";
 
@@ -74,7 +74,7 @@ const TAIL =
 const TAIL_STRANDS = "M47 60C29 84 24 142 36 202M56 72C42 102 38 150 45 198M30 90C22 120 22 160 30 190";
 const TAIL_SHEEN = "M32 74C22 96 20 124 23 148";
 
-function Tail({ side, uid }) {
+const Tail = memo(function Tail({ side, uid }) {
   const mirror = side === "l" ? undefined : `translate(${W} 0) scale(-1 1)`;
   return (
     <g transform={mirror}>
@@ -85,9 +85,9 @@ function Tail({ side, uid }) {
       </g>
     </g>
   );
-}
+});
 
-function HairTie({ side }) {
+const HairTie = memo(function HairTie({ side }) {
   const x = side === "l" ? 54 : W - 54;
   const turn = side === "l" ? -22 : 22;
   return (
@@ -98,9 +98,9 @@ function HairTie({ side }) {
       <path d="M-8-15.6h16" stroke="#6a7282" strokeWidth="1.4" strokeLinecap="round" />
     </g>
   );
-}
+});
 
-function Fringe({ uid }) {
+const Fringe = memo(function Fringe({ uid }) {
   const d =
     "M43 126C35 74 63 37 110 37C157 37 185 74 177 126C177 142 173 158 166 170C163 150 159 132 155 116C153 104 151 96 148 89C146 99 143 106 136 112C137 100 135 91 130 83C128 94 125 101 120 106C120 97 119 88 117 80C115 98 112 112 106 125C106 107 104 92 100 81C97 93 93 101 87 108C87 98 85 90 82 85C79 96 75 104 69 111C69 103 68 96 67 91C64 101 63 109 63 117C59 134 57 152 54 170C47 158 43 142 43 126Z";
   return (
@@ -119,9 +119,9 @@ function Fringe({ uid }) {
       <path d="M76 58Q110 44 144 58" fill="none" stroke="#e9fffb" strokeWidth="1.6" strokeLinecap="round" opacity=".55" />
     </g>
   );
-}
+});
 
-function Headset() {
+const Headset = memo(function Headset() {
   return (
     <g className="hmiku__headset">
       {[44, W - 44].map((x) => (
@@ -133,10 +133,10 @@ function Headset() {
       ))}
     </g>
   );
-}
+});
 
 // The microphone boom on her right, curving round to her mouth; drawn over the cheek and side lock.
-function Mic() {
+const Mic = memo(function Mic() {
   return (
     <g className="hmiku__mic">
       <path d="M47 130Q53 151 82 150" fill="none" stroke="#2a2f38" strokeWidth="2.4" strokeLinecap="round" />
@@ -145,13 +145,13 @@ function Mic() {
       <circle cx="86" cy="149.4" r="1.3" fill={MAGENTA} opacity=".85" />
     </g>
   );
-}
+});
 
 /* ------------------------------------------------------------------------------------------------
    Body parts
    ------------------------------------------------------------------------------------------------ */
 
-function Torso({ uid }) {
+const Torso = memo(function Torso({ uid }) {
   return (
     <g className="hmiku__torso">
       <path d="M103 152h14v14h-14Z" fill={SKIN_SHADE} />
@@ -182,9 +182,9 @@ function Torso({ uid }) {
       <path d="M109 172l-1.4 18" stroke="#8ff0e6" strokeWidth="1.3" strokeLinecap="round" opacity=".7" />
     </g>
   );
-}
+});
 
-function Skirt() {
+const Skirt = memo(function Skirt() {
   return (
     <g className="hmiku__skirt" style={{ transformOrigin: "110px 192px" }}>
       <path d="M86 191H134L149 213Q110 224 71 213Z" fill={INK} stroke={INK_LINE} strokeWidth="1.2" strokeLinejoin="round" />
@@ -193,10 +193,10 @@ function Skirt() {
       <path d="M78 209Q110 218 142 209" fill="none" stroke={TEAL_DARK} strokeWidth="1" opacity=".55" />
     </g>
   );
-}
+});
 
 // One standing leg, drawn from the hip (0, 0) down to the sole at (0, 30).
-function Leg() {
+const Leg = memo(function Leg() {
   return (
     <g>
       <rect x="-4.6" y="0" width="9.2" height="18" rx="4.4" fill={SKIN} stroke={SKIN_SHADE} strokeWidth=".8" />
@@ -206,11 +206,11 @@ function Leg() {
       <path d="M-2.4 18v7" stroke={INK_HI} strokeWidth="1.3" strokeLinecap="round" />
     </g>
   );
-}
+});
 
 // A seated leg seen from the front: the knee peeking from under the skirt and the shin hanging
 // over the cloud's edge, toe turned out. Drawn from the knee (0, 0).
-function SeatedLeg() {
+const SeatedLeg = memo(function SeatedLeg() {
   return (
     <g>
       <rect x="-4.6" y="-1" width="9.2" height="19" rx="4.4" fill={SKIN} stroke={SKIN_SHADE} strokeWidth=".8" />
@@ -222,9 +222,9 @@ function SeatedLeg() {
       <path d="M-2.2 18v9" stroke={INK_HI} strokeWidth="1.3" strokeLinecap="round" />
     </g>
   );
-}
+});
 
-function Leek() {
+const Leek = memo(function Leek() {
   // Held at the white end; the green leaves fan out at the far end. Points along +y from the hand.
   return (
     <g className="hmiku__leek-prop">
@@ -235,12 +235,12 @@ function Leek() {
       <path d="M-1 20C-1 30 0 38 1 47 2.6 38 2.6 29 1.2 20Z" fill="#9bd46f" stroke="#4f8f45" strokeWidth=".9" strokeLinejoin="round" />
     </g>
   );
-}
+});
 
 // One arm, hung from the shoulder at (0, 0) and pointing down +y: bare upper arm, the detached
 // sleeve flaring to a teal cuff, and the hand at (0, 37). `mark` puts the red 01 on her left
 // shoulder; `panel` the little readout on her left sleeve.
-function Arm({ mark, panel, facing, children, finger }) {
+const Arm = memo(function Arm({ mark, panel, facing, children, finger }) {
   return (
     <g>
       <rect x="-4.6" y="-3" width="9.2" height="19" rx="4.6" fill={SKIN} stroke={SKIN_SHADE} strokeWidth=".8" />
@@ -268,9 +268,9 @@ function Arm({ mark, panel, facing, children, finger }) {
       {children && <g transform="translate(0 41)">{children}</g>}
     </g>
   );
-}
+});
 
-function Note({ className, x, y, flag = 1, fill = TEAL }) {
+const Note = memo(function Note({ className, x, y, flag = 1, fill = TEAL }) {
   return (
     <g transform={`translate(${x} ${y})`}>
       <g className={`hmiku__note ${className}`}>
@@ -279,9 +279,9 @@ function Note({ className, x, y, flag = 1, fill = TEAL }) {
       </g>
     </g>
   );
-}
+});
 
-function Glint({ x, y, r = 5, className = "" }) {
+const Glint = memo(function Glint({ x, y, r = 5, className = "" }) {
   return (
     <path
       className={`hmiku__glint ${className}`}
@@ -289,7 +289,7 @@ function Glint({ x, y, r = 5, className = "" }) {
       style={{ transformOrigin: `${x}px ${y}px` }}
     />
   );
-}
+});
 
 /* ------------------------------------------------------------------------------------------------
    The body
