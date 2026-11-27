@@ -27,6 +27,7 @@ import { chatRoutes, memoryRoutes } from "./chat.js";
 import { maomaoRoutes } from "./maomao.js";
 import { passphraseRoutes } from "./passphrase.js";
 import { meLoveNoteRoutes, reactionBody } from "./loveNotes.js";
+import { openLetterAnnouncements } from "../lib/letterCard.js";
 import { MAX_ACTIVE_KEYS, createDeviceKey, listDeviceKeys, revokeDeviceKey } from "../lib/deviceKeys.js";
 import { scriptableWidget } from "../content/widgetScript.js";
 import { artworksWithNotes, markArtworkNotesSeen } from "../lib/artworkNotes.js";
@@ -471,6 +472,7 @@ meRoutes.get("/letters", async (c) => {
         openWhen: l.openWhen,
         unlockAt: l.unlockAt,
         openedAt: l.openedAt,
+        createdAt: l.createdAt,
         reaction: l.reaction,
         locked: Boolean(locked),
         body: locked ? null : l.body,
@@ -482,6 +484,8 @@ meRoutes.get("/letters", async (c) => {
 meRoutes.post("/letters/:id/open", async (c) => {
   const db = await getDb();
   const id = c.req.param("id");
+  if (!z.string().uuid().safeParse(id).success)
+    return c.json({ error: "not_found", message: "That letter doesn't exist." }, 404);
   const [letter] = await db
     .select()
     .from(schema.letters)
@@ -497,11 +501,15 @@ meRoutes.post("/letters/:id/open", async (c) => {
       403,
     );
   }
+  // Only her own opening counts: Josh reading it on his phone leaves it sealed for her.
+  if (c.get("session").role !== "kiriya") return c.json({ ok: true, preview: true });
+  const now = new Date();
   if (!letter.openedAt)
     await db
       .update(schema.letters)
-      .set({ openedAt: new Date() })
+      .set({ openedAt: now })
       .where(eq(schema.letters.id, id));
+  await openLetterAnnouncements(db, id, now);
   return c.json({ ok: true });
 });
 

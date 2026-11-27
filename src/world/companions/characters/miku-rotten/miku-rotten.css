@@ -1,0 +1,1082 @@
+/* Rotten Girl Miku's motion. Transform and opacity only, keyed on data-pose, so an iPhone 11 can
+   run it next to the engine; every clock stops for reduced motion or when the engine pauses her.
+   Lengths inside the SVG are viewBox units (220 × 240, feet at 110 238). */
+
+.mr {
+  display: block;
+  overflow: visible;
+}
+.mr * {
+  transform-box: view-box;
+}
+
+/* --- Origins ---------------------------------------------------------------------------------- */
+.mr-root {
+  transform-origin: 110px 238px;
+}
+.mr-sway {
+  transform-origin: 110px 156px;
+}
+.mr-upper {
+  transform-origin: 110px 238px;
+  transition: translate 0.28s cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+.mr-breath {
+  transform-origin: 110px 214px;
+}
+.mr-head {
+  transform-origin: 110px 156px;
+  transition:
+    rotate 0.4s cubic-bezier(0.22, 0.72, 0.2, 1),
+    translate 0.4s cubic-bezier(0.22, 0.72, 0.2, 1);
+}
+.mr-tail--l,
+.mr-tail--r,
+.mr-tail-swing {
+  transform-origin: 66px 64px;
+}
+.mr-tail--l,
+.mr-tail--r {
+  transition:
+    rotate 0.35s cubic-bezier(0.3, 0.8, 0.3, 1),
+    scale 0.35s cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+.mr-leg--l {
+  transform-origin: 102px 212px;
+}
+.mr-leg--r {
+  transform-origin: 118px 212px;
+}
+.mr-shin--l {
+  transform-origin: 101px 235px;
+}
+.mr-shin--r {
+  transform-origin: 119px 235px;
+}
+.mr-ahoge {
+  transform-origin: 108px 46px;
+}
+.mr-arm-l {
+  transform-origin: 82px 168px;
+}
+.mr-arm-r,
+.mr-wave-arm,
+.mr-cheer-arm,
+.mr-glasses-hand,
+.mr-giggle-hand {
+  transform-origin: 138px 168px;
+}
+.mr-shadow {
+  transform-origin: 110px 237px;
+  transition: opacity 0.25s ease, scale 0.25s ease;
+}
+
+/* --- Always on: breath, blink, the tails' slow sway, the ahoge's bob ------------------------- */
+.mr-breath {
+  animation: mr-breathe 5.6s ease-in-out infinite;
+}
+.mr-eye {
+  animation: mr-blink 5.3s linear infinite;
+}
+.mr-blink-line {
+  opacity: 0;
+  animation: mr-blink-line 5.3s linear infinite;
+}
+.mr-tail-swing {
+  animation: mr-tail-idle 4.4s ease-in-out infinite;
+}
+.mr-tail--r .mr-tail-swing {
+  animation-delay: -1.3s;
+}
+.mr-ahoge {
+  animation: mr-ahoge 3.1s ease-in-out infinite;
+}
+.mr-spiral {
+  animation: mr-spin 1.6s linear infinite;
+}
+.mr-sweat {
+  animation: mr-sweat 1.5s ease-in infinite;
+}
+
+@keyframes mr-breathe {
+  0%,
+  100% {
+    scale: 1 1;
+    translate: 0 0;
+  }
+  50% {
+    scale: 1.004 1.012;
+    translate: 0 -0.6px;
+  }
+}
+/* A blink, and near the end of the cycle a quick double blink. */
+@keyframes mr-blink {
+  0%,
+  37%,
+  41%,
+  86%,
+  88.6%,
+  91%,
+  93.6%,
+  100% {
+    scale: 1 1;
+  }
+  39%,
+  87.3%,
+  92.3% {
+    scale: 1 0.06;
+  }
+}
+@keyframes mr-blink-line {
+  0%,
+  37.6%,
+  40.4%,
+  86.4%,
+  88.2%,
+  91.4%,
+  93.2%,
+  100% {
+    opacity: 0;
+  }
+  39%,
+  87.3%,
+  92.3% {
+    opacity: 1;
+  }
+}
+@keyframes mr-tail-idle {
+  0%,
+  100% {
+    rotate: -1.2deg;
+  }
+  50% {
+    rotate: 1.6deg;
+  }
+}
+@keyframes mr-ahoge {
+  0%,
+  100% {
+    rotate: -3deg;
+  }
+  50% {
+    rotate: 4deg;
+  }
+}
+@keyframes mr-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes mr-sweat {
+  0% {
+    translate: 0 -2px;
+  }
+  100% {
+    translate: 0 4px;
+  }
+}
+
+/* --- Crouch: the wind-up before a hop -------------------------------------------------------- */
+.mr[data-pose="crouch"] .mr-root {
+  animation: mr-crouch 0.18s ease-out both;
+}
+.mr[data-pose="crouch"] .mr-tail--l,
+.mr[data-pose="crouch"] .mr-tail--r {
+  rotate: -5deg;
+}
+@keyframes mr-crouch {
+  from {
+    scale: 1 1;
+  }
+  to {
+    scale: 1.08 0.9;
+  }
+}
+
+/* --- Talking: the mouth opens and closes while her bubble shows ------------------------------- */
+.mr-talk {
+  opacity: 0;
+  transform-origin: 110px 140px;
+}
+.mr[data-talking="yes"][data-motion="on"] .mr-talk {
+  animation: mr-talk 0.36s steps(2, jump-none) infinite;
+}
+@keyframes mr-talk {
+  0% {
+    opacity: 1;
+    scale: 1 1;
+  }
+  100% {
+    opacity: 0;
+    scale: 0.8 0.5;
+  }
+}
+
+/* --- Walk: small quick steps, a toddler bounce, a lean into the walk, tails trailing --------- */
+.mr[data-pose="walk"] .mr-root {
+  rotate: 3deg;
+  animation: mr-walk-bob 0.56s ease-in-out infinite;
+}
+.mr[data-pose="walk"] .mr-leg--l {
+  animation: mr-step 0.56s ease-in-out infinite;
+}
+.mr[data-pose="walk"] .mr-leg--r {
+  animation: mr-step 0.56s ease-in-out infinite;
+  animation-delay: -0.28s;
+}
+.mr[data-pose="walk"] .mr-tail--l {
+  rotate: 7deg;
+}
+.mr[data-pose="walk"] .mr-tail--r {
+  rotate: -5deg;
+}
+.mr[data-pose="walk"] .mr-tail-swing {
+  animation: mr-tail-walk 0.56s ease-in-out infinite;
+  animation-delay: -0.1s;
+}
+.mr[data-pose="walk"] .mr-head {
+  animation: mr-head-walk 0.56s ease-in-out infinite;
+}
+/* A cheap three-quarter turn: the face slides towards where she's going. */
+.mr-face {
+  transition: translate 0.3s ease;
+}
+.mr:is([data-pose="walk"], [data-pose="jump"], [data-pose="fall"]) .mr-face {
+  translate: 4px 0;
+}
+@keyframes mr-walk-bob {
+  0%,
+  50%,
+  100% {
+    translate: 0 0;
+  }
+  25%,
+  75% {
+    translate: 0 -3.5px;
+  }
+}
+@keyframes mr-step {
+  0%,
+  55%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  20% {
+    translate: 0 -8px;
+    rotate: 12deg;
+  }
+  38% {
+    translate: 0 -3px;
+    rotate: 5deg;
+  }
+}
+@keyframes mr-tail-walk {
+  0%,
+  50%,
+  100% {
+    rotate: -2deg;
+  }
+  25%,
+  75% {
+    rotate: 3deg;
+  }
+}
+@keyframes mr-head-walk {
+  0%,
+  100% {
+    rotate: -1.5deg;
+  }
+  50% {
+    rotate: 1.5deg;
+  }
+}
+
+/* --- Jump: stretched, knees tucked with the feet kicked out, tails flaring up ---------------- */
+.mr[data-pose="jump"] .mr-root {
+  animation: mr-jump 0.42s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.mr[data-pose="jump"] .mr-leg--l {
+  translate: 0 -7px;
+  rotate: 28deg;
+}
+.mr[data-pose="jump"] .mr-leg--r {
+  translate: 0 -7px;
+  rotate: -28deg;
+}
+.mr:is([data-pose="jump"], [data-pose="fall"]) .mr-tail--l,
+.mr:is([data-pose="jump"], [data-pose="fall"]) .mr-tail--r {
+  rotate: 11deg;
+  scale: 1 0.94;
+}
+.mr[data-pose="jump"] .mr-ahoge {
+  rotate: -14deg;
+  animation: none;
+}
+@keyframes mr-jump {
+  0% {
+    scale: 1.1 0.9;
+  }
+  35% {
+    scale: 0.9 1.1;
+  }
+  100% {
+    scale: 0.96 1.04;
+  }
+}
+
+/* --- Fall: arms and feet flailing, tails floating up --------------------------------------- */
+.mr[data-pose="fall"] .mr-tail--l,
+.mr[data-pose="fall"] .mr-tail--r {
+  rotate: 19deg;
+  scale: 1 0.88;
+}
+.mr[data-pose="fall"] .mr-leg--l {
+  rotate: 16deg;
+  animation: mr-flail-l 0.3s ease-in-out infinite alternate;
+}
+.mr[data-pose="fall"] .mr-leg--r {
+  rotate: -16deg;
+  animation: mr-flail-r 0.3s ease-in-out infinite alternate;
+}
+.mr[data-pose="fall"] .mr-arm-l {
+  animation: mr-flail-l 0.26s ease-in-out infinite alternate;
+}
+.mr[data-pose="fall"] .mr-arm-r {
+  animation: mr-flail-r 0.26s ease-in-out infinite alternate;
+  animation-delay: -0.13s;
+}
+.mr[data-pose="fall"] .mr-ahoge {
+  rotate: 12deg;
+  animation: none;
+}
+@keyframes mr-flail-l {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: -2px -3px;
+  }
+}
+@keyframes mr-flail-r {
+  from {
+    translate: 0 -3px;
+  }
+  to {
+    translate: 2px 0;
+  }
+}
+.mr:is([data-pose="jump"], [data-pose="fall"], [data-pose="held"]) .mr-shadow {
+  opacity: 0;
+  scale: 0.5;
+}
+
+/* --- Land: squash, overshoot, settle; the tails and glasses keep going a beat --------------- */
+.mr[data-pose="land"] .mr-root {
+  animation: mr-land 0.62s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+.mr[data-pose="land"] .mr-tail-swing {
+  animation: mr-tail-land 0.7s ease-out both;
+}
+.mr[data-pose="land"] .mr-head {
+  animation: mr-head-land 0.62s ease-out both;
+}
+@keyframes mr-land {
+  0% {
+    scale: 1.14 0.84;
+  }
+  35% {
+    scale: 0.95 1.06;
+  }
+  65% {
+    scale: 1.03 0.98;
+  }
+  100% {
+    scale: 1 1;
+  }
+}
+@keyframes mr-tail-land {
+  0% {
+    rotate: 14deg;
+  }
+  40% {
+    rotate: -6deg;
+  }
+  75% {
+    rotate: 2deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+@keyframes mr-head-land {
+  0% {
+    translate: 0 4px;
+  }
+  45% {
+    translate: 0 -1.5px;
+  }
+  100% {
+    translate: 0 0;
+  }
+}
+
+/* --- Seated (sit, sketch, sleep): perched on her cloud, legs over the edge, swinging -------- */
+.mr[data-seated="yes"] .mr-upper {
+  translate: 0 20px;
+}
+.mr[data-seated="yes"] .mr-shadow {
+  opacity: 0;
+}
+.mr[data-seated="yes"] .mr-tail--l,
+.mr[data-seated="yes"] .mr-tail--r {
+  rotate: 7deg;
+  scale: 1 0.9;
+}
+.mr[data-seated="yes"] .mr-skirt {
+  transform-origin: 110px 196px;
+  scale: 1.1 1;
+}
+/* Resting angles, so a still frame still reads as legs dangling over the edge. */
+.mr[data-seated="yes"] .mr-shin--l {
+  rotate: 9deg;
+  animation: mr-swing 1.7s ease-in-out infinite;
+}
+.mr[data-seated="yes"] .mr-shin--r {
+  rotate: -5deg;
+}
+.mr[data-seated="yes"] .mr-shin--r {
+  animation: mr-swing 1.7s ease-in-out infinite;
+  animation-delay: -0.85s;
+}
+.mr[data-pose="sit"] .mr-breath {
+  animation:
+    mr-breathe 5.6s ease-in-out infinite,
+    mr-sit-sway 3.4s ease-in-out infinite;
+}
+.mr[data-pose="sit"] .mr-head {
+  animation: mr-head-bop 1.7s ease-in-out infinite;
+}
+@keyframes mr-swing {
+  0%,
+  100% {
+    rotate: 20deg;
+  }
+  50% {
+    rotate: -16deg;
+  }
+}
+@keyframes mr-sit-sway {
+  0%,
+  100% {
+    rotate: -1.6deg;
+  }
+  50% {
+    rotate: 1.6deg;
+  }
+}
+@keyframes mr-head-bop {
+  0%,
+  100% {
+    rotate: -3deg;
+  }
+  50% {
+    rotate: 3deg;
+  }
+}
+
+.mr[data-pose="sketch"] .mr-head {
+  rotate: -5deg;
+  translate: 0 3px;
+}
+.mr[data-pose="sketch"] .mr-shin--l,
+.mr[data-pose="sketch"] .mr-shin--r {
+  animation-duration: 2.6s;
+}
+.mr[data-pose="sketch"] .mr-shin--r {
+  animation-delay: -1.3s;
+}
+.mr-pencil-hand {
+  transform-origin: 125px 193px;
+  animation: mr-scribble 0.9s ease-in-out infinite;
+}
+.mr-ink {
+  stroke-dasharray: 60;
+  animation: mr-ink 3.6s ease-out infinite;
+}
+@keyframes mr-scribble {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  25% {
+    translate: -2px 1px;
+    rotate: -4deg;
+  }
+  50% {
+    translate: 1px 0;
+    rotate: 2deg;
+  }
+  75% {
+    translate: -1px 1.5px;
+    rotate: -2deg;
+  }
+}
+@keyframes mr-ink {
+  0% {
+    stroke-dashoffset: 60;
+  }
+  70%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.mr[data-pose="sleep"] .mr-head {
+  rotate: 9deg;
+  translate: 2px 5px;
+}
+.mr[data-pose="sleep"] .mr-breath {
+  animation: mr-sleep-breathe 4.2s ease-in-out infinite;
+}
+.mr[data-pose="sleep"] .mr-shin--l,
+.mr[data-pose="sleep"] .mr-shin--r {
+  animation: none;
+  rotate: 4deg;
+}
+.mr[data-pose="sleep"] .mr-shin--r {
+  rotate: -3deg;
+}
+.mr-z1 {
+  animation: mr-float-z 3.2s ease-in-out infinite;
+}
+.mr-z2 {
+  animation: mr-float-z 3.2s ease-in-out infinite;
+  animation-delay: -1.6s;
+}
+@keyframes mr-sleep-breathe {
+  0%,
+  100% {
+    scale: 1 1;
+  }
+  50% {
+    scale: 1.01 1.025;
+  }
+}
+@keyframes mr-float-z {
+  0% {
+    opacity: 0;
+    translate: -3px 6px;
+  }
+  30%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 4px -8px;
+  }
+}
+
+/* --- Wave --------------------------------------------------------------------------------------- */
+.mr[data-pose="wave"] .mr-wave-arm {
+  animation: mr-wave 0.5s ease-in-out infinite alternate;
+}
+.mr[data-pose="wave"] .mr-head {
+  rotate: 4deg;
+}
+@keyframes mr-wave {
+  from {
+    rotate: -10deg;
+  }
+  to {
+    rotate: 12deg;
+  }
+}
+
+/* --- React: a startled hop, hands to her cheeks, tails flaring ----------------------------- */
+.mr[data-pose="react"] .mr-root {
+  animation: mr-startle 0.7s cubic-bezier(0.22, 0.72, 0.2, 1) both;
+}
+.mr[data-pose="react"] .mr-tail-swing {
+  animation: mr-tail-land 0.8s ease-out both;
+}
+.mr-bang {
+  transform-origin: 186px 40px;
+  animation: mr-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+@keyframes mr-startle {
+  0% {
+    translate: 0 0;
+    scale: 1.06 0.94;
+  }
+  30% {
+    translate: 0 -10px;
+    scale: 0.95 1.06;
+  }
+  60% {
+    translate: 0 1px;
+    scale: 1.04 0.97;
+  }
+  100% {
+    translate: 0 0;
+    scale: 1 1;
+  }
+}
+@keyframes mr-pop {
+  from {
+    scale: 0.2;
+    opacity: 0;
+  }
+  to {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+/* --- Held: lifted by the collar, swinging and kicking ----------------------------------------- */
+.mr[data-pose="held"] .mr-sway {
+  animation: mr-held-swing 1.6s cubic-bezier(0.33, 0.9, 0.3, 1) both;
+}
+.mr[data-pose="held"] .mr-leg--l {
+  animation: mr-kick 0.62s ease-in-out infinite alternate;
+}
+.mr[data-pose="held"] .mr-leg--r {
+  animation: mr-kick 0.62s ease-in-out infinite alternate-reverse;
+}
+.mr[data-pose="held"] .mr-arm-l,
+.mr[data-pose="held"] .mr-arm-r {
+  animation: mr-dangle 1.1s ease-in-out infinite alternate;
+}
+.mr[data-pose="held"] .mr-tail-swing {
+  animation: mr-tail-held 1.3s ease-in-out infinite alternate;
+}
+@keyframes mr-held-swing {
+  0% {
+    rotate: -12deg;
+  }
+  25% {
+    rotate: 8deg;
+  }
+  50% {
+    rotate: -5deg;
+  }
+  75% {
+    rotate: 2.5deg;
+  }
+  100% {
+    rotate: -1deg;
+  }
+}
+@keyframes mr-kick {
+  from {
+    rotate: 12deg;
+    translate: 0 -2px;
+  }
+  to {
+    rotate: -10deg;
+    translate: 0 1px;
+  }
+}
+@keyframes mr-dangle {
+  from {
+    rotate: -6deg;
+  }
+  to {
+    rotate: 6deg;
+  }
+}
+@keyframes mr-tail-held {
+  from {
+    rotate: -4deg;
+  }
+  to {
+    rotate: 3deg;
+  }
+}
+
+/* --- Pray: the confession. Still, a little bow, twinkles ------------------------------------ */
+.mr[data-pose="pray"] .mr-head {
+  rotate: -2deg;
+  translate: 0 2px;
+}
+.mr[data-pose="pray"] .mr-breath {
+  animation: mr-breathe 4.6s ease-in-out infinite;
+}
+
+/* --- Fluster: a jittery tremble every couple of seconds, tails puffed ------------------------ */
+.mr:is([data-pose="fluster"], [data-pose="nope"]) .mr-tail--l,
+.mr:is([data-pose="fluster"], [data-pose="nope"]) .mr-tail--r {
+  rotate: 9deg;
+}
+.mr[data-pose="fluster"] .mr-root {
+  animation: mr-tremble 2.2s linear infinite;
+}
+.mr[data-pose="fluster"] .mr-head {
+  rotate: -3deg;
+}
+@keyframes mr-tremble {
+  0%,
+  30%,
+  100% {
+    translate: 0 0;
+  }
+  4%,
+  12%,
+  20% {
+    translate: -1.4px 0;
+  }
+  8%,
+  16%,
+  24% {
+    translate: 1.4px 0;
+  }
+}
+.mr-steam path {
+  animation: mr-steam 1.4s ease-out infinite;
+}
+.mr-steam path + path {
+  animation-delay: -0.7s;
+}
+@keyframes mr-steam {
+  0% {
+    opacity: 0;
+    translate: 0 6px;
+  }
+  40% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    translate: 2px -6px;
+  }
+}
+
+/* --- Peek: half hidden behind the sketchbook, bobbing up to look ---------------------------- */
+.mr[data-pose="peek"] .mr-peek-book {
+  animation: mr-peek 2.4s ease-in-out infinite;
+}
+.mr[data-pose="peek"] .mr-head {
+  rotate: 5deg;
+}
+.mr-question {
+  transform-origin: 186px 34px;
+  animation: mr-bob-mark 1.6s ease-in-out infinite;
+}
+@keyframes mr-peek {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  45%,
+  60% {
+    translate: 0 5px;
+  }
+}
+@keyframes mr-bob-mark {
+  0%,
+  100% {
+    rotate: -6deg;
+    translate: 0 0;
+  }
+  50% {
+    rotate: 6deg;
+    translate: 0 -2px;
+  }
+}
+
+/* --- Cheer: bouncing on the spot, waving her little heart paddle ----------------------------- */
+.mr[data-pose="cheer"] .mr-root {
+  animation: mr-bounce 0.84s ease-in-out infinite;
+}
+.mr[data-pose="cheer"] .mr-cheer-arm {
+  animation: mr-wave 0.42s ease-in-out infinite alternate;
+}
+.mr[data-pose="cheer"] .mr-tail-swing {
+  animation: mr-tail-walk 0.84s ease-in-out infinite;
+}
+@keyframes mr-bounce {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1.03 0.97;
+  }
+  45% {
+    translate: 0 -6px;
+    scale: 0.98 1.02;
+  }
+}
+
+/* --- Nope: arms crossed in a big X, shaking her head ------------------------------------------ */
+.mr[data-pose="nope"] .mr-head {
+  animation: mr-no 1.8s ease-in-out infinite;
+}
+.mr-cross-arms {
+  transform-origin: 110px 160px;
+  animation: mr-pop 0.25s ease-out both;
+}
+@keyframes mr-no {
+  0%,
+  40%,
+  100% {
+    rotate: 0deg;
+  }
+  8%,
+  24% {
+    rotate: -6deg;
+  }
+  16%,
+  32% {
+    rotate: 6deg;
+  }
+}
+
+/* --- Glint: pushes her glasses up and the lenses flash -------------------------------------- */
+.mr[data-pose="glint"] .mr-head {
+  rotate: -4deg;
+}
+.mr[data-pose="glint"] .mr-glasses-hand {
+  animation: mr-push-glasses 0.5s ease-out both;
+}
+@keyframes mr-push-glasses {
+  0% {
+    translate: 0 6px;
+  }
+  60% {
+    translate: 0 -1.5px;
+  }
+  100% {
+    translate: 0 0;
+  }
+}
+
+/* --- Giggle: shoulders shaking behind her hand ----------------------------------------------- */
+.mr[data-pose="giggle"] .mr-breath {
+  animation: mr-giggle 0.24s ease-in-out infinite alternate;
+}
+.mr[data-pose="giggle"] .mr-head {
+  rotate: 5deg;
+}
+@keyframes mr-giggle {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 -1.6px;
+  }
+}
+
+/* --- Show: holding the sketchbook out, bouncing on her toes ----------------------------------- */
+.mr[data-pose="show"] .mr-show-book {
+  transform-origin: 110px 180px;
+  animation: mr-show 1.2s ease-in-out infinite;
+}
+.mr[data-pose="show"] .mr-root {
+  animation: mr-toes 1.2s ease-in-out infinite;
+}
+@keyframes mr-show {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: -2deg;
+  }
+  50% {
+    translate: 0 -2.5px;
+    rotate: 2deg;
+  }
+}
+@keyframes mr-toes {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -2px;
+  }
+}
+
+/* --- Marks ----------------------------------------------------------------------------------- */
+.mr-heart1,
+.mr-heart2 {
+  animation: mr-heart-rise 2.4s ease-out infinite;
+}
+.mr-heart2 {
+  animation-delay: -1.2s;
+}
+@keyframes mr-heart-rise {
+  0% {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  25%,
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 0 -10px;
+  }
+}
+.mr-tw1,
+.mr-tw2,
+.mr-tw3 {
+  animation: mr-twinkle 1.8s ease-in-out infinite;
+}
+.mr-tw2 {
+  animation-delay: -0.6s;
+}
+.mr-tw3 {
+  animation-delay: -1.2s;
+}
+@keyframes mr-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* --- Her cloud: a sketchbook page drawn in, doodled on, rubbed out ---------------------------- */
+.mr-cloud {
+  display: block;
+  overflow: visible;
+}
+.mr-cloud__sketch {
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 0;
+}
+.mr-cloud__doodles {
+  transition: opacity 0.4s ease;
+}
+.mr-cloud__crumbs {
+  opacity: 0;
+}
+.mr-cloud[data-state="forming"] .mr-cloud__sketch {
+  animation: mr-cloud-draw 0.5s ease-out both;
+}
+.mr-cloud[data-state="forming"] .mr-cloud__body {
+  animation: mr-cloud-puff 0.5s cubic-bezier(0.3, 1.35, 0.5, 1) both;
+}
+.mr-cloud[data-state="forming"] .mr-cloud__doodles {
+  opacity: 0;
+}
+.mr-cloud[data-state="steady"] .mr-cloud__doodles > :last-child {
+  animation: mr-twinkle 2.4s ease-in-out infinite;
+}
+.mr-cloud[data-state="fading"] .mr-cloud__body {
+  animation: mr-cloud-rub 0.6s ease-in both;
+}
+.mr-cloud[data-state="fading"] .mr-cloud__sketch {
+  animation: mr-cloud-erase 0.5s ease-in both;
+}
+.mr-cloud[data-state="fading"] .mr-cloud__doodles {
+  opacity: 0;
+  transition-duration: 0.2s;
+}
+.mr-cloud[data-state="fading"] .mr-cloud__crumbs {
+  animation: mr-crumbs 0.6s ease-out both;
+}
+@keyframes mr-cloud-draw {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes mr-cloud-puff {
+  0% {
+    opacity: 0;
+    scale: 0.55 0.3;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    scale: 1 1;
+  }
+}
+@keyframes mr-cloud-rub {
+  0% {
+    opacity: 1;
+    scale: 1 1;
+  }
+  100% {
+    opacity: 0;
+    scale: 0.85 0.7;
+  }
+}
+@keyframes mr-cloud-erase {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+@keyframes mr-crumbs {
+  0% {
+    opacity: 0.9;
+    translate: 0 0;
+  }
+  100% {
+    opacity: 0;
+    translate: 3px 9px;
+  }
+}
+/* Quiet mode or paused: no drawing, puffing or crumbs; the cloud simply fades in and out. */
+.mr-cloud[data-playing="off"] * {
+  animation: none !important;
+}
+.mr-cloud[data-playing="off"] {
+  transition: opacity 0.3s ease;
+}
+.mr-cloud[data-playing="off"][data-state="fading"] {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* No drawing or puffing: the cloud simply fades in and out. */
+  .mr-cloud {
+    transition: opacity 0.3s ease !important;
+  }
+  .mr-cloud[data-state="forming"] .mr-cloud__body,
+  .mr-cloud[data-state="forming"] .mr-cloud__sketch,
+  .mr-cloud[data-state="fading"] .mr-cloud__body,
+  .mr-cloud[data-state="fading"] .mr-cloud__sketch,
+  .mr-cloud[data-state="fading"] .mr-cloud__crumbs,
+  .mr-cloud[data-state="steady"] .mr-cloud__doodles path {
+    animation: none !important;
+  }
+  .mr-cloud[data-state="fading"] {
+    opacity: 0;
+  }
+}
+
+/* The picker thumb waves with an empty hand. */
+.mr-thumb .mr-sidebook {
+  display: none;
+}
+
+/* --- Stills and quiet ---------------------------------------------------------------------------
+   "still": the engine asked for a frozen frame at a given time (frame prop); "off": paused or
+   reduced motion. Static pose offsets (sitting, tucked legs) stay either way. */
+.mr[data-motion="still"] * {
+  animation-play-state: paused !important;
+  animation-delay: var(--mr-at, 0s) !important;
+}
+.mr[data-motion="off"] *,
+.mr[data-motion="off"] {
+  animation: none !important;
+  transition-duration: 0s !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mr *,
+  .mr {
+    animation: none !important;
+    transition-duration: 0s !important;
+  }
+}

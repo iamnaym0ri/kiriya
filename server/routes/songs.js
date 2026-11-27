@@ -8,7 +8,7 @@ import { getJson } from "../lib/http.js";
 
 export const songRoutes = new Hono();
 
-function present(row) {
+export function present(row) {
   const parsed =
     row.kind === "upload"
       ? { provider: "audio", embedId: row.url }
@@ -22,6 +22,10 @@ function present(row) {
     title: row.title,
     artist: row.artist,
     thumbnail: row.thumbnail,
+    album: row.data?.album ?? null,
+    // Seconds, read from the file's own tags or YouTube's player when Josh added it.
+    duration: row.data?.duration ?? null,
+    addedBy: row.data?.addedBy ?? null,
     featured: row.featured,
     isPublic: row.isPublic,
     vocadbUrl: row.data?.vocadbId
@@ -58,16 +62,42 @@ songRoutes.get("/", async (c) => {
   return c.json({ songs: rows.map(present) });
 });
 
+const text = (max) => z.string().trim().max(max);
+const duration = z.number().positive().max(60 * 60 * 3);
+// Cover art Josh uploaded (or the picture inside the file, uploaded for it).
+const artUrl = z.string().min(1).max(600).refine((url) => isUploadUrl(url, ["songs"]), "That picture isn’t one of ours.");
 const addBody = z.union([
-  z.object({ url: z.string().min(8).max(500) }),
+  z.object({
+    url: z.string().min(8).max(500),
+    title: text(120).min(1).optional(),
+    artist: text(120).optional(),
+    duration: duration.optional(),
+    thumbnail: artUrl.optional(),
+  }),
   z.object({
     upload: z.object({
       url: z.string().min(1).max(600),
-      title: z.string().trim().min(1).max(120),
-      artist: z.string().trim().max(120).optional().default(""),
+      title: text(120).min(1),
+      artist: text(120).optional().default(""),
+      album: text(120).optional().default(""),
+      duration: duration.optional(),
+      thumbnail: artUrl.optional(),
+      art: z.enum(["tags", "lookup", "own"]).optional(),
     }),
   }),
 ]);
+
+const patchBody = z
+  .object({
+    featured: z.literal(true).optional(),
+    isPublic: z.boolean().optional(),
+    title: text(120).min(1).optional(),
+    artist: text(120).optional(),
+    album: text(120).optional(),
+    duration: duration.nullable().optional(),
+    thumbnail: artUrl.nullable().optional(),
+  })
+  .strict();
 
 songRoutes.post("/", async (c) => {
   const parsedBody = addBody.safeParse(await c.req.json().catch(() => null));
@@ -85,6 +115,7 @@ songRoutes.post("/", async (c) => {
     (await db.select({ id: schema.songs.id }).from(schema.songs).limit(1))
       .length === 0;
 
+  const addedBy = c.get("session").role;
   let values;
   if ("url" in parsedBody.data) {
     const parsed = parseSongUrl(parsedBody.data.url);
@@ -94,22 +125,24 @@ songRoutes.post("/", async (c) => {
       fetchSongMeta(parsed),
       vocadbLookup(parsed),
     ]);
+    const given = parsedBody.data;
     values = {
       kind: "link",
       provider: parsed.provider,
       url: parsed.url,
-      title: vocadb?.title ?? meta.title ?? "A favourite song",
-      artist: vocadb?.artist ?? meta.artist ?? null,
+      title: given.title ?? vocadb?.title ?? meta.title ?? "A favourite song",
+      artist: given.artist ?? vocadb?.artist ?? meta.artist ?? null,
       thumbnail:
+        given.thumbnail ??
         meta.thumbnail ??
         (parsed.provider === "youtube"
           ? `https://i.ytimg.com/vi/${parsed.embedId}/hqdefault.jpg`
           : null),
-      data: vocadb ? { vocadbId: vocadb.id } : null,
+      data: { addedBy, ...(vocadb ? { vocadbId: vocadb.id } : {}), ...(given.duration ? { duration: given.duration } : {}) },
     };
   } else {
-    const { url, title, artist } = parsedBody.data.upload;
-    const allowed = isUploadUrl(url);
+    const { url, title, artist, album, duration: length, thumbnail, art } = parsedBody.data.upload;
+    const allowed = isUploadUrl(url, ["songs"]);
     if (!allowed)
       return c.json(
         {
@@ -124,8 +157,8 @@ songRoutes.post("/", async (c) => {
       url,
       title,
       artist: artist || null,
-      thumbnail: null,
-      data: null,
+      thumbnail: thumbnail ?? null,
+      data: { addedBy, ...(album ? { album } : {}), ...(length ? { duration: length } : {}), ...(thumbnail && art ? { art } : {}) },
     };
   }
 
@@ -141,9 +174,20 @@ songRoutes.post("/", async (c) => {
 });
 
 songRoutes.patch("/:id", async (c) => {
-  const body = await c.req.json().catch(() => ({}));
+  const parsed = patchBody.safeParse(await c.req.json().catch(() => ({})));
+  if (!parsed.success)
+    return c.json({ error: "bad_song", message: "Check the song’s details and try again." }, 400);
+  const body = parsed.data;
   const db = await getDb();
   const id = c.req.param("id");
+  if (!z.string().uuid().safeParse(id).success)
+    return c.json({ error: "not_found", message: "That song isn't on your list anymore." }, 404);
+  const [current] = await db.select().from(schema.songs).where(eq(schema.songs.id, id));
+  if (!current)
+    return c.json(
+      { error: "not_found", message: "That song isn't on your list anymore." },
+      404,
+    );
   if (body.featured === true) {
     await db.update(schema.songs).set({ featured: false });
     await db
@@ -151,20 +195,28 @@ songRoutes.patch("/:id", async (c) => {
       .set({ featured: true, isPublic: true })
       .where(eq(schema.songs.id, id));
   }
-  if (typeof body.isPublic === "boolean")
-    await db
-      .update(schema.songs)
-      .set({ isPublic: body.isPublic })
-      .where(eq(schema.songs.id, id));
+  const set = {};
+  if (typeof body.isPublic === "boolean") set.isPublic = body.isPublic;
+  if (body.title !== undefined) set.title = body.title;
+  if (body.artist !== undefined) set.artist = body.artist || null;
+  if (body.thumbnail !== undefined) set.thumbnail = body.thumbnail;
+  if (body.album !== undefined || body.duration !== undefined) {
+    const data = { ...(current.data ?? {}) };
+    if (body.album !== undefined) {
+      if (body.album) data.album = body.album;
+      else delete data.album;
+    }
+    if (body.duration !== undefined) {
+      if (body.duration) data.duration = body.duration;
+      else delete data.duration;
+    }
+    set.data = data;
+  }
+  if (Object.keys(set).length) await db.update(schema.songs).set(set).where(eq(schema.songs.id, id));
   const [row] = await db
     .select()
     .from(schema.songs)
     .where(eq(schema.songs.id, id));
-  if (!row)
-    return c.json(
-      { error: "not_found", message: "That song isn't on your list anymore." },
-      404,
-    );
   return c.json(present(row));
 });
 

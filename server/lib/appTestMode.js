@@ -87,14 +87,17 @@ export async function interceptTestSend(db, role, data, { after = (task) => task
 /** One sample of each kind, as it would look on her phone. */
 export const SAMPLE_KINDS = ["chat", "tap", "letter", "note", "jar", "reminder"];
 
-function sample(kind, names) {
+function sample(kind, names, { tap = "thinking" } = {}) {
   const her = names?.kiriya ?? "Kiriya";
   const him = names?.admin ?? "Josh";
   switch (kind) {
     case "chat":
       return { title: her, body: "test: how’s your day going? ♡", navigate: "/world/chat", kind: "chat", threadId: "chat" };
-    case "tap":
-      return { title: tapByKey.thinking.push.replace("{from}", her), body: `${tapByKey.thinking.kaomoji}  ${tapByKey.thinking.note}`, navigate: "/world/chat", kind: "tap", tap: "thinking", threadId: "chat" };
+    case "tap": {
+      // Any of the seven signals (shared/taps.js), so each one's sound and buttons can be tried.
+      const signal = tapByKey[tap] ?? tapByKey.thinking;
+      return { title: signal.push.replace("{from}", her), body: `${signal.kaomoji}  ${signal.note}`, navigate: "/world/chat", kind: "tap", tap: signal.key, threadId: "chat" };
+    }
     case "letter":
       return {
         title: "a new letter for you ✉",
@@ -141,8 +144,8 @@ function sample(kind, names) {
 }
 
 /** Sends one sample to Josh's test devices only, switching test mode on so its buttons can't reach her. */
-export async function tryNotification(db, kind, names, { now = new Date(), send = sendToSubscribers } = {}) {
-  const message = sample(kind, names);
+export async function tryNotification(db, kind, names, { now = new Date(), send = sendToSubscribers, tap } = {}) {
+  const message = sample(kind, names, { tap });
   if (!message) return null;
   const mode = (await testMode(db, now)).on ? await testMode(db, now) : await setTestMode(db, true, now);
   const push = await send(db, message, { role: "admin", ttlSeconds: 600 });

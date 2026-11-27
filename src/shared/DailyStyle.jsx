@@ -5,6 +5,7 @@ import { api } from "../lib/api.js";
 import { useSession } from "../lib/session.js";
 import { usePrefs, useSetPrefs } from "../lib/prefs.js";
 import { Icon } from "./WorldPrimitives.jsx";
+import { isAppShell } from "../lib/native.js";
 const Checkin = lazy(() => import("../world/today/MoodCheckin.jsx"));
 const TITLE = "Whay u feeling like today ;)";
 const DailyStyleContext = createContext({ current: null, copy: null, open: () => {} });
@@ -84,7 +85,7 @@ export function DailyStyleProvider({ children }) {
   const since = sinceLabel(current, data?.day);
   return <DailyStyleContext.Provider value={{ current, day: data?.day ?? null, copy: data?.copy ?? null, allowed, inWorld, since, open, editing }}>
     {children}
-    {allowed && inWorld && <aside className="daily-style-corner" data-small={small} aria-label="Your little feeling corner">
+    {allowed && inWorld && !isAppShell() && <aside className="daily-style-corner" data-small={small} aria-label="Your little feeling corner">
       <button className="daily-style-corner__toggle" onClick={open} aria-label={TITLE} aria-haspopup="dialog" aria-expanded={editing} aria-controls={editing ? "feeling-corner-panel" : undefined}>
         <span className="daily-style-corner__face" aria-hidden="true">{current?.feeling?.emoji ?? "♡"}</span>
         {!small && <span><strong>your little corner</strong><small>{current ? `${current.label} · ${current.feeling?.label ?? "feeling it out"}${since ? ` · ${since}` : ""}` : "how’s the world feeling?"}</small></span>}
