@@ -30,22 +30,37 @@ export function distanceField(ids, w, h) {
   return d;
 }
 
-/** For each region: the roomiest spot for its number ({ x, y, r } in pixels) and its area. */
+/**
+ * For each region: the roomiest spot for its number ({ x, y, r } in pixels) and its area. Among
+ * equally roomy spots, the one nearest the shape's middle wins, so numbers sit centred.
+ */
 export function labelSpots(ids, w, h, count) {
   const field = distanceField(ids, w, h);
-  const spots = Array.from({ length: count }, () => ({ x: 0, y: 0, r: -1, area: 0 }));
+  const spots = Array.from({ length: count }, () => ({ x: 0, y: 0, r: -1, area: 0, sx: 0, sy: 0 }));
   for (let i = 0; i < ids.length; i++) {
     const id = ids[i];
     if (id < 0 || id >= count) continue;
     const spot = spots[id];
     spot.area += 1;
-    if (field[i] > spot.r) {
-      spot.r = field[i];
-      spot.x = (i % w) + 0.5;
-      spot.y = Math.floor(i / w) + 0.5;
+    spot.sx += i % w;
+    spot.sy += Math.floor(i / w);
+    if (field[i] > spot.r) spot.r = field[i];
+  }
+  const best = spots.map(() => Infinity);
+  for (let i = 0; i < ids.length; i++) {
+    const id = ids[i];
+    if (id < 0 || id >= count) continue;
+    const spot = spots[id];
+    if (field[i] < spot.r - 0.25) continue;
+    const x = i % w, y = Math.floor(i / w);
+    const d = (x - spot.sx / spot.area) ** 2 + (y - spot.sy / spot.area) ** 2;
+    if (d < best[id]) {
+      best[id] = d;
+      spot.x = x + 0.5;
+      spot.y = y + 0.5;
     }
   }
-  return spots;
+  return spots.map(({ x, y, r, area }) => ({ x, y, r, area }));
 }
 
 /** Colours that encode a region index for the hit map, far apart so blended edges never decode. */
