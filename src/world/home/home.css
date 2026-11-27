@@ -101,16 +101,37 @@ html.app-shell .home-glance .app-row__icon[data-kind="heart"] { background: #f6e
 .home-stage__hello {
   display: grid;
   justify-items: center;
+  justify-self: stretch;
   min-width: 0;
-  max-width: 100%;
+  width: 100%;
 }
+/* The greeting and her name share one centre line, the screen's: each is centred by its ink, not
+   its box (CentreStage.jsx useInkCentre sets --ink-shift), and Josh's pencil hangs off the
+   greeting's right end outside the flow, so it never pushes the words to the left. */
 :root .home-stage__greeting {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
+  position: relative;
+  display: block;
+  justify-self: stretch;
+  width: 100%;
   margin: 0;
   font-size: 30px;
+  text-align: center;
+  translate: var(--ink-shift, 0px) 0;
+}
+.home-stage__greeting-line {
+  display: inline-block;
+  max-width: 100%;
+}
+/* Room for the pencil, so a long greeting stays clear of it. */
+.home-stage__greeting:has(> .admin-edit) .home-stage__greeting-line {
+  max-width: calc(100% - 60px);
+}
+/* Just after the greeting's last letter, but never past the column's edge. */
+.home-stage__pencil--greeting.admin-edit {
+  position: absolute;
+  top: 50%;
+  left: min(calc(50% + var(--line-w, 276px) / 2 + 6px), calc(100% - 32px));
+  translate: 0 -50%;
 }
 :root .home-stage h1.home-stage__name {
   /* Parisienne's "y" hangs well below the line box: the bottom margin clears its tail, so it never
@@ -118,6 +139,7 @@ html.app-shell .home-glance .app-row__icon[data-kind="heart"] { background: #f6e
   margin: -6px auto 30px;
   font-size: 118px;
   line-height: 1.08;
+  translate: var(--ink-shift, 0px) 0;
 }
 @media (max-width: 360px) {
   :root .home-stage h1.home-stage__name {
@@ -132,16 +154,109 @@ html.app-shell .home-glance .app-row__icon[data-kind="heart"] { background: #f6e
   box-sizing: border-box;
   width: min(100%, 372px);
   margin: 0 auto;
-  padding: 9px;
-  border: 4px double var(--theme-line, #c9a8d3);
-  border-radius: 30px 34px 6px 6px;
-  background: var(--theme-paper, #fff9fd);
-  box-shadow: 6px 8px 0 #d9c5e344, 0 14px 35px #49365315;
+  padding: 10px;
+  border: 5px double color-mix(in srgb, var(--theme-hand, #97679a) 55%, var(--theme-line, #c9a8d3));
+  border-radius: 34px 38px 8px 8px;
+  /* Paper with a faint dotted weave. */
+  background:
+    radial-gradient(circle at 1.5px 1.5px, color-mix(in srgb, var(--theme-hand, #97679a) 16%, transparent) 1px, transparent 1.6px) 0 0 / 9px 9px,
+    var(--theme-paper, #fff9fd);
+  box-shadow: 6px 8px 0 #d9c5e355, 0 14px 35px #49365318;
   rotate: 1.2deg;
+}
+/* A stitched line just inside the border. */
+.home-stage__frame::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1.5px dashed color-mix(in srgb, var(--theme-hand, #97679a) 42%, transparent);
+  border-radius: 28px 32px 5px 5px;
+  pointer-events: none;
+}
+
+/* ---------- the display's decorations (FrameDecor) ---------- */
+.home-stage__decor {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.home-stage__decor > span {
+  position: absolute;
+  display: block;
+}
+.home-stage__decor svg {
+  display: block;
+  overflow: visible;
+}
+/* A bow tied on the top-left corner (the website's bow, PlayfulWorld.jsx), swaying a little. */
+.home-stage__bow {
+  top: -30px;
+  left: -14px;
+  width: 78px;
+  height: 60px;
+  rotate: -24deg;
+}
+.home-stage__bow .ribbon-bow {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 3px 2px #49365320);
+}
+/* A star on the top-right corner, and a little sparkle beside it. */
+.home-stage__star {
+  top: -21px;
+  right: -12px;
+  width: 40px;
+  height: 40px;
+  color: color-mix(in srgb, var(--theme-hand, #97679a) 80%, #7d4fa0);
+  rotate: 12deg;
+  filter: drop-shadow(0 2px 0 #fff9fd) drop-shadow(0 3px 4px #49365322);
+}
+.home-stage__spark {
+  top: 26px;
+  right: -11px;
+  width: 15px;
+  height: 15px;
+  color: color-mix(in srgb, var(--theme-hand, #97679a) 70%, #e3a6cc);
+}
+/* A heart sticker on the bottom-left corner. */
+.home-stage__heart {
+  bottom: -14px;
+  left: -14px;
+  rotate: -14deg;
+  filter: drop-shadow(0 2px 0 #fff9fd) drop-shadow(0 3px 3px #49365322);
+}
+.home-stage__heart path {
+  fill: color-mix(in srgb, #f3c4d8 80%, var(--theme-paper, #fff9fd));
+  stroke: color-mix(in srgb, #c46d98 75%, var(--theme-hand, #97679a));
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.home-stage__heart .home-stage__heart-shine {
+  fill: none;
+  stroke: #fff9fd;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html[data-little-motion="on"] .home-stage__star {
+    animation: home-star-twinkle 3.6s ease-in-out infinite;
+  }
+  html[data-little-motion="on"] .home-stage__spark {
+    animation: home-star-twinkle 3.6s ease-in-out -1.8s infinite;
+  }
+}
+@keyframes home-star-twinkle {
+  0%, 100% { transform: scale(0.88); opacity: 0.85; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+/* The bow's own sway (.ribbon-bow) only runs with little animations on. */
+html:not([data-little-motion="on"]) .home-stage__bow .ribbon-bow {
+  animation: none;
 }
 .home-stage__photos {
   position: relative;
-  border-radius: 22px 26px 3px 3px;
+  border-radius: 25px 29px 3px 3px;
   overflow: hidden;
   background: #f0e4ef;
   /* Clip the scrolling strip to the rounded corners on WebKit. */
@@ -205,8 +320,8 @@ html.app-shell .home-glance .app-row__icon[data-kind="heart"] { background: #f6e
 }
 .home-stage__pencil--photos.admin-edit {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 24px;
+  right: 20px;
   z-index: 2;
   background: color-mix(in srgb, var(--theme-paper) 92%, transparent);
 }
