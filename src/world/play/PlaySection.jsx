@@ -111,12 +111,14 @@ export default function PlaySection() {
     );
   }
 
+  const covered = Boolean(game) || sketchbook;
   return (
     <div className="app-section app-section--play">
-      <header className="app-section__head">
+      {/* While a game or the sketchbook is open, the hub behind it is out of reach (VoiceOver, taps). */}
+      <header className="app-section__head" inert={covered}>
         <h1 className="app-section__title">play</h1>
       </header>
-      <div className="app-section__body">
+      <div className="app-section__body" inert={covered}>
         <DoodleCard onOpenSketchbook={() => open({ sketchbook: 1 })} />
         <GalleryCard onOpen={() => open({ gallery: 1 })} onOpenArt={(id) => open({ gallery: 1, doodle: id })} onStart={() => open({ sketchbook: 1 })} />
         {QuizzesEntry ? <QuizzesEntry /> : <QuizzesPlaceholder />}
