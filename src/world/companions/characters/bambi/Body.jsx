@@ -70,6 +70,10 @@ const POSE_FACE = {
   cool: "cool",
   fairy: "wink",
   sing: "sing",
+  lassgo: "grin", // "lassgo!": jumping on the spot, fist up (his "let's go")
+  swat: "squeeze", // a step went wrong: he swats himself, then goes again
+  bug: "curious", // squatting over a pill bug on the cloud (he's the one who isn't scared of bugs)
+  lift: "focused", // a dumbbell curl: he trains, and he is stronger than he looks
 };
 export const BAMBY_POSES = Object.keys(POSE_FACE);
 
@@ -170,6 +174,53 @@ function Flower({ x, y, r = 1, tone = "#ffb3d4", className = "" }) {
         ))}
         <circle r="2.4" fill="#ffe27a" stroke="#e9b73f" strokeWidth=".6" />
       </g>
+    </g>
+  );
+}
+
+/** A star candy (konpeito): a fat little star with soft bumps. */
+function Candy({ x, y, tone, className = "" }) {
+  return (
+    <g className={`bamby__flower ${className}`} transform={`translate(${x} ${y})`}>
+      <g className="bamby__flower-in">
+        <path d={starPath(0, 0, 6.4, 0.62)} fill={tone} stroke="#d99ac0" strokeWidth="1.1" strokeLinejoin="round" />
+        <circle cx="-1.6" cy="-1.8" r="1.3" fill="#fff" opacity=".85" />
+      </g>
+    </g>
+  );
+}
+
+/** A little cloud puff. */
+function Puff({ x, y, className = "" }) {
+  return (
+    <g className={`bamby__flower ${className}`} transform={`translate(${x} ${y})`}>
+      <g className="bamby__flower-in">
+        <path d="M-9 3a4 4 0 0 1 2-7 5 5 0 0 1 9-2 4 4 0 0 1 7 4 3 3 0 0 1 0 5Z" fill="#fff" stroke="#d4c3ea" strokeWidth="1.1" strokeLinejoin="round" />
+      </g>
+    </g>
+  );
+}
+
+/** A little pink dumbbell, gripped in his right hand. */
+function Dumbbell() {
+  return (
+    <g className="bamby__dumbbell">
+      <rect x="119" y="199.8" width="26" height="3.4" rx="1.7" fill="#8f8aa6" />
+      <rect x="117" y="194.5" width="5.6" height="14" rx="2" fill="#ff8fbf" stroke="#d2417f" strokeWidth="1" />
+      <rect x="141.4" y="194.5" width="5.6" height="14" rx="2" fill="#ff8fbf" stroke="#d2417f" strokeWidth="1" />
+      <circle cx="132" cy="201.5" r="7" fill="#ffe7d8" stroke="#e3b19c" strokeWidth="1.1" />
+    </g>
+  );
+}
+
+/** His earbuds, in while he works out choreography in his own world. */
+function Earbuds() {
+  return (
+    <g className="bamby__earbuds" fill="#fdfcff" stroke="#b8b0c8" strokeWidth="1">
+      <ellipse cx="43.5" cy="115" rx="3.6" ry="3.2" />
+      <rect x="41.8" y="116.5" width="3.2" height="10" rx="1.6" />
+      <ellipse cx="156.5" cy="115" rx="3.6" ry="3.2" />
+      <rect x="155" y="116.5" width="3.2" height="10" rx="1.6" />
     </g>
   );
 }
@@ -350,7 +401,13 @@ export default function BambyBody({
   // while he dances for her, a finger heart for the ending fairy, a mic to sing. A pose may bring
   // its own as well (the fairy's finger heart, the mic when he sings), so the two add up.
   const carried = new Set([prop, POSE_PROP[known]].filter(Boolean));
-  const rightArm = carried.has("heart") ? <HeartArm /> : carried.has("mic") ? <MicArm /> : <Arm side="r" />;
+  const rightArm = carried.has("heart") ? (
+    <HeartArm />
+  ) : carried.has("mic") ? (
+    <MicArm />
+  ) : (
+    <Arm side="r">{known === "lift" && <Dumbbell />}</Arm>
+  );
   // The engine passes `frame` as live motion values (ignored here: the walk is a CSS cycle). A plain
   // number is the lab's way to freeze a pose at that point of its cycle, for screenshots.
   const frozen = typeof frame === "number";
@@ -455,6 +512,7 @@ export default function BambyBody({
                 <BambyBrows expression={face} />
                 <HeartShades down={shadesDown} />
                 {carried.has("headset") && <Headset />}
+                {known === "count" && <Earbuds />}
                 {known === "bloom" && (
                   <g className="bamby__bloom">
                     <g className="bamby__bloom-squeeze">
@@ -467,6 +525,12 @@ export default function BambyBody({
                     <Flower x={174} y={120} r={1.3} className="bamby__flower--4" />
                     <Flower x={54} y={32} r={1.15} tone="#ffd0e6" className="bamby__flower--5" />
                     <Flower x={148} y={28} r={1.25} tone="#ffd0e6" className="bamby__flower--6" />
+                    {/* In the PLBBUU era his flowers came with star candies and little clouds. */}
+                    <Candy x={18} y={104} tone="#ffe58a" className="bamby__flower--2" />
+                    <Candy x={184} y={98} tone="#c9dcff" className="bamby__flower--5" />
+                    <Candy x={100} y={18} tone="#ffc6dc" className="bamby__flower--3" />
+                    <Puff x={30} y={56} className="bamby__flower--4" />
+                    <Puff x={172} y={52} className="bamby__flower--1" />
                   </g>
                 )}
               </g>
@@ -523,10 +587,30 @@ export default function BambyBody({
           <path d="M166 42c6-2 12-4 20-5" stroke="#a99bc0" strokeWidth="1" fill="none" />
         </g>
       )}
-      {(known === "freeze" || known === "cool" || known === "jump") && (
+      {(known === "freeze" || known === "cool" || known === "jump" || known === "lift") && (
         <g className="bamby__glints" fill="#ffd56e">
           <path d="m30 76 2.6 6.4 6.4 2.6-6.4 2.6L30 94l-2.6-6.4-6.4-2.6 6.4-2.6Z" />
           <path d="m172 58 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" />
+        </g>
+      )}
+      {known === "lassgo" && (
+        <g className="bamby__lassgo" stroke="#ff7fb6" strokeWidth="2.4" strokeLinecap="round">
+          <path d="M150 96l3-10m7 13 9-6m-6 15 10-1" />
+        </g>
+      )}
+      {known === "swat" && (
+        <g className="bamby__swat" stroke="#e0567f" strokeWidth="2.2" strokeLinecap="round">
+          <path d="M166 112l9-3m-8 12 10 2m-14 7 7 7" />
+        </g>
+      )}
+      {known === "bug" && (
+        <g className="bamby__pillbug">
+          {/* A pill bug, rolled up: a little grey-lilac ball with its plates, rolling to and fro. */}
+          <g className="bamby__pillbug-roll">
+            <circle cx="0" cy="0" r="6.4" fill="#9c96b4" stroke="#6d6888" strokeWidth="1.1" />
+            <path d="M-5.4-3q5.4 2.2 10.8 0M-6.3 0.7q6.3 2.2 12.6 0M-5 4q5 1.8 10 0" stroke="#6d6888" strokeWidth=".9" fill="none" />
+            <circle cx="-1.8" cy="-2.6" r="1.2" fill="#fff" opacity=".7" />
+          </g>
         </g>
       )}
       {known === "count" && (
