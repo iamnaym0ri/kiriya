@@ -471,6 +471,7 @@ meRoutes.get("/letters", async (c) => {
         openWhen: l.openWhen,
         unlockAt: l.unlockAt,
         openedAt: l.openedAt,
+        createdAt: l.createdAt,
         reaction: l.reaction,
         locked: Boolean(locked),
         body: locked ? null : l.body,
