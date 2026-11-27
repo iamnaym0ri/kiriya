@@ -142,7 +142,7 @@ function JarIsland({ jar, fresh, admin, from, greet, onPull, onWrite }) {
   }, [greet]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pull = () => {
-    if (empty || jar.isPending) {
+    if (empty) {
       haptic("light");
       bounce(false);
       return;
