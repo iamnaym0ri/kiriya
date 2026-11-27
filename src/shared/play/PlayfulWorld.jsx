@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocation } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePrefs, useSetPrefs } from "../../lib/prefs.js";
@@ -10,6 +11,7 @@ import { useDailyStyle } from "../DailyStyle.jsx";
 import "./PlayfulWorld.css";
 import { PlayContext, usePlayful } from "./PlayfulContext.js";
 import { ribbonMoment } from "./dailyRibbon.js";
+import { isAppShell } from "../../lib/native.js";
 
 export { usePlayful } from "./PlayfulContext.js";
 export { default as BirthdayRibbon } from "./DailyRibbon.jsx";
@@ -128,16 +130,76 @@ export function PlayfulProvider({ children }) {
       } }}
     >
       {children}
-      {/* The charms' shapes, colour and motion come from CSS (PlayfulWorld.css) and follow today's
-          mood: each travels and sways at once, on the compositor. */}
-      <div className="ambient-charms" aria-hidden="true">
-        {CHARM_ORDER.map((k, i) => (
-          <span key={i} style={{ "--i": i, "--k": k }} />
-        ))}
-      </div>
+      <AmbientCharms />
       <CursorSparkles enabled={moving} />
     </PlayContext.Provider>
   );
+}
+
+/**
+ * The falling charms. Their shapes, colour and motion come from CSS (PlayfulWorld.css) and follow
+ * today's mood: each travels and sways at once, on the compositor.
+ *
+ * In the app they fall above everything (Josh, round 3: "give it the highest z index out of
+ * everything so it can actually show"), never taking a tap. #root is its own stacking context, so
+ * they live straight in <body>, and they sit in the browser's top layer as a manual popover, above
+ * sheets and the tab bar whatever their z-index. A dialog opened with showModal() (or another
+ * popover) joins the top layer after them, so they step back on top right away, before the next
+ * frame: the popover is kept displayed while it moves (PlayfulWorld.css), so nothing restarts.
+ * On the website they stay behind the page, as before.
+ */
+function AmbientCharms() {
+  const app = isAppShell();
+  const ref = useRef(null);
+  useEffect(() => {
+    const node = ref.current;
+    if (!app || !node || typeof node.showPopover !== "function") return undefined;
+    node.popover = "manual";
+    const lift = () => {
+      try {
+        if (node.matches(":popover-open")) node.hidePopover();
+        node.showPopover();
+      } catch {
+        // Not connected, or the browser said no: the z-index still keeps them over the page.
+      }
+    };
+    let queued = false;
+    const relift = () => {
+      if (queued) return;
+      queued = true;
+      queueMicrotask(() => {
+        queued = false;
+        lift();
+      });
+    };
+    lift();
+    // A dialog opening (showModal sets `open`) or a popover showing goes above them: step back up.
+    const dialogs = new MutationObserver((records) => {
+      if (records.some((record) => record.target !== node && record.target.hasAttribute?.("open"))) relift();
+    });
+    dialogs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ["open"] });
+    const onToggle = (event) => {
+      if (event.target !== node && event.newState === "open") relift();
+    };
+    document.addEventListener("toggle", onToggle, true);
+    return () => {
+      dialogs.disconnect();
+      document.removeEventListener("toggle", onToggle, true);
+      try {
+        if (node.matches(":popover-open")) node.hidePopover();
+      } catch {
+        /* already gone */
+      }
+    };
+  }, [app]);
+  const charms = (
+    <div ref={ref} className="ambient-charms" aria-hidden="true">
+      {CHARM_ORDER.map((k, i) => (
+        <span key={i} style={{ "--i": i, "--k": k }} />
+      ))}
+    </div>
+  );
+  return app ? createPortal(charms, document.body) : charms;
 }
 
 function CursorSparkles({ enabled }) {
