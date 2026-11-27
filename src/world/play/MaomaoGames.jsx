@@ -1,4 +1,4 @@
-import { useId, useReducer, useState } from "react";
+import { useEffect, useId, useReducer, useState } from "react";
 import { GameSymbol, MaomaoComment, SYMBOL_NAMES } from "./GamePieces.jsx";
 import { HerbSequence, LanternPuzzle } from "./MoreMaomaoGames.jsx";
 import PaletteParty from "./PaletteParty.jsx";
@@ -14,7 +14,7 @@ const MEMORY_COMMENTS = {
   done: ["Every pair accounted for. Good. Now I can find my herbs without opening every drawer."],
 };
 
-function MemoryDrawer() {
+export function MemoryDrawer({ onReward }) {
   const [game, dispatch] = useReducer(memoryTurn, undefined, newMemoryGame);
   const choices = MEMORY_COMMENTS[game.event];
   const lastSymbol = game.cards[game.open.at(-1)];
@@ -30,6 +30,10 @@ function MemoryDrawer() {
         : "Matching specimen labels. Very good. May I keep these on my shelf?"
       : choices[game.moves % choices.length];
   const done = game.event === "done";
+  // In the app's game library, a finished cabinet earns a sticker (once for four pairs, once for six).
+  useEffect(() => {
+    if (done) onReward?.(game.pairs === 6 ? { sticker: "st-mirror", game: "memory-drawer", reason: "six pairs found" } : { sticker: "st-bottle", game: "memory-drawer", reason: "four pairs found" });
+  }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <section className="little-game play-window" aria-labelledby="memory-title">
       <div className="play-window__bar"><span>✿ the memory drawer</span><span aria-hidden="true">♡ ✧ ♡</span></div>
@@ -85,10 +89,13 @@ function JarPicture({ kind, odd }) {
   );
 }
 
-function OddJar() {
+export function OddJar({ onReward }) {
   const [game, setGame] = useState(() => newJarRound());
   const clue = JAR_CLUES[game.clueIndex];
   const done = game.solved && game.round === JAR_CLUES.length - 1;
+  useEffect(() => {
+    if (done) onReward?.({ sticker: "st-kitten", game: "odd-jar", reason: "every little mystery solved" });
+  }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
   const comments = {
     welcome: ["Someone has mixed up my jars. Let's see which detail they overlooked."],
     retry: ["That one agrees with its neighbours. Try a different theory.", "Compare the markings. A hunch needs something to support it.", "Not that one. A second look is cheaper than a wrong conclusion."],

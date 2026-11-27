@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import SaveMemory from "../chat/SaveMemory.jsx";
-import { Link, useSearchParams } from "react-router";
+import { Link, Navigate, useSearchParams } from "react-router";
 import { useNotes, useOpenNote, useReactToNote } from "../../lib/notes.js";
 import { useSession } from "../../lib/session.js";
 import { useToday } from "../../lib/world.js";
@@ -8,6 +8,7 @@ import { Icon, Modal } from "../../shared/WorldPrimitives.jsx";
 import PageLoader from "../../shared/PageLoader.jsx";
 import MaomaoMascot from "../mascot/MaomaoMascot.jsx";
 import ReactionBar, { ReactionMark } from "../../shared/ReactionBar.jsx";
+import { isAppShell } from "../../lib/native.js";
 import "./NotesPage.css";
 
 const KIND = {
@@ -17,7 +18,7 @@ const KIND = {
 };
 const when = new Intl.DateTimeFormat("en-SG", { day: "numeric", month: "long", hour: "numeric", minute: "2-digit", timeZone: "Asia/Singapore" });
 
-export default function NotesPage() {
+function NotesPageWeb() {
   const notes = useNotes();
   const open = useOpenNote();
   const react = useReactToNote();
@@ -118,4 +119,15 @@ export default function NotesPage() {
       )}
     </div>
   );
+}
+
+/**
+ * Inside the app, little notes live in the notes & letters tab (MailSection); the website keeps this page.
+ * Old links and notifications (?open=<id>) land there with that one open.
+ */
+export default function NotesPage() {
+  const [params] = useSearchParams();
+  if (!isAppShell()) return <NotesPageWeb />;
+  const id = params.get("open");
+  return <Navigate replace to={id ? `/world/mail?note=${encodeURIComponent(id)}` : "/world/mail"} />;
 }

@@ -276,7 +276,16 @@ this). The frame agent's hub saves it (a `POST /me/stickers` route the frame age
 small "you got a sticker" moment. New sticker designs: put them in your game folder as
 `stickers.js` (`[{ id: "st-…", art: <svg component or path>, name, line }]`) and list them in your
 report; the coordinator adds them to the catalogue. `src/world/play/games/registry.js` finds every game by folder (`import.meta.glob`), so
-adding a game needs no shared file. The **frame agent** owns the registry and the play hub. Until
+adding a game needs no shared file.
+
+**The hub as built (frame agent):** the sheet is `src/world/play/games/GameSheet.jsx` (the hub and
+the lab share it; add `game-sheet__stage--scroll` to a stage that should scroll). A game opens as a
+history entry (`/world/play?game=<id>`), so back and the edge swipe close it; the sketchbook opens
+the same way (`?sketchbook=1`). `onReward({ sticker, reason })` is enough (the hub adds `game`).
+Optional `order` (default 50) sorts a shelf before the title does. `stickers.js` art may be a
+component, 64×64 SVG inner markup, an image path, or a name the module's exported `AnySticker`
+draws. Quizzes: the hub renders `QuizzesEntry`, the named export of
+`src/world/play/quizzes/index.js`, as one card in the play section body. The **frame agent** owns the registry and the play hub. Until
 the hub lands, open a game in the dev-only lab: `/world/game-lab?g=<id>`.
 
 ## Testing without clashing (the iMac has 4 cores)

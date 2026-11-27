@@ -6,6 +6,7 @@ import { signMediaLinks, unsignMediaLinks } from "./lib/mediaLinks.js";
 import { sessionRoutes } from "./routes/session.js";
 import { publicRoutes } from "./routes/public.js";
 import { meRoutes } from "./routes/me.js";
+import { playRoutes } from "./routes/play.js";
 import { adminRoutes } from "./routes/admin.js";
 import { jobRoutes } from "./routes/jobs.js";
 import { pushRoutes } from "./routes/push.js";
@@ -79,6 +80,7 @@ app.use("/me/*", requireRole("kiriya", "admin"));
 app.route("/me/quizzes", quizRoutes);
 app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
+app.route("/me", playRoutes);
 
 app.use("/app/*", requireRole("kiriya", "admin"));
 app.route("/app", appRoutes);

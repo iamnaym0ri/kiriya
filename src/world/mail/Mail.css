@@ -1,0 +1,1017 @@
+/* The app's notes & letters section (MailSection.jsx). The frame (styles/app-shell.css) gives the
+   column, the titles, the cards and the rows; this file draws what is the section's own: envelopes,
+   the jar, the letter and note papers, and Josh's composer controls. */
+
+.mail,
+.mail-screen {
+  --mail-ink: var(--theme-ink, #54385f);
+  --mail-muted: var(--theme-muted, #7a6583);
+  --mail-accent: var(--theme-accent, #785383);
+  --mail-hand: var(--theme-hand, #946e99);
+  --mail-soft: var(--theme-soft, #e4d5ec);
+  --mail-line: var(--theme-line, #d5bedf);
+  --mail-new: #d6457a;
+  --mail-paper: #fffdf8;
+}
+
+/* ---------- rows (inside the frame's .app-row) ---------- */
+.mail-row__button {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.mail-row__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--mail-soft) 80%, #fff);
+  color: var(--mail-accent);
+  align-self: flex-start;
+  margin-top: 1px;
+}
+.mail-row__icon[data-kind="surprise"] {
+  background: #fbe3ec;
+  color: #b04a78;
+}
+.mail-row__icon[data-kind="update"] {
+  background: #f8edd6;
+  color: #9a7432;
+}
+.mail-row__icon--jar {
+  background: #fde6ee;
+  color: #d6457a;
+  font-size: 18px;
+}
+.mail-row__text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.mail-row__top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.mail-row__text strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--mail-ink);
+  font: 500 15.5px/1.3 var(--font-ui);
+}
+.mail-row[data-unread] .mail-row__text strong {
+  font-weight: 700;
+}
+.mail-row__top strong {
+  flex: 1;
+}
+.mail-row__top time {
+  flex: none;
+  color: var(--mail-muted);
+  font: 400 12.5px/1 var(--font-ui);
+  font-variant-numeric: tabular-nums;
+}
+.mail-row__preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--mail-muted);
+  font: 400 13.5px/1.4 var(--font-ui);
+  overflow-wrap: anywhere;
+}
+.mail-row__eyebrow {
+  color: var(--mail-muted);
+  font: 500 12px/1.3 var(--font-ui);
+}
+.mail-row__status {
+  color: var(--mail-muted);
+  font: 500 12px/1.3 var(--font-ui);
+}
+.mail-row__status[data-read] {
+  color: #3f8a68;
+}
+.mail-row__status[data-read]::before {
+  content: "✓ ";
+}
+.mail-row__end {
+  flex: none;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 12px;
+}
+.mail-row__end:empty {
+  display: none;
+}
+.mail-dot {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--mail-new);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mail-new) 16%, transparent);
+}
+.mail-row__reaction.reaction-mark {
+  min-width: 28px;
+  height: 28px;
+  font-size: 15px;
+  rotate: 6deg;
+}
+.mail-row__reaction.reaction-mark[data-heart="true"] {
+  font-size: 18px;
+}
+.envelope-art.mail-row__envelope {
+  flex: none;
+  width: 60px;
+  margin: -4px 0;
+}
+.mail-row--letter .mail-row__text strong {
+  font: 700 19px/1.2 var(--font-hand);
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.mail-row--all .mail-row__text strong {
+  color: var(--mail-accent);
+  font-weight: 600;
+}
+.mail-row--upcoming .mail-row__button {
+  align-items: center;
+}
+.mail-row__cancel {
+  flex: none;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--mail-line);
+  border-radius: 999px;
+  background: none;
+  color: #a8456f;
+  font: 600 13px/1 var(--font-ui);
+  cursor: pointer;
+  position: relative;
+}
+.mail-row__cancel::after {
+  content: "";
+  position: absolute;
+  inset: -5px -2px;
+}
+
+/* ---------- the section's cards ---------- */
+.mail-card .app-card__head {
+  flex-wrap: wrap;
+}
+.mail-card__note {
+  margin: 0;
+  color: var(--mail-muted);
+  font: 400 12.5px/1.3 var(--font-ui);
+}
+.mail-card__admin {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.mail-empty {
+  margin: 0;
+  color: var(--mail-muted);
+  font: 400 14.5px/1.55 var(--font-ui);
+}
+.mail-caught-up {
+  margin: -4px 4px 0;
+  color: var(--mail-hand);
+  font: 400 19px/1.3 var(--font-hand);
+  text-align: center;
+}
+.mail-caught-up span {
+  white-space: nowrap;
+}
+
+/* "new" on an envelope */
+.mail-badge {
+  position: absolute;
+  top: 2px;
+  left: -2px;
+  padding: 3px 8px 4px;
+  border-radius: 999px;
+  background: var(--mail-new);
+  color: #fff;
+  font: 700 11px/1 var(--font-ui);
+  letter-spacing: 0.04em;
+  box-shadow: 0 3px 8px -2px color-mix(in srgb, var(--mail-new) 55%, transparent);
+  rotate: -6deg;
+}
+
+/* ---------- the note jar's card ---------- */
+html.app-shell .mail-jar.app-card {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 14px 12px 8px;
+  background:
+    radial-gradient(120% 90% at 0% 100%, color-mix(in srgb, #f6d3e2 55%, transparent), transparent 60%),
+    linear-gradient(160deg, color-mix(in srgb, var(--theme-paper, #fff9fd) 92%, #fff), color-mix(in srgb, var(--mail-soft) 55%, var(--theme-paper, #fff9fd)));
+}
+.mail-jar::after {
+  content: "✧";
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  color: var(--mail-hand);
+  opacity: 0.55;
+  font: 20px Georgia, serif;
+  pointer-events: none;
+}
+.mail-jar__open {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.mail-jar__open:active .jar-mini {
+  transform: rotate(-4deg) scale(0.97);
+}
+.jar-mini {
+  flex: none;
+  width: 104px;
+  height: auto;
+  overflow: visible;
+  transition: transform 180ms ease;
+}
+.jar-mini__count {
+  font: 700 10px var(--font-ui);
+  fill: #fff;
+}
+.jar-mini__heart {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .jar-mini[data-fresh] .jar-mini__heart {
+    animation: mail-heartbeat 1.8s ease-in-out infinite;
+  }
+  .jar-mini[data-fresh] .jar-mini__vessel,
+  .jar-mini[data-fresh] .jar-mini__lid {
+    transform-box: view-box;
+    transform-origin: 60px 118px;
+    animation: mail-jar-wiggle 5s ease-in-out infinite;
+  }
+}
+.mail-jar__text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.mail-jar__eyebrow {
+  color: var(--mail-muted);
+  font: 600 11.5px/1.2 var(--font-ui);
+  letter-spacing: 0.06em;
+}
+.mail-jar__text strong {
+  color: var(--mail-ink);
+  font: 700 23px/1.1 var(--font-hand);
+}
+.mail-jar__line {
+  color: var(--mail-muted);
+  font: 400 13.5px/1.35 var(--font-ui);
+}
+.mail-jar__line[data-fresh] {
+  color: #b0305f;
+  font-weight: 600;
+}
+.mail-jar__pull {
+  justify-self: start;
+  margin-top: 6px;
+  padding: 8px 14px 9px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #8f63ad, #a4609a);
+  color: #fff;
+  font: 600 13.5px/1 var(--font-ui);
+  box-shadow: 0 6px 14px -8px #6e3d8c;
+}
+
+/* ---------- letters ---------- */
+.mail-letters__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 14px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.mail-letter {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mail-ink);
+  text-align: left;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: transform 160ms ease;
+}
+.mail-letter:active {
+  transform: scale(0.96) rotate(-1deg);
+}
+.mail-letter .envelope-art {
+  margin-bottom: 4px;
+}
+.mail-letter__title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font: 700 18.5px/1.15 var(--font-hand);
+  overflow-wrap: anywhere;
+}
+.mail-letter__meta {
+  color: var(--mail-muted);
+  font: 400 12.5px/1.3 var(--font-ui);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mail-letter[data-locked] .mail-letter__meta {
+  color: #9a7432;
+  font-weight: 600;
+}
+.mail-letter__her {
+  color: var(--mail-muted);
+  font: 500 12px/1.3 var(--font-ui);
+}
+.mail-letter__her[data-read] {
+  color: #3f8a68;
+}
+.mail-letter__her[data-read]::before {
+  content: "✓ ";
+}
+
+/* the envelope drawing (Envelope.jsx) */
+.envelope-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.envelope-art__month {
+  font: 800 7.5px/1 var(--font-ui);
+  letter-spacing: 0.08em;
+  fill: #fff8e6;
+}
+.envelope-art__day {
+  font: 800 12px/1 var(--font-ui);
+  fill: #fff;
+}
+.envelope-art__emoji {
+  font: 18px/1 "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Reaction Emoji", sans-serif;
+}
+
+/* ---------- Josh: what's on its way ---------- */
+.mail-upcoming .mail-row__icon {
+  background: #f3ecf8;
+  color: var(--mail-muted);
+}
+
+/* ---------- pushed screens ---------- */
+.mail-screen .app-section__subtitle::first-letter {
+  text-transform: none;
+}
+.mail-after {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 2px 2px 8px;
+}
+.mail-after .save-memory {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px dashed var(--mail-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-paper, #fff9fd) 80%, transparent);
+  color: var(--mail-accent);
+  font: 400 18px/1 var(--font-hand);
+}
+.mail-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--mail-accent);
+  color: #fff;
+  font: 600 14.5px/1 var(--font-ui);
+  text-decoration: none;
+}
+
+/* a letter, on its paper */
+.letter-sheet {
+  position: relative;
+  margin: 2px 0 0;
+  padding: 34px 24px 26px;
+  border: 1px solid #ece0e6;
+  border-radius: 6px;
+  background:
+    radial-gradient(120% 60% at 50% 0%, #fffefb 0%, transparent 70%),
+    linear-gradient(180deg, #fffdf8, #fdf7ef);
+  color: #4a3456;
+  box-shadow: 0 1px 2px rgb(84 56 95 / 0.06), 0 22px 40px -26px rgb(84 56 95 / 0.45);
+  overflow-wrap: anywhere;
+}
+.letter-sheet::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid #efe1e9;
+  border-radius: 3px;
+  pointer-events: none;
+}
+.letter-sheet__sprig {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  translate: -50% 0;
+  opacity: 0.9;
+}
+.letter-sheet__fan,
+.letter-sheet__when {
+  margin: 8px 0 14px;
+  color: var(--mail-muted);
+  font: 600 11.5px/1.4 var(--font-ui);
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+.letter-sheet__when {
+  color: #8a5b93;
+  font: 400 20px/1.2 var(--font-hand);
+  letter-spacing: 0;
+}
+.letter-sheet__greeting {
+  margin: 14px 0 10px;
+  color: #8a5b93;
+  font: 400 27px/1.2 "Parisienne", cursive;
+}
+.letter-sheet__body p {
+  margin: 0 0 14px;
+  font: 400 21px/1.5 var(--font-hand);
+  white-space: pre-line;
+}
+.letter-sheet__sign {
+  margin-top: 20px;
+  text-align: right;
+}
+.letter-sheet__yours {
+  margin: 0;
+  color: var(--mail-muted);
+  font: 400 19px/1.3 var(--font-hand);
+}
+.letter-sheet__name {
+  margin: 0;
+  color: #6f3f7f;
+  font: 400 36px/1.1 "Parisienne", cursive;
+}
+/* The folds stay, faintly, like any letter that came out of an envelope. */
+.letter-sheet::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 32.9%, rgb(120 80 130 / 0.07) 33.3%, rgb(255 255 255 / 0.6) 33.6%, transparent 34.2%, transparent 66.2%, rgb(120 80 130 / 0.07) 66.6%, rgb(255 255 255 / 0.6) 66.9%, transparent 67.5%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .letter-sheet[data-unfolding] {
+    transform-origin: 50% 0;
+    animation: mail-unfold 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .letter-sheet[data-unfolding]::after {
+    animation: mail-creases 1100ms ease-out both;
+  }
+  .mail-after {
+    animation: mail-fade-up 420ms 220ms ease-out both;
+  }
+}
+
+/* the first opening of a sealed letter */
+.envelope-opening {
+  display: grid;
+  place-items: center;
+  min-height: min(56vh, 420px);
+  cursor: pointer;
+  animation: envelope-opening-out 280ms ease-in 1900ms forwards;
+}
+.envelope-opening__art {
+  width: min(300px, 86%);
+  height: auto;
+  overflow: visible;
+  animation: envelope-opening-in 380ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.envelope-opening__seal {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: envelope-seal 420ms 420ms ease-in forwards;
+}
+.envelope-opening__flap {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: envelope-flap-close 260ms 760ms ease-in forwards;
+}
+.envelope-opening__flap-back {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scaleY(0);
+  animation: envelope-flap-open 300ms 1010ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+.envelope-opening__paper {
+  animation: envelope-paper 560ms 1240ms cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
+}
+.envelope-opening__skip {
+  display: none;
+}
+
+/* a little note, on notepad paper */
+.note-sheet {
+  --rule: 32px;
+  position: relative;
+  margin: 10px 0 0;
+  padding: 30px 22px 22px 44px;
+  border: 1px solid #ebdfe5;
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, transparent 30px, #f2b4cb 30px, #f2b4cb 31.5px, transparent 31.5px),
+    repeating-linear-gradient(180deg, transparent 0 calc(var(--rule) - 1px), #dfe6f2 calc(var(--rule) - 1px) var(--rule)),
+    #fffdf9;
+  background-position: 0 0, 0 26px, 0 0;
+  color: #4a3456;
+  box-shadow: 0 1px 2px rgb(84 56 95 / 0.06), 0 18px 34px -24px rgb(84 56 95 / 0.4);
+  rotate: -0.6deg;
+  overflow-wrap: anywhere;
+}
+.note-sheet__tape {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 104px;
+  height: 26px;
+  translate: -50% 0;
+  rotate: -3deg;
+  background: color-mix(in srgb, #ecc3dc 78%, transparent);
+  clip-path: polygon(2% 0, 98% 0, 100% 14%, 98% 28%, 100% 43%, 98% 58%, 100% 76%, 98% 100%, 2% 100%, 0 84%, 2% 68%, 0 52%, 2% 36%, 0 18%);
+}
+.note-sheet[data-kind="surprise"] .note-sheet__tape {
+  background: color-mix(in srgb, #f2c9a7 75%, transparent);
+}
+.note-sheet[data-kind="update"] .note-sheet__tape {
+  background: color-mix(in srgb, #c9d9f0 80%, transparent);
+}
+.note-sheet__mark {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f6edf7;
+  color: var(--mail-accent);
+}
+.note-sheet__body p {
+  margin: 0 0 var(--rule);
+  font: 400 21px/var(--rule) var(--font-hand);
+  white-space: pre-line;
+}
+.note-sheet__body p:last-child {
+  margin-bottom: 0;
+}
+.note-sheet__sign {
+  margin: var(--rule) 0 0;
+  color: #8a5b93;
+  font: 400 21px/var(--rule) var(--font-hand);
+  text-align: right;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .note-sheet[data-unfolding] {
+    transform-origin: 50% 0;
+    animation: mail-unfold 560ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+/* a letter that isn't ready yet */
+.mail-sealed {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 18px 8px 8px;
+  text-align: center;
+}
+.mail-sealed__envelope {
+  width: min(250px, 78%);
+  margin-bottom: 10px;
+}
+.mail-sealed__when {
+  margin: 0;
+  color: var(--mail-ink);
+  font: 700 24px/1.2 var(--font-hand);
+}
+.mail-sealed__count {
+  margin: 2px 0 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #f8edd6;
+  color: #85602a;
+  font: 600 13.5px/1 var(--font-ui);
+}
+.mail-sealed__note {
+  margin: 4px 0 0;
+  max-width: 30em;
+  color: var(--mail-muted);
+  font: 400 14px/1.5 var(--font-ui);
+}
+
+/* the jar, on its own screen: the jar's scrapbook card without its heading (the screen has it) */
+.mail-screen--jar .note-jar {
+  margin: 0 0 8px;
+  padding: 18px 16px 12px;
+  scroll-margin-top: 0;
+}
+.mail-screen--jar .note-jar__heading {
+  display: none;
+}
+.mail-screen--jar .note-jar__layout {
+  margin-top: 6px;
+}
+.mail-screen--jar .note-jar:after {
+  top: 14px;
+}
+
+/* every little note, month by month */
+.mail-month {
+  display: grid;
+  gap: 8px;
+}
+.mail-month .app-group-title {
+  margin-top: 4px;
+}
+
+/* ---------- loading, toasts ---------- */
+html.app-shell .mail-skeleton {
+  height: 132px;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--theme-paper, #fff9fd) 90%, transparent) 30%, color-mix(in srgb, var(--mail-soft) 60%, #fff) 50%, color-mix(in srgb, var(--theme-paper, #fff9fd) 90%, transparent) 70%);
+  background-size: 300% 100%;
+  animation: mail-shimmer 1.4s ease-in-out infinite;
+}
+html.app-shell .mail-skeleton--tall {
+  height: 280px;
+}
+.mail-toast {
+  position: fixed;
+  z-index: 140;
+  left: 50%;
+  bottom: calc(var(--app-bottom, 0px) + 14px);
+  max-width: calc(100% - 48px);
+  margin: 0;
+  padding: 11px 18px;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, #4e2f63 94%, transparent);
+  color: #fff;
+  font: 600 14px/1.3 var(--font-ui);
+  text-align: center;
+  box-shadow: 0 10px 28px -10px rgb(40 18 60 / 0.6);
+  animation: mail-toast-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  pointer-events: none;
+}
+
+/* ---------- Josh's composer sheets ---------- */
+.mail-seg {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--theme-soft, #e4d5ec) 70%, #fff);
+}
+.mail-seg button {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--theme-muted, #7a6583);
+  font: 600 14px/1.1 var(--font-ui);
+  cursor: pointer;
+}
+.mail-seg button[aria-checked="true"] {
+  background: #fff;
+  color: var(--theme-ink, #54385f);
+  box-shadow: 0 1px 3px rgb(84 56 95 / 0.16);
+}
+.mail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mail-chip {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--theme-line, #d5bedf);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--theme-ink, #54385f);
+  font: 500 14px/1 var(--font-ui);
+  cursor: pointer;
+}
+.mail-chip:is([aria-checked="true"], [aria-pressed="true"]) {
+  border-color: var(--theme-accent, #785383);
+  background: color-mix(in srgb, var(--theme-soft, #e4d5ec) 75%, #fff);
+  font-weight: 700;
+}
+.mail-count {
+  float: right;
+  color: var(--theme-muted, #7a6583);
+  font: 500 12px/1.2 var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.mail-count[data-near] {
+  color: #b0305f;
+}
+.edit-field .mail-letter-field {
+  min-height: 280px;
+  font: 400 19px/1.45 var(--font-hand);
+}
+.mail-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 6px 12px;
+  border: 1px solid var(--theme-line, #d5bedf);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--theme-ink, #54385f);
+  font: 500 15px/1.3 var(--font-ui);
+  cursor: pointer;
+}
+.mail-toggle input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--theme-accent, #785383);
+}
+.mail-toggle small {
+  display: block;
+  color: var(--theme-muted, #7a6583);
+  font-size: 12.5px;
+}
+.mail-soft-button {
+  justify-self: start;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--theme-line, #d5bedf);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--theme-accent, #785383);
+  font: 600 13.5px/1 var(--font-ui);
+  cursor: pointer;
+}
+.mail-soft-button--strong {
+  border-color: transparent;
+  background: var(--theme-accent, #785383);
+  color: #fff;
+}
+.mail-soft-button--danger {
+  color: #b0305f;
+}
+.mail-soft-button:disabled {
+  opacity: 0.55;
+}
+.mail-link-button {
+  justify-self: start;
+  min-height: 36px;
+  margin-top: -6px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--theme-accent, #785383);
+  font: 500 13.5px/1 var(--font-ui);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.mail-sheet-note {
+  margin: 0;
+  color: var(--theme-muted, #7a6583);
+  font: 400 13.5px/1.45 var(--font-ui);
+}
+.mail-jar-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 4px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--theme-line, #d5bedf);
+  color: var(--theme-muted, #7a6583);
+  font: 400 13px/1.3 var(--font-ui);
+}
+.mail-jar-counts strong {
+  color: var(--theme-ink, #54385f);
+}
+.mail-jar-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mail-jar-note {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--theme-line, #d5bedf);
+  border-radius: 14px;
+  background: #fff;
+}
+.mail-jar-note > p {
+  margin: 0;
+  color: var(--theme-ink, #54385f);
+  font: 400 19px/1.3 var(--font-hand);
+  overflow-wrap: anywhere;
+}
+.mail-jar-note .mail-jar-note__meta {
+  color: var(--theme-muted, #7a6583);
+  font: 400 12.5px/1.3 var(--font-ui);
+}
+.mail-jar-note__status {
+  font-weight: 700;
+}
+.mail-jar-note[data-status="in_jar"] .mail-jar-note__status {
+  color: #b0305f;
+}
+.mail-jar-note[data-status="read"] .mail-jar-note__status {
+  color: #3f8a68;
+}
+.mail-jar-note__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mail-jar-note__actions .mail-soft-button {
+  min-height: 36px;
+  font-size: 13px;
+}
+.mail-jar-note__edit {
+  width: 100%;
+  min-height: 84px;
+  padding: 10px 12px;
+  border: 1px solid var(--theme-line, #d5bedf);
+  border-radius: 10px;
+  font: 400 18px/1.3 var(--font-hand);
+  color: var(--theme-ink, #54385f);
+  resize: vertical;
+}
+
+/* ---------- motion ---------- */
+@keyframes mail-unfold {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scaleY(0.9);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mail-creases {
+  0%,
+  30% {
+    opacity: 1;
+    filter: contrast(2.2);
+  }
+}
+@keyframes mail-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes envelope-opening-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.92);
+  }
+}
+@keyframes envelope-seal {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(0.2) rotate(30deg);
+    opacity: 0;
+  }
+}
+@keyframes envelope-flap-close {
+  to {
+    transform: scaleY(0);
+  }
+}
+@keyframes envelope-flap-open {
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes envelope-paper {
+  to {
+    transform: translateY(-58px);
+  }
+}
+@keyframes envelope-opening-out {
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(1.04);
+  }
+}
+@keyframes mail-toast-in {
+  from {
+    opacity: 0;
+    translate: -50% 10px;
+  }
+}
+@keyframes mail-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+@keyframes mail-heartbeat {
+  0%,
+  100% {
+    scale: 1;
+  }
+  12% {
+    scale: 1.18;
+  }
+  24% {
+    scale: 0.98;
+  }
+  36% {
+    scale: 1.1;
+  }
+  50% {
+    scale: 1;
+  }
+}
+@keyframes mail-jar-wiggle {
+  0%,
+  72%,
+  100% {
+    rotate: 0deg;
+  }
+  77% {
+    rotate: -3deg;
+  }
+  82% {
+    rotate: 3deg;
+  }
+  87% {
+    rotate: -1.5deg;
+  }
+  92% {
+    rotate: 1deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mail-skeleton,
+  .mail-toast,
+  .mail-letter {
+    animation: none;
+    transition: none;
+  }
+}

@@ -1,0 +1,184 @@
+/* Maomao's cloud (Platform.jsx). Transform and opacity only. */
+.mm-cloud {
+  display: block;
+  overflow: visible;
+}
+.mm-cloud__puff {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+/* The lantern lights only on a cloud she has stayed on for a while, so a walk doesn't leave a
+   string of lanterns behind her. */
+.mm-cloud__lantern,
+.mm-cloud__warm {
+  opacity: 0;
+}
+.mm-cloud[data-state="steady"] .mm-cloud__lantern {
+  animation:
+    mm-lantern-in 0.5s 3.2s ease-out both,
+    mm-lantern 3.8s 3.7s ease-in-out infinite;
+}
+.mm-cloud[data-state="steady"] .mm-cloud__warm {
+  animation: mm-cloud-fade-in 0.6s 3.2s ease-out both;
+}
+.mm-cloud__steam path {
+  opacity: 0;
+  animation: mm-cloud-steam 3.6s ease-out infinite;
+}
+.mm-cloud__steam path:nth-child(2) {
+  animation-delay: 1.2s;
+}
+.mm-cloud__steam path:nth-child(3) {
+  animation-delay: 2.4s;
+}
+.mm-cloud__sprig--l {
+  animation: mm-sprig 5.2s ease-in-out infinite;
+}
+.mm-cloud__sprig--r {
+  animation: mm-sprig 5.2s ease-in-out infinite reverse;
+}
+
+/* forming: puffs pop in from the middle out, the sprigs sprout, the lantern lowers into place */
+/* Opacity lives on the whole body, never on single puffs: half-transparent puffs would show the
+   outline layer through each other. */
+.mm-cloud[data-state="forming"] .mm-cloud__body {
+  animation: mm-cloud-fade-in 0.16s ease-out both;
+}
+.mm-cloud[data-state="forming"] .mm-cloud__puff {
+  animation: mm-puff-in 0.24s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+.mm-cloud[data-state="forming"] .mm-cloud__sprig {
+  animation: mm-sprout 0.22s 0.1s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.mm-cloud[data-state="forming"] .mm-cloud__shine {
+  animation: mm-cloud-fade-in 0.2s 0.12s ease-out both;
+}
+
+/* fading: the puffs shrink and lift away, leaving a last breath of steam */
+.mm-cloud[data-state="fading"] .mm-cloud__body {
+  animation: mm-cloud-fade-out 0.46s ease-in both;
+}
+.mm-cloud[data-state="fading"] .mm-cloud__puff {
+  animation: mm-puff-out 0.38s ease-in both;
+}
+.mm-cloud[data-state="fading"] .mm-cloud__sprig {
+  animation: mm-wilt 0.3s ease-in both;
+}
+.mm-cloud[data-state="fading"] .mm-cloud__shine {
+  animation: mm-cloud-fade-out 0.35s ease-in both;
+}
+.mm-cloud[data-state="fading"] .mm-cloud__steam path {
+  animation: mm-cloud-steam 0.9s ease-out both;
+}
+
+@keyframes mm-lantern {
+  0%,
+  100% {
+    rotate: -5deg;
+  }
+  50% {
+    rotate: 5deg;
+  }
+}
+@keyframes mm-cloud-steam {
+  0% {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  30% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    translate: 1px -9px;
+  }
+}
+@keyframes mm-sprig {
+  0%,
+  100% {
+    rotate: -4deg;
+  }
+  50% {
+    rotate: 4deg;
+  }
+}
+@keyframes mm-puff-in {
+  from {
+    scale: 0.2;
+  }
+}
+@keyframes mm-puff-out {
+  to {
+    scale: 0.45;
+    translate: 0 -4px;
+  }
+}
+@keyframes mm-sprout {
+  from {
+    opacity: 0;
+    scale: 1 0.1;
+  }
+}
+@keyframes mm-wilt {
+  to {
+    opacity: 0;
+    scale: 1 0.3;
+    rotate: 20deg;
+  }
+}
+@keyframes mm-lantern-in {
+  from {
+    opacity: 0;
+    translate: 0 -5px;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes mm-cloud-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes mm-cloud-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Not playing (quiet mode, reduced motion): nothing moves; clouds only fade in and out. */
+.mm-cloud[data-playing="off"] * {
+  animation: none !important;
+}
+.mm-cloud[data-playing="off"] .mm-cloud__steam {
+  display: none;
+}
+.mm-cloud[data-playing="off"][data-state="steady"] :is(.mm-cloud__lantern, .mm-cloud__warm) {
+  opacity: 1;
+}
+.mm-cloud[data-playing="off"][data-state="forming"] {
+  animation: mm-cloud-fade-in 0.3s ease-out both;
+}
+.mm-cloud[data-playing="off"][data-state="fading"] {
+  animation: mm-cloud-fade-out 0.45s ease-in both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mm-cloud * {
+    animation: none !important;
+  }
+  .mm-cloud .mm-cloud__steam {
+    display: none;
+  }
+  .mm-cloud[data-state="steady"] :is(.mm-cloud__lantern, .mm-cloud__warm) {
+    opacity: 1;
+  }
+  .mm-cloud[data-state="forming"] {
+    animation: mm-cloud-fade-in 0.3s ease-out both;
+  }
+  .mm-cloud[data-state="fading"] {
+    animation: mm-cloud-fade-out 0.45s ease-in both;
+  }
+}

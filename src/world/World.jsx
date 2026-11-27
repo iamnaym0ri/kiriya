@@ -69,7 +69,7 @@ export default function World() {
         <Route path="mail" element={lazyPage(MailSection)} />
         <Route path="play" element={lazyPage(PlaySection)} />
         <Route path="play/quizzes/*" element={lazyPage(QuizzesPage)} />
-        <Route path="me" element={lazyPage(MeSection)} />
+        <Route path="me/*" element={lazyPage(MeSection)} />
         {CompanionLab && <Route path="companion-lab" element={lazyPage(CompanionLab)} />}
         {GameLab && <Route path="game-lab" element={lazyPage(GameLab)} />}
         <Route path="*" element={<Home />} />
