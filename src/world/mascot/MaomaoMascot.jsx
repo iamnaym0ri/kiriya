@@ -21,7 +21,7 @@ function subscribeReducedMotion(listener) {
   return () => query.removeEventListener("change", listener);
 }
 
-function Herb({ transform }) {
+export function Herb({ transform }) {
   return (
     <g transform={transform}>
       <g className="mascot__sprig">
@@ -43,7 +43,7 @@ function Herb({ transform }) {
     </g>
   );
 }
-function Mortar() {
+export function Mortar() {
   return (
     <g className="mascot__mortar">
       <path
@@ -69,6 +69,199 @@ function Mortar() {
         strokeWidth="1.5"
       />
       <path d="M100 199h12" stroke="#b9bdab" strokeWidth="2" />
+    </g>
+  );
+}
+
+// ---------------------------------------------------------------------------------------------
+// Her drawing, in parts. MaomaoMascot (the website) stacks them as it always has; the app's
+// companion (src/world/companions/characters/maomao/) reuses the same head, hair and face on an
+// articulated body, so there is one Maomao. Gradient ids come from the caller's useId().
+// ---------------------------------------------------------------------------------------------
+
+/** The gradients every part below refers to. */
+export function MaomaoDefs({ id }) {
+  return (
+    <defs>
+      <linearGradient id={`${id}-hair`} x1="0" y1="0" x2=".35" y2="1">
+        <stop stopColor="#315e55" />
+        <stop offset=".55" stopColor={HAIR} />
+        <stop offset="1" stopColor="#1b3d3b" />
+      </linearGradient>
+      <radialGradient id={`${id}-skin`} cx=".45" cy=".38" r=".7">
+        <stop offset=".4" stopColor="#ffeada" />
+        <stop offset="1" stopColor="#f2cdb8" />
+      </radialGradient>
+      {/* A cool rim down the right edge and a warm sheen across the hair: the two cheapest
+          things that stop a flat vector fill from reading as clip art. */}
+      <linearGradient id={`${id}-rim`} x1="1" y1="0" x2="0" y2="0">
+        <stop stopColor="#bfe6e0" stopOpacity=".55" />
+        <stop offset=".22" stopColor="#bfe6e0" stopOpacity="0" />
+      </linearGradient>
+      <linearGradient id={`${id}-sheen`} x1="0" y1="0" x2=".2" y2="1">
+        <stop offset=".1" stopColor="#7fd7c4" stopOpacity="0" />
+        <stop offset=".42" stopColor="#8fe0cd" stopOpacity=".38" />
+        <stop offset=".7" stopColor="#7fd7c4" stopOpacity="0" />
+      </linearGradient>
+      <linearGradient id={`${id}-cloth`} x1="0" y1="0" x2=".3" y2="1">
+        <stop stopColor="#ffffff" stopOpacity=".22" />
+        <stop offset=".6" stopColor="#ffffff" stopOpacity="0" />
+        <stop offset="1" stopColor="#2f4a3c" stopOpacity=".2" />
+      </linearGradient>
+      <radialGradient id={`${id}-ground`} cx=".5" cy=".5" r=".5">
+        <stop stopColor="#5d4a63" stopOpacity=".3" />
+        <stop offset="1" stopColor="#5d4a63" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+  );
+}
+
+/** The mass of hair behind her head and shoulders (drawn before the body). */
+export function MaomaoBackHair({ id }) {
+  return (
+    <>
+      <ellipse cx="100" cy="95" rx="69" ry="64" fill={`url(#${id}-hair)`} />
+      <path d="M42 104q-6 40 13 64l6-51m97-13q6 40-13 64l-6-51" fill={HAIR} />
+    </>
+  );
+}
+
+/** The bun and its pale blue ribbon (drawn after the body, before the head). */
+export function MaomaoBun({ id }) {
+  return (
+    <>
+      <circle cx="100" cy="34" r="21" fill={`url(#${id}-hair)`} />
+      <path
+        d="M86 29q12-13 27-3M111 19q10 9 6 19"
+        fill="none"
+        stroke={HAIR_LIGHT}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      {/* A soft bow with two upright loops, tied on the front of the bun (official standing
+          model and the Nendoroid both show loops, not a crescent). */}
+      <g className="mascot__ribbon">
+        <path
+          d="M100 25C92 16 83 7 78 11c-4 4 2 13 22 14ZM100 25c8-9 17-18 22-14 4 4-2 13-22 14Z"
+          fill="#9cacd2"
+          stroke="#647da7"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M97 23q-7-6-14-9m20 9q7-6 14-9"
+          stroke="#7f92c0"
+          strokeWidth="1.2"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <ellipse
+          cx="100"
+          cy="25"
+          rx="4.2"
+          ry="3.6"
+          fill="#aebbdc"
+          stroke="#647da7"
+          strokeWidth="1.2"
+        />
+      </g>
+    </>
+  );
+}
+
+/** The comic cat ears from her annoyed and delighted reactions. */
+export function MaomaoCatEars() {
+  return (
+    <g className="mascot__cat-ears">
+      <path
+        d="M41 62 37 32q20 2 30 14m66 0q10-12 30-14l-4 30"
+        fill={HAIR}
+        stroke="#1b3738"
+        strokeWidth="2"
+      />
+      <path d="m44 43 2 13 12-9m98-4-2 13-12-9" fill="#6e8181" />
+    </g>
+  );
+}
+
+/** Face, fringe, side locks and the face rig. */
+export function MaomaoHead({ id, expression, moving }) {
+  return (
+    <g className="mascot__head">
+      <ellipse cx="46" cy="111" rx="7" ry="10" fill="#efc8b6" />
+      <ellipse cx="154" cy="111" rx="7" ry="10" fill="#efc8b6" />
+      <path
+        d="M45 92q0-42 55-43 55 1 55 43v24q-4 39-55 40-51-1-55-40Z"
+        fill={`url(#${id}-skin)`}
+      />
+      <g fill="#b58265">
+        {[
+          [84, 120],
+          [90, 116],
+          [97, 120],
+          [104, 116],
+          [111, 120],
+          [118, 124],
+          [88, 125],
+          [101, 126],
+          [109, 124],
+        ].map(([x, y]) => (
+          <circle key={`${x}-${y}`} cx={x} cy={y} r="1.25" />
+        ))}
+      </g>
+      <MaomaoFace expression={expression} moving={moving} />
+      <path
+        d="M44 103C37 68 60 44 97 45c39-2 66 21 59 59l-10-9q-2-10-2-22l-4 24q-6 2-13-1l-3-27-1 26q-6 2-14 1l-7-31-1 32q-6 2-13-1l-3-29-3 27q-6 3-13 3l-1-22q-2 15-8 24Z"
+        fill={`url(#${id}-hair)`}
+      />
+      <path
+        d="M66 60q17-10 33-9m8 2q18 2 31 17M76 68l-3 18m16-24 2 25m20-24 6 22"
+        stroke={HAIR_LIGHT}
+        strokeWidth="2"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path d="M46 94q-5 35 12 48l1-45m95-3q5 35-12 48l-1-45" fill={HAIR} />
+      {/* Sheen across the fringe and a rim down the shaded side. */}
+      <path
+        d="M44 103C37 68 60 44 97 45c39-2 66 21 59 59l-10-9q-2-10-2-22l-4 24q-6 2-13-1l-3-27-1 26q-6 2-14 1l-7-31-1 32q-6 2-13-1l-3-29-3 27q-6 3-13 3l-1-22q-2 15-8 24Z"
+        fill={`url(#${id}-sheen)`}
+      />
+      <path
+        d="M45 92q0-42 55-43 55 1 55 43v24q-4 39-55 40-51-1-55-40Z"
+        fill={`url(#${id}-rim)`}
+      />
+    </g>
+  );
+}
+
+/** The two side braids with their beads. */
+export function MaomaoBraids() {
+  return (
+    <g className="mascot__braids">
+      {[58, 142].map((x) => (
+        <g
+          key={x}
+          className={`mascot__braid mascot__braid--${x === 58 ? "left" : "right"}`}
+          style={{ transformOrigin: `${x}px 140px` }}
+        >
+          <path
+            d={`M${x} 140q-5 9 0 17t-1 17`}
+            stroke={HAIR}
+            strokeWidth="9"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d={`m${x - 3} 147 5 5m-5 3 5 5m-5 3 4 4`}
+            stroke={HAIR_LIGHT}
+            strokeWidth="2"
+          />
+          <circle cx={x} cy="141" r="4" fill="#c888a3" />
+          <circle cx={x} cy="167" r="3.5" fill="#85bbae" />
+          <path d={`m${x - 3} 171-1 12q6 5 8-1l-2-11Z`} fill={HAIR} />
+        </g>
+      ))}
     </g>
   );
 }
@@ -138,37 +331,7 @@ export default function MaomaoMascot({
         : { "aria-hidden": true })}
     >
       <svg viewBox="0 0 200 236" className="mascot__svg" aria-hidden="true">
-        <defs>
-          <linearGradient id={`${id}-hair`} x1="0" y1="0" x2=".35" y2="1">
-            <stop stopColor="#315e55" />
-            <stop offset=".55" stopColor={HAIR} />
-            <stop offset="1" stopColor="#1b3d3b" />
-          </linearGradient>
-          <radialGradient id={`${id}-skin`} cx=".45" cy=".38" r=".7">
-            <stop offset=".4" stopColor="#ffeada" />
-            <stop offset="1" stopColor="#f2cdb8" />
-          </radialGradient>
-          {/* A cool rim down the right edge and a warm sheen across the hair: the two cheapest
-              things that stop a flat vector fill from reading as clip art. */}
-          <linearGradient id={`${id}-rim`} x1="1" y1="0" x2="0" y2="0">
-            <stop stopColor="#bfe6e0" stopOpacity=".55" />
-            <stop offset=".22" stopColor="#bfe6e0" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id={`${id}-sheen`} x1="0" y1="0" x2=".2" y2="1">
-            <stop offset=".1" stopColor="#7fd7c4" stopOpacity="0" />
-            <stop offset=".42" stopColor="#8fe0cd" stopOpacity=".38" />
-            <stop offset=".7" stopColor="#7fd7c4" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id={`${id}-cloth`} x1="0" y1="0" x2=".3" y2="1">
-            <stop stopColor="#ffffff" stopOpacity=".22" />
-            <stop offset=".6" stopColor="#ffffff" stopOpacity="0" />
-            <stop offset="1" stopColor="#2f4a3c" stopOpacity=".2" />
-          </linearGradient>
-          <radialGradient id={`${id}-ground`} cx=".5" cy=".5" r=".5">
-            <stop stopColor="#5d4a63" stopOpacity=".3" />
-            <stop offset="1" stopColor="#5d4a63" stopOpacity="0" />
-          </radialGradient>
-        </defs>
+        <MaomaoDefs id={id} />
         {/* Grounding shadow, outside the float group so she casts onto the page while she bobs. */}
         <ellipse
           className="mascot__ground"
@@ -190,17 +353,7 @@ export default function MaomaoMascot({
                 strokeLinecap="round"
               />
             )}
-            <ellipse
-              cx="100"
-              cy="95"
-              rx="69"
-              ry="64"
-              fill={`url(#${id}-hair)`}
-            />
-            <path
-              d="M42 104q-6 40 13 64l6-51m97-13q6 40-13 64l-6-51"
-              fill={HAIR}
-            />
+            <MaomaoBackHair id={id} />
             <ellipse
               className="mascot__shoe mascot__shoe--left"
               cx="85"
@@ -280,105 +433,10 @@ export default function MaomaoMascot({
               <ellipse cx="62" cy="195" rx="8" ry="6" fill={SKIN} />
               <ellipse cx="132" cy="192" rx="9" ry="6" fill={SKIN} />
             </g>
-            <circle cx="100" cy="34" r="21" fill={`url(#${id}-hair)`} />
-            <path
-              d="M86 29q12-13 27-3M111 19q10 9 6 19"
-              fill="none"
-              stroke={HAIR_LIGHT}
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <path
-              className="mascot__ribbon"
-              d="m98 22-15-13 4 17 11 2 10-1 10-17-17 12Z"
-              fill="#9cacd2"
-              stroke="#647da7"
-              strokeWidth="1.3"
-            />
-            {cat && (
-              <g className="mascot__cat-ears">
-                <path
-                  d="M41 62 37 32q20 2 30 14m66 0q10-12 30-14l-4 30"
-                  fill={HAIR}
-                  stroke="#1b3738"
-                  strokeWidth="2"
-                />
-                <path d="m44 43 2 13 12-9m98-4-2 13-12-9" fill="#6e8181" />
-              </g>
-            )}
-            <g className="mascot__head">
-              <ellipse cx="46" cy="111" rx="7" ry="10" fill="#efc8b6" />
-              <ellipse cx="154" cy="111" rx="7" ry="10" fill="#efc8b6" />
-              <path
-                d="M45 92q0-42 55-43 55 1 55 43v24q-4 39-55 40-51-1-55-40Z"
-                fill={`url(#${id}-skin)`}
-              />
-              <g fill="#b58265">
-                {[
-                  [84, 120],
-                  [90, 116],
-                  [97, 120],
-                  [104, 116],
-                  [111, 120],
-                  [118, 124],
-                  [88, 125],
-                  [101, 126],
-                  [109, 124],
-                ].map(([x, y]) => (
-                  <circle key={`${x}-${y}`} cx={x} cy={y} r="1.25" />
-                ))}
-              </g>
-              <MaomaoFace expression={expression} moving={animate} />
-              <path
-                d="M44 103C37 68 60 44 97 45c39-2 66 21 59 59l-10-9q-2-10-2-22l-4 24q-6 2-13-1l-3-27-1 26q-6 2-14 1l-7-31-1 32q-6 2-13-1l-3-29-3 27q-6 3-13 3l-1-22q-2 15-8 24Z"
-                fill={`url(#${id}-hair)`}
-              />
-              <path
-                d="M66 60q17-10 33-9m8 2q18 2 31 17M76 68l-3 18m16-24 2 25m20-24 6 22"
-                stroke={HAIR_LIGHT}
-                strokeWidth="2"
-                fill="none"
-                strokeLinecap="round"
-              />
-              <path
-                d="M46 94q-5 35 12 48l1-45m95-3q5 35-12 48l-1-45"
-                fill={HAIR}
-              />
-              {/* Sheen across the fringe and a rim down the shaded side. */}
-              <path
-                d="M44 103C37 68 60 44 97 45c39-2 66 21 59 59l-10-9q-2-10-2-22l-4 24q-6 2-13-1l-3-27-1 26q-6 2-14 1l-7-31-1 32q-6 2-13-1l-3-29-3 27q-6 3-13 3l-1-22q-2 15-8 24Z"
-                fill={`url(#${id}-sheen)`}
-              />
-              <path
-                d="M45 92q0-42 55-43 55 1 55 43v24q-4 39-55 40-51-1-55-40Z"
-                fill={`url(#${id}-rim)`}
-              />
-            </g>
-            <g className="mascot__braids">
-              {[58, 142].map((x) => (
-                <g
-                  key={x}
-                  className={`mascot__braid mascot__braid--${x === 58 ? "left" : "right"}`}
-                  style={{ transformOrigin: `${x}px 140px` }}
-                >
-                  <path
-                    d={`M${x} 140q-5 9 0 17t-1 17`}
-                    stroke={HAIR}
-                    strokeWidth="9"
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d={`m${x - 3} 147 5 5m-5 3 5 5m-5 3 4 4`}
-                    stroke={HAIR_LIGHT}
-                    strokeWidth="2"
-                  />
-                  <circle cx={x} cy="141" r="4" fill="#c888a3" />
-                  <circle cx={x} cy="167" r="3.5" fill="#85bbae" />
-                  <path d={`m${x - 3} 171-1 12q6 5 8-1l-2-11Z`} fill={HAIR} />
-                </g>
-              ))}
-            </g>
+            <MaomaoBun id={id} />
+            {cat && <MaomaoCatEars />}
+            <MaomaoHead id={id} expression={expression} moving={animate} />
+            <MaomaoBraids />
             {thrilled ? (
               <g className="mascot__eager-hands mascot__gesture">
                 <path
