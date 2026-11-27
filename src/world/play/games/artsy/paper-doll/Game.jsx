@@ -179,7 +179,7 @@ export default function PaperDoll({ onReward }) {
     },
     { target: stageRef, eventOptions: { passive: false }, drag: { filterTaps: true, threshold: 6 } },
   );
-  const dressing = ghost?.from === "doll" ? { ...look, outfit: Object.fromEntries(Object.entries(look.outfit ?? {}).filter(([slot]) => slot !== ghost.slot)) } : look;
+  const lifting = ghost?.from === "doll" ? ghost.slot : null;
   const setOn = SETS.find((set) => inSet(look, set));
 
   return (
@@ -215,7 +215,7 @@ export default function PaperDoll({ onReward }) {
 
       <div className="pd-stage" ref={stageRef} data-target={ghost ? (ghost.from === "tray" ? (ghost.over ? "yes" : "near") : ghost.over ? "near" : "off") : undefined}>
         <div className="pd-doll" key={calm ? "doll" : bounce}>
-          <Doll look={dressing} backdrop={backdrop} svgRef={dollRef} className="pd-doll__svg" label={`your paper doll: ${lookName(look, itemById, SETS)}`} />
+          <Doll look={look} lifting={lifting} backdrop={backdrop} svgRef={dollRef} className="pd-doll__svg" label={`your paper doll: ${lookName(look, itemById, SETS)}`} />
         </div>
         {setOn && (
           <span className="pd-set-badge artsy-hand">

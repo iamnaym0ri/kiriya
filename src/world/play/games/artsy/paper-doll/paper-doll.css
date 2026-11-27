@@ -230,7 +230,7 @@
   display: grid;
   gap: 4px;
   width: 100%;
-  padding: 6px 6px 40px;
+  padding: 6px 6px 44px;
   border: 1px solid var(--a-line);
   border-radius: 16px;
   background: var(--a-paper);
@@ -258,7 +258,7 @@
   display: grid;
   place-items: center;
   min-width: 44px;
-  height: 40px;
+  height: 44px;
   border: 0;
   background: none;
   color: var(--a-plum);
