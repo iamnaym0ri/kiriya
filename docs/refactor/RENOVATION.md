@@ -266,7 +266,8 @@ export default {
 bar, safe areas padded, a 44 pt top bar with "‹ play" and the game's title). `Game.jsx` fills its
 container (`height: 100%`, `position: relative`; measure the container, not the window) and does
 not draw its own back button or fixed full-screen layer; it calls `onExit()` only for its own "done"
-flows. The dev game lab mimics the sheet exactly.
+flows. The dev game lab mimics the sheet exactly. The sheet is portalled to `<body>`
+(`createPortal`), because the page's content column is its own stacking context.
 
 `Game.jsx` gets `({ onExit, onReward })`. A reward is `onReward({ sticker: "st-…", game: "<game-id>",
 reason: "first garden cleared" })`, with a sticker id from her collection's catalogue
