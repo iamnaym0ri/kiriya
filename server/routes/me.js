@@ -171,7 +171,8 @@ const prefsPatch = z
   .object({
     motion: z.enum(["lively", "quiet"]),
     cornerSmall: z.boolean(),
-    companion: z.enum(COMPANION_IDS),
+    // "none": a quiet home with nobody walking about.
+    companion: z.enum([...COMPANION_IDS, "none"]),
     sharing: z.object(Object.fromEntries(SHARING_KEYS.map((key) => [key, z.boolean()]))).partial().strict(),
     hints: z.partialRecord(z.enum(HINT_KEYS), z.boolean()),
   })

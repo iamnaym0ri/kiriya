@@ -55,6 +55,12 @@ Retired routes `/world/stage`, `/world/atelier` and `/world/apothecary` redirect
 
 Each phase ships on its own.
 
+> **2026-11-26: the app renovation.** Josh asked for the iPhone app to become a five-section app
+> (home, chat, play, notes & letters, and a tab named after whoever is signed in), with an editable
+> home, admin controls in place, five companion characters (replacing phase 7's mini Miku), and
+> phases 5 and 6 built in the same round, shipped together as one version. Decisions, ownership,
+> contracts and the agents' testing protocol: [`RENOVATION.md`](RENOVATION.md).
+
 ### 1. Clear the stage (done 2026-11-24, not yet committed or deployed)
 
 What changed, beyond the list below:
