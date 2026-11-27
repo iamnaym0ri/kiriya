@@ -168,3 +168,175 @@ test("secret word: plays only for today or just after midnight", async () => {
   assert.equal(yesterday.status, "playing");
   assert.equal(secretWord.nextFreeDay([{ day: "2026-11-28" }, { day: "2026-11-29" }], "2026-11-27"), "2026-11-30");
 });
+
+// ---------------------------------------------------------------- three in a row
+
+const ttt = await import(`${BRAIN}/three-in-a-row/logic.js`);
+const { seeded } = await import(`${BRAIN}/common/hooks.js`);
+const board = (text) => [...text].map((c) => (c === "y" ? "you" : c === "m" ? "mao" : null));
+
+test("three in a row: focused Maomao never loses, whatever she tries and whoever starts", () => {
+  let games = 0;
+  const explore = (b, turn) => {
+    const result = ttt.outcome(b);
+    if (result) {
+      assert.notEqual(result, "you", b.join(","));
+      games += 1;
+      return;
+    }
+    const moves = turn === "you" ? ttt.emptyCells(b) : ttt.bestMoves(b, "mao");
+    for (const i of moves) {
+      const next = [...b];
+      next[i] = turn;
+      explore(next, ttt.other(turn));
+    }
+  };
+  explore(ttt.emptyBoard(), "you");
+  explore(ttt.emptyBoard(), "mao");
+  assert.ok(games > 1000);
+});
+
+test("three in a row: thoughtful Maomao always takes a win and always blocks, but a fork can catch her", () => {
+  const random = seeded(7);
+  for (let k = 0; k < 200; k++) {
+    assert.equal(ttt.maomaoMove(board("mm-yy----"), "thoughtful", random), 2, "takes the win over the block");
+    assert.equal(ttt.maomaoMove(board("yy--m----"), "thoughtful", random), 2, "blocks");
+  }
+  // Her hunch (no calculation), then a corner: the classic fork wins.
+  const script = [0.9, 0.9, 0.1, 0.0];
+  const scripted = () => script.shift() ?? 0;
+  let b = board("y--------");
+  b[ttt.maomaoMove(b, "thoughtful", scripted)] = "mao";
+  assert.equal(b[4], "mao");
+  b[8] = "you";
+  b[ttt.maomaoMove(b, "thoughtful", scripted)] = "mao";
+  assert.equal(b[2], "mao", "a corner instead of the edge she needed");
+  const before = [...b];
+  b[6] = "you";
+  assert.equal(ttt.describeMove(before, b, "you"), "fork");
+  b[ttt.maomaoMove(b, "thoughtful", scripted)] = "mao";
+  const win = ttt.threats(b, "you")[0];
+  b[win] = "you";
+  assert.equal(ttt.outcome(b), "you");
+});
+
+test("three in a row: sleepy Maomao really is sleepy", () => {
+  const random = seeded(11);
+  let missed = 0;
+  for (let k = 0; k < 300; k++) if (ttt.maomaoMove(board("yy--m----"), "sleepy", random) !== 2) missed += 1;
+  assert.ok(missed > 60 && missed < 260, `missed ${missed} blocks`);
+  assert.equal(ttt.describeMove(board("yy--m----"), board("yym-m----"), "mao"), "block");
+  assert.equal(ttt.outcome(board("ymyymmmyy")), "draw");
+});
+
+// ---------------------------------------------------------------- shy shade
+
+const shade = await import(`${BRAIN}/shy-shade/logic.js`);
+const colour = await import(`${BRAIN}/shy-shade/colour.js`);
+
+test("shy shade: the grid grows and the shy shade gets shyer, measured in Oklab", () => {
+  for (let level = 2; level < 40; level++) {
+    assert.ok(shade.gridSize(level) >= shade.gridSize(level - 1));
+    assert.ok(shade.difference(level) <= shade.difference(level - 1));
+  }
+  assert.equal(shade.difference(60), shade.MIN_DIFFERENCE);
+  const random = seeded(3);
+  for (let level = 1; level <= 30; level++)
+    for (let k = 0; k < 20; k++) {
+      const round = shade.newRound(level, random);
+      assert.match(round.swatch, /^#[0-9a-f]{6}$/);
+      assert.notEqual(round.swatch, round.shy);
+      assert.ok(round.odd >= 0 && round.odd < round.size ** 2);
+      const target = shade.difference(level);
+      assert.ok(Math.abs(colour.hexDistance(round.swatch, round.shy) - target) <= Math.max(0.004, target * 0.2), `level ${level}`);
+      if (level <= shade.CUE_LEVELS) {
+        assert.ok(["lighter", "darker"].includes(round.kind));
+        assert.ok(colour.contrast(round.swatch, round.shy) >= 1.3, "the cue levels read without colour vision");
+      }
+    }
+  const [L, a, b] = colour.rgbToOklab(colour.fromHex("#b48fd0"));
+  assert.equal(colour.toHex(colour.oklabToRgb([L, a, b])), "#b48fd0", "the conversion round-trips");
+});
+
+test("shy shade: wrong taps cost hearts, a squint never hides the shy one, a find moves on", () => {
+  const random = seeded(5);
+  let run = shade.newRun(random);
+  const wrong = run.round.odd === 0 ? 1 : 0;
+  run = shade.shadeTurn(run, { type: "tap", index: wrong }, random);
+  assert.equal(run.hearts, 2);
+  assert.equal(shade.shadeTurn(run, { type: "tap", index: wrong }, random), run, "the same wrong swatch twice costs nothing");
+  run = shade.shadeTurn(run, { type: "squint" }, random);
+  assert.equal(run.squints, 0);
+  assert.equal(run.dimmed.length, 2);
+  assert.ok(!run.dimmed.includes(run.round.odd));
+  run = shade.shadeTurn(run, { type: "tap", index: run.round.odd }, random);
+  assert.equal(run.phase, "found");
+  run = shade.shadeTurn(run, { type: "next" }, random);
+  assert.deepEqual([run.level, run.phase, run.missed.length, run.dimmed.length], [2, "play", 0, 0]);
+  for (let level = 2; level < 11; level++) {
+    run = shade.shadeTurn(shade.shadeTurn(run, { type: "tap", index: run.round.odd }, random), { type: "next" }, random);
+  }
+  assert.equal(run.level, 11);
+  assert.equal(run.squints, 1, "another squint every ten levels");
+  const cells = run.round.size ** 2;
+  for (let i = 0, misses = 0; i < cells && misses < 3; i++) if (i !== run.round.odd) { run = shade.shadeTurn(run, { type: "tap", index: i }, random); misses++; }
+  assert.equal(run.phase, "over");
+});
+
+// ---------------------------------------------------------------- charm grid
+
+const charms = await import(`${BRAIN}/charm-grid/logic.js`);
+
+test("charm grid: every puzzle has exactly one answer and can be finished without guessing", () => {
+  const random = seeded(2026);
+  for (const tier of Object.keys(charms.TIERS))
+    for (let k = 0; k < 25; k++) {
+      const p = charms.generate(tier, random);
+      const { n } = p;
+      assert.equal(charms.countSolutions(p.puzzle, n, 3), 1, `${tier} #${k}`);
+      assert.ok(charms.solvableBySingles(p.puzzle, n));
+      assert.ok(p.puzzle.every((v, i) => !v || v === p.solution[i]));
+      assert.equal(charms.clashes(p.solution, n).size, 0);
+      for (const unit of charms.units(n)) assert.equal(new Set(unit.map((i) => p.solution[i])).size, n);
+      assert.ok(p.givens >= charms.TIERS[tier].targetGivens && p.givens <= charms.TIERS[tier].targetGivens + 4, `${tier} givens ${p.givens}`);
+    }
+});
+
+test("charm grid: clashes and nudges", () => {
+  const grid = [1, 2, 3, 4, 3, 4, 1, 2, 2, 1, 4, 3, 4, 3, 2, 1];
+  assert.equal(charms.clashes(grid, 4).size, 0);
+  const broken = [...grid];
+  broken[1] = 1;
+  // A second heart in row 1 repeats in that row, in column 2 (with the heart below) and in the box.
+  assert.deepEqual([...charms.clashes(broken, 4)].sort((a, b) => a - b), [0, 1, 9]);
+  const missing = [...grid];
+  missing[5] = 0;
+  assert.deepEqual(charms.nextSingle(missing, 4), { cell: 5, value: 4, why: "only" });
+});
+
+// ---------------------------------------------------------------- picture stitch
+
+const stitch = await import(`${BRAIN}/picture-stitch/puzzles.js`);
+const lines = await import(`${BRAIN}/picture-stitch/lineSolver.js`);
+
+test("picture stitch: every picture has one answer, reached by line logic alone", () => {
+  assert.equal(stitch.PUZZLES.length, 12);
+  for (const p of stitch.PUZZLES) {
+    const { grid, solved } = lines.solveByLines(p.rows, p.cols);
+    assert.ok(solved, `${p.id} needs a guess`);
+    assert.deepEqual(grid.map((v) => (v === 1 ? 1 : 0)), p.solution, p.id);
+    assert.ok(p.solution.some(Boolean) && p.colours.every((c, i) => Boolean(c) === Boolean(p.solution[i])));
+  }
+});
+
+test("picture stitch: clue numbers and single-line logic", () => {
+  assert.deepEqual(stitch.hintsFor([1, 1, 0, 1, 0, 0, 1, 1, 1]), [2, 1, 3]);
+  assert.deepEqual(stitch.hintsFor([0, 0]), []);
+  // A 3 in 5 cells always covers the middle; the quick overlap rule and the full one agree.
+  assert.deepEqual(lines.pushSolve([0, 0, 0, 0, 0], [3]), [0, 0, 1, 0, 0]);
+  assert.deepEqual(lines.settleLine([0, 0, 0, 0, 0], [3]), [0, 0, 1, 0, 0]);
+  // With the first cell stitched, the 3 is pinned to the left: the full rule finishes the line.
+  assert.deepEqual(lines.settleLine([1, 0, 0, 0, 0], [3]), [1, 1, 1, -1, -1]);
+  assert.deepEqual(lines.settleLine([0, 0, 0, 0], []), [-1, -1, -1, -1]);
+  assert.equal(lines.settleLine([1, -1, 1, 0], [3]), null, "a contradiction");
+});
