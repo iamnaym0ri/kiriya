@@ -6,6 +6,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import * as schema from "../server/db/schema.js";
+import { eq } from "drizzle-orm";
 import { hashPassphrase } from "../server/auth/passphrase.js";
 
 for (const name of ["DATABASE_URL", "kData_DATABASE_URL", "BLOB_READ_WRITE_TOKEN", "QSTASH_TOKEN", "VAPID_PUBLIC_KEY", "VITE_VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "CRON_SECRET", "OPENAI_API_KEY", "APNS_KEY", "ABLY_API_KEY", "GIPHY_API_KEY"])
@@ -91,7 +92,15 @@ try {
 
   await test("Replies quote the original; reactions are one per person and can change", async () => {
     const reply = await send(josh, { kind: "text", body: "so cute", replyTo: photo.id });
-    assert.deepEqual(reply.replyTo, { id: photo.id, sender: "kiriya", kind: "image", body: "look!!" });
+    assert.deepEqual(reply.replyTo, {
+      id: photo.id,
+      clientId: photo.clientId,
+      sender: "kiriya",
+      kind: "image",
+      body: "look!!",
+      media: { items: [{ type: "image", url: "/api/uploads/media?path=chat%2F171-ab12cd34.webp", width: 900, height: 1200 }], count: 1 },
+      enc: null,
+    });
     await json(await request(`me/chat/messages/${photo.id}/reaction`, { method: "PUT", cookie: josh, body: { emoji: "♥" } }));
     await json(await request(`me/chat/messages/${photo.id}/reaction`, { method: "PUT", cookie: josh, body: { emoji: "😭" } }));
     await json(await request(`me/chat/messages/${photo.id}/reaction`, { method: "PUT", cookie: her, body: { emoji: "✨" } }));
@@ -113,11 +122,116 @@ try {
     assert.deepEqual(summary.names, { admin: "Josh", kiriya: "Kiriya" });
   });
 
-  await test("Unsending works only on your own messages and leaves a quiet placeholder", async () => {
+  await test("Deleting works only on your own messages, wipes them for both, and replies say the original is gone", async () => {
+    const answer = await send(her, { kind: "text", body: "hi you", replyTo: hello.id });
+    await json(await request(`me/chat/messages/${hello.id}/reaction`, { method: "PUT", cookie: her, body: { emoji: "♥" } }));
     assert.equal((await request(`me/chat/messages/${hello.id}`, { method: "DELETE", cookie: her })).status, 404);
     await json(await request(`me/chat/messages/${hello.id}`, { method: "DELETE", cookie: josh }));
-    const gone = (await json(await request("me/chat/messages", { cookie: her }))).messages.find((m) => m.id === hello.id);
-    assert.deepEqual([gone.kind, gone.body, gone.media], ["deleted", "", null]);
+    assert.equal((await request(`me/chat/messages/${hello.id}`, { method: "DELETE", cookie: josh })).status, 404, "only once");
+    const page = await json(await request("me/chat/messages", { cookie: her }));
+    const gone = page.messages.find((m) => m.id === hello.id);
+    assert.deepEqual([gone.kind, gone.body, gone.media, gone.enc, gone.editedAt, gone.reactions], ["deleted", "", null, null, null, {}]);
+    const [row] = await db.select().from(schema.chatMessages).where(eq(schema.chatMessages.id, hello.id));
+    assert.deepEqual([row.body, row.media], ["", null], "the words are wiped from the database too");
+    const quoted = page.messages.find((m) => m.id === answer.id).replyTo;
+    assert.deepEqual([quoted.kind, quoted.body, quoted.media], ["deleted", "", null]);
+  });
+
+  await test("Albums carry 1–10 photos and videos; videos need a duration and may carry a poster", async () => {
+    const item = (i, extra = {}) => ({ type: "image", url: `/api/uploads/media?path=chat%2F${200 + i}-ab12cd34.webp`, width: 1200, height: 900, ...extra });
+    const video = { type: "video", url: "/api/uploads/media?path=chat%2F300-ab12cd34.mp4", width: 1080, height: 1920, duration: 12.4, mime: "video/mp4", poster: { url: "/api/uploads/media?path=chat%2F301-ab12cd34.webp", width: 540, height: 960 } };
+    const album = await send(her, { kind: "image", body: "our day ♡", media: { items: [item(1), video, item(2)] } });
+    assert.equal(album.media.items.length, 3);
+    assert.equal(album.media.items[1].poster.width, 540);
+    await send(her, { kind: "image", media: { items: Array.from({ length: 10 }, (_, i) => item(i)) } });
+    await send(her, { kind: "image", media: { items: Array.from({ length: 11 }, (_, i) => item(i)) } }, 400);
+    await send(her, { kind: "image", media: { items: [] } }, 400);
+    await send(her, { kind: "image", media: { items: [{ ...video, duration: undefined }] } }, 400);
+    await send(her, { kind: "image", media: { items: [{ ...video, duration: 999 }] } }, 400);
+    await send(her, { kind: "image", media: { items: [item(1, { duration: 3 })] } }, 400);
+    await send(her, { kind: "image", media: { items: [item(1, { url: "/api/uploads/media?path=art%2Fx.webp" })] } }, 400);
+    await send(her, { kind: "image", media: { items: [{ ...video, poster: { url: "https://evil.example/p.jpg" } }] } }, 400);
+    const reply = await send(josh, { kind: "text", body: "wow", replyTo: album.id });
+    assert.deepEqual(reply.replyTo.media, { items: [album.media.items[0]], count: 3 });
+  });
+
+  await test("Better GIFs: the crisp mp4 and a still travel with the GIF; links stay GIPHY's own", async () => {
+    const gif = await send(her, {
+      kind: "gif",
+      media: { url: "https://media2.giphy.com/media/abc/giphy.webp", mp4: "https://media2.giphy.com/media/abc/giphy.mp4", still: "https://media2.giphy.com/media/abc/480w_s.jpg", giphyId: "abc", width: 480, height: 270 },
+    });
+    assert.equal(gif.media.mp4, "https://media2.giphy.com/media/abc/giphy.mp4");
+    await send(her, { kind: "gif", media: { url: "https://media2.giphy.com/media/abc/giphy.webp", mp4: "https://evil.example/x.mp4" } }, 400);
+    const { gifShape } = await import("../server/routes/chat.js");
+    const shaped = gifShape({
+      id: "abc",
+      title: "cat",
+      images: {
+        original: { width: "480", height: "270", url: "https://media.giphy.com/media/abc/giphy.gif", mp4: "https://media.giphy.com/media/abc/giphy.mp4", mp4_size: "900000", webp: "https://media.giphy.com/media/abc/giphy.webp", webp_size: "800000" },
+        fixed_width: { width: "200", height: "113", url: "https://media.giphy.com/media/abc/200w.gif", mp4: "https://media.giphy.com/media/abc/200w.mp4", webp: "https://media.giphy.com/media/abc/200w.webp" },
+        fixed_width_still: { url: "https://media.giphy.com/media/abc/200w_s.gif" },
+        "480w_still": { url: "https://media.giphy.com/media/abc/480w_s.jpg" },
+      },
+    });
+    assert.deepEqual([shaped.mp4, shaped.url, shaped.still, shaped.width, shaped.preview.url], [
+      "https://media.giphy.com/media/abc/giphy.mp4",
+      "https://media.giphy.com/media/abc/giphy.webp",
+      "https://media.giphy.com/media/abc/480w_s.jpg",
+      480,
+      "https://media.giphy.com/media/abc/200w.webp",
+    ]);
+    const heavy = gifShape({ id: "big", images: { original: { width: "720", height: "404", mp4: "https://media.giphy.com/media/big/giphy.mp4", mp4_size: "9000000", url: "https://media.giphy.com/media/big/giphy.gif" }, fixed_width: { width: "200", height: "112", mp4: "https://media.giphy.com/media/big/200w.mp4", webp: "https://media.giphy.com/media/big/200w.webp" }, downsized_small: { mp4: "https://media.giphy.com/media/big/giphy-downsized-small.mp4" } } });
+    assert.equal(heavy.mp4, "https://media.giphy.com/media/big/giphy-downsized-small.mp4", "a heavy original falls back to a lighter mp4");
+  });
+
+  await test("Edits change your own words or captions, mark the message edited, and reach the other phone", async () => {
+    const mine = await send(josh, { kind: "text", body: "see u at 7" });
+    const before = (await json(await request("me/chat/messages", { cookie: her }))).messages.at(-1).createdAt;
+    assert.equal((await request(`me/chat/messages/${mine.id}`, { method: "PATCH", cookie: her, body: { body: "hacked" } })).status, 404, "not hers to edit");
+    assert.equal((await request(`me/chat/messages/${mine.id}`, { method: "PATCH", cookie: josh, body: { body: "   " } })).status, 400);
+    const edited = await json(await request(`me/chat/messages/${mine.id}`, { method: "PATCH", cookie: josh, body: { body: "  see u at 8 ♡ " } }));
+    assert.equal(edited.body, "see u at 8 ♡");
+    assert(edited.editedAt);
+    const caught = await json(await request(`me/chat/messages?after=${encodeURIComponent(before)}`, { cookie: her }));
+    assert(caught.messages.some((m) => m.id === mine.id && m.body === "see u at 8 ♡"), "a catch-up after the edit brings the new words");
+    const pic = await send(her, { kind: "image", body: "", media: { items: [{ type: "image", url: "/api/uploads/media?path=chat%2F500-ab12cd34.webp", width: 10, height: 10 }] } });
+    const caption = await json(await request(`me/chat/messages/${pic.id}`, { method: "PATCH", cookie: her, body: { body: "look at us!!" } }));
+    assert.equal(caption.body, "look at us!!");
+    assert.equal((await request(`me/chat/messages/${pic.id}`, { method: "PATCH", cookie: her, body: { body: "x".repeat(501) } })).status, 400, "captions stay short");
+    const tap = await send(her, { kind: "tap", body: "kiss" });
+    assert.equal((await request(`me/chat/messages/${tap.id}`, { method: "PATCH", cookie: her, body: { body: "x" } })).status, 404, "signals can't be edited");
+    await json(await request(`me/chat/messages/${mine.id}`, { method: "DELETE", cookie: josh }));
+    const after = await json(await request(`me/chat/messages?after=${encodeURIComponent(before)}`, { cookie: her }));
+    assert.equal(after.messages.find((m) => m.id === mine.id).kind, "deleted", "a catch-up brings deletions too");
+  });
+
+  await test("Sealed messages pass through untouched: enc, sealed bodies and sealed media", async () => {
+    const enc = { v: 1, k: "key-1", n: "c2VhbGVkLXByZXZpZXc" };
+    const longBody = "A".repeat(9000);
+    const sealedText = await send(her, { kind: "text", body: longBody, enc });
+    assert.deepEqual([sealedText.body.length, sealedText.enc], [9000, enc]);
+    await send(her, { kind: "text", body: "A".repeat(9000) }, 400);
+    await send(her, { kind: "text", body: "x", enc: { blob: "A".repeat(5000) } }, 400);
+    await send(her, { kind: "tap", body: "hug", enc }, 400);
+    const album = await send(her, { kind: "image", body: "c2VhbGVk", enc, media: { items: [{ type: "image", url: "/api/uploads/media?path=chat%2F400-ab12cd34.bin", width: 800, height: 600, mime: "image/webp", sealed: "a2V5" }] } });
+    assert.equal(album.media.items[0].sealed, "a2V5");
+    await send(her, { kind: "gif", body: "", enc, media: { sealed: "Z2lm", width: 480, height: 270 } });
+    await send(her, { kind: "gif", body: "", media: { sealed: "Z2lm", width: 480, height: 270 } }, 400);
+    await send(her, { kind: "voice", body: "", enc, media: { url: "/api/uploads/media?path=chat%2F401-ab12cd34.bin", duration: 3, mime: "audio/mp4", sealed: "dm9pY2U" } });
+    const reply = await send(josh, { kind: "text", body: "ok", replyTo: sealedText.id });
+    assert.deepEqual([reply.replyTo.body.length, reply.replyTo.enc], [9000, enc], "a sealed quote travels whole");
+    const edit = await json(await request(`me/chat/messages/${sealedText.id}`, { method: "PATCH", cookie: her, body: { body: "B".repeat(7000), enc } }));
+    assert.deepEqual([edit.body.length, edit.enc], [7000, enc]);
+    const summary = await json(await request("me/chat/summary", { cookie: josh }));
+    assert.equal(summary.last.body, "ok");
+    assert.equal(summary.last.enc, null);
+  });
+
+  await test("Typing can be switched off at once (the polling fallback)", async () => {
+    await json(await request("me/chat/typing", { method: "POST", cookie: josh, body: {} }));
+    assert.equal((await json(await request("me/chat/messages", { cookie: her }))).typing, true);
+    await json(await request("me/chat/typing", { method: "POST", cookie: josh, body: { stop: true } }));
+    assert.equal((await json(await request("me/chat/messages", { cookie: her }))).typing, false);
   });
 
   await test("History pages backwards and catches up forwards without gaps or repeats", async () => {
@@ -136,7 +250,8 @@ try {
     const newest = (await json(await request("me/chat/messages", { cookie: her }))).messages.at(-1);
     const fresh = await send(josh, { kind: "text", body: "new one" });
     const caught = await json(await request(`me/chat/messages?after=${encodeURIComponent(newest.createdAt)}`, { cookie: her }));
-    assert.deepEqual(caught.messages.map((m) => m.id), [fresh.id]);
+    // Messages edited or deleted since come along too; the only new one is the fresh one.
+    assert.deepEqual(caught.messages.filter((m) => m.createdAt > newest.createdAt).map((m) => m.id), [fresh.id]);
   });
 
   await test("Taps are capped at 30 an hour so a stuck widget can't flood her phone", async () => {
