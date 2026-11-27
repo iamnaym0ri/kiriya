@@ -159,3 +159,28 @@
   src: url("/fonts/birthday-japanese.woff2") format("woff2");
   unicode-range: U+30AF, U+30DF, U+521D, U+732B, U+97F3;
 }
+
+/*
+  Gaegu (the hand font) draws curly quotes, apostrophes and the ellipsis as full-width Korean
+  glyphs, so "let’s" shows as "let’ s". These two faces lend it M PLUS Rounded's narrow ones for
+  just those characters. Declared after the Gaegu imports, so they win for these code points.
+*/
+@font-face {
+  font-family: "Gaegu";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("../../node_modules/@fontsource/m-plus-rounded-1c/files/m-plus-rounded-1c-latin-400-normal.woff2")
+    format("woff2");
+  unicode-range: U+2018-201F, U+2026;
+}
+
+@font-face {
+  font-family: "Gaegu";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("../../node_modules/@fontsource/m-plus-rounded-1c/files/m-plus-rounded-1c-latin-700-normal.woff2")
+    format("woff2");
+  unicode-range: U+2018-201F, U+2026;
+}

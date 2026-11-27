@@ -43,6 +43,7 @@ const BASE = {
   grin: 0, // a wide open grin with teeth (feral, nervous)
   shadow: 0, // the upper face in shadow (guilty)
   bleed: 0, // a nosebleed
+  swirl: 0, // spirals in her irises (the MV's crazed, rotten-brained stare)
 };
 
 const FACES = {
@@ -65,6 +66,12 @@ const FACES = {
   nervous: { grin: 0.75, sweat: 1, browTilt: 6, browY: 88, browArch: 3.5, blush: 0.42, iris: 0.92 },
   wince: { open: 0, closedCurve: 2.5, wavy: 1, blush: 0.85, hatch: 0.9, sweat: 1, browTilt: 6, browY: 88, mouthW: 6 },
   nosebleed: { heart: 1, bleed: 1, lid: 1.5, blush: 1, hatch: 1, mouthW: 7, smile: 4.5, mouthOpen: 4, browTilt: 3, browY: 89 },
+  // The MV's thumbnail face: heavy lids over purple spiral eyes, sweat, a wobbly open mouth.
+  rotten: { swirl: 1, lid: 4.5, iris: 1.08, shine: 0.55, sweat: 1, wavy: 1, mouthW: 7, blush: 0.75, hatch: 0.7, browTilt: 4.5, browY: 88.5 },
+  // Ascended: eyes shut, glowing, at peace (a new chapter has taken her to heaven).
+  bliss: { open: 0, closedCurve: -7.5, blush: 0.9, hatch: 0.5, mouthW: 5.5, smile: 4.5, mouthOpen: 3, browTilt: 2.5, browY: 89 },
+  // Other characters' files call her "surprised"; it's her gasp.
+  surprised: { top: 103, arch: 98, bottom: 123, lower: 130, iris: 0.9, shine: 1.1, mouthW: 3.5, smile: 0, mouthOpen: 7, browY: 87, browArch: 4 },
 };
 
 export const EXPRESSIONS = Object.keys(FACES);
@@ -156,7 +163,10 @@ export default function Face({ expression = "soft", moving, children }) {
                 <path d={outline} fill="#fffaf7" />
                 <g clipPath={`url(#${id}-eye-${i})`}>
                   <ellipse cx={ix} cy={iy} rx={7.6 * f.iris} ry={11 * f.iris} fill={`url(#${id}-iris)`} />
-                  <ellipse cx={ix} cy={iy - 1} rx={3.3} ry={6} fill={C.pupil} opacity={1 - f.heart} />
+                  <ellipse cx={ix} cy={iy - 1} rx={3.3} ry={6} fill={C.pupil} opacity={Math.max(0, 1 - f.heart - f.swirl)} />
+                  {f.swirl > 0 && (
+                    <path d={spiral(ix - 0.6, iy - 0.5, 2, 2.1)} fill="none" stroke="#f1d2ff" strokeWidth="1.25" strokeLinecap="round" opacity={f.swirl} />
+                  )}
                   <path
                     transform={`translate(${ix} ${iy - 1}) scale(.62)`}
                     d="M0 6C-7-.5-8-4.5-5.5-7S.5-8 0-3.5c-.5-4.5 3-5 5.5-3.5S7-.5 0 6Z"

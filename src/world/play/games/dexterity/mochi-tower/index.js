@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 
 const line = { stroke: "#2b1b35", strokeWidth: 1.7, strokeLinejoin: "round", strokeLinecap: "round" };
 const mochi = (y, fill, half) =>
-  h("path", { key: y, d: `M${24 - half} ${y + 8}c-3-1-3.5-3.5-3-6 1.5-4 7-7 ${half + 3}-7s${half + 1.5} 3 ${half + 3} 7c.5 2.5 0 5-3 6-5 1.5-10 1.5-${half}1.5s-${half - 4} 0-${half}-1.5z`, fill, ...line });
+  h("path", { key: y, d: `M${24 - half} ${y + 8}c-3-1-3.5-3.5-3-6 1.5-4 7-7 ${half + 3}-7s${half + 1.5} 3 ${half + 3} 7c.5 2.5 0 5-3 6-5 1.5-10 1.5-${half} 1.5s-${half - 4} 0-${half}-1.5z`, fill, ...line });
 
 function Icon({ size = 48 }) {
   return h(

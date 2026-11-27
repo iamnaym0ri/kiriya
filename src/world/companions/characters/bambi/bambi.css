@@ -62,7 +62,7 @@
   transform-origin: 120px 229px;
 }
 .bamby__tuft {
-  transform-origin: 104px 31px;
+  transform-origin: 103px 39px;
 }
 .bamby__ground {
   transform-origin: 100px 231px;
@@ -1983,6 +1983,211 @@
   100% {
     opacity: 0;
     translate: -6px -14px;
+  }
+}
+
+/* --- lassgo: "let's go!" (his "lassgo"): hopping on the spot, right fist pumping the air --------- */
+.bamby[data-pose="lassgo"] {
+  --cycle: 480ms;
+}
+.bamby[data-pose="lassgo"] .bamby__arm--r {
+  rotate: -160deg;
+  animation: bamby-pump var(--cycle) ease-in-out infinite;
+}
+.bamby[data-pose="lassgo"] .bamby__fore--r {
+  rotate: 10deg;
+}
+.bamby[data-pose="lassgo"] .bamby__arm--l {
+  rotate: 30deg;
+}
+.bamby[data-pose="lassgo"] .bamby__fore--l {
+  rotate: -165deg;
+}
+.bamby[data-pose="lassgo"] .bamby__bob {
+  animation: bamby-hop var(--cycle) cubic-bezier(0.3, 0, 0.4, 1) infinite;
+}
+.bamby[data-pose="lassgo"] .bamby__head {
+  rotate: -4deg;
+}
+.bamby[data-pose="lassgo"] .bamby__leg--l {
+  rotate: 6deg;
+}
+.bamby__lassgo {
+  animation: bamby-lassgo-pop var(--cycle) ease-out infinite;
+  transform-origin: 158px 100px;
+}
+@keyframes bamby-pump {
+  0%,
+  100% {
+    rotate: -150deg;
+  }
+  50% {
+    rotate: -170deg;
+  }
+}
+@keyframes bamby-hop {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1.04 0.96;
+  }
+  45% {
+    translate: 0 -8px;
+    scale: 0.98 1.03;
+  }
+}
+@keyframes bamby-lassgo-pop {
+  0%,
+  100% {
+    opacity: 0.3;
+    scale: 0.8;
+  }
+  45% {
+    opacity: 1;
+    scale: 1.1;
+  }
+}
+
+/* --- swat: a step went wrong, so he swats himself (a pat on the cheek), then he's fine --------- */
+.bamby[data-pose="swat"] {
+  --cycle: 900ms;
+}
+.bamby[data-pose="swat"] .bamby__arm--r {
+  rotate: -150deg;
+}
+.bamby[data-pose="swat"] .bamby__fore--r {
+  rotate: 12deg;
+  animation: bamby-swat var(--cycle) cubic-bezier(0.5, 0, 0.2, 1) infinite;
+}
+.bamby[data-pose="swat"] .bamby__head {
+  animation: bamby-swat-head var(--cycle) ease-out infinite;
+}
+.bamby[data-pose="swat"] .bamby__arm--l {
+  rotate: 24deg;
+}
+.bamby__swat {
+  opacity: 0;
+  animation: bamby-swat-mark var(--cycle) ease-out infinite;
+}
+@keyframes bamby-swat {
+  0%,
+  100% {
+    rotate: -45deg;
+  }
+  30%,
+  55% {
+    rotate: 12deg;
+  }
+}
+@keyframes bamby-swat-head {
+  0%,
+  25%,
+  100% {
+    rotate: 0deg;
+  }
+  35%,
+  55% {
+    rotate: -7deg;
+  }
+}
+@keyframes bamby-swat-mark {
+  0%,
+  28%,
+  70%,
+  100% {
+    opacity: 0;
+  }
+  34%,
+  55% {
+    opacity: 1;
+  }
+}
+
+/* --- bug: squatting on the cloud, hands on his knees, watching a pill bug roll ---------------- */
+.bamby[data-pose="bug"] .bamby__bob {
+  translate: 0 6px;
+  scale: 1.07 0.87;
+}
+.bamby[data-pose="bug"] .bamby__leg--l {
+  rotate: 14deg;
+}
+.bamby[data-pose="bug"] .bamby__leg--r {
+  rotate: -14deg;
+}
+.bamby[data-pose="bug"] .bamby__arm--l {
+  rotate: -18deg;
+}
+.bamby[data-pose="bug"] .bamby__arm--r {
+  rotate: 18deg;
+}
+.bamby[data-pose="bug"] .bamby__head {
+  translate: 0 3px;
+  animation: bamby-bug-head 2.4s ease-in-out infinite;
+}
+.bamby__pillbug {
+  transform: translate(146px, 225px);
+}
+.bamby__pillbug-roll {
+  animation: bamby-pillbug 2.4s ease-in-out infinite;
+}
+@keyframes bamby-bug-head {
+  0%,
+  100% {
+    rotate: 4deg;
+  }
+  50% {
+    rotate: -3deg;
+  }
+}
+@keyframes bamby-pillbug {
+  0%,
+  100% {
+    translate: 6px 0;
+    rotate: 0deg;
+  }
+  50% {
+    translate: -8px 0;
+    rotate: -160deg;
+  }
+}
+
+/* --- lift: a dumbbell curl with his right arm, left hand on his hip (he trains a lot) --------- */
+.bamby[data-pose="lift"] {
+  --cycle: 1.4s;
+}
+.bamby[data-pose="lift"] .bamby__arm--r {
+  rotate: -12deg;
+}
+.bamby[data-pose="lift"] .bamby__fore--r {
+  rotate: 110deg;
+  animation: bamby-curl var(--cycle) ease-in-out infinite;
+}
+.bamby[data-pose="lift"] .bamby__arm--l {
+  rotate: 34deg;
+}
+.bamby[data-pose="lift"] .bamby__fore--l {
+  rotate: -84deg;
+}
+.bamby[data-pose="lift"] .bamby__head {
+  animation: bamby-curl-head var(--cycle) ease-in-out infinite;
+}
+@keyframes bamby-curl {
+  0%,
+  100% {
+    rotate: 12deg;
+  }
+  50% {
+    rotate: 118deg;
+  }
+}
+@keyframes bamby-curl-head {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  50% {
+    rotate: 2deg;
+    translate: 0 1px;
   }
 }
 
