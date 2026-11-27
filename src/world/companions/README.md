@@ -1,0 +1,242 @@
+# Companions: the engine and the character contract
+
+Her character lives on the app's home section (`CompanionHost.jsx` mounts it, app only; the website
+keeps `src/world/mascot/MaomaoCompanion.jsx`). This file is the contract between the engine
+(`engine/`, owner: the stage agent) and the five characters (`characters/<id>/`, one agent each).
+`docs/refactor/RENOVATION.md` → "Companions" holds the agreed names; this file is the detail.
+
+- Try a character: `/world/companion-lab?app=1&c=<id>&v=<visitor>` (dev only). See "The lab".
+- Engine test characters: `characters/_placeholder/` (a blob that uses most options) and
+  `characters/_maomao-legacy/` (today's Maomao run through the engine). Folders starting with `_`
+  are dev-only.
+
+## How it looks and moves
+
+- A fixed layer over home, between everything at the top (home's top bar and ribbon, the compact
+  bar that fades in when home scrolls, the status bar) and the tab bar (plus anything fixed just
+  above it). The band does not move while she scrolls. Only bodies take touches.
+- **Levels**: 2 to 6 invisible floors across the band (as many as fit about every 150 px), the
+  bottom and top running the full width and the ones between leaning left and right in turn. A
+  character always stands on a level.
+- **Clouds**: wherever a character stands or walks, its `Platform` is drawn under its feet. Walking
+  (`platform: "trail"`), clouds form just ahead of the feet and fade once left behind; standing
+  still, they gather into one under its feet. Riding (`platform: "ride"`), one cloud carries it.
+- **Jumps** between neighbouring levels: a crouch (anticipation), a stretch on take-off, a real
+  ballistic arc, the destination cloud puffing in just before the feet arrive, a squash on landing.
+  Riders float from level to level instead (unless `hop: true`).
+- **Choosing where to go**: before settling, it looks at what is under a few candidate spots and
+  prefers ones that don't cover text, pictures or buttons. When home stops scrolling and it is
+  standing over something she might want to read or tap, it moves somewhere clearer. Pages can mark
+  things with `data-companion-avoid` (never stand here) or `data-companion-ok` (fine to cover).
+- **Touch**: a tap → `react` pose and a `tapped` line (three quick taps → `pester` if it has one).
+  Hold still ~0.4 s or start dragging → picked up by the scruff (`held` pose, a `picked` line),
+  swinging as it is carried. Let go → it falls (with a little of the throw) to the nearest level
+  below, lands on a fresh cloud, says a `putDown` line and carries on.
+- **Visits**: once she has been on home a while (25–80 s), with a 35% chance and at most one visit
+  per 20 minutes, another character arrives from the side with more room, they trade lines, the
+  visitor waves and leaves the way it came. Never more than two on screen.
+- **Quiet mode / reduced motion**: no walking, jumping or squash; poses still change and it still
+  talks, about 1.5× slower. A visitor fades in and out instead of walking. Bodies get
+  `playing={false}` and must stop their own CSS animations.
+- **Performance**: one `requestAnimationFrame` loop for the whole stage; positions, squash, sway and
+  turns are written as transforms straight to the DOM; React re-renders an actor only when its pose,
+  expression, clouds or words change. The loop stops when home is not showing, when the app is in
+  the background and when nobody is on stage. Characters are lazy-loaded; a visitor is only loaded
+  when it visits.
+
+## A character folder
+
+`characters/<id>/index.js` default-exports (ids match `shared/companions.js`):
+
+```js
+export default {
+  id: "miku",
+  name: "Hatsune Miku",
+  credit: "…",                       // one line for Art & credits
+  size: { width: 96, height: 128 },  // the body box at scale 1, CSS px; feet at bottom centre
+  scale: 1,                          // optional: this character's size relative to the others
+  Body,                              // see "Body"
+  poses: ["idle", "walk", "jump", "fall", "land", "sit", "wave", "react", "sleep", "held", ...own],
+  Platform,                          // see "Platform" (optional: the engine has a default cloud)
+  movement: { ... },                 // see "Movement"; every field is optional
+  behaviours: [ ... ],               // see "Behaviours"
+  lines: { ... },                    // see "Lines"
+  visit: { with: { ... } },          // see "Visits"
+  Thumb,                             // small portrait for her settings picker (not used by the engine)
+};
+```
+
+### Body
+
+`({ pose, expression, facing, playing, frame, talking }) => <svg …/>`
+
+- Fill the box: the engine renders it in a box of exactly `size × scale` CSS px (about 0.9 on a
+  414 pt phone, 0.8 at 375 pt) and scales it about the feet. Make the root `width: 100%;
+  height: 100%` and `overflow: visible`. The feet stand at the **bottom centre** of the box.
+- Draw facing **right** (or straight at her). The engine mirrors the whole body to face where it is
+  going (a quick paper-doll turn); `facing` (1 right, -1 left) is there if you need to un-mirror
+  something such as text. Set `movement.flip: false` to mirror nothing.
+- `pose`: one of your `poses`. Missing poses fall back: `held` → `fall` → `jump` → `react`;
+  `crouch` (optional, used for the anticipation if you have it) → `land`; `fall` → `jump`;
+  `wave` → `react`; `sleep` → `sit`; anything else → your `restPose` → `idle`.
+- **Sitting** (`sit`, and any own pose where it sits): the seat is on the feet line and legs may
+  hang about 15% of the body height below it, over the cloud's front edge. The body is drawn
+  **above** the platform, so dangling legs show in front of the cloud.
+- `expression`: whatever your rig understands, or `undefined` (use your default). It comes from the
+  current line while a bubble shows, else from an engine moment (`movement.expressions`), else
+  from the behaviour.
+- `playing`: false in quiet mode, reduced motion and while paused. Stop every CSS animation then
+  (e.g. gate them on a `data-playing` attribute).
+- `talking`: true while its bubble shows (a mouth that moves, if you like).
+- `frame`: Motion values the engine updates without re-rendering you: `frame.time` (s),
+  `frame.stride` (px walked so far, for syncing steps), `frame.speed` (px/s along the level),
+  `frame.vy` (px/s, negative going up). Use them with `motion` components and `useTransform`, or
+  ignore them. `frame` is `null` in the lab's pose gallery.
+- Keep it cheap: transform/opacity animations, no filters that repaint every frame, memo-friendly
+  (the engine memoises on these props).
+- The engine owns a wrapper around the body (taps, dragging, focus): don't add your own click
+  handlers.
+
+### Platform
+
+`({ width, state, facing, riding, playing }) => <svg …/>`
+
+- The engine places the Platform box's **top centre at the feet point**; puffs may overflow upward
+  a little. Set `Platform.surface = <px>` (at scale 1, default 0) to sink the feet that far into a
+  fluffier cloud: the box's top then sits `surface × scale` px above the feet.
+- `width`: the cloud's width in CSS px (`movement.platformWidth × scale`). Draw at that width;
+  the height is yours (about a quarter to a third of the width reads well).
+- `state`: `"forming"` (just appeared, `platformForm` ms), `"steady"`, `"fading"` (about to go,
+  `platformFade` ms). With `platformFx: "engine"` (default) the engine puffs the cloud in and out
+  for you (scale/opacity); add your own detail per state on top if you like. With
+  `platformFx: "own"` the engine does nothing: animate the states yourself.
+- `riding`: true for a `"ride"` character's cloud (it travels with the body). `facing` is the
+  body's direction (for motion lines). `playing` as for Body.
+- While walking there are usually two to four clouds on screen per character; keep each light.
+
+### Movement
+
+All optional; defaults in brackets. Distances are CSS px at scale 1.
+
+| field | meaning |
+| --- | --- |
+| `walkSpeed` [38] | px per second along a level |
+| `walkPose` ["walk"] | the pose while travelling (a rider might use `"sit"`) |
+| `restPose` ["idle"] | what it settles into between things (Maomao `"ponder"`, Miku `"sit"`) |
+| `restSeconds` [[2, 5]] | how long it settles before choosing the next behaviour |
+| `restlessness` [0.5] | 0..1, how often it moves somewhere before its next behaviour |
+| `jumpiness` [0.3] | 0..1, when it moves, how often it changes level instead of walking |
+| `wander` [0.5] | the longest walk, as a share of the screen width |
+| `platform` ["trail"] | `"trail"`: clouds form ahead and fade behind. `"ride"`: one cloud carries it |
+| `hop` [true for trail, false for ride] | change level by jumping; false floats there on its cloud |
+| `floatSeconds` [1.3] | riders: roughly how long a float to another level takes |
+| `bob` [2 for ride, 0 for trail] | px of gentle up-and-down while standing or riding |
+| `platformWidth` [size.width] | the cloud's width |
+| `platformForm` [260] / `platformFade` [520] | ms in the forming / fading states |
+| `platformFx` ["engine"] | `"engine"` puffs clouds in and out; `"own"` leaves it to the Platform |
+| `jumpHeight` [34] | px the arc rises above the higher of the two levels |
+| `maxJumpX` [150] | widest sideways distance of one jump |
+| `gravity` [2400] | px/s² (higher = snappier, shorter hops) |
+| `anticipation` [190] | ms crouching before a jump |
+| `landing` [300] | ms in the `land` pose after touching down |
+| `squash` [1] | 0..1.5, the engine's squash and stretch (lower it if your poses squash already) |
+| `flip` [true] | mirror the body to face its direction |
+| `turnMs` [200] | how long turning round takes |
+| `heldAt` [0.9] | where it is held when picked up, as a share of its height from the feet (the scruff) |
+| `sway` [1] | 0..2, how much it swings while carried |
+| `talkiness` [0.45] | 0..1, chance it says something as it starts a behaviour |
+| `expressions` [{}] | expressions for engine moments: `{ tapped, picked, putDown, walk, jump }` |
+
+### Behaviours
+
+What it does when left alone. Each time it finishes one it picks the next by weight (the same one
+twice in a row is less likely), maybe moves first, does it, then settles in `restPose`.
+
+```js
+{ id: "ponder", weight: 3, pose: "ponder", expression: "thinking", seconds: [6, 12], topic: "musing" }
+```
+
+| field | meaning |
+| --- | --- |
+| `id`, `weight` [1] | name and relative chance |
+| `pose` [restPose] | the pose for the behaviour |
+| `expression` | the expression for it (lines override while they show) |
+| `seconds` [[5, 10]] | how long it lasts |
+| `topic` | the line topic it may say as it starts (`say` chance), else maybe an `idle` line |
+| `say` [movement.talkiness] | 0..1, chance of saying something |
+| `stay` [false] | never move before this one |
+| `level` | `"top"` or `"bottom"`: go there first |
+| `roam` [false] | keep moving for a while first: 2–3 short walks with pauses (Bambi) |
+| `roamPose` [walkPose], `roamSpeed` [1] | the pose and speed multiplier while roaming |
+| `hours` | `[from, to]` local hours when it can happen, e.g. `[22, 7]` for sleeping |
+| `quiet` [true] | false: never in quiet mode |
+
+### Lines
+
+Topics map to lists; each line is a string or `{ text, expression }` (the expression is passed to
+Body while the bubble shows). `{name}` becomes her name. No line repeats in a topic until all of
+it has been heard.
+
+| topic | when |
+| --- | --- |
+| `greet`, `greetMorning` (5–11), `greetAfternoon` (11–17), `greetEvening` (17–22), `greetNight` (22–5) | arriving on home; the hour's topic first, `greet` as fallback |
+| `birthday` | her birthday: the greeting, and sometimes instead of an idle line |
+| `idle` | thinking aloud (shown as a lighter, dashed aside) |
+| `sweet` | now and then instead of an idle line |
+| `tapped`, `pester` | tapped; three quick taps |
+| `picked`, `putDown` | picked up; landed after being put down |
+| `visit` | a visit with nobody in `visit.with`: the visitor's hello and the host's answer |
+| `bye` | optional: the visitor's goodbye as it leaves |
+| any own topic | named by a behaviour's `topic` |
+
+Unprompted lines are at least 14 s apart (21 s in quiet mode). A bubble stays up for 2.6–8 s
+depending on length, always fully on screen (above the head, or beside it near the top).
+
+### Visits
+
+```js
+visit: {
+  with: {
+    miku: [
+      ["mine", "Miku's reply"],                     // a pair: [this character's line, the other's]
+      [{ text: "…", expression: "pleased" }, "…"],
+    ],
+  },
+  any: [["…", "…"]],  // optional: pairs for anyone without their own (this character speaks first)
+}
+```
+
+A pair lives in the file of whoever speaks first. When B visits A, the engine picks at random
+among A's `with.B` pairs and B's `with.A` pairs (longer exchanges alternate the same way). The
+first line comes with a `wave`. With none written, it uses `any`, then each one's `visit` lines.
+
+## Stage options
+
+`<Stage hostId active options name birthday controlRef />` (`engine/Stage.jsx`). `CompanionHost`
+uses the defaults; the lab sets the rest.
+
+| option | default | meaning |
+| --- | --- | --- |
+| `levels` | auto | 2..6, or `[{ at, from, to }]` (`at` 0 top..1 bottom, `from`/`to` 0..1 across) |
+| `scale` | auto | body scale (0.9 × width / 414, between 0.74 and 1) |
+| `speed` | 1 | time multiplier (slow motion in the lab) |
+| `quiet` | her setting | force quiet (true) or lively (false) |
+| `avoidText` | true | prefer spots clear of text, pictures and buttons |
+| `insets` | measured | `{ top, bottom }` px to override the band |
+| `visits` | `{ enabled: true, chance: 0.35, delay: [25, 80], cooldown: 20 }` | seconds; minutes |
+| `chatGap` | 14 | seconds between unprompted lines |
+| `debug` | false | draw the levels |
+
+Her pick comes from `prefs.companion` (`usePrefs`); `"none"` shows nobody and no visits. Changing
+it swaps the character live: the old one fades, the new one drops in onto a cloud.
+
+## The lab
+
+`/world/companion-lab?app=1&c=<id>&v=<visitor>`: the real engine over a stand-in home, with a
+frame-time readout (average, p95, max frame gap, long frames over 34 ms, the engine's own ms per
+frame). Tap "lab ▾" for controls: character, visitor, a pose gallery (every pose on its cloud with
+the feet line marked, and the three platform states), what's behind (home, text cards, plain),
+levels, speed, scale, quiet/lively, show levels, avoid text, hold a pose, run a behaviour, say a
+topic, visit now, jump, walk to an edge, tap, drop in. The same settings work as query options
+(`levels`, `speed`, `scale`, `quiet=1|0`, `debug=1`, `bg=home|text|plain`, `tab=poses`, `open=1`),
+and `window.__companionStage` is the running engine for scripts.

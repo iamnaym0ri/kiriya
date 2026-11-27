@@ -88,7 +88,7 @@ html.app-shell .world-mobile-menu {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  background: color-mix(in srgb, var(--theme-paper, #fff9fd) 86%, transparent);
+  background: color-mix(in srgb, var(--theme-paper, #fff9fd) 93%, transparent);
   -webkit-backdrop-filter: saturate(1.5) blur(18px);
   backdrop-filter: saturate(1.5) blur(18px);
   border-bottom: 0.5px solid var(--app-hairline);

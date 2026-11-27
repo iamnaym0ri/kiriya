@@ -123,6 +123,11 @@ export default function Composer({ onSend, replyTo, replyLabel, onCancelReply, n
   useEffect(() => {
     if (replyTo) field.current?.focus();
   }, [replyTo]);
+  // Local development only: ?focus=1 raises the keyboard, so the Simulator can test the composer
+  // on the keyboard without a tap.
+  useEffect(() => {
+    if (import.meta.env.DEV && new URLSearchParams(window.location.search).has("focus")) setTimeout(() => field.current?.focus(), 600);
+  }, []);
   useEffect(() => {
     const el = field.current;
     if (!el) return;
@@ -340,7 +345,14 @@ export default function Composer({ onSend, replyTo, replyLabel, onCancelReply, n
           </>
         )}
         {hasText ? (
-          <button type="button" className="composer__send" aria-label="Send" onClick={sendText}>
+          <button
+            type="button"
+            className="composer__send"
+            aria-label="Send"
+            // Keeps the keyboard up after sending, like any messaging app.
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={sendText}
+          >
             <ChatIcon name="send" />
           </button>
         ) : (
