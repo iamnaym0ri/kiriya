@@ -38,14 +38,24 @@
 }
 .lantern::after { content: ""; position: absolute; inset: -10px; }
 .lantern:disabled { cursor: default; opacity: 1; }
-.lantern-art { width: 100%; height: 100%; overflow: visible; }
-.lantern-art__halo { animation: lanterns-flicker 1.8s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
-.lantern:nth-of-type(2n) .lantern-art__halo { animation-delay: -.7s; }
-.lantern:nth-of-type(3n) .lantern-art__halo { animation-delay: -1.2s; }
-/* A soft glow that breathes (the gradient already fades to nothing at its edge). */
+.lantern-art { position: relative; width: 100%; height: 100%; overflow: visible; }
+/* A soft glow behind each lantern that breathes (the gradient already fades to nothing). */
+.lantern__glow {
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: -2px;
+  bottom: 2px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--glow) 90%, transparent), color-mix(in srgb, var(--glow-deep) 35%, transparent) 55%, transparent);
+  animation: lanterns-flicker 1.8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.lantern:nth-of-type(2n) .lantern__glow { animation-delay: -.7s; }
+.lantern:nth-of-type(3n) .lantern__glow { animation-delay: -1.2s; }
 @keyframes lanterns-flicker { from { opacity: .55; transform: scale(.94); } to { opacity: .9; transform: scale(1.08); } }
-.lantern[data-kind="golden"] .lantern-art__halo { opacity: 1; }
-.lantern[data-caught="true"] .lantern-art { animation: lanterns-caught .5s ease-in forwards; }
+.lantern[data-kind="golden"] .lantern__glow { left: -12px; right: -12px; top: -8px; bottom: -4px; }
+.lantern[data-caught="true"] :is(.lantern-art, .lantern__glow) { animation: lanterns-caught .5s ease-in forwards; }
 @keyframes lanterns-caught { 40% { transform: scale(1.35); opacity: 1; } to { transform: scale(.2) translateY(-30px); opacity: 0; } }
 .lanterns-hint {
   position: absolute;
@@ -115,7 +125,9 @@
 .lanterns-done li[data-kind="coin"], .lanterns-done li[data-kind="golden"] { background: #fff6d8; box-shadow: 0 0 20px #ffd16699; }
 
 @media (prefers-reduced-motion: reduce) {
-  .lanterns-stars, .lantern-art__halo, .lantern[data-caught="true"] .lantern-art, .lanterns-card, .lanterns-card__paper { animation: none !important; }
+  .lanterns-stars, .lantern__glow, .lantern[data-caught="true"] .lantern-art, .lanterns-card, .lanterns-card__paper { animation: none !important; }
+  .lantern__glow { opacity: .75; }
   .lantern[data-caught="true"] .lantern-art { opacity: .25; }
+  .lantern[data-caught="true"] .lantern__glow { opacity: 0; }
 }
-html[data-little-motion="off"] :is(.lanterns-stars, .lantern-art__halo, .lanterns-card, .lanterns-card__paper) { animation: none !important; }
+html[data-little-motion="off"] :is(.lanterns-stars, .lantern__glow, .lanterns-card, .lanterns-card__paper) { animation: none !important; }

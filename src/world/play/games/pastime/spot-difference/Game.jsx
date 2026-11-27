@@ -27,8 +27,17 @@ function Ring({ diff }) {
 
 function Picture({ round, side, found, misses, hintId, onTap, label }) {
   const url = useMemo(() => svgUrl(sceneSvg(round, side)), [round, side]);
+  // A tap, not the end of a slide across the picture.
+  const down = useRef(null);
+  const onPointerUp = (event) => {
+    const start = down.current;
+    down.current = null;
+    if (start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 14) return;
+    onTap(event, side);
+  };
   return (
-    <div className="spot-pic" onPointerUp={(event) => onTap(event, side)} role="img" aria-label={label}>
+    <div className="spot-pic" onPointerDown={(event) => (down.current = { x: event.clientX, y: event.clientY })} onPointerUp={onPointerUp}
+      onPointerCancel={() => (down.current = null)} role="img" aria-label={label}>
       <img src={url} alt="" draggable="false" />
       <svg className="spot-marks" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} aria-hidden="true">
         {round.diffs.filter((diff) => found.includes(diff.id)).map((diff) => <Ring key={diff.id} diff={diff} />)}

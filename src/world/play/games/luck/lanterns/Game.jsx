@@ -34,13 +34,7 @@ function LanternArt({ tint, id }) {
           <stop offset=".45" stopColor={light} />
           <stop offset="1" stopColor={deep} />
         </radialGradient>
-        <radialGradient id={`lantern-glow-${id}`}>
-          <stop offset="0" stopColor={light} stopOpacity=".9" />
-          <stop offset=".55" stopColor={deep} stopOpacity=".35" />
-          <stop offset="1" stopColor={deep} stopOpacity="0" />
-        </radialGradient>
       </defs>
-      <ellipse cx="29" cy="40" rx="34" ry="38" fill={`url(#lantern-glow-${id})`} className="lantern-art__halo" />
       <rect x="20" y="6" width="18" height="6" rx="3" fill="#7e5a92" stroke="#4a2f57" strokeWidth="2" />
       <path d="M12 26c0-9 7-14 17-14s17 5 17 14v18c0 10-7 18-17 18S12 54 12 44z" fill={`url(#lantern-${id})`} stroke="#4a2f57" strokeWidth="2.4" />
       <path d="M29 13v49M20 15c-4 10-4 34 0 45M38 15c4 10 4 34 0 45" stroke={deep} strokeWidth="1.6" fill="none" opacity=".9" />
@@ -195,6 +189,10 @@ export default function LanternsGame({ onReward }) {
             aria-label={lantern.kind === "golden" ? "a golden lantern" : "a lantern"}
             onClick={() => catchLantern(lantern)}
           >
+            {/* The glow breathes on its own layer (transform and opacity only), so the drawing above
+                it never has to repaint while the lanterns rise. */}
+            <span className="lantern__glow" aria-hidden="true"
+              style={{ "--glow": (TINTS[lantern.kind === "golden" ? "golden" : lantern.tint] ?? TINTS.peach)[0], "--glow-deep": (TINTS[lantern.kind === "golden" ? "golden" : lantern.tint] ?? TINTS.peach)[1] }} />
             <LanternArt tint={lantern.kind === "golden" ? "golden" : lantern.tint} id={`${round}-${lantern.id}`} />
           </button>
         ))}
