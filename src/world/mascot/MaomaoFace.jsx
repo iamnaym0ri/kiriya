@@ -1,9 +1,11 @@
 import { useId, useLayoutEffect, useRef, useState } from "react";
 import { animate } from "motion";
 
+// Her resting face is the flat, half-lidded stare: the upper lid nearly straight and low enough to
+// cut into the iris, a small catchlight. Faces that open up (sparkle, herb, startled) set their own.
 const BASE = {
-  top: 105,
-  arch: 102,
+  top: 107,
+  arch: 105.5,
   bottom: 119,
   lower: 125,
   open: 1,
@@ -11,7 +13,7 @@ const BASE = {
   lookY: 0,
   iris: 9,
   pupil: 4,
-  shine: 2.6,
+  shine: 2,
   browLeft: 97,
   browRight: 97,
   browTilt: 0,
@@ -69,21 +71,24 @@ const FACES = {
     mouthOpen: 3,
     blush: 0.3,
   },
+  // The look she gives a pretty face showing off: flat white eyes with pinprick pupils, a gloom of
+  // vertical lines over her brow, a wavy grimace.
   ew: {
-    top: 108,
-    arch: 107,
-    bottom: 119,
-    lower: 122,
-    pupil: 2.4,
-    shine: 1,
-    browLeft: 95,
-    browRight: 95,
-    browTilt: 6,
-    browArch: 0,
+    top: 107,
+    arch: 106,
+    bottom: 120,
+    lower: 123,
+    iris: 3.4,
+    pupil: 1.5,
+    shine: 0,
+    browLeft: 96,
+    browRight: 96,
+    browTilt: 7,
+    browArch: -1,
     mouthWidth: 11,
     smile: -4,
-    mouthOpen: 10,
-    shade: 0.5,
+    mouthOpen: 8,
+    shade: 1,
   },
   herb: {
     top: 102,
@@ -302,9 +307,10 @@ export default function MaomaoFace({ expression, moving }) {
     <g className="mascot__face-rig">
       <defs>
         <linearGradient id={`${id}-iris`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#504879" />
-          <stop offset=".5" stopColor="#7771b2" />
-          <stop offset="1" stopColor="#80b9d4" />
+          <stop offset="0" stopColor="#3a2f86" />
+          <stop offset=".5" stopColor="#5650ad" />
+          <stop offset=".82" stopColor="#77a9de" />
+          <stop offset="1" stopColor="#9ee6ff" />
         </linearGradient>
         <radialGradient id={`${id}-blush`}>
           <stop stopColor="#e795ab" stopOpacity=".95" />
@@ -331,7 +337,12 @@ export default function MaomaoFace({ expression, moving }) {
         fill={`url(#${id}-blush)`}
         opacity={f.blush}
       />
-      <path d="M57 95h86v34H57Z" fill={`url(#${id}-shade)`} opacity={f.shade} />
+      <path d="M57 95h86v34H57Z" fill={`url(#${id}-shade)`} opacity={f.shade * 0.45} />
+      <g stroke="#6b7486" strokeWidth="1.6" strokeLinecap="round" opacity={f.shade * 0.55}>
+        {[64, 71, 78, 85, 115, 122, 129, 136].map((x, i) => (
+          <path key={x} d={`M${x} ${90 + (i % 2) * 2}v${12 - (i % 3) * 2}`} />
+        ))}
+      </g>
       {[77, 123].map((x, i) => {
         const lid = i ? f.rightLid : f.leftLid;
         const outline = `M${x - 13} ${f.top + lid} C${x - 7} ${f.arch + lid} ${x + 7} ${f.arch + lid} ${x + 13} ${f.top + lid} L${x + 13} ${f.bottom} C${x + 7} ${f.lower} ${x - 7} ${f.lower} ${x - 13} ${f.bottom}Z`;
@@ -362,22 +373,24 @@ export default function MaomaoFace({ expression, moving }) {
                       cx={x + f.lookX}
                       cy={111 + f.lookY}
                       rx={f.iris}
-                      ry="15"
+                      ry={Math.min(15, f.iris * 1.67)}
                       fill={`url(#${id}-iris)`}
+                      stroke="#2e2c54"
+                      strokeWidth={f.iris > 5 ? 1 : 0}
                     />
                     <ellipse
                       cx={x + f.lookX}
                       cy={110 + f.lookY}
                       rx={f.pupil}
-                      ry="8"
-                      fill="#343251"
+                      ry={Math.min(8, f.pupil * 2)}
+                      fill="#2a2748"
                     />
                     <path
                       d={`M${x - 6 + f.lookX} ${119 + f.lookY}q6 6 12 0`}
                       fill="none"
                       stroke="#b4e7e6"
                       strokeWidth="1.2"
-                      opacity=".8"
+                      opacity={f.iris > 6 ? 0.8 : 0}
                     />
                     <circle
                       cx={x + f.lookX + 3.5}
@@ -390,12 +403,14 @@ export default function MaomaoFace({ expression, moving }) {
                       cy={117 + f.lookY}
                       r="1.8"
                       fill="#e9f7ff"
+                      opacity={f.iris > 6 ? 1 : 0}
                     />
                     <circle
                       cx={x + f.lookX - 3}
                       cy={108 + f.lookY}
                       r="1.2"
                       fill="#dac3ed"
+                      opacity={f.iris > 6 ? 1 : 0}
                     />
                   </g>
                   <path

@@ -1,16 +1,18 @@
 // Maomao's colours, read off the official standing model and the licensed Nendoroid
-// (.lab/research.md): dark green hair with a teal sheen, a sage cross-collar top with lime cuff
+// (.lab/research.md; round 2 re-sampled the season 2 standing model: warmer skin, a two-tone mint
+// collar band, lime cuff linings): dark green hair with a teal sheen, a sage cross-collar top with lime cuff
 // linings and a mint collar band, a long wine skirt, teal shoes, pale periwinkle ribbon.
 // The website's MaomaoMascot uses the same values; keep them in step.
 export const HAIR = "#214844";
 export const HAIR_LIGHT = "#3c776b";
 export const HAIR_DEEP = "#1b3738";
-export const SKIN = "#ffe6d4";
-export const SKIN_EDGE = "#ddb49e";
+export const SKIN = "#fde0c4";
+export const SKIN_EDGE = "#d9a98b";
 export const ROBE = "#7daf80";
 export const ROBE_DARK = "#52826a";
-export const COLLAR = "#c2d8be";
-export const CUFF = "#c5d491";
+export const COLLAR = "#9bd4b2";
+export const COLLAR_EDGE = "#4a9a70";
+export const CUFF = "#b9d97b";
 export const INNER = "#fff6df";
 export const SKIRT = "#793d59";
 export const SKIRT_EDGE = "#603649";

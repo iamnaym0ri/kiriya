@@ -459,7 +459,7 @@ export class Actor {
         if (b.steps && !step.resumed) {
           // A little sequence: each step is its own pose (and prop, and line) in turn.
           if (b.topic && Math.random() < b.say) this.sayAt = { topic: b.topic, at: this.time + 0.9 };
-          this.plan.unshift(...b.steps.map((s) => ({ type: "act", s, parent: b })));
+          this.plan.unshift(...b.steps.filter((s) => s.chance >= 1 || Math.random() < s.chance).map((s) => ({ type: "act", s, parent: b })));
           this.next();
           return;
         }
@@ -583,6 +583,8 @@ export class Actor {
       this.until = 0;
       return;
     }
+    // A real jump somewhere puts down whatever it was holding (the tap's little hop doesn't).
+    if (!step.small) this.behaviour = null;
     const g = this.m.gravity * this.scale;
     const apex = Math.min(this.y, to.y) - (step.height ?? this.m.jumpHeight) * this.scale;
     const up = Math.sqrt((2 * Math.max(1, this.y - apex)) / g);
@@ -615,6 +617,7 @@ export class Actor {
 
   beginFloat(step) {
     const to = this.stage.levels[step.level];
+    this.behaviour = null;
     const distance = Math.hypot(step.to - this.x, to.y - this.y);
     this.face(Math.sign(step.to - this.x));
     this.floating = {
@@ -837,7 +840,7 @@ export class Actor {
     const action = this.c.action;
     if (!action || this.mode === "held") return false;
     this.moment = null;
-    const steps = action.steps.map((s) => ({ type: "act", s, solid: true, action: action.id }));
+    const steps = action.steps.filter((s) => s.chance >= 1 || Math.random() < s.chance).map((s) => ({ type: "act", s, solid: true, action: action.id }));
     const after = this.inVisit ? [{ type: "rest", seconds: [600, 600] }] : [{ type: "rest" }];
     // Mid-hop (the tap's little jump): it plays as soon as the feet are down.
     if (this.mode === "air" || this.mode === "crouch") this.plan = [...steps, ...after];

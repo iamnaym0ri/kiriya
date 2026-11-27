@@ -1,6 +1,7 @@
 import Body, { POSES } from "./Body.jsx";
 import Platform from "./Platform.jsx";
 import Thumb from "./Thumb.jsx";
+import { VialIcon } from "./props.jsx";
 import { lines, visit } from "./lines.js";
 
 // Maomao, from The Apothecary Diaries: the house chibi the other four are drawn to match.
@@ -33,7 +34,7 @@ export default {
     heldAt: 0.42, // the scruff, just behind her collar
     sway: 0.8,
     talkiness: 0.45,
-    expressions: { tapped: "startled", picked: "unimpressed", putDown: "deadpan", walk: "deadpan", jump: "focused" },
+    expressions: { tapped: "startled", picked: "unimpressed", putDown: "deadpan", walk: "deadpan", jump: "focused", stay: "pleased", wander: "curious" },
   },
   behaviours: [
     { id: "ponder", weight: 4, pose: "ponder", expression: "thinking", seconds: [7, 14], topic: "musing" },
@@ -47,8 +48,55 @@ export default {
     { id: "nap", weight: 1, pose: "sleep", expression: "sleepy", seconds: [8, 14], topic: "sleepy", say: 0.3 },
     { id: "night", weight: 6, pose: "sleep", expression: "sleepy", seconds: [20, 40], topic: "sleepy", say: 0.2, hours: [23, 6], stay: true },
     { id: "yawn", weight: 1, pose: "yawn", expression: "sleepy", seconds: [2, 3], say: 0 },
-    { id: "sit", weight: 1, pose: "sit", expression: "pleased", seconds: [8, 14], topic: "idle" },
+    { id: "sit", weight: 1, pose: "sit", expression: "fond", seconds: [8, 14], topic: "sunbeam" },
+    // Round 2, all in place (what she does when told to stay, too): counting her coins and coming
+    // up one short, a cat's stretch and a yawn, herbs shaken out to dry, and the look she gives
+    // anything pointlessly pretty.
+    {
+      id: "coins",
+      weight: 2,
+      steps: [
+        { pose: "coins", expression: "skeptical", seconds: [3, 4], topic: "coins" },
+        { pose: "coins", expression: "focused", seconds: [2.5, 3.5] },
+        { pose: "ponder", expression: "smug", seconds: [1.6, 2.2] },
+      ],
+    },
+    {
+      id: "stretch",
+      weight: 1,
+      steps: [
+        { pose: "stretch", expression: "amused", seconds: [2.4, 3], topic: "stretch", bounce: { count: 1, height: 5, every: 0.5 } },
+        { pose: "yawn", expression: "sleepy", seconds: [1.6, 2.2] },
+      ],
+    },
+    { id: "bundle", weight: 2, pose: "bundle", expression: "pleased", seconds: [5, 8], topic: "drying" },
+    {
+      id: "slug",
+      weight: 1,
+      say: 0.6,
+      steps: [
+        { pose: "idle", expression: "ew", seconds: [1.3, 1.6], turn: true, topic: "slugLook" },
+        { pose: "idle", expression: "deadpan", seconds: [0.7, 0.9], turn: true },
+        { pose: "grind", expression: "focused", seconds: [4, 7] },
+      ],
+    },
   ],
+  // The tap menu's own choice: a curious vial. She holds it to the light, sniffs it, then hugs it
+  // like treasure (her most famous face).
+  action: {
+    id: "vial",
+    label: "show her a vial",
+    icon: VialIcon,
+    pose: "appraise",
+    prop: "vial",
+    expression: "curious",
+    topic: "action",
+    steps: [
+      { pose: "appraise", expression: "curious", seconds: [2, 2.4] },
+      { pose: "sniff", expression: "sniff", seconds: [1.5, 1.8] },
+      { pose: "poison", expression: "poison", seconds: [2.6, 3.2], topic: "actionAfter", bounce: { count: 2, height: 5, every: 0.42 } },
+    ],
+  },
   lines,
   visit,
   Thumb,
