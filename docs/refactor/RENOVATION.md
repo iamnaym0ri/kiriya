@@ -171,6 +171,14 @@ export default {
 file. Until the engine lands, the dev-only lab `/world/companion-lab?c=<id>` shows a character's
 poses, its platform and a simple walk.
 
+Names every character uses (agreed 2026-11-26): shared poses `idle`, `walk`, `jump`, `fall`,
+`land`, `sit`, `wave`, `react`, `sleep`, `held` (picked up, dangling), plus their own (Maomao's rest
+pose is `ponder`). Line topics: `greet` (fallback) and `greetMorning` / `greetAfternoon` /
+`greetEvening` / `greetNight`, `idle`, `tapped`, `picked`, `putDown`, `birthday`, `sweet`, plus
+their own; visits in `visit.with.<id>`. Every line (in `lines` and `visit`) is either a string or
+`{ text, expression }`: the engine passes that expression to `Body` while the bubble shows. Her
+pick can also be `"none"` (a quiet home): the engine then shows nobody, visits included.
+
 The **stage agent** builds the engine that runs any character to this contract and documents every
 engine option in `src/world/companions/README.md` (it may extend the contract; tell the character
 agents through the coordinator). Until the engine lands, character agents build and test their
