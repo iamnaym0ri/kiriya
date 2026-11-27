@@ -13,7 +13,8 @@ import "./lab.css";
 // Query options (handy for screenshots): levels=2..6, speed=0.25..3, quiet=1|0, debug=1, bg=home|text|plain,
 // open=1 (panel open), tab=stage|poses, scale=0.7..1.2, ride=1|0 (try riding or trailing clouds),
 // stay=1|0 (start told to stay, or wandering; leave it out to keep what this phone remembers),
-// face=<expression> (the pose gallery with one expression on every pose).
+// face=<expression> (the pose gallery with one expression on every pose), demo=menu|action|stay|
+// wander (once it has settled: opens the menu, or chooses that chip, for devices nothing can tap).
 
 const HomeBackdrop = lazy(() => import("../home/HomeSection.jsx"));
 
@@ -197,6 +198,23 @@ export default function CompanionLab() {
       live = false;
     };
   }, [id]);
+  // demo=…: a scripted tap for the Simulator, which nothing here can tap (dev only).
+  const demo = params.get("demo");
+  useEffect(() => {
+    if (!demo) return undefined;
+    let timer = 0;
+    const tick = () => {
+      const h = sim.current?.host;
+      if (!h || h.level == null || h.mode !== "rest" || h.opacity < 0.95) {
+        timer = setTimeout(tick, 300);
+        return;
+      }
+      h.tap();
+      if (demo !== "menu") timer = setTimeout(() => h.choose(demo), 700);
+    };
+    timer = setTimeout(tick, 1800);
+    return () => clearTimeout(timer);
+  }, [demo]);
   useEffect(() => {
     window.__companionStage = sim.current;
     return () => {
