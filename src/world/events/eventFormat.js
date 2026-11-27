@@ -46,8 +46,9 @@ export const dayLabel = (value) => `${weekday(value)} ${dayNumber(value)} ${mont
 /** "28–30 nov", "30 nov – 2 dec", "28 nov 2026 – 3 jan 2027", or the "dates tbc" note. */
 export function dateRange(item, { withYear = false, now = new Date() } = {}) {
   if (!item) return "";
-  if (item.datesTbc || !item.startsAt) return item.datesNote ? `dates tbc · ${item.datesNote}` : "dates tbc";
+  if (item.datesTbc || !item.startsAt) return "dates tbc";
   const start = item.startsAt;
+  if (item.openEnded) return `from ${dayNumber(start)} ${monthShort(start)}${withYear || yearOf(start) !== yearOf(now) ? ` ${yearOf(start)}` : ""}`;
   const end = item.endsAt ?? item.startsAt;
   const sameDay = sgDay(asDate(start)) === sgDay(asDate(end));
   const year = (v) => (withYear || yearOf(v) !== yearOf(now) ? ` ${yearOf(v)}` : "");
@@ -292,3 +293,59 @@ export function groupOf(item, now = new Date()) {
   const year = yearOf(at);
   return { key: `1-${sgDay(at).slice(0, 7)}`, label: year === yearOf(now) ? month : `${month} ${year}` };
 }
+
+/**
+ * A name as she reads it: an all-caps press-release name calmed down ("FINAL FANTASY XIV ORCHESTRA
+ * CONCERT" → "Final Fantasy XIV Orchestra Concert"; numerals and short acronyms stay), and the
+ * "(Singapore)" every listing here would carry dropped.
+ */
+export function displayName(name) {
+  let out = String(name ?? "").replace(/\s*\((?:singapore|sg)\)\s*$/i, "").trim();
+  const shouty = (out.match(/\b[A-Z][A-Z-]{3,}\b/g) ?? []).filter((w) => !/^[IVXLC]+$/.test(w));
+  const letters = out.replace(/[^A-Za-z]/g, "");
+  if (shouty.length >= 3 && letters.replace(/[^A-Z]/g, "").length / Math.max(1, letters.length) > 0.6)
+    out = out.replace(/\b[A-Z][A-Z]+(?:-[A-Z]+)*\b/g, (w) => (/^[IVXLC]+$/.test(w) || w.length <= 3 ? w : w.split("-").map((p) => p[0] + p.slice(1).toLowerCase()).join("-")));
+  return out || String(name ?? "");
+}
+
+/** How long a title is, for its size: "" | "long" | "xlong". */
+export const titleLength = (text) => {
+  const n = String(text ?? "").length;
+  return n > 52 ? "xlong" : n > 26 ? "long" : "";
+};
+
+/** The forecast for the day she'd go: today while it's on, else its first day. */
+export function dayWeather(item, now = new Date()) {
+  const days = item?.weather?.days ?? [];
+  if (!days.length) return null;
+  const today = sgDay(now);
+  const first = item.startsOn && item.startsOn > today ? item.startsOn : today;
+  return days.find((d) => d.date === first) ?? days.find((d) => d.date >= first) ?? null;
+}
+
+/** The ticket line: what she needs to know first (status, from-price, when sales open). */
+export function ticketFacts(tickets) {
+  if (!tickets) return { title: "tickets tbc", detail: null, tone: "plum" };
+  const priced = (tickets.tiers ?? []).filter((t) => t.price != null && t.status !== "sold_out");
+  const from = tickets.from ?? (priced.length ? Math.min(...priced.map((t) => t.price)) : null);
+  const fromLabel = from === 0 ? "free" : from != null ? `from ${price({ amount: from, currency: priced[0]?.currency ?? "SGD" })}` : null;
+  const opens = tickets.opensAt && /^\d{4}-\d{2}-\d{2}/.test(tickets.opensAt) ? `on sale ${dayLabel(tickets.opensAt.slice(0, 10))}${/\d{2}:\d{2}/.test(tickets.opensAt) ? `, ${tickets.opensAt.match(/(\d{2}:\d{2})/)[1]}` : ""}` : null;
+  switch (tickets.status) {
+    case "on_sale":
+      return { title: fromLabel ? `on sale · ${fromLabel}` : "on sale now", detail: priced.length > 1 ? `${priced.length} kinds of ticket` : null, tone: "mint" };
+    case "soon":
+      return { title: "tickets soon", detail: opens ?? "sales not open yet", tone: "plum" };
+    case "sold_out":
+      return { title: "sold out", detail: null, tone: "mute" };
+    case "free":
+      return { title: "free entry", detail: null, tone: "mint" };
+    case "closed":
+      return { title: "sales closed", detail: null, tone: "mute" };
+    default:
+      return { title: "tickets tbc", detail: opens, tone: "plum" };
+  }
+}
+
+/** A merch piece's availability in words. */
+export const MERCH_STATUS = { revealed: "revealed", preorder: "pre-order open", on_sale: "on sale", sold_out: "sold out" };
+export const MERCH_KIND = { exclusive: "exclusive: only sold here", merch: "event merch", collab: "collab goods", limited: "limited run", freebie: "freebie" };

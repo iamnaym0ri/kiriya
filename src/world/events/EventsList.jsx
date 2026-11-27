@@ -1,10 +1,10 @@
 // Everything on in Singapore (cons, fairs, pop-ups, merch), grouped by month, with filters.
 // A pushed screen inside the app's home tab.
 import { useEffect, useMemo } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { useAppBack } from "../../shared/AppFrame.jsx";
 import { groupOf } from "./eventFormat.js";
-import { useEventsList, useIsSaved, useMarkLooked, useMerchList, useNewness, useSavedList } from "./eventsData.js";
+import { MERCH_LIST, useEventsList, useIsSaved, useMarkLooked, useSavedList, useWasNew } from "./eventsData.js";
 import { EventRow, KindDoodle, MerchRow, Toaster, useNow } from "./EventPieces.jsx";
 import PasteLink from "./PasteLink.jsx";
 import "./events.css";
@@ -14,9 +14,10 @@ const FILTERS = [
   { key: "con", label: "cons", test: (item) => item.kind === "con" || item.kind === "concert" },
   { key: "fair", label: "fairs", test: (item) => item.kind === "fair" },
   { key: "popup", label: "pop-ups & cafés", test: (item) => item.kind === "popup" || item.kind === "cafe" },
-  { key: "merch", label: "merch", test: (item) => item.kind === "merch" },
+  { key: "merch", label: "merch drops", test: (item) => item.kind === "merch" },
   { key: "saved", label: "saved", test: (item, { isSaved }) => isSaved(item) },
-  { key: "new", label: "new", test: (item, { newness }) => Boolean(newness(item)) },
+  // What was new when she arrived stays here after she opens it (it only loses its mark).
+  { key: "new", label: "new", test: (item, { wasNew }) => wasNew(item) },
 ];
 
 const EMPTY = {
@@ -24,7 +25,7 @@ const EMPTY = {
   con: "no cons on the list right now.",
   fair: "no fairs or markets on the list right now.",
   popup: "no pop-ups or collab cafés right now.",
-  merch: "no merch on the list right now.",
+  merch: "no merch drops on the list right now.",
   saved: "tap the heart on anything and it waits for you here.",
   new: "nothing new since you last looked ✓",
 };
@@ -38,17 +39,16 @@ export default function EventsList() {
   const filter = FILTERS.find((f) => f.key === key);
   const list = useEventsList();
   const past = useEventsList({ when: "past", enabled: key === "all" });
-  const merch = useMerchList({ enabled: key === "merch" });
   const saved = useSavedList();
   const isSaved = useIsSaved();
-  const newness = useNewness();
+  const wasNew = useWasNew();
   const now = useNow(60_000);
   useMarkLooked(undefined, { enabled: list.isSuccess, delay: 2000 });
   useEffect(() => {
     document.title = "events & merch ♡";
   }, []);
 
-  const helpers = useMemo(() => ({ isSaved, newness }), [isSaved, newness]);
+  const helpers = useMemo(() => ({ isSaved, wasNew }), [isSaved, wasNew]);
   const counts = useMemo(() => Object.fromEntries(FILTERS.map((f) => [f.key, list.items.filter((item) => f.test(item, helpers)).length])), [list.items, helpers]);
   const groups = useMemo(() => {
     const map = new Map();
@@ -60,8 +60,8 @@ export default function EventsList() {
     return [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
   }, [list.items, filter, helpers, now]);
 
-  // Merch pieces from the events (merch filter), and saved pieces (saved filter).
-  const pieces = key === "merch" ? merch.items : key === "saved" ? saved.merch : [];
+  // Saved pieces (saved filter); merch & exclusives have their own screen.
+  const pieces = key === "saved" ? saved.merch : [];
   const ended = key === "all" ? past.items.slice(0, 8) : [];
   const savedCount = counts.saved + saved.merch.length;
   const choose = (next) => setParams(next === "all" ? {} : { kind: next }, { replace: true, preventScrollReset: true });
@@ -81,7 +81,13 @@ export default function EventsList() {
       </header>
       <div className="app-section__body">
         <div className="ev-filters app-bleed" role="toolbar" aria-label="Show">
-          {FILTERS.filter((f) => ["all", "saved", "merch", key].includes(f.key) || counts[f.key] > 0).map((f) => {
+          <Link className="ev-filter ev-filter--merch" to={MERCH_LIST} state={{ from: "events" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5.2 8.6h13.6l-1 11.6H6.2z M9 8.4c0-2.5 1.3-4.4 3-4.4s3 1.9 3 4.4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+            </svg>
+            merch & exclusives
+          </Link>
+          {FILTERS.filter((f) => ["all", "saved", key].includes(f.key) || counts[f.key] > 0).map((f) => {
             const count = f.key === "saved" ? savedCount : counts[f.key];
             return (
               <button key={f.key} type="button" className="ev-filter" aria-pressed={f.key === key} onClick={() => choose(f.key)}>
@@ -114,7 +120,7 @@ export default function EventsList() {
               try again
             </button>
           </div>
-        ) : nothing && !(key === "merch" && merch.isPending) ? (
+        ) : nothing ? (
           <div className="app-card ev-empty">
             <KindDoodle kind={key === "merch" ? "merch" : key === "popup" ? "popup" : key === "fair" ? "fair" : "con"} size={44} />
             <p>{EMPTY[key]}</p>
@@ -133,7 +139,7 @@ export default function EventsList() {
             ))}
             {pieces.length > 0 && (
               <section className="ev-group" aria-label="Merch and exclusives">
-                <h2 className="app-group-title">{key === "saved" ? "merch i saved" : "merch & exclusives at the events"}</h2>
+                <h2 className="app-group-title">merch i saved</h2>
                 <ul className="app-list">
                   {pieces.map((item) => (
                     <MerchRow key={item.id} item={item} />

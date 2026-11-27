@@ -7,9 +7,10 @@ import { FeedCard, FeedProgress, FeedSection, useSectionFeed } from "../feeds/Fe
 const options = (entries, key) =>
   [...new Set(entries.flatMap((e) => e.primary.tags?.[key] ?? []))].sort();
 
-// Inside the app, merch lives in the events & merch list (events-ui); the website keeps its shelf.
+// Inside the app, merch & exclusives have their own screen (/world/events/merch); the website keeps
+// its shelf.
 export default function MerchPage() {
-  return isAppShell() ? <Navigate replace to="/world/events?kind=merch" /> : <WebMerchPage />;
+  return isAppShell() ? <Navigate replace to="/world/events/merch" /> : <WebMerchPage />;
 }
 
 function WebMerchPage() {
