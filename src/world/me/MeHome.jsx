@@ -10,6 +10,7 @@ import { usePlayful } from "../../shared/play/PlayfulWorld.jsx";
 import { Credits } from "../../shared/WorldPrimitives.jsx";
 import { EditSheet } from "../../shared/admin/AdminEdit.jsx";
 import ProfileCard from "./ProfileCard.jsx";
+import MeetCard from "./MeetCard.jsx";
 import AdminDesk from "./AdminDesk.jsx";
 import { companionLabel } from "./CharacterScreen.jsx";
 import { Group, Row, SwitchRow, useTabName } from "./parts.jsx";
@@ -188,6 +189,7 @@ export default function MeHome() {
       </header>
       <div className="app-section__body">
         <ProfileCard />
+        <MeetCard />
         {admin && <AdminDesk jar={jar.data} />}
         <HerSettings admin={admin} />
       </div>
