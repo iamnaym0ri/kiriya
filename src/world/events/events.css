@@ -227,6 +227,11 @@ html.app-shell .ev-row {
   padding: 0;
   gap: 0;
 }
+html.app-shell .app-row.ev-row > .ev-row__link {
+  margin: 0;
+  width: auto;
+  min-height: 0;
+}
 .ev-row__link {
   flex: 1;
   min-width: 0;
@@ -498,6 +503,7 @@ html.app-shell .ev-newsince__row > a {
   font: 700 15px/1.4 var(--font-ui);
 }
 .ev-hero__stub {
+  height: var(--stub-h);
   grid-area: stub;
   display: flex;
   align-items: center;
@@ -509,6 +515,13 @@ html.app-shell .ev-newsince__row > a {
   box-sizing: border-box;
   border-top: 1.5px dashed color-mix(in srgb, var(--ev-line) 100%, var(--ev-accent) 12%);
   background: color-mix(in srgb, var(--ev-paper) 55%, transparent);
+}
+.ev-hero__stub .ev-chips {
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
+  mask-image: linear-gradient(90deg, #000 85%, transparent);
 }
 .ev-hero__open {
   flex: none;
@@ -1662,4 +1675,8 @@ html.app-shell .ev-good .ev-save {
 .ev-step[data-state="next"] .ev-step__dot {
   border-color: var(--ev-accent);
   box-shadow: none;
+}
+.app-row__text > .ev-source {
+  justify-self: start;
+  margin-top: 3px;
 }

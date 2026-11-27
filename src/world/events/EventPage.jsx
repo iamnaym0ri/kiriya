@@ -44,7 +44,7 @@ function Ticket({ item, now }) {
   else if (item.datesNote?.text) times = item.datesNote.text;
   let label = null;
   let to = null;
-  if (p.phase === "open" && p.closesAt && !p.run) (label = `day ${p.day} of ${p.of} · doors close in`), (to = p.closesAt);
+  if (p.phase === "open" && p.closesAt && !p.run) (label = "doors close in"), (to = p.closesAt);
   else if (p.next) (label = p.phase === "between" ? `day ${p.day} opens in` : p.phase === "today" ? "doors open in" : "starts in"), (to = p.next);
   return (
     <div className="ev-ticket" data-image={item.image?.url ? "" : undefined}>
@@ -191,9 +191,9 @@ function Popup({ item }) {
   const { perRow, all } = sourcing(p.sold ?? []);
   return (
     <>
-      <Prose title="what it’s about" claim={p.about} item={item} />
+      <Prose title="what it's about" claim={p.about} item={item} />
       {p.sold?.length > 0 && (
-        <Card title="what’s sold">
+        <Card title="what's sold">
           <ul className="ev-tips">
             {p.sold.map((c) => (
               <li key={c.text}>
@@ -349,8 +349,8 @@ function Guests({ item }) {
             <span className="app-row__text">
               <span>{g.name}</span>
               <small>{[g.role, g.day ? dayLabel(g.day) : null, g.note].filter(Boolean).join(" · ")}</small>
+              {perRow && g.sourceId && <SourceLink item={item} id={g.sourceId} />}
             </span>
-            {perRow && g.sourceId && <SourceLink item={item} id={g.sourceId} />}
           </li>
         ))}
       </ul>
@@ -364,7 +364,7 @@ function Merch({ item }) {
   if (!goods.length) return null;
   const { perRow, all } = sourcing(goods);
   return (
-    <Card title={item.kind === "merch" ? "what’s dropping" : "merch & exclusives"} id="merch">
+    <Card title={item.kind === "merch" ? "what's dropping" : "merch & exclusives"} id="merch">
       <ul className="app-list ev-goods">
         {goods.map((g) => (
           <li key={g.id} className="app-row ev-good">
@@ -675,7 +675,7 @@ export default function EventPage() {
         {item.full ? (
           <>
             <About item={item} />
-            <Prose title="what it’s like" claim={item.like} item={item} />
+            <Prose title="what it's like" claim={item.like} item={item} />
             <Popup item={item} />
             <Dates item={item} now={now} />
             <Transit item={item} />

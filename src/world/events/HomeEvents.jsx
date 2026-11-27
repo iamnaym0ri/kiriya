@@ -87,7 +87,7 @@ function Hero({ item, now }) {
       <span className="ev-hero__stub">
         <ItemChips item={item} now={now} live={false} />
         <span className="ev-hero__open">
-          everything about it
+          see it all
           <span className="ev-chevron" aria-hidden="true" />
         </span>
       </span>
@@ -113,7 +113,7 @@ function NewSince({ fresh, total }) {
         </h3>
         {total > fresh.length && (
           <div className="app-card__action">
-            <Link to="/world/events?show=new">all {total}</Link>
+            <Link to="/world/events?show=new">see all</Link>
           </div>
         )}
       </header>
@@ -126,11 +126,11 @@ function NewSince({ fresh, total }) {
               </span>
               <span className="app-row__text">
                 <span className="ev-newsince__what">
-                  {entry.kind === "new" ? "just announced" : entry.title}
+                  {entry.event.name}
                   {entry.big && <NewMark newness="new" />}
                 </span>
                 <small>
-                  {entry.event.name}
+                  {entry.kind === "new" ? "just announced" : entry.title}
                   {entry.at ? ` · ${ago(entry.at)}` : ""}
                 </small>
               </span>
