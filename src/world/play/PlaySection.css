@@ -1,33 +1,13 @@
 /* The app's play section (PlaySection.jsx). Layout comes from styles/app-shell.css; this styles what
    is play's own: the doodle card, the shelves and their game tiles. */
 
-/* ---------- sticker book button ---------- */
-html.app-shell .play-stickers-button {
-  position: relative;
-}
-.play-stickers-button__count {
-  position: absolute;
-  top: -4px;
-  right: -6px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  box-sizing: border-box;
-  border-radius: 9px;
-  background: var(--theme-accent, #785383);
-  color: #fff;
-  font: 700 11px/18px var(--font-ui);
-  text-align: center;
-  box-shadow: 0 0 0 2px var(--theme-paper, #fff9fd);
-}
-
 /* ---------- doodle ---------- */
 .play-doodle__open {
   display: flex;
   align-items: center;
   gap: 14px;
   width: calc(100% - 24px);
-  margin: 0 12px;
+  margin: 0 12px 12px;
   padding: 12px 14px 12px 10px;
   box-sizing: border-box;
   border: 1.5px dashed color-mix(in srgb, var(--theme-line, #d5bedf) 90%, transparent);

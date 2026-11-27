@@ -199,6 +199,23 @@ await test("Secure production login, admin separation, expired/changed sessions 
       "audio/wav",
       "audio/webm",
     ],
+    // Round 3: chat videos and sealed chat files, only ever in the chat folder.
+    maxVideoBytes: 60 * 1024 * 1024,
+    chatAllowed: [
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "image/gif",
+      "audio/mpeg",
+      "audio/mp4",
+      "audio/x-m4a",
+      "audio/aac",
+      "audio/wav",
+      "audio/webm",
+      "video/mp4",
+      "video/quicktime",
+      "application/octet-stream",
+    ],
   });
   assert.equal(
     (
@@ -317,6 +334,31 @@ await test("OIDC uploads require a session and issue a bounded, single-file uplo
   assert.equal(constraints.pathname, "art/local-check.png");
   assert.equal(constraints.maximumSizeInBytes, 15 * 1024 * 1024);
   assert(constraints.allowedContentTypes.includes("image/png"));
+  assert(!constraints.allowedContentTypes.includes("video/mp4"), "videos only go to the chat");
+  mockNetwork
+    .get("https://vercel.com")
+    .intercept({ path: "/api/blob/signed-token", method: "POST" })
+    .reply((options) => {
+      constraints = JSON.parse(options.body);
+      return {
+        statusCode: 200,
+        data: JSON.stringify({
+          delegationToken: `${encode({ ...constraints, storeId: "localcheck" })}.test`,
+          clientSigningToken: randomBytes(32).toString("base64url"),
+          validUntil: constraints.validUntil,
+        }),
+        responseOptions: { headers: { "content-type": "application/json" } },
+      };
+    });
+  const video = await request("uploads/blob", {
+    method: "POST",
+    cookie,
+    body: { ...body, payload: { ...body.payload, pathname: "chat/171-ab12cd34.mp4", multipart: true } },
+  });
+  assert.equal(video.status, 200);
+  assert.equal(constraints.maximumSizeInBytes, 60 * 1024 * 1024);
+  assert(constraints.allowedContentTypes.includes("video/mp4"));
+  assert(constraints.allowedContentTypes.includes("application/octet-stream"));
   assert(constraints.validUntil <= Date.now() + 10 * 60 * 1000);
   assert(!JSON.stringify(result).includes(env.sessionSecret));
   assert(!JSON.stringify(result).includes(process.env.VERCEL_OIDC_TOKEN));
