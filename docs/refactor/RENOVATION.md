@@ -470,3 +470,22 @@ never sexualises Miku herself (canonically 16). Maomao can be her frank, clinica
 aphrodisiacs, poisons and the pleasure quarter she grew up in, without being sexualised. Bamby is
 a real performer's avatar: nothing sexual. Nothing may name real people other than the
 characters themselves.
+
+### Round 3 status (2026-11-27, merged into `connection-refactor`)
+
+| Branch | What landed | Coordinator QC on top |
+| --- | --- | --- |
+| `r3/chat-core` | Composer (signal · GIF · 📎 · "talk to me baby" · voice), no in-app emoji/sticker pickers; header with name + activity; Discord-style replies, edits, deletes; hold menu; swipe to reply; up to 10 photos/videos per message in a Discord grid; PhotoSwipe viewer; GIPHY mp4 renditions; typing; signals redesign; keyboard follows the keyboard (Keyboard.setResizeMode "none" while the chat is open); iPhone stickers and Genmoji through a plain-text contenteditable plus `supportsAdaptiveImageGlyph` (MainViewController). | Header: the script name never clips; status **active** (green) / **inactive** (grey) / **sleep** (amber crescent, night where they are) from a presence check-in on `/me/chat/summary` (never while previewing); the hold menu crash after the theme merge (44d9645, found by chat-core). |
+| `r3/chat-room` | Memories in four shelves; the design sheet (8 themes, 9 bubble designs, presets or her own sealed photo); Face ID chat lock (off by default); end-to-end encryption (`docs/refactor/CHAT-CRYPTO.md`: P-256 keys wrapped by a PBKDF2 passphrase key, AES-GCM, sealed previews opened by the notification extension and widget, history sealed in place, safety code). | Status colours per theme (`--chat-active`, `--chat-sleep`); the design preview's header matches the real one. |
+| `r3/notes` | The jar pulls a note into the middle of the screen (next one prefetched, no daily limit, react / save / another one); notes and letters unfold the same way; bigger jar with its details on its island; Josh sees how each jar note fared. | "Pull a note" quick action pulls at once (`/world/mail?jar=pull`). |
+| `r3/shell` | Her corner's sheet (slides, swipe down, pinned bottom bar); greeting and name centred by their ink; the display's bow, star, heart and stitched frame; charms in the top layer; ten opening scenes around the wordmark (Josh: broad, stars/love/moon, complement the logo); Face ID first, passphrase fallback, a first-run choice. | Tiny heart off the k's swash; lock-sheet copy; pull-to-refresh ignores edit sheets. |
+| `r3/chars` | Bamby's real face (pink wavy fringe, pink eyes, round blushing face), habits and words; Rotten Girl truer to the MV and bolder (innuendo only, never about her); Maomao's frank apothecary side. | Bamby facts checked against namu.wiki (bambiriring is a word he made up, not his hello; an unverified count replaced). |
+| `r3/motion` | Poses cross-fade and glide instead of snapping (engine `ghost.js`, `blend.js`), settle and lean, KAITO's arms sweep, props pop in. | — (frame times to check on the iPhone 11). |
+| `r3/games-a` | Brain shelf: memory drawer, odd jar, herb sequence and lantern corridor rebuilt; charm grid, shy shade, quizzes and hub fixes. | Play hub inert behind an open game. |
+| `r3/games-b` | Pastime and luck: ten games fixed, first-time how-tos, the luck games give the page's audio mode back (Josh's songs). | — |
+| coordinator | Play hub: sketchbook card padding, quiz cards stacked inside their card, no sticker-book button; Gaegu's curly quotes and ellipsis drawn narrow; tab labels below 340 pt. | — |
+
+Native changes since the last phone build: the chat plugin and sealing code (App, widgets, both
+notification extensions; `ruby ios/scripts/add-native-targets.rb`), `supportsAdaptiveImageGlyph`,
+the splash auto-hide cap (3 s). The iOS 26.3 Simulator lacks system fonts (✧ ✦ ✿ and even 😊 draw as
+boxes with `-apple-system`): check symbols on the real iPhone before bundling a symbol font.
