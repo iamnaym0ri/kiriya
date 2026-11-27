@@ -14,6 +14,7 @@ function Icon(props) {
 export default {
   id: "colour-by-number",
   shelf: "artsy",
+  order: 20,
   title: "colour by number",
   blurb: "tap the numbers, watch it bloom",
   Icon,

@@ -16,6 +16,7 @@ export function rewardOnce(onReward, game, which = "first", store) {
   const key = `${game}:${which}`;
   if (given.includes(key)) return false;
   writeJson("rewards", [...given, key], store);
-  onReward({ sticker: reward.sticker, game, reason: reward.reason });
+  onReward({ sticker: reward.sticker, reason: reward.reason }); // the hub adds the game's id
+
   return true;
 }
