@@ -1015,18 +1015,18 @@
   animation: kaito-cloud-fade-in 0.4s ease-out 0.25s both;
 }
 .kaito-cloud[data-state="fading"] svg {
-  animation: kaito-cloud-fade-out 0.7s ease-in 0.1s both;
+  animation: kaito-cloud-fade-out 0.55s ease-in 0.05s both;
 }
 .kaito-cloud[data-state="fading"] .kaito-cloud__scoop {
-  animation: kaito-cloud-slump 0.75s ease-in both;
+  animation: kaito-cloud-slump 0.6s ease-in both;
   animation-delay: 0s !important;
 }
 .kaito-cloud[data-state="fading"] .kaito-cloud__drip {
-  animation: kaito-cloud-melt 0.75s ease-in both;
+  animation: kaito-cloud-melt 0.6s ease-in both;
 }
 .kaito-cloud[data-state="fading"] .kaito-cloud__base {
   transform-origin: 50% 14px;
-  animation: kaito-cloud-sink 0.75s ease-in both;
+  animation: kaito-cloud-sink 0.6s ease-in both;
 }
 .kaito-cloud[data-state="fading"] .kaito-cloud__frost {
   opacity: 0;

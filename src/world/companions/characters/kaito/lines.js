@@ -9,15 +9,15 @@ const l = (expression, text) => ({ text, expression });
 
 export const lines = {
   greet: [
-    l("happy", "hi, kiriya!"),
+    l("happy", "hi, {name}!"),
     l("fond", "oh, there you are."),
     l("happy", "hello hello~"),
-    l("sparkle", "kiriya! I was hoping you'd come by."),
+    l("sparkle", "{name}! I was hoping you'd come by."),
     l("shy", "welcome back. I missed you a little. …a lot, actually."),
     l("wink", "you're here! good. the cloud was getting lonely."),
   ],
   greetMorning: [
-    l("fond", "good morning, kiriya. did you sleep okay?"),
+    l("fond", "good morning, {name}. did you sleep okay?"),
     l("sheepish", "morning! I already had breakfast. …it was ice cream. don't tell anyone."),
     l("sleepy", "mm… good morning. the sun beat me up again."),
     l("happy", "rise and shine! a glass of water first, okay?"),
@@ -26,29 +26,29 @@ export const lines = {
     l("proud", "good morning! I practised my scales. very quietly, so I didn't wake you."),
     l("worried", "eat something real before anything sweet. …I'm saying that to both of us."),
     l("happy", "hello, early bird. want to share the sunrise?"),
-    l("sheepish", "morning, kiriya. I kept your spot cool for you. it's an ice cloud, so."),
+    l("sheepish", "morning, {name}. I kept your spot cool for you. it's an ice cloud, so."),
   ],
   greetAfternoon: [
     l("sparkle", "good afternoon! hottest part of the day… perfect ice cream weather."),
-    l("worried", "afternoon, kiriya. are you remembering to drink water?"),
+    l("worried", "afternoon, {name}. are you remembering to drink water?"),
     l("happy", "hi hi. halfway through the day already, and you're doing great."),
-    l("sheepish", "ah, kiriya! I was just thinking about you. and ice cream. mostly you."),
+    l("sheepish", "ah, {name}! I was just thinking about you. and ice cream. mostly you."),
     l("fond", "if you need a little break, I'll keep you company."),
     l("thinking", "it's so warm out. I could take my scarf off… no. no, I couldn't."),
     l("proud", "afternoon slump? ice cream fixes it. that's science. probably."),
     l("gentle", "welcome back. sit for a bit, the cloud's nice and cool."),
   ],
   greetEvening: [
-    l("fond", "good evening, kiriya. how was your day? tell me everything."),
+    l("fond", "good evening, {name}. how was your day? tell me everything."),
     l("happy", "you're home! well, you're here. that's close enough."),
     l("fond", "the sky's going all lilac this evening. it suits you."),
     l("worried", "good evening! did you eat dinner? a real one?"),
     l("gentle", "welcome back. let's take it easy tonight, mm?"),
-    l("wink", "evening, kiriya. I saved you the lilac scoop again."),
+    l("wink", "evening, {name}. I saved you the lilac scoop again."),
     l("happy", "the evening breeze is nice. almost scarf weather. almost."),
   ],
   greetNight: [
-    l("worried", "it's late, kiriya… just a little longer, then sleep, okay?"),
+    l("worried", "it's late, {name}… just a little longer, then sleep, okay?"),
     l("wink", "night owl. me too. shh, don't tell the others."),
     l("fond", "the stars are out. you should be curled up somewhere cosy."),
     l("gentle", "can't sleep? I'll hum something quiet for you. ♪"),
@@ -63,7 +63,7 @@ export const lines = {
     l("fond", "this scarf? I just like it. it's like a hug that stays."),
     l("proud", "one scoop is plenty. two is sensible. three is a celebration."),
     l("sheepish", "the clouds here are so comfy. mine's a little slippery, though."),
-    l("thinking", "what does lilac taste like? I think it tastes like kiriya's favourite colour."),
+    l("thinking", "what does lilac taste like? I think it tastes like {name}'s favourite colour."),
     l("proud", "if I sing very quietly, it isn't singing, it's humming. that's the rule."),
     l("sheepish", "I'm not lost. I'm exploring. on purpose. mostly."),
     l("gentle", "it's nice here. quiet. warm. well, warm for me."),
@@ -112,18 +112,18 @@ export const lines = {
     l("happy", "and… landed. thank you!"),
     l("gentle", "phew. solid cloud again."),
     l("joyful", "that was fun. a little dizzy, but fun."),
-    l("fond", "nice and gentle. thank you, kiriya."),
+    l("fond", "nice and gentle. thank you, {name}."),
     l("proud", "ten out of ten flight. would fly again."),
     l("sheepish", "my scarf's all twisted now… ahaha."),
     l("happy", "home sweet cloud."),
   ],
   birthday: [
-    l("joyful", "happy birthday, kiriya! today, every scoop is yours."),
+    l("joyful", "happy birthday, {name}! today, every scoop is yours."),
     l("sparkle", "it's your birthday! I practised a song all year. ♪"),
     l("wink", "september seventeenth. my favourite seventeen. don't tell my own birthday."),
     l("fond", "we're both seventeens, you know. you're the better one, though."),
     l("sheepish", "happy birthday! I'd bake you a cake, but it would probably turn into ice cream."),
-    l("happy", "make a wish, kiriya. I'll hold the candles. very carefully."),
+    l("happy", "make a wish, {name}. I'll hold the candles. very carefully."),
     l("fond", "another whole year of you. lucky world."),
     l("happy", "happy birthday! josh has been smiling about today for weeks."),
     l("proud", "today you're not allowed to do anything hard. big brother's orders."),
@@ -140,8 +140,26 @@ export const lines = {
     l("happy", "josh says your smile fixes his whole day. I believe him."),
     l("shy", "if you ever feel cold, you can borrow my scarf. that's a big deal, you know."),
     l("fond", "you deserve gentle days. let's have one."),
-    l("proud", "you're braver than you think, kiriya."),
+    l("proud", "you're braver than you think, {name}."),
     l("shy", "when you're here the cloud feels warmer. weird, for an ice cloud."),
+  ],
+  pester: [
+    l("joyful", "ahaha, okay, okay! I'm awake!"),
+    l("sheepish", "three pokes means you want ice cream. I know the rules."),
+    l("pout", "my scarf's going to come undone at this rate…"),
+    l("happy", "you have my full attention. all of it. what's up?"),
+    l("wink", "poke me one more time and I'm sharing my ice cream. that's a threat."),
+  ],
+  // When he drops by and the host has nothing special written for him, and as he leaves.
+  visit: [
+    l("happy", "hello! I was in the neighbourhood. with ice cream."),
+    l("happy", "hi hi! mind if I sit on your cloud for a bit?"),
+    l("fond", "oh, a visitor! come, come, there's room on my cloud."),
+  ],
+  bye: [
+    l("happy", "see you soon! save me a spot."),
+    l("wink", "bye-bye! I'm off before my ice cream melts."),
+    l("fond", "that was nice. let's do it again."),
   ],
   // His own.
   icecream: [
@@ -168,7 +186,7 @@ export const lines = {
   hum: [
     l("happy", "hm-hm-hmm ♪"),
     l("happy", "la-la… ♪ just warming up."),
-    l("fond", "♪ … this one's for you, kiriya."),
+    l("fond", "♪ … this one's for you, {name}."),
     l("sheepish", "hmm-mm ♪ it sounds better in my head."),
   ],
   offer: [
@@ -197,6 +215,11 @@ export const lines = {
 // Call and response when someone drops by: [his line, their reply]. Replies use the visitor's
 // own expression names where we know them; an unknown name just falls back to their resting face.
 export const visit = {
+  // For anyone without their own pairs: he speaks first.
+  any: [
+    [l("happy", "want some ice cream? I always bring a spare."), "ooh, yes please!"],
+    [l("fond", "you look like you could use a little break. sit with me?"), "just for a minute, then."],
+  ],
   with: {
     maomao: [
       [l("happy", "maomao! I brought you an ice cream. it's mint."), l("curious", "Mint. Fresh leaves or extract? …Give it here. I need to check.")],
