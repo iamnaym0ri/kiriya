@@ -3,6 +3,7 @@
   position: relative;
   flex: 1;
   min-height: 0;
+  margin: 0 10px;
   overflow: hidden;
   touch-action: none;
   cursor: pointer;
