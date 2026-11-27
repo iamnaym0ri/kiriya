@@ -156,7 +156,9 @@
   font: 19px var(--font-hand);
   touch-action: manipulation;
 }
-.dex__link { min-height: 0; padding: 0 2px; font: inherit; text-decoration: underline dotted; text-underline-offset: 3px; }
+.dex__link { position: relative; min-height: 0; padding: 0 2px; font: inherit; text-decoration: underline dotted; text-underline-offset: 3px; }
+/* an inline link in a line of text, with a 44 pt touch area around it */
+.dex__link::after { content: ""; position: absolute; inset: -12px -8px; }
 .dex__row { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; }
 .dex__meta { font: 19px/1.2 var(--font-hand); color: #956ba3; margin: 0; }
 .dex__note { font-size: 12px; line-height: 1.5; color: #8f7b98; margin: 0; max-width: 30ch; }
