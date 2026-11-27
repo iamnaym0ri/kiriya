@@ -12,11 +12,12 @@ import {
   haptic,
   listenForDeepLinks,
   listenForNotifications,
+  opensWithFaceId,
   refreshWidgets,
   registerForPush,
   setBadge,
   setupQuickActions,
-  signInWithFaceId,
+  signInToApp,
   tapFeedback,
   trackKeyboard,
 } from "../lib/native.js";
@@ -29,7 +30,8 @@ const WATCHED = new Set(["chat", "notes", "note-jar", "letters"]);
 
 /**
  * Runs only inside the kiriya.love iPhone app (loaded lazily from main.jsx). It:
- * - covers everything with a Face ID screen on launch and after five minutes away,
+ * - covers everything with a Face ID screen on launch and after five minutes away (or, with "open
+ *   with Face ID" off in her tab, signs in straight away with no prompt),
  * - sets Face ID up the first time the passphrase opens the app, then asks for notifications,
  * - opens the right page from a notification, a widget (kiriyalove:// links) or an icon shortcut,
  * - keeps the icon's red badge and the Home Screen widgets in step while the app is open,
@@ -66,7 +68,8 @@ export default function NativeApp() {
             away.current = Date.now();
             return;
           }
-          if (enrolledDevice() && away.current && Date.now() - away.current > RELOCK_AFTER_MS) setLocked(true);
+          // With "open with Face ID" off in her tab, coming back never asks.
+          if (enrolledDevice() && opensWithFaceId() && away.current && Date.now() - away.current > RELOCK_AFTER_MS) setLocked(true);
           checkForUpdate();
         }).then((listener) => () => listener.remove()),
       ),
@@ -77,7 +80,8 @@ export default function NativeApp() {
   const unlock = useCallback(async () => {
     setStatus("checking");
     try {
-      const data = await signInWithFaceId();
+      // Face ID, or straight in when she switched it off (lib/native.js signInToApp).
+      const data = await signInToApp();
       queryClient.setQueryData(sessionKey, { role: data.role });
       tapFeedback();
       setStatus("idle");
@@ -95,7 +99,8 @@ export default function NativeApp() {
     if (locked && status === "idle") unlock();
   }, [locked, status, unlock]);
 
-  // The two-day session ran out while the app was open: Face ID instead of the passphrase.
+  // The two-day session ran out while the app was open: Face ID (or, with it switched off, the
+  // stored secret, silently) instead of the passphrase.
   useEffect(() => {
     if (session.isSuccess && !role && enrolledDevice() && !passphraseChosen.current) setLocked(true);
     if (role) passphraseChosen.current = false;
@@ -188,6 +193,8 @@ export default function NativeApp() {
   }
 
   if (!locked) return null;
+  // Without Face ID there's nothing to ask: a quiet cover while it signs in, and buttons only if that fails.
+  const quiet = !opensWithFaceId();
   return (
     <div className="native-lock" role="dialog" aria-modal="true" aria-labelledby="native-lock-title">
       <div className="native-lock__card">
@@ -197,12 +204,16 @@ export default function NativeApp() {
         <p className="native-lock__line">
           {status === "checking" ? "opening your little world…" : status === "failed" ? "that didn’t quite work. try again?" : "your little world is right here ♡"}
         </p>
-        <button className="button-plum native-lock__face" onClick={() => unlock()} disabled={status === "checking"}>
-          {status === "checking" ? "checking…" : "Open with Face ID"}
-        </button>
-        <button className="text-link native-lock__other" onClick={usePassphrase}>
-          use the passphrase instead
-        </button>
+        {(!quiet || status === "failed") && (
+          <button className="button-plum native-lock__face" onClick={() => unlock()} disabled={status === "checking"}>
+            {status === "checking" ? "checking…" : quiet ? "Try again" : "Open with Face ID"}
+          </button>
+        )}
+        {(!quiet || status === "failed") && (
+          <button className="text-link native-lock__other" onClick={usePassphrase}>
+            use the passphrase instead
+          </button>
+        )}
       </div>
     </div>
   );

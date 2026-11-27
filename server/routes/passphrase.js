@@ -83,6 +83,23 @@ passphraseRoutes.put("/", async (c) => {
   return c.json({ ...session, ok: true, signedOutOthers: signOutOthers, widgetKey: kept?.widgetKey ?? null });
 });
 
+// "Is this really you?" before a phone stops asking for Face ID (her tab): checks the signed-in
+// person's own passphrase without changing the session, on the same failure budget as unlocking.
+passphraseRoutes.post("/check", async (c) => {
+  const role = c.get("session").role;
+  const db = await getDb();
+  const ipHash = clientIpHash(c);
+  if (await tooManyFailures(db, ipHash)) return slowDown(c);
+  const body = await c.req.json().catch(() => ({}));
+  const passphrase = typeof body?.passphrase === "string" ? body.passphrase.slice(0, 200) : "";
+  const hashes = await passphraseHashes();
+  if (!passphrase || !(await verifyPassphrase(passphrase, hashes[role]))) {
+    await recordAttempt(db, ipHash, null);
+    return c.json({ error: "wrong_passphrase", message: "That passphrase didn’t match. Try it again." }, 401);
+  }
+  return c.json({ ok: true });
+});
+
 // For a lost or borrowed device: every other session for this role stops working.
 passphraseRoutes.post("/sign-out-others", async (c) => {
   const role = c.get("session").role;

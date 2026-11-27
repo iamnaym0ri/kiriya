@@ -223,3 +223,16 @@ await test("Until we meet: both of them read it, only Josh sets or clears it", a
   assert.deepEqual(await json(await request("admin/hub/meet", { method: "DELETE", cookie: admin })), { meeting: null });
   assert.deepEqual(await json(await request("me/meet", { cookie: kiriya })), { meeting: null });
 });
+
+await test("Checking her own passphrase (before the app stops asking for Face ID) changes nothing", async () => {
+  kiriya = await unlock("strawberry milk");
+  const wrong = await request("me/passphrase/check", { method: "POST", cookie: kiriya, body: { passphrase: "nope nope" } });
+  assert.equal(wrong.status, 401);
+  assert.equal((await wrong.json()).error, "wrong_passphrase", "not a sign-out: the app keeps her session");
+  assert.equal(await roleOf({ cookie: kiriya }), "kiriya");
+  assert.equal((await request("me/passphrase/check", { method: "POST", cookie: kiriya, body: { passphrase: phrases.admin } })).status, 401, "his passphrase doesn't confirm hers");
+  const ok = await request("me/passphrase/check", { method: "POST", cookie: kiriya, body: { passphrase: "Strawberry Milk" } });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get("set-cookie"), null, "no new session");
+  assert.equal(await roleOf({ cookie: kiriya }), "kiriya");
+});
