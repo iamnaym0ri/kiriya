@@ -9,7 +9,7 @@ import { useChatLook } from "./useChatLook.js";
 export function LivePreview({ prefs, name, onMovePhoto }) {
   const look = useChatLook(prefs);
   const start = useRef(null);
-  const movable = look["data-background"] === "photo" && onMovePhoto;
+  const movable = look["data-background"] === "photo" && Boolean(onMovePhoto);
   const photo = prefs.photo ?? { x: 50, y: 50 };
   const handlers = movable
     ? {

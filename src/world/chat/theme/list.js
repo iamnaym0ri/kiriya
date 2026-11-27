@@ -70,7 +70,7 @@ export function photoSettings(prefs) {
 export function chatLook(prefs = {}) {
   const theme = known(THEMES, prefs.theme, "lilac");
   const bubble = known(BUBBLES, prefs.bubble, "lilac");
-  let background = prefs.background === "photo" ? (prefs.backgroundUrl ? "photo" : "theme") : known(BACKGROUNDS, prefs.background, "theme");
+  const background = prefs.background === "photo" ? (prefs.backgroundUrl ? "photo" : "theme") : known(BACKGROUNDS, prefs.background, "theme");
   const style = {};
   if (background === "photo") {
     const photo = photoSettings(prefs);
@@ -82,6 +82,5 @@ export function chatLook(prefs = {}) {
     style["--photo-blur"] = `${photo.blur}px`;
   }
   if (WALLPAPERS[background]) style["--chat-wallpaper"] = `url("${wallpaperUrl(background, prefs)}")`;
-  else if (!BACKGROUNDS.some((item) => item.key === background)) background = "theme";
   return { "data-theme": theme, "data-bubble": bubble, "data-background": background, style };
 }

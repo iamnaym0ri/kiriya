@@ -71,7 +71,7 @@ const mix = (value, amount, into) => formatHex(interpolate([solid(into), solid(v
 const ratio = (a, b) => wcagContrast(solid(a), solid(b));
 
 test("Every theme defines the whole palette the chat takes", () => {
-  const contract = ["--chat-danger", "--chat-bg", "--chat-ink", "--chat-meta", "--chat-line", "--chat-accent", "--chat-accent-ink", "--chat-mine", "--chat-mine-ink", "--chat-theirs", "--chat-theirs-ink", "--chat-bar", "--chat-bar-ink", "--chat-field", "--chat-field-ink", "--chat-menu", "--chat-menu-ink", "--chat-reply"];
+  const contract = ["--chat-active", "--chat-sleep", "--chat-danger", "--chat-bg", "--chat-ink", "--chat-meta", "--chat-line", "--chat-accent", "--chat-accent-ink", "--chat-mine", "--chat-mine-ink", "--chat-theirs", "--chat-theirs-ink", "--chat-bar", "--chat-bar-ink", "--chat-field", "--chat-field-ink", "--chat-menu", "--chat-menu-ink", "--chat-reply"];
   assert(THEMES.length >= 8);
   for (const key of ["white", "cream", "dark", "love", "lilac"]) assert(THEMES.some((theme) => theme.key === key), key);
   for (const { key } of THEMES) for (const name of contract) assert(themeVars[key]?.[name], `${key} is missing ${name}`);
@@ -90,6 +90,8 @@ test("Header, composer, menus, quotes and the background's own words pass WCAG A
       ["bar", "bar-ink", 4.5],
       ["bar", "meta", 4.5],
       ["bar", "accent", 3],
+      ["bar", "active", 3],
+      ["bar", "sleep", 3],
       ["field", "field-ink", 4.5],
       ["field", "meta", 3],
       ["menu", "menu-ink", 4.5],
@@ -129,4 +131,15 @@ test("Every theme × bubble design keeps message text at WCAG AA on every colour
     }
   assert.deepEqual(failures, []);
   assert(checked >= THEMES.length * BUBBLES.length * 2);
+});
+
+test("A look's attributes: her photo, a wallpaper, and anything unknown falls back to the theme's own", async () => {
+  const { chatLook } = await import("../src/world/chat/theme/list.js");
+  const photo = chatLook({ theme: "dark", bubble: "gothic", background: "photo", backgroundUrl: "/api/uploads/file/chat-0123456789abcdef.bin", photo: { x: 20, y: 80, zoom: 9, dim: 0.5, blur: 4 } });
+  assert.deepEqual([photo["data-theme"], photo["data-bubble"], photo["data-background"]], ["dark", "gothic", "photo"]);
+  assert.equal(photo.style["--photo-zoom"], "3", "zoom is clamped");
+  assert.equal(photo.style["--photo-x"], "20%");
+  assert.equal(chatLook({ background: "photo" })["data-background"], "theme", "no photo yet");
+  assert.match(chatLook({ background: "miku" }).style["--chat-wallpaper"], /wallpapers\/miku/);
+  assert.deepEqual([chatLook({ theme: "neon", bubble: "x", background: "lava" })["data-theme"], chatLook({ background: "lava" })["data-background"]], ["lilac", "theme"]);
 });

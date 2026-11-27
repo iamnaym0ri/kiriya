@@ -2,6 +2,7 @@
    every --chat-* colour the chat takes, on .chat[data-theme="…"], so the header, the messages, the
    composer, menus and the little system bubbles all follow it. Plain hex only in these blocks:
    scripts/test-chat-themes.mjs reads them and checks every pairing for WCAG AA contrast.
+   --chat-active and --chat-sleep colour the header's status dot (active, asleep where they are).
    --chat-reply is the reply line's colour (the chat mixes a little of it in behind a quote); the
    bar and menus are a touch see-through over the chat's blur. --chat-backdrop and --chat-glow are
    this folder's own: the theme's background when "the theme's own" is picked, and a soft tint. */
@@ -31,6 +32,8 @@
   --chat-menu-ink: #3c2650;
   --chat-reply: #b48ccb;
   --chat-danger: #c4335c;
+  --chat-active: #2d8655;
+  --chat-sleep: #a86a12;
   --chat-glow: #e8d6f1;
   --chat-backdrop: linear-gradient(#f6eefbcc, #ede0f4d9), url("/images/branches.webp") center / cover no-repeat;
 }
@@ -55,6 +58,8 @@
   --chat-menu-ink: #1f1b24;
   --chat-reply: #a58bc9;
   --chat-danger: #c4335c;
+  --chat-active: #2b8452;
+  --chat-sleep: #a5680f;
   --chat-glow: #f1f0f4;
   --chat-backdrop: #ffffff;
 }
@@ -79,6 +84,8 @@
   --chat-menu-ink: #4a3426;
   --chat-reply: #c9a37c;
   --chat-danger: #c4335c;
+  --chat-active: #2c7f50;
+  --chat-sleep: #9c620d;
   --chat-glow: #f3e5cb;
   --chat-backdrop: radial-gradient(120% 80% at 15% 0%, #fffaf0 0%, transparent 60%), radial-gradient(90% 70% at 100% 100%, #f3e2c6 0%, transparent 70%), #faf3e6;
 }
@@ -103,6 +110,8 @@
   --chat-menu-ink: #ede7f3;
   --chat-reply: #8c6aae;
   --chat-danger: #ff8fa8;
+  --chat-active: #4fcb8c;
+  --chat-sleep: #f0b452;
   --chat-glow: #2a2333;
   --chat-backdrop: radial-gradient(circle at 70% 120%, #3c2652 0, transparent 60%), linear-gradient(165deg, #1b1524 0%, #15121a 60%, #100d14 100%);
   color-scheme: dark;
@@ -128,6 +137,8 @@
   --chat-menu-ink: #5a1a33;
   --chat-reply: #e88aab;
   --chat-danger: #c4335c;
+  --chat-active: #2b8050;
+  --chat-sleep: #9f630f;
   --chat-glow: #ffd9e5;
   --chat-backdrop: radial-gradient(90% 60% at 0% 0%, #ffe0ea 0%, transparent 70%), radial-gradient(80% 60% at 100% 100%, #ffd3e2 0%, transparent 70%), #fff0f4;
 }
@@ -152,6 +163,8 @@
   --chat-menu-ink: #12403d;
   --chat-reply: #4fbfb6;
   --chat-danger: #c4335c;
+  --chat-active: #24814a;
+  --chat-sleep: #a4660f;
   --chat-glow: #d1f0ed;
   --chat-backdrop: linear-gradient(90deg, #c6e8e555 1px, transparent 1px) 0 0 / 28px 28px, linear-gradient(#c6e8e555 1px, transparent 1px) 0 0 / 28px 28px, radial-gradient(70% 50% at 100% 0%, #ffd6ea 0%, transparent 70%), #edf9f8;
 }
@@ -176,6 +189,8 @@
   --chat-menu-ink: #2f3a28;
   --chat-reply: #9db08a;
   --chat-danger: #c4335c;
+  --chat-active: #2c7d4e;
+  --chat-sleep: #9a610d;
   --chat-glow: #e5e6d0;
   --chat-backdrop: radial-gradient(80% 60% at 0% 100%, #dfe6cf 0%, transparent 70%), radial-gradient(70% 50% at 100% 0%, #efe4cc 0%, transparent 70%), #f1efe3;
 }
@@ -200,6 +215,8 @@
   --chat-menu-ink: #1f3352;
   --chat-reply: #8fb1e0;
   --chat-danger: #c4335c;
+  --chat-active: #2b8150;
+  --chat-sleep: #a1650f;
   --chat-glow: #dbe7f8;
   --chat-backdrop: radial-gradient(60% 30% at 20% 20%, #ffffff 0%, transparent 70%), radial-gradient(50% 25% at 80% 55%, #ffffffcc 0%, transparent 70%), radial-gradient(55% 25% at 30% 85%, #ffffffb3 0%, transparent 70%), linear-gradient(#e2ecfb, #f3f7fe);
 }
