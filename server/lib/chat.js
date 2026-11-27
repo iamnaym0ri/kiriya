@@ -9,7 +9,7 @@ import { notificationPreview } from "./loveNotes.js";
 import { publish } from "./realtime.js";
 import { sendToSubscribers } from "../push/webpush.js";
 import { interceptTestSend } from "./appTestMode.js";
-import { forgetUploads, sealedNotification } from "./chatKeys.js";
+import { forgetUploads, refusePlain, sealedNotification } from "./chatKeys.js";
 
 // The private chat between Kiriya ("kiriya") and Josh ("admin"), docs/refactor/PLAN.md phase 4.
 
@@ -285,6 +285,7 @@ export async function sendMessage(db, role, input, { after = (task) => task(), n
   // Josh trying the app's buttons in test mode: checked like a real send, but never saved or sent to her.
   const test = await interceptTestSend(db, role, data, { after, now });
   if (test) return test;
+  await refusePlain(db, data);
   const [inserted] = await db
     .insert(schema.chatMessages)
     .values({
@@ -326,6 +327,7 @@ export async function editMessage(db, role, id, input, { now = new Date() } = {}
   const data = editSchema.parse(input);
   const [row] = await db.select().from(schema.chatMessages).where(eq(schema.chatMessages.id, id));
   if (!row || row.sender !== role || row.deletedAt || !EDITABLE.includes(row.kind)) return null;
+  await refusePlain(db, { kind: row.kind, enc: data.enc });
   const isSealed = data.enc !== undefined;
   const body = row.kind === "text" && !isSealed ? data.body.trim() : data.body;
   if (row.kind === "text" && !body.trim()) throw Object.assign(new Error("A message can’t be empty. Delete it instead?"), { status: 400 });

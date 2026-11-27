@@ -158,6 +158,16 @@ export function uploadLinks(media) {
   return links;
 }
 
+/**
+ * Once both of them have a key pair, nothing but signals may arrive plain: a stale app build or a
+ * notification Reply from a phone without the key is turned away (it says to open the chat),
+ * rather than stored readable.
+ */
+export async function refusePlain(db, { kind, enc }) {
+  if (kind === "tap" || enc !== undefined) return;
+  if (await currentKeyId(db)) throw Object.assign(new Error("Open the chat to send this one ♡"), { status: 400, code: "sealed_required" });
+}
+
 // ---------- notifications ----------
 
 const GENERIC = "a new message ♡";

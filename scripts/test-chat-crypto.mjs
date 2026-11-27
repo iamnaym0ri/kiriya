@@ -336,6 +336,10 @@ try {
 
     const summary = await json(await request("me/chat/summary", { cookie: joshCookie }));
     assert.equal((await joshPhone.openIncoming(summary.last)).body, "yesss");
+    // Once both have keys, the server turns away anything plain (a stale build, a phone without the key).
+    await sendRaw(joshCookie, { clientId: newId(), kind: "text", body: "oops, plain" }, 400);
+    await json(await request(`me/chat/messages/${pancakes.id}`, { method: "PATCH", cookie: joshCookie, body: { body: "plain edit" } }), 400);
+    assert.equal((await sendRaw(joshCookie, { clientId: newId(), kind: "tap", body: "hug" })).kind, "tap", "signals stay plain");
     // A device without the key shows a quiet locked bubble instead of failing.
     const stranger = await device("stranger-browser", "kiriya", { cookie: herPhone.session.cookie });
     const locked = await stranger.openIncoming(page.messages.find((m) => m.id === reply.id));
