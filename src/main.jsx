@@ -20,6 +20,8 @@ import "./styles/in-app.css";
 import ProfilePage from "./public/ProfilePage.jsx";
 import PageLoader from "./shared/PageLoader.jsx";
 import { isNativeApp, isAppShell } from "./lib/native.js";
+import { showClosedPage } from "./lib/siteClosed.js";
+import ClosedPage from "./public/ClosedPage.jsx";
 
 // The private world and the admin desk are separate chunks: a visitor's phone never downloads them.
 const World = lazy(() => import("./world/World.jsx"));
@@ -49,7 +51,15 @@ const queryClient = new QueryClient({
   },
 });
 
-createRoot(document.getElementById("root")).render(
+const root = createRoot(document.getElementById("root"));
+if (showClosedPage()) {
+  // The website is closed (lib/siteClosed.js): browsers get the quiet page and nothing else.
+  root.render(
+    <StrictMode>
+      <ClosedPage />
+    </StrictMode>,
+  );
+} else root.render(
   <StrictMode>
     <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <MotionConfig reducedMotion="user">
