@@ -15,6 +15,7 @@ import { adminLoveNoteRoutes } from "./routes/loveNotes.js";
 import { adminNoteJarRoutes } from "./routes/noteJarAdmin.js";
 import { widgetRoutes } from "./routes/widget.js";
 import { appRoutes, appSessionRoutes } from "./routes/app.js";
+import { secretWordRoutes, secretWordAdminRoutes } from "./routes/secretWord.js";
 
 const app = new Hono().basePath("/api");
 
@@ -75,6 +76,7 @@ app.route("/session", sessionRoutes);
 app.route("/public", publicRoutes);
 
 app.use("/me/*", requireRole("kiriya", "admin"));
+app.route("/me/games/secret-word", secretWordRoutes);
 app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
 
@@ -88,6 +90,7 @@ app.use("/admin/*", requireRole("admin"));
 app.route("/admin/feeds", feedAdminRoutes);
 app.route("/admin/love-notes", adminLoveNoteRoutes);
 app.route("/admin/note-jar", adminNoteJarRoutes);
+app.route("/admin/games/secret-word", secretWordAdminRoutes);
 app.route("/admin", adminRoutes);
 
 app.route("/jobs/feeds", feedJobRoutes);
