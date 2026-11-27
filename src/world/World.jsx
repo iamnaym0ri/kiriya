@@ -22,6 +22,7 @@ const MemoriesPage = lazy(() => import("./chat/MemoriesPage.jsx"));
 // the last one named after whoever is signed in.
 const MailSection = lazy(() => import("./mail/MailSection.jsx"));
 const PlaySection = lazy(() => import("./play/PlaySection.jsx"));
+const QuizzesPage = lazy(() => import("./play/quizzes/QuizzesPage.jsx"));
 const MeSection = lazy(() => import("./me/MeSection.jsx"));
 // Dev-only labs for building characters and games (docs/refactor/RENOVATION.md).
 const CompanionLab = import.meta.env.DEV ? lazy(() => import("./companions/Lab.jsx")) : null;
@@ -67,6 +68,7 @@ export default function World() {
         <Route path="memories" element={lazyPage(MemoriesPage)} />
         <Route path="mail" element={lazyPage(MailSection)} />
         <Route path="play" element={lazyPage(PlaySection)} />
+        <Route path="play/quizzes/*" element={lazyPage(QuizzesPage)} />
         <Route path="me" element={lazyPage(MeSection)} />
         {CompanionLab && <Route path="companion-lab" element={lazyPage(CompanionLab)} />}
         {GameLab && <Route path="game-lab" element={lazyPage(GameLab)} />}
