@@ -5,15 +5,25 @@ import { api } from "../../lib/api.js";
 import { useIsAdmin, useLock } from "../../lib/session.js";
 import { usePrefs } from "../../lib/prefs.js";
 import { useSurprises } from "../../lib/surprises.js";
-import { APP_ICONS, appIconState, enrolledDevice, isNativeApp, saveWidgetKey } from "../../lib/native.js";
+import {
+  APP_ICONS,
+  appIconState,
+  enrolledDevice,
+  faceIdGateState,
+  haptic,
+  isAppShell,
+  isNativeApp,
+  saveWidgetKey,
+  setOpenWithFaceId,
+} from "../../lib/native.js";
 import { usePlayful } from "../../shared/play/PlayfulWorld.jsx";
 import { Credits } from "../../shared/WorldPrimitives.jsx";
-import { EditSheet } from "../../shared/admin/AdminEdit.jsx";
+import { EditField, EditSheet } from "../../shared/admin/AdminEdit.jsx";
 import ProfileCard from "./ProfileCard.jsx";
 import MeetCard from "./MeetCard.jsx";
 import AdminDesk from "./AdminDesk.jsx";
 import { companionLabel } from "./CharacterScreen.jsx";
-import { Group, Row, SwitchRow, useTabName } from "./parts.jsx";
+import { Group, Note, Row, SwitchRow, useTabName } from "./parts.jsx";
 
 /* global __APP_BUNDLE_VERSION__ */
 const VERSION = typeof __APP_BUNDLE_VERSION__ === "string" ? __APP_BUNDLE_VERSION__ : "dev";
@@ -78,6 +88,96 @@ function SignOutOthersSheet({ open, onClose }) {
         </p>
       )}
     </EditSheet>
+  );
+}
+
+const cancelled = (error) => /cancel/i.test(error?.message ?? "") || error?.code === "16";
+
+/**
+ * "Open with Face ID", on this phone only (Josh, 2026-11-27: "she can just open the app"). Off: the
+ * app opens straight into her world. Switching it off is confirmed once with Face ID, or with her
+ * passphrase where Face ID isn't there; on, it checks Face ID works first (lib/native.js).
+ */
+function FaceIdRow() {
+  const [state, setState] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [asking, setAsking] = useState(false);
+  const [passphrase, setPassphrase] = useState("");
+  useEffect(() => {
+    faceIdGateState()
+      .then(setState)
+      .catch(() => setState({ available: false, on: true }));
+  }, []);
+  if (!isAppShell()) return null;
+
+  const done = async (on) => {
+    haptic("success");
+    setState(await faceIdGateState());
+    setMessage(on ? "Face ID opens it again ♡" : "it opens straight into your world now ♡");
+  };
+  async function change(on) {
+    setBusy(true);
+    setMessage(null);
+    try {
+      await setOpenWithFaceId(on);
+      await done(on);
+    } catch (error) {
+      if (error?.code === "needs_passphrase") {
+        setPassphrase("");
+        setAsking(true);
+      } else if (!cancelled(error)) setMessage(error?.message ?? "that didn’t work. try again?");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const available = Boolean(state?.available);
+  const on = state?.on ?? true;
+  const hint = !state
+    ? ""
+    : !available
+      ? isNativeApp()
+        ? "needs the newest version of the app"
+        : "works inside the app on your iPhone"
+      : on
+        ? "Face ID opens the app on this phone"
+        : "this phone opens straight into your world";
+  return (
+    <>
+      <SwitchRow
+        icon="faceid"
+        tone="mint"
+        label="open with Face ID"
+        hint={hint}
+        checked={on}
+        disabled={!available || busy || (!on && !state.biometry)}
+        onChange={change}
+      />
+      {message && (
+        <li className="app-row me-row me-row--note">
+          <span className="app-row__text">
+            <small role="status">{message}</small>
+          </span>
+        </li>
+      )}
+      <EditSheet
+        open={asking}
+        title="open without Face ID"
+        onClose={() => setAsking(false)}
+        saveLabel="Confirm"
+        saveDisabled={!passphrase}
+        onSave={async () => {
+          await setOpenWithFaceId(false, { passphrase });
+          await done(false);
+        }}
+      >
+        <p className="me-sheet-text">Face ID isn’t set up on this phone, so your passphrase confirms it’s you. after this the app opens straight away.</p>
+        <EditField label="your passphrase">
+          <input type="password" autoComplete="current-password" autoCapitalize="none" autoCorrect="off" value={passphrase} onChange={(event) => setPassphrase(event.target.value)} />
+        </EditField>
+      </EditSheet>
+    </>
   );
 }
 
@@ -146,6 +246,7 @@ function HerSettings({ admin }) {
       </Group>
 
       <Group title="privacy">
+        <FaceIdRow />
         <Row to="/world/me/passphrase" icon="key" tone="lilac" label={admin ? "your passphrase" : "change your passphrase"} />
         <Row onClick={() => setSheet("others")} icon="phones" tone="sky" label="sign out my other devices" />
       </Group>

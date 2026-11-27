@@ -1,4 +1,5 @@
 import Capacitor
+import Security
 import UIKit
 import WebKit
 
@@ -10,9 +11,11 @@ import WebKit
 ///   back on.
 /// - the notification delegate taken back from Capacitor's router, which claims it while the bridge
 ///   starts (KiriyaNotifications.swift). Taps and "Open" are still forwarded to that router.
+/// - the app's own small plugins (KiriyaKeychainPlugin below).
 class MainViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
         super.capacitorDidLoad()
+        bridge?.registerPluginInstance(KiriyaKeychainPlugin())
         webView?.allowsBackForwardNavigationGestures = true
         webView?.configuration.userContentController.add(SwipeBackSwitch(owner: self), name: SwipeBackSwitch.name)
         if let router = bridge?.notificationRouter {
@@ -38,5 +41,74 @@ private final class SwipeBackSwitch: NSObject, WKScriptMessageHandler {
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let enabled = message.body as? Bool else { return }
         owner?.webView?.allowsBackForwardNavigationGestures = enabled
+    }
+}
+
+/// "Open with Face ID" switched off in her settings (src/world/me, src/lib/native.js): the phone's
+/// sign-in secret lives here instead of in the Face ID–protected item, so the app opens without a
+/// prompt. One generic-password item, readable whenever the phone has been unlocked once since it
+/// started, kept on this device only: never synced to iCloud Keychain and never restored to another
+/// phone from a backup. Switching Face ID back on moves the secret back behind biometry and removes
+/// this item.
+@objc(KiriyaKeychainPlugin)
+public class KiriyaKeychainPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "KiriyaKeychainPlugin"
+    public let jsName = "KiriyaKeychain"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "get", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "set", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "remove", returnType: CAPPluginReturnPromise),
+    ]
+
+    private let service = "love.kiriya.app.open"
+
+    private var baseQuery: [String: Any] {
+        [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrSynchronizable as String: kCFBooleanFalse as Any,
+        ]
+    }
+
+    @objc func set(_ call: CAPPluginCall) {
+        guard let account = call.getString("account"), let secret = call.getString("secret"), let data = secret.data(using: .utf8) else {
+            call.reject("Missing account or secret")
+            return
+        }
+        SecItemDelete(baseQuery as CFDictionary)
+        var item = baseQuery
+        item[kSecAttrAccount as String] = account
+        item[kSecValueData as String] = data
+        item[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        let status = SecItemAdd(item as CFDictionary, nil)
+        if status == errSecSuccess {
+            call.resolve()
+        } else {
+            call.reject("Keychain error \(status)")
+        }
+    }
+
+    @objc func get(_ call: CAPPluginCall) {
+        var query = baseQuery
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        query[kSecReturnAttributes as String] = true
+        query[kSecReturnData as String] = true
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        guard status == errSecSuccess,
+              let found = result as? [String: Any],
+              let account = found[kSecAttrAccount as String] as? String,
+              let data = found[kSecValueData as String] as? Data,
+              let secret = String(data: data, encoding: .utf8)
+        else {
+            call.resolve(["account": NSNull(), "secret": NSNull()])
+            return
+        }
+        call.resolve(["account": account, "secret": secret])
+    }
+
+    @objc func remove(_ call: CAPPluginCall) {
+        SecItemDelete(baseQuery as CFDictionary)
+        call.resolve()
     }
 }

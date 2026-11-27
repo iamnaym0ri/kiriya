@@ -2,12 +2,13 @@
 // runs only inside it: on the web, `isNativeApp()` is false and nothing else in this file is
 // reached. Plugins load on demand, so browsers never download them, and each one is checked with
 // isPluginAvailable first, so an older app build without a plugin simply skips that feature.
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, registerPlugin } from "@capacitor/core";
 import { API_ORIGIN, api } from "./api.js";
 
 const SERVER = "kiriya.love"; // the Keychain entry's name
 const DEVICE = "kiriya:app-device"; // this install's device id (not a secret)
 const PUSH_OFF = "kiriya:app-push-off"; // she turned notifications off inside the app
+const NO_FACE_ID = "kiriya:app-open-without-face-id"; // "open with Face ID" switched off on this phone
 
 export const isNativeApp = () => Capacitor.isNativePlatform();
 
@@ -52,29 +53,54 @@ export const enrolledDevice = () => (isNativeApp() ? read(DEVICE) : null);
 
 const biometric = () => import("@capgo/capacitor-native-biometric");
 
+// The app's own Keychain item for opening without Face ID (ios/App/App/MainViewController.swift,
+// KiriyaKeychainPlugin): this device only, readable after the first unlock, never synced. Registered
+// once here and only ever called, never awaited itself (see the note above pushModule).
+const openKeychain = registerPlugin("KiriyaKeychain");
+
+/** Whether this phone opens with Face ID (the default) or straight away (her choice in her tab). */
+export const opensWithFaceId = () => read(NO_FACE_ID) !== "1";
+/** The "open with Face ID" switch needs this app build's own Keychain plugin. */
+export const canOpenWithoutFaceId = () => has("KiriyaKeychain");
+
+/** Where the switch stands on this phone, and what it can do. */
+export async function faceIdGateState() {
+  if (!canOpenWithoutFaceId()) return { available: false, on: true, biometry: false };
+  const { NativeBiometric } = await biometric();
+  const { isAvailable } = await NativeBiometric.isAvailable().catch(() => ({ isAvailable: false }));
+  return { available: true, on: opensWithFaceId(), biometry: Boolean(isAvailable), enrolled: Boolean(enrolledDevice()) };
+}
+
+async function rememberDevice(device) {
+  await saveWidgetKey(device.widgetKey, device.role).catch(() => {});
+  if (!opensWithFaceId() && canOpenWithoutFaceId()) {
+    await openKeychain.set({ account: device.id, secret: device.secret });
+  } else {
+    const { NativeBiometric, AccessControl } = await biometric();
+    await NativeBiometric.setCredentials({ username: device.id, password: device.secret, server: SERVER, accessControl: AccessControl.BIOMETRY_ANY });
+  }
+  write(DEVICE, device.id);
+}
+
 /**
  * After the passphrase opens the app: a device secret goes into the iPhone Keychain behind Face ID
  * (the Keychain itself refuses to hand it over without a face match), and the server keeps a hash.
+ * With "open with Face ID" off, it goes into the app's own item instead (no Face ID needed).
  */
 export async function enrollThisPhone() {
   if (!isNativeApp() || enrolledDevice()) return false;
-  const { NativeBiometric, AccessControl } = await biometric();
-  const { isAvailable } = await NativeBiometric.isAvailable().catch(() => ({ isAvailable: false }));
-  if (!isAvailable) return false;
+  if (opensWithFaceId() || !canOpenWithoutFaceId()) {
+    const { NativeBiometric } = await biometric();
+    const { isAvailable } = await NativeBiometric.isAvailable().catch(() => ({ isAvailable: false }));
+    if (!isAvailable) return false;
+  }
   const device = await api("/app/devices", { method: "POST", body: { label: "iPhone" } });
-  await saveWidgetKey(device.widgetKey, device.role).catch(() => {});
   try {
-    await NativeBiometric.setCredentials({
-      username: device.id,
-      password: device.secret,
-      server: SERVER,
-      accessControl: AccessControl.BIOMETRY_ANY,
-    });
+    await rememberDevice(device);
   } catch (error) {
     await api(`/app/devices/${device.id}`, { method: "DELETE" }).catch(() => {});
     throw error;
   }
-  write(DEVICE, device.id);
   return true;
 }
 
@@ -82,12 +108,75 @@ export async function enrollThisPhone() {
 export async function signInWithFaceId() {
   const { NativeBiometric } = await biometric();
   const credentials = await NativeBiometric.getSecureCredentials({ server: SERVER, reason: "Open your little world" });
+  return signInWithSecret(credentials.username, credentials.password);
+}
+
+async function signInWithSecret(id, secret) {
   try {
-    return await api("/session/app", { method: "POST", body: { id: credentials.username, secret: credentials.password } });
+    return await api("/session/app", { method: "POST", body: { id, secret } });
   } catch (error) {
     if (error?.status === 401) await forgetThisPhoneLocally();
     throw error;
   }
+}
+
+/**
+ * Opens the app the way this phone is set to: Face ID, or (switched off) straight from the app's own
+ * Keychain item with no prompt. Also how an expired session renews itself while the app is open.
+ */
+export async function signInToApp() {
+  if (opensWithFaceId() || !canOpenWithoutFaceId()) return signInWithFaceId();
+  const { account, secret } = await openKeychain.get();
+  if (!account || !secret) {
+    // Nothing stored any more: this phone needs the passphrase again.
+    write(DEVICE, null);
+    throw Object.assign(new Error("This phone needs the passphrase again."), { status: 401 });
+  }
+  return signInWithSecret(account, secret);
+}
+
+/**
+ * Switches "open with Face ID" on this phone. Off: confirmed once with Face ID (which hands over the
+ * secret to move), or with the passphrase where Face ID isn't there (the phone is set up afresh).
+ * On: checked with Face ID, then the secret goes back behind it. Throws if she cancels.
+ */
+export async function setOpenWithFaceId(on, { passphrase } = {}) {
+  if (!canOpenWithoutFaceId()) throw new Error("This needs the newest version of the app.");
+  const { NativeBiometric, AccessControl } = await biometric();
+  if (on) {
+    await NativeBiometric.verifyIdentity({ reason: "Open with Face ID again" });
+    const { account, secret } = await openKeychain.get();
+    if (account && secret) {
+      await NativeBiometric.setCredentials({ username: account, password: secret, server: SERVER, accessControl: AccessControl.BIOMETRY_ANY });
+    }
+    await openKeychain.remove();
+    write(NO_FACE_ID, null);
+    return true;
+  }
+  const { isAvailable } = await NativeBiometric.isAvailable().catch(() => ({ isAvailable: false }));
+  if (isAvailable && enrolledDevice()) {
+    const credentials = await NativeBiometric.getSecureCredentials({ server: SERVER, reason: "Open without Face ID from now on" });
+    await openKeychain.set({ account: credentials.username, secret: credentials.password });
+    await NativeBiometric.deleteCredentials({ server: SERVER }).catch(() => {});
+    write(NO_FACE_ID, "1");
+    return false;
+  }
+  // No Face ID to confirm with (or this phone was never set up): the passphrase confirms, and the
+  // phone is set up again with its secret in the app's own item.
+  if (!passphrase) throw Object.assign(new Error("Enter your passphrase to confirm."), { code: "needs_passphrase" });
+  await api("/me/passphrase/check", { method: "POST", body: { passphrase } });
+  const old = enrolledDevice();
+  write(NO_FACE_ID, "1");
+  write(DEVICE, null);
+  try {
+    await enrollThisPhone();
+  } catch (error) {
+    write(NO_FACE_ID, null);
+    if (old) write(DEVICE, old);
+    throw error;
+  }
+  if (old && old !== enrolledDevice()) await api(`/app/devices/${old}`, { method: "DELETE" }).catch(() => {});
+  return false;
 }
 
 export async function forgetThisPhoneLocally() {
@@ -95,6 +184,8 @@ export async function forgetThisPhoneLocally() {
   await saveWidgetKey(null).catch(() => {});
   const { NativeBiometric } = await biometric();
   await NativeBiometric.deleteCredentials({ server: SERVER }).catch(() => {});
+  // Her "open with Face ID" choice stays; only the secret goes.
+  if (canOpenWithoutFaceId()) await openKeychain.remove().catch(() => {});
 }
 
 /** "Lock kiriya on this device": Face ID can't open it again until the passphrase does. */
