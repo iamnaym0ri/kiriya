@@ -5,8 +5,9 @@ import EnvelopeArt, { toneFor } from "./Envelope.jsx";
 import JarMini from "./JarMini.jsx";
 import { onItsWay, opensIn, when } from "./format.js";
 
-// The root of the app's notes & letters section: what's new on top, the note jar, then every letter
-// and little note. Josh sees exactly this, plus his pencils, her marks, and what's on its way.
+// The root of the app's notes & letters section: the note jar first, as its centrepiece, then
+// what's new, every letter and every little note. Josh sees exactly this, plus his pencils, her
+// marks, and what's on its way.
 
 const NOTES_ON_ROOT = 6;
 export const NOTE_KIND = {
@@ -80,8 +81,10 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
   const unreadLetters = letters.filter((letter) => !letter.locked && !letter.openedAt).length;
   const newLetters = letters.filter((letter) => newIds.has(letter.id));
   const newNotes = notes.filter((note) => newIds.has(note.id));
-  const newCount = unreadNotes + unreadLetters;
-  const showNew = newLetters.length + newNotes.length > 0 || fresh > 0;
+  // On her phone the jar's new notes count too, as on the tab's badge.
+  const newCount = unreadNotes + unreadLetters + (admin ? 0 : fresh);
+  // The jar's own news is on the jar itself, the first thing in the section.
+  const showNew = newLetters.length + newNotes.length > 0;
   const allLetters = maomao ? [...letters, { id: "maomao", author: "maomao", kind: "note", title: maomao.title, maomao }] : letters;
 
   const subtitle = admin
@@ -99,6 +102,33 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
         <p className="app-section__subtitle">{subtitle}</p>
       </header>
       <div className="app-section__body mail-body">
+        <section className="app-card mail-card mail-jar" aria-labelledby="mail-jar-title" data-fresh={fresh > 0 || undefined}>
+          <button type="button" className="mail-jar__open" onClick={onOpenJar} aria-describedby="mail-jar-line">
+            <span className="mail-jar__art">
+              <JarMini fresh={fresh} />
+            </span>
+            <span className="mail-jar__eyebrow">the note jar</span>
+            <strong id="mail-jar-title" className="mail-jar__title">a little jar, just for u</strong>
+            <span id="mail-jar-line" className="mail-jar__line" data-fresh={fresh > 0 || undefined}>
+              {jar.isPending
+                ? "a little love is waiting…"
+                : fresh > 0
+                  ? admin
+                    ? `${fresh === 1 ? "a new note" : `${fresh} new notes`} she hasn’t pulled yet`
+                    : `${fresh === 1 ? "a new little note" : `${fresh} new little notes`} from ${from}!`
+                  : jar.data?.total
+                    ? "a little encouragement, whenever u need one"
+                    : "new little notes are on their way"}
+            </span>
+            <span className="mail-jar__pull">{fresh > 0 && !admin ? (fresh === 1 ? "pull ur new note" : "pull a new note") : "pull a note"} <span aria-hidden="true">♡</span></span>
+          </button>
+          {admin && (
+            <div className="mail-card__admin">
+              <AdminEdit label="add notes to the jar" onClick={() => onWrite({ kind: "jar" })} />
+            </div>
+          )}
+        </section>
+
         {showNew ? (
           <section className="app-card mail-card mail-new" aria-labelledby="mail-new-title">
             <header className="app-card__head">
@@ -123,63 +153,16 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
               {newNotes.map((note) => (
                 <NoteRow key={note.id} note={note} unread={!note.openedAt} admin={admin} onOpen={onOpenNote} />
               ))}
-              {fresh > 0 && (
-                <li className="app-row app-row--more mail-row" data-unread>
-                  <button type="button" className="mail-row__button" onClick={onOpenJar}>
-                    <span className="mail-row__icon mail-row__icon--jar" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" width="18" height="18">
-                        {[0, 72, 144, 216, 288].map((angle) => (
-                          <ellipse key={angle} cx="12" cy="7.2" rx="3.4" ry="4.4" fill="currentColor" opacity="0.85" transform={`rotate(${angle} 12 12)`} />
-                        ))}
-                        <circle cx="12" cy="12" r="2.6" fill="#fff4f8" />
-                      </svg>
-                    </span>
-                    <span className="mail-row__text">
-                      <strong>{fresh === 1 ? "a new little note in your jar" : `${fresh} new little notes in your jar`}</strong>
-                      <span className="mail-row__preview">{admin ? "she hasn’t pulled them yet" : "pull one whenever u like ♡"}</span>
-                    </span>
-                    <span className="mail-row__end">
-                      <span className="mail-dot" aria-label="new" />
-                    </span>
-                  </button>
-                </li>
-              )}
             </ul>
           </section>
         ) : (
-          !admin && (
+          !admin &&
+          !fresh && (
             <p className="mail-caught-up">
               <span aria-hidden="true">(˘ ᵕ ˘)</span> all caught up. everything’s right here whenever u want it ♡
             </p>
           )
         )}
-
-        <section className="app-card mail-card mail-jar" aria-labelledby="mail-jar-title">
-          <button type="button" className="mail-jar__open" onClick={onOpenJar} aria-describedby="mail-jar-line">
-            <JarMini fresh={fresh} />
-            <span className="mail-jar__text">
-              <span className="mail-jar__eyebrow">the note jar</span>
-              <strong id="mail-jar-title">a little jar, just for u</strong>
-              <span id="mail-jar-line" className="mail-jar__line" data-fresh={fresh > 0 || undefined}>
-                {jar.isPending
-                  ? "a little love is waiting…"
-                  : fresh > 0
-                    ? admin
-                      ? `${fresh === 1 ? "a new note" : `${fresh} new notes`} she hasn’t pulled yet`
-                      : `${fresh === 1 ? "a new little note" : `${fresh} new little notes`} from ${from}!`
-                    : jar.data?.total
-                      ? "pull a little note, any time"
-                      : "new little notes are on their way"}
-              </span>
-              <span className="mail-jar__pull">pull a note ♡</span>
-            </span>
-          </button>
-          {admin && (
-            <div className="mail-card__admin">
-              <AdminEdit label="add notes to the jar" onClick={() => onWrite({ kind: "jar" })} />
-            </div>
-          )}
-        </section>
 
         <section className="app-card mail-card mail-letters" aria-labelledby="mail-letters-title">
           <header className="app-card__head">

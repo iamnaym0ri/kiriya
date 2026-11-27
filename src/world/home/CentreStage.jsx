@@ -43,12 +43,13 @@ export default function CentreStage({ home, name = "kiriya", birthday = false, a
 
   return (
     <section className="home-stage" aria-labelledby="home-title" data-motion-region>
-      <div className="home-stage__hello">
+      {/* The first thing she sees on home: companions keep off it (the dateline above is their perch). */}
+      <div className="home-stage__hello" data-companion-avoid>
         <p className="handwritten world-welcome__greeting home-stage__greeting">
           <span>{greeting}</span>
           <AdminEdit compact label="the greeting" className="home-stage__pencil" onClick={() => setEditing("greeting")} />
         </p>
-        <h1 id="home-title" className="world-welcome__name home-stage__name" data-companion-ok>
+        <h1 id="home-title" className="world-welcome__name home-stage__name">
           <BirthdayName>{name}</BirthdayName>
         </h1>
       </div>

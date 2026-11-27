@@ -10,47 +10,75 @@
   pointer-events: none;
   z-index: 150;
 }
+/*
+  The drifting charms behind the page, in today's mood's weather (shapes and colours are set with the
+  palettes in daily-style.css). Smooth on an iPhone 11:
+  - Each charm is one small layer with two animations of different transform properties, which
+    WebKit runs on the compositor side by side: `translate` only travels (down, or up for embers and
+    bubbles) at an even speed while it fades in and out, and `transform` only sways (or spins,
+    flickers, bobs) on its own rhythm. Two simple motions read as one soft, flowing fall.
+  - The fall never slows or stops: it is linear, and only the sway eases. (The old keyframes put
+    ease-in-out on every segment of the fall itself, so each charm came to a standstill at every
+    keyframe and set off again: a built-in stall several times per fall.)
+  - Fast enough not to creep (about 0.7 to 1.6 pt a frame), so a glyph never inches along at half a
+    pixel per frame; each is its own layer up front (will-change: transform, seven layers), so it
+    is composited at sub-pixel positions from the very first frame.
+  - Only transforms and opacity move; fixed vh/px distances; no filters (the misty mood's softness is
+    a text-shadow, painted once). Fades happen only at the edges: in the app a charm slides behind
+    the tab bar fully visible, instead of fading out mid-screen.
+  - Starts are spread evenly through the fall (--k, set in PlayfulWorld.jsx), so they never clump.
+  - Seven on a phone (nine on wide screens), four in the "overwhelmed" mood.
+  - Paused in place (not restarted) while the app is in the background or she is in chat; gone with
+    "still" motion and with Reduce Motion (html[data-little-motion], set by PlayfulProvider).
+*/
 .ambient-charms {
+  --n: 9;
+  --dur: 20s;
+  --sway: 7s;
   position: fixed;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
+  contain: strict;
 }
 .ambient-charms > span {
   position: absolute;
+  top: -40px;
   left: calc(3% + var(--i) * 11.5%);
-  top: -45px;
+  display: block;
   color: var(--charm-color, #a481b0);
-  font: 24px Georgia;
-  line-height: 1;
+  font: 24px/1 Georgia, serif;
   opacity: 0;
-  animation: charm-drift calc(22s + var(--i) * 2s) linear infinite;
-  animation-delay: calc(var(--i) * -5s);
+  will-change: transform;
+  animation:
+    charm-fall var(--dur) linear infinite,
+    charm-sway var(--sway) ease-in-out infinite alternate;
+  animation-duration: calc(var(--dur) * (1 + (var(--i) - 4) * 0.025)), calc(var(--sway) * (1 + var(--i) * 0.07));
+  animation-delay: calc(var(--dur) * var(--k) / var(--n) * -1), calc(var(--i) * -0.9s);
 }
-.ambient-charms > span::before { content: var(--charm-1, "✧"); display: block; }
+.ambient-charms > span::before {
+  content: var(--charm-1, "✧");
+  display: block;
+  opacity: var(--charm-peak, 0.34);
+}
 .ambient-charms > span:nth-child(4n + 2)::before { content: var(--charm-2, "♡"); }
 .ambient-charms > span:nth-child(4n + 3)::before { content: var(--charm-3, "✦"); }
 .ambient-charms > span:nth-child(4n + 4)::before { content: var(--charm-4, "❀"); }
 
-/* Each mood has its own weather. Colours and shapes are set with the palettes in daily-style.css. */
-:root[data-feeling="happy"] .ambient-charms > span {
-  animation: charm-petal calc(18s + var(--i) * 1.6s) ease-in-out infinite;
-  animation-delay: calc(var(--i) * -3.4s);
-}
-:root[data-feeling="content"] .ambient-charms > span {
-  font-size: 22px;
-  animation: charm-leaf calc(30s + var(--i) * 2.5s) ease-in-out infinite;
-  animation-delay: calc(var(--i) * -6s);
-}
+/* Each mood has its own weather. */
+:root[data-feeling="happy"] .ambient-charms { --dur: 18s; --sway: 5s; --charm-peak: 0.6; }
+:root[data-feeling="happy"] .ambient-charms > span { animation-name: charm-fall, charm-sway-wide; }
+:root[data-feeling="content"] .ambient-charms { --dur: 24s; --sway: 8s; --charm-peak: 0.5; }
+:root[data-feeling="content"] .ambient-charms > span { font-size: 22px; }
+:root[data-feeling="excited"] .ambient-charms { --dur: 12s; --sway: 3s; --charm-peak: 0.75; }
 :root[data-feeling="excited"] .ambient-charms > span {
-  animation: charm-confetti calc(9s + var(--i) * 1.1s) linear infinite;
-  animation-delay: calc(var(--i) * -1.7s);
+  animation-name: charm-fall, charm-spin;
+  animation-timing-function: linear, linear;
+  animation-direction: normal, normal;
 }
-:root[data-feeling="sad"] .ambient-charms > span {
-  animation: charm-rain calc(7s + var(--i) * 0.8s) linear infinite;
-  animation-delay: calc(var(--i) * -1.3s);
-}
+:root[data-feeling="sad"] .ambient-charms { --dur: 8s; --charm-peak: 0.55; }
+:root[data-feeling="sad"] .ambient-charms > span { animation-name: charm-fall, none; }
 :root[data-feeling="sad"] .ambient-charms > span:not(:nth-child(4n + 2))::before {
   width: 8px;
   height: 17px;
@@ -61,104 +89,94 @@
 :root[data-feeling="angry"] .ambient-charms > span,
 :root[data-feeling="anxious"] .ambient-charms > span {
   top: auto;
-  bottom: -45px;
+  bottom: -40px;
 }
-:root[data-feeling="angry"] .ambient-charms > span {
-  font-size: 20px;
-  animation: charm-ember calc(10s + var(--i) * 1.2s) ease-out infinite;
-  animation-delay: calc(var(--i) * -2.1s);
-}
-:root[data-feeling="anxious"] .ambient-charms > span {
-  font-size: 26px;
-  animation: charm-bubble calc(20s + var(--i) * 2s) ease-in-out infinite;
-  animation-delay: calc(var(--i) * -4.2s);
-}
+:root[data-feeling="angry"] .ambient-charms { --dur: 11s; --sway: 1.6s; --charm-peak: 0.75; }
+:root[data-feeling="angry"] .ambient-charms > span { font-size: 20px; animation-name: charm-rise, charm-flicker; }
+:root[data-feeling="anxious"] .ambient-charms { --dur: 18s; --sway: 4.5s; --charm-peak: 0.55; }
+:root[data-feeling="anxious"] .ambient-charms > span { font-size: 26px; animation-name: charm-rise, charm-wobble; }
+:root[data-feeling="overwhelmed"] .ambient-charms { --dur: 26s; --sway: 6s; --charm-peak: 0.32; }
 :root[data-feeling="overwhelmed"] .ambient-charms > span {
   font-size: 34px;
-  filter: blur(2px);
-  animation: charm-mist calc(26s + var(--i) * 3s) ease-in-out infinite;
-  animation-delay: calc(var(--i) * -7s);
+  animation-name: charm-fall, charm-breathe;
+  /* Soft lights without a filter: the glyph is only its own blurred shadow, painted once. */
+  color: transparent;
+  text-shadow: 0 0 7px var(--charm-color, #997ca4);
 }
 /* Less to take in: only a few soft lights. */
 :root[data-feeling="overwhelmed"] .ambient-charms > span:nth-child(odd) {
   display: none;
 }
+:root[data-feeling="playful"] .ambient-charms { --dur: 14s; --sway: 1.3s; --charm-peak: 0.7; }
 :root[data-feeling="playful"] .ambient-charms > span {
-  animation: charm-bounce calc(12s + var(--i) * 1.3s) ease-in-out infinite;
-  animation-delay: calc(var(--i) * -2.6s);
+  animation-name: charm-fall, charm-hop;
+  animation-direction: normal, normal;
 }
-@keyframes charm-petal {
-  0% { transform: translate(0, -20px) rotate(-25deg); opacity: 0; }
-  10% { opacity: 0.6; }
-  25% { transform: translate(28px, 25vh) rotate(15deg); }
-  50% { transform: translate(-12px, 52vh) rotate(-10deg); }
-  75% { transform: translate(30px, 78vh) rotate(25deg); opacity: 0.6; }
-  100% { transform: translate(6px, 105vh) rotate(0deg); opacity: 0; }
+
+/* Travel: an even speed all the way, fading in at the top and out at the bottom. */
+@keyframes charm-fall {
+  0% { translate: 0 0; opacity: 0; }
+  10%, 86% { opacity: 1; }
+  100% { translate: 0 108vh; opacity: 0; }
 }
-@keyframes charm-leaf {
-  0% { transform: translate(0, -20px) rotate(-10deg); opacity: 0; }
-  12% { opacity: 0.5; }
-  33% { transform: translate(16px, 34vh) rotate(18deg); }
-  66% { transform: translate(-10px, 70vh) rotate(-12deg); }
-  85% { opacity: 0.5; }
-  100% { transform: translate(8px, 105vh) rotate(8deg); opacity: 0; }
+@keyframes charm-rise {
+  0% { translate: 0 0; opacity: 0; }
+  12%, 84% { opacity: 1; }
+  100% { translate: 0 -108vh; opacity: 0; }
 }
-@keyframes charm-confetti {
-  0% { transform: translate(0, -20px) rotate(0deg) scale(0.8); opacity: 0; }
-  8% { opacity: 0.75; }
-  30% { transform: translate(-18px, 30vh) rotate(160deg) scale(1.15); }
-  60% { transform: translate(16px, 62vh) rotate(320deg) scale(0.85); }
-  85% { opacity: 0.75; }
-  100% { transform: translate(-6px, 105vh) rotate(480deg) scale(1.1); opacity: 0; }
+/* Sway: a soft side-to-side, played back and forth. */
+@keyframes charm-sway {
+  from { transform: translateX(-14px) rotate(-14deg); }
+  to { transform: translateX(14px) rotate(14deg); }
 }
-@keyframes charm-rain {
-  0% { transform: translate(0, -20px); opacity: 0; }
-  10%, 80% { opacity: 0.55; }
-  100% { transform: translate(-30px, 105vh); opacity: 0; }
+@keyframes charm-sway-wide {
+  from { transform: translateX(-26px) rotate(-24deg); }
+  to { transform: translateX(26px) rotate(22deg); }
 }
-@keyframes charm-ember {
-  0% { transform: translate(0, 20px) scale(0.7); opacity: 0; }
-  15% { opacity: 0.75; }
-  40% { transform: translate(14px, -40vh) scale(1); opacity: 0.45; }
-  55% { opacity: 0.75; }
-  100% { transform: translate(-10px, -108vh) scale(0.5); opacity: 0; }
+@keyframes charm-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
-@keyframes charm-bubble {
-  0% { transform: translate(0, 20px) scale(0.8); opacity: 0; }
-  15% { opacity: 0.55; }
-  35% { transform: translate(-14px, -35vh) scale(1.05); }
-  65% { transform: translate(14px, -70vh) scale(0.9); }
-  90% { opacity: 0.55; }
-  100% { transform: translate(0, -108vh) scale(1.1); opacity: 0; }
+@keyframes charm-flicker {
+  from { transform: translateX(-8px) scale(0.75); }
+  to { transform: translateX(8px) scale(1.05); }
 }
-@keyframes charm-mist {
-  0% { transform: translate(0, 18vh) scale(0.9); opacity: 0; }
-  50% { transform: translate(22px, 48vh) scale(1.15); opacity: 0.32; }
-  100% { transform: translate(44px, 80vh) scale(0.9); opacity: 0; }
+@keyframes charm-wobble {
+  from { transform: translateX(-12px) scale(0.92); }
+  to { transform: translateX(12px) scale(1.08); }
 }
-@keyframes charm-bounce {
-  0% { transform: translate(0, -20px) rotate(-10deg); opacity: 0; }
-  8% { opacity: 0.7; }
-  20% { transform: translate(24px, 20vh) rotate(12deg) scale(1.15, 0.9); }
-  30% { transform: translate(34px, 15vh) rotate(0deg) scale(0.95, 1.1); }
-  50% { transform: translate(-8px, 48vh) rotate(-12deg) scale(1.15, 0.9); }
-  60% { transform: translate(-18px, 43vh) rotate(0deg) scale(0.95, 1.1); }
-  80% { transform: translate(26px, 78vh) rotate(12deg) scale(1.15, 0.9); opacity: 0.7; }
-  90% { transform: translate(34px, 74vh) rotate(0deg) scale(1); }
-  100% { transform: translate(10px, 105vh) rotate(-8deg); opacity: 0; }
+@keyframes charm-breathe {
+  from { transform: scale(0.9); }
+  to { transform: scale(1.15); }
 }
-@keyframes charm-drift {
-  0% {
-    transform: translate(0, -20px) rotate(-20deg);
-    opacity: 0;
-  }
-  12%,
-  75% {
-    opacity: 0.34;
-  }
-  100% {
-    transform: translate(45px, 105vh) rotate(70deg);
-    opacity: 0;
+@keyframes charm-hop {
+  0%, 100% { transform: translateY(0) scale(1.08, 0.92); }
+  50% { transform: translateY(-14px) scale(0.94, 1.06); }
+}
+
+/* In the app the charms are the background: behind every card (above the lilac wash), and only
+   between the compact top bar's place and the tab bar, so nothing ever moves under a frosted bar
+   (the status-bar strip, the compact bar that fades in on scroll, the tab bar) and makes it blur
+   again on every frame. They fade in over their first ~100 pt anyway, so the top edge never shows. */
+html.app-shell .ambient-charms {
+  z-index: -1;
+  top: calc(var(--app-safe-top, env(safe-area-inset-top)) + var(--app-bar-h, 44px));
+  bottom: var(--app-tabs-h, 0px);
+}
+html.app-shell #root::after {
+  z-index: -2;
+}
+/* The chat covers the whole screen with its own wallpaper: nothing to show, so nothing to draw. They
+   wait where they are (paused, not removed), so leaving chat doesn't restart them. */
+html.app-shell body[data-tab="chat"] .ambient-charms {
+  visibility: hidden;
+}
+html.app-shell body[data-tab="chat"] .ambient-charms > span {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-charms {
+    display: none;
   }
 }
 .motion-toggle {
@@ -355,6 +373,12 @@
 [data-in-view="no"]::after {
   animation-play-state: paused !important;
 }
+/* The app in the background: everything holds still where it is and carries on when she's back. */
+html[data-little-motion="hidden"] *,
+html[data-little-motion="hidden"] *::before,
+html[data-little-motion="hidden"] *::after {
+  animation-play-state: paused !important;
+}
 html[data-little-motion="off"] *,
 html[data-little-motion="off"] *::before,
 html[data-little-motion="off"] *::after {
@@ -380,8 +404,15 @@ html[data-little-motion="off"] .birthday-ribbon__track {
     height: 30px;
     font-size: 10px;
   }
+  .ambient-charms {
+    --n: 7;
+  }
   .ambient-charms > span {
+    left: calc(5% + var(--i) * 14%);
     font-size: 18px;
+  }
+  .ambient-charms > span:nth-child(n + 8) {
+    display: none;
   }
 }
 @media (max-width: 650px) {

@@ -43,11 +43,11 @@ body:has(.daily-style-corner) .world-footer, body:has(.daily-style-corner) .publ
 :root[data-energy="3"] { --feeling-motion-time: 4s; }
 :root[data-energy="4"] { --feeling-motion-time: 3.4s; }
 @media (prefers-reduced-motion: no-preference) {
-  html[data-little-motion="on"] [data-in-view="yes"] .name-charm--heart, html[data-little-motion="on"] [data-in-view="yes"] .name-charm--tiny { animation: name-heart-drift var(--feeling-motion-time) ease-in-out infinite; }
-  html[data-little-motion="on"] [data-in-view="yes"] .name-charm--tiny { animation-delay: -2s; }
-  html[data-little-motion="on"] [data-in-view="yes"] .name-charm--star, html[data-little-motion="on"] [data-in-view="yes"] .name-charm--petal { animation: name-flower-turn var(--feeling-motion-time) ease-in-out infinite; }
-  html[data-little-motion="on"] [data-in-view="yes"] .name-charm--petal { animation-delay: -1.5s; }
-  html[data-little-motion="on"] [data-in-view="yes"] .welcome-emoticon { animation: welcome-kiss var(--feeling-motion-time) ease-in-out infinite; }
+  html:not([data-little-motion="off"]) [data-in-view="yes"] .name-charm--heart, html:not([data-little-motion="off"]) [data-in-view="yes"] .name-charm--tiny { animation: name-heart-drift var(--feeling-motion-time) ease-in-out infinite; }
+  html:not([data-little-motion="off"]) [data-in-view="yes"] .name-charm--tiny { animation-delay: -2s; }
+  html:not([data-little-motion="off"]) [data-in-view="yes"] .name-charm--star, html:not([data-little-motion="off"]) [data-in-view="yes"] .name-charm--petal { animation: name-flower-turn var(--feeling-motion-time) ease-in-out infinite; }
+  html:not([data-little-motion="off"]) [data-in-view="yes"] .name-charm--petal { animation-delay: -1.5s; }
+  html:not([data-little-motion="off"]) [data-in-view="yes"] .welcome-emoticon { animation: welcome-kiss var(--feeling-motion-time) ease-in-out infinite; }
 }
 @media (max-width: 850px) {
   body:has(.listening-room) .daily-style-corner { top: calc(96px + env(safe-area-inset-top)); bottom: auto; }

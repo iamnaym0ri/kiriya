@@ -207,45 +207,75 @@
   rotate: -6deg;
 }
 
-/* ---------- the note jar's card ---------- */
+/* ---------- the note jar: the section's centrepiece ----------
+   A hero card at the top: the jar drawn large, its name, what's waiting, and a big "pull" button.
+   With new notes inside, it blushes, the heart on the lid beats and the jar gives a little wiggle. */
 html.app-shell .mail-jar.app-card {
   position: relative;
   overflow: hidden;
-  padding: 12px 14px 12px 8px;
+  padding: 0;
+  border-color: color-mix(in srgb, var(--mail-hand) 30%, var(--app-card-line));
   background:
-    radial-gradient(120% 90% at 0% 100%, color-mix(in srgb, #f6d3e2 55%, transparent), transparent 60%),
-    linear-gradient(160deg, color-mix(in srgb, var(--theme-paper, #fff9fd) 92%, #fff), color-mix(in srgb, var(--mail-soft) 55%, var(--theme-paper, #fff9fd)));
+    radial-gradient(70% 55% at 50% 30%, color-mix(in srgb, #fff 80%, transparent), transparent 70%),
+    radial-gradient(120% 80% at 0% 100%, color-mix(in srgb, #f6d3e2 60%, transparent), transparent 62%),
+    radial-gradient(110% 80% at 100% 0%, color-mix(in srgb, var(--mail-soft) 80%, transparent), transparent 60%),
+    linear-gradient(170deg, color-mix(in srgb, var(--theme-paper, #fff9fd) 94%, #fff), color-mix(in srgb, var(--mail-soft) 60%, var(--theme-paper, #fff9fd)));
+  box-shadow: 0 1px 2px rgb(84 56 95 / 0.06), 0 16px 34px -18px rgb(110 61 140 / 0.45);
+}
+html.app-shell .mail-jar.app-card[data-fresh] {
+  border-color: color-mix(in srgb, #e0476f 32%, var(--app-card-line));
+  background:
+    radial-gradient(70% 55% at 50% 30%, color-mix(in srgb, #fff 80%, transparent), transparent 70%),
+    radial-gradient(120% 80% at 0% 100%, color-mix(in srgb, #f7c6d8 75%, transparent), transparent 62%),
+    radial-gradient(110% 80% at 100% 0%, color-mix(in srgb, #f1d2ec 80%, transparent), transparent 60%),
+    linear-gradient(170deg, color-mix(in srgb, var(--theme-paper, #fff9fd) 94%, #fff), color-mix(in srgb, #f4d6e6 70%, var(--theme-paper, #fff9fd)));
+}
+/* A few sparkles around the jar. */
+.mail-jar::before,
+.mail-jar::after {
+  position: absolute;
+  color: var(--mail-hand);
+  font: 20px/1 Georgia, serif;
+  opacity: 0.55;
+  pointer-events: none;
+}
+.mail-jar::before {
+  content: "✦";
+  top: 30px;
+  left: calc(50% - 98px);
+  font-size: 15px;
 }
 .mail-jar::after {
   content: "✧";
-  position: absolute;
-  top: 10px;
-  right: 16px;
-  color: var(--mail-hand);
-  opacity: 0.55;
-  font: 20px Georgia, serif;
-  pointer-events: none;
+  top: 18px;
+  right: calc(50% - 104px);
 }
 .mail-jar__open {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
   width: 100%;
-  padding: 0;
+  padding: 18px 20px 20px;
   border: 0;
   background: none;
   color: inherit;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.mail-jar__art {
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
 }
 .mail-jar__open:active .jar-mini {
   transform: rotate(-4deg) scale(0.97);
 }
 .jar-mini {
   flex: none;
-  width: 104px;
+  width: 128px;
   height: auto;
   overflow: visible;
   transition: transform 180ms ease;
@@ -269,37 +299,53 @@ html.app-shell .mail-jar.app-card {
     animation: mail-jar-wiggle 5s ease-in-out infinite;
   }
 }
-.mail-jar__text {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
-}
 .mail-jar__eyebrow {
   color: var(--mail-muted);
-  font: 600 11.5px/1.2 var(--font-ui);
-  letter-spacing: 0.06em;
+  font: 10px/1.2 var(--font-pixel);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-.mail-jar__text strong {
+.mail-jar__title {
   color: var(--mail-ink);
-  font: 700 23px/1.1 var(--font-hand);
+  font: 700 28px/1.1 var(--font-hand);
+  text-wrap: balance;
 }
 .mail-jar__line {
+  max-width: 30ch;
   color: var(--mail-muted);
-  font: 400 13.5px/1.35 var(--font-ui);
+  font: 400 14.5px/1.4 var(--font-ui);
+  text-wrap: balance;
 }
 .mail-jar__line[data-fresh] {
   color: #b0305f;
   font-weight: 600;
 }
 .mail-jar__pull {
-  justify-self: start;
-  margin-top: 6px;
-  padding: 8px 14px 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  width: min(100%, 280px);
+  min-height: 48px;
+  margin-top: 12px;
+  padding: 0 22px;
   border-radius: 999px;
   background: linear-gradient(135deg, #8f63ad, #a4609a);
   color: #fff;
-  font: 600 13.5px/1 var(--font-ui);
-  box-shadow: 0 6px 14px -8px #6e3d8c;
+  font: 600 16px/1 var(--font-ui);
+  box-shadow: 0 10px 20px -12px #6e3d8c, inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+.mail-jar[data-fresh] .mail-jar__pull {
+  background: linear-gradient(135deg, #c0477b, #9a5bb0);
+}
+.mail-jar__open:active .mail-jar__pull {
+  transform: scale(0.98);
+}
+html.app-shell .mail-jar .mail-card__admin {
+  display: flex;
+  justify-content: center;
+  margin: -6px 0 16px;
 }
 
 /* ---------- letters ---------- */

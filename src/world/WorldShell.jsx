@@ -7,6 +7,7 @@ import { BirthdayRibbon, MotionToggle } from "../shared/play/PlayfulWorld.jsx";
 import { SketchbookProvider } from "./studio/SketchbookState.jsx";
 import { DailyStyleButton } from "../shared/DailyStyle.jsx";
 import CompanionHost from "./companions/CompanionHost.jsx";
+import CornerWidget from "./home/CornerWidget.jsx";
 import AppTabBar from "../shared/AppTabBar.jsx";
 import PullToRefresh from "../shared/PullToRefresh.jsx";
 import { AppTopBar, useAppNavigation, useKeyboardClass } from "../shared/AppFrame.jsx";
@@ -160,9 +161,9 @@ function WebsiteShell() {
 
 /**
  * The iPhone app (docs/refactor/RENOVATION.md, "App layout"): five tabs under a tab bar. The
- * website's top bar shows on home only, as a compact wordmark with nothing else on it: the letters
- * button and the menu moved into their tabs, the little corner into a widget on home, and the
- * animations switch into her settings. Every other tab starts with its own large title, and a small
+ * website's top bar shows on home only: the wordmark on the left and her little corner, as a small
+ * chip, on the right. The letters button and the menu moved into their tabs, and the animations
+ * switch into her settings. Every other tab starts with its own large title, and a small
  * frosted bar takes over once that scrolls away. No footer: Art & credits and the public profile
  * live in the last tab.
  */
@@ -188,10 +189,11 @@ function AppShell() {
       <div className="world lilac-scene" data-tab={tab}>
         {home && (
           <>
-            <header className="world-mast">
+            <header className="world-mast world-mast--home">
               <Link to="/world" className="tiny-wordmark" aria-label="Kiriya’s home">
                 kiriya<span>✦</span>
               </Link>
+              <CornerWidget />
             </header>
             <BirthdayRibbon />
           </>

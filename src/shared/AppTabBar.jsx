@@ -5,6 +5,7 @@ import { useNotes } from "../lib/notes.js";
 import { haptic } from "../lib/native.js";
 import { useIsAdmin } from "../lib/session.js";
 import { tabOf, tabRoot } from "../lib/appLinks.js";
+import { useJarSummary } from "../world/mail/useMail.js";
 import { setPendingRestore, tabDepth, tabTarget } from "./AppFrame.jsx";
 import "./AppTabBar.css";
 
@@ -88,11 +89,13 @@ export default function AppTabBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const current = tabOf(location.pathname);
-  const notes = useNotes().data?.unread ?? 0;
-  const chat = useChatSummary().data?.unread ?? 0;
-  const counts = { mail: notes, chat };
   // The last tab is named after whoever is signed in.
   const admin = useIsAdmin();
+  const notes = useNotes().data?.unread ?? 0;
+  // New notes in the jar count as new in notes & letters too (on her phone; on Josh's they're his).
+  const jar = useJarSummary({ enabled: !admin }).data?.fresh ?? 0;
+  const chat = useChatSummary().data?.unread ?? 0;
+  const counts = { mail: notes + (admin ? 0 : jar), chat };
 
   useEffect(() => {
     document.body.dataset.appTabs = "on";

@@ -14,6 +14,11 @@ import { ribbonMoment } from "./dailyRibbon.js";
 export { usePlayful } from "./PlayfulContext.js";
 export { default as BirthdayRibbon } from "./DailyRibbon.jsx";
 
+// When each charm starts, as a share of the fall (k / 7 on a phone, which shows the first seven;
+// k / 9 on wide screens): neighbours across the screen are far apart in time, so they never fall in
+// a row or a clump.
+const CHARM_ORDER = [0, 4, 1, 5, 2, 6, 3, 7, 8];
+
 export function PlayfulProvider({ children }) {
   const queryClient = useQueryClient();
   const [paused, setPaused] = useState(() => {
@@ -82,13 +87,15 @@ export function PlayfulProvider({ children }) {
     };
   }, []);
   useEffect(() => {
-    document.documentElement.dataset.littleMotion = moving ? "on" : "off";
+    // "hidden" (the app in the background) only pauses: everything carries on from where it was
+    // when she comes back, instead of every animation restarting at once (a stall, then a jump).
+    document.documentElement.dataset.littleMotion = moving ? "on" : paused || reduced ? "off" : "hidden";
     try {
       localStorage.setItem("kiriya:quiet-motion", paused ? "yes" : "no");
     } catch {
       /* private browsing can disable storage */
     }
-  }, [moving, paused]);
+  }, [moving, paused, reduced]);
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) =>
@@ -121,10 +128,11 @@ export function PlayfulProvider({ children }) {
       } }}
     >
       {children}
-      {/* The charms' shapes, colour and motion come from CSS and follow today's mood. */}
+      {/* The charms' shapes, colour and motion come from CSS (PlayfulWorld.css) and follow today's
+          mood: each travels and sways at once, on the compositor. */}
       <div className="ambient-charms" aria-hidden="true">
-        {Array.from({ length: 9 }, (_, i) => (
-          <span key={i} style={{ "--i": i }} />
+        {CHARM_ORDER.map((k, i) => (
+          <span key={i} style={{ "--i": i, "--k": k }} />
         ))}
       </div>
       <CursorSparkles enabled={moving} />
