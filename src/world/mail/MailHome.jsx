@@ -18,20 +18,12 @@ export const letterKind = (letter) =>
   letter.author === "maomao" ? "a maomao-inspired note" : letter.kind === "birthday" ? "a birthday letter" : letter.kind === "open_when" ? "an open-when letter" : "a letter";
 export const letterDate = (letter) => letter.unlockAt ?? letter.createdAt;
 
-function Chevron() {
-  return (
-    <svg className="mail-chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-      <path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 export function NoteRow({ note, unread, admin, mine = false, onOpen }) {
   const kind = NOTE_KIND[note.kind] ?? NOTE_KIND.note;
   // On Josh's phone her notes say whether she has read them yet; his test notes are his own.
   const status = admin && !mine ? (note.openedAt ? "she read it" : "not opened yet") : null;
   return (
-    <li className="app-row mail-row" data-unread={unread || undefined}>
+    <li className="app-row app-row--more mail-row" data-unread={unread || undefined}>
       <button type="button" className="mail-row__button" onClick={() => onOpen(note)}>
         <span className="mail-row__icon" data-kind={note.kind} aria-hidden="true">
           <Icon name={kind.icon} size={18} />
@@ -47,7 +39,6 @@ export function NoteRow({ note, unread, admin, mine = false, onOpen }) {
         <span className="mail-row__end">
           {unread && <span className="mail-dot" aria-label="new" />}
           <ReactionMark reaction={note.reaction} className="mail-row__reaction" />
-          <Chevron />
         </span>
       </button>
     </li>
@@ -62,7 +53,7 @@ function LetterTile({ letter, admin, isNew, onOpen }) {
       : letter.kind === "open_when" && letter.openWhen
         ? `open when ${letter.openWhen}`
         : when(letterDate(letter));
-  const herMark = admin && letter.author !== "maomao" && !letter.locked ? (letter.openedAt ? "she opened it" : "still sealed") : null;
+  const herMark = admin && letter.author !== "maomao" && !letter.locked ? (letter.openedAt ? "she opened it" : "not opened yet") : null;
   return (
     <li>
       <button type="button" className="mail-letter" data-locked={letter.locked || undefined} onClick={() => onOpen(letter)}>
@@ -115,7 +106,7 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
             </header>
             <ul className="app-list mail-list">
               {newLetters.map((letter) => (
-                <li key={letter.id} className="app-row mail-row mail-row--letter" data-unread={!letter.openedAt || undefined}>
+                <li key={letter.id} className="app-row app-row--more mail-row mail-row--letter" data-unread={!letter.openedAt || undefined}>
                   <button type="button" className="mail-row__button" onClick={() => onOpenLetter(letter)}>
                     <EnvelopeArt className="mail-row__envelope" tone={toneFor(letter)} open={Boolean(letter.openedAt)} reaction={letter.reaction} />
                     <span className="mail-row__text">
@@ -125,7 +116,6 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
                     </span>
                     <span className="mail-row__end">
                       {!letter.openedAt && <span className="mail-dot" aria-label="new" />}
-                      <Chevron />
                     </span>
                   </button>
                 </li>
@@ -134,7 +124,7 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
                 <NoteRow key={note.id} note={note} unread={!note.openedAt} admin={admin} onOpen={onOpenNote} />
               ))}
               {fresh > 0 && (
-                <li className="app-row mail-row" data-unread>
+                <li className="app-row app-row--more mail-row" data-unread>
                   <button type="button" className="mail-row__button" onClick={onOpenJar}>
                     <span className="mail-row__icon mail-row__icon--jar" aria-hidden="true">✿</span>
                     <span className="mail-row__text">
@@ -143,7 +133,6 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
                     </span>
                     <span className="mail-row__end">
                       <span className="mail-dot" aria-label="new" />
-                      <Chevron />
                     </span>
                   </button>
                 </li>
@@ -168,7 +157,9 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
                 {jar.isPending
                   ? "a little love is waiting…"
                   : fresh > 0
-                    ? `${fresh === 1 ? "a new little note" : `${fresh} new little notes`} from ${from}!`
+                    ? admin
+                      ? `${fresh === 1 ? "a new note" : `${fresh} new notes`} she hasn’t pulled yet`
+                      : `${fresh === 1 ? "a new little note" : `${fresh} new little notes`} from ${from}!`
                     : jar.data?.total
                       ? "pull a little note, any time"
                       : "new little notes are on their way"}
@@ -251,13 +242,10 @@ export default function MailHome({ mail, jar, fresh, newIds, onOpenLetter, onOpe
                 <NoteRow key={note.id} note={note} unread={!admin && !note.openedAt} admin={admin} onOpen={onOpenNote} />
               ))}
               {notes.length > NOTES_ON_ROOT && (
-                <li className="app-row mail-row mail-row--more">
+                <li className="app-row app-row--more mail-row mail-row--all">
                   <button type="button" className="mail-row__button" onClick={onAllNotes}>
                     <span className="mail-row__text">
                       <strong>all {notes.length} little notes</strong>
-                    </span>
-                    <span className="mail-row__end">
-                      <Chevron />
                     </span>
                   </button>
                 </li>
