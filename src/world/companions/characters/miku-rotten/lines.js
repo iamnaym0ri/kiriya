@@ -1,3 +1,235 @@
-// Placeholder while the dialogue is written.
-export const lines = { greet: ["hi!"] };
-export const visit = { with: {} };
+// What she says. Original lines in her voice: a sweet, flustered fangirl who "ships" everything
+// (two teacups, the sun and the moon, Kiriya and Josh), doodles in a secret sketchbook, makes tiny
+// dramatic confessions and giggles into her hand. Lowercase, soft, never spicy, no song lyrics.
+// The reader is Kiriya. Each line is a string or { text, expression }; the expression is one of
+// Face.jsx's (soft, happy, giggle, gasp, flustered, sparkle, smug, shy, focused, pray, sleepy,
+// dreamy, worried, pout) and shows on her while the bubble is up.
+const say = (expression, text) => ({ text, expression });
+
+export const lines = {
+  greet: [
+    say("happy", "kiriya! hi! this sketchbook? nothing. no reason."),
+    say("sparkle", "hi hi! i was just thinking about you. a normal amount!"),
+    say("soft", "welcome back~ the cloud's comfier when you're around."),
+    say("giggle", "oh! hello! you caught me mid-doodle. hehe."),
+    say("happy", "you're here! i saved you the good side of the cloud."),
+  ],
+  greetMorning: [
+    say("happy", "good morning, kiriya! i saved you a fresh page."),
+    say("sparkle", "morning! the light's perfect for sketching today~"),
+    say("soft", "you're up! i drew the sunrise. it came out a bit purple."),
+    say("giggle", "morning~ i only stayed up a little bit drawing. a little. hehe."),
+    say("sleepy", "mm… morning… i'm awake. my glasses are awake. mostly."),
+    say("happy", "good morning! today feels like a cute-things-only day."),
+    say("shy", "o-oh, morning! i wasn't doodling you. i was doodling the sun. near you."),
+  ],
+  greetAfternoon: [
+    say("happy", "afternoon, kiriya! snack break? i brought crayons. not snacks. sorry."),
+    say("sparkle", "you're back! i have so much to show you. page one of… nine."),
+    say("soft", "good afternoon~ i kept your spot on the cloud warm."),
+    say("giggle", "afternoon! i may have shipped two pigeons while you were out."),
+    say("focused", "hi hi! one second, finishing a line… there. perfect. hello!"),
+  ],
+  greetEvening: [
+    say("soft", "good evening, kiriya. the sky's doing its pink thing again."),
+    say("happy", "evening~ tell me everything. i'll take notes. in the margins."),
+    say("dreamy", "evenings are for soft drawings and softer people. like you."),
+    say("giggle", "you're home! well, app-home. cloud-home. hehe."),
+    say("sparkle", "evening! i drew you a little moon. it's waving."),
+  ],
+  greetNight: [
+    say("sleepy", "it's late… sleeping soon? i'll close my sketchbook if you do."),
+    say("worried", "kiriya, it's past bedtime. says the girl with no bedtime."),
+    say("soft", "goodnight soon? i'll keep watch from the cloud. very seriously."),
+    say("pray", "a tiny bedtime confession: i drew you a blanket. it's in the margin."),
+    say("shy", "night owl twins? hehe. but you rest first, okay?"),
+  ],
+  idle: [
+    say("focused", "hmm. if i draw the cloud a little rounder…"),
+    say("dreamy", "two clouds drifting closer and closer… stop it, i'm not crying."),
+    say("soft", "the sky is one big page today."),
+    say("giggle", "hehe. i just remembered something cute. not telling."),
+    say("focused", "eraser crumbs everywhere. the mark of genius. or of mistakes."),
+    say("pout", "my pencil keeps getting shorter. it's a tragedy."),
+    say("sparkle", "ooh, an idea! quick, before it floats away!"),
+    say("happy", "sitting on a cloud, swinging my feet. ten out of ten."),
+    say("shy", "is it weird to name your pencils? asking for me."),
+    say("soft", "humming a song… you'd know it. i won't say which."),
+    say("dreamy", "what if the sun and the moon just wanted a sleepover…"),
+    say("worried", "where's my sketchbook?! …oh. it's in my hand. phew."),
+    say("happy", "the cloud bounced when i sat down. i think it likes me."),
+  ],
+  tapped: [
+    say("gasp", "eep! oh, it's you. hi kiriya!"),
+    say("flustered", "n-no, it's not what it looks like! …okay, it's two teacups in love."),
+    say("giggle", "hehe, that tickles. are you checking i'm real?"),
+    say("shy", "you want to see the sketchbook? …maybe. one page."),
+    say("happy", "hi! you have very good tapping technique."),
+    say("smug", "ah. you've found my secret: i'm always drawing."),
+    say("sparkle", "yes? yes?! do you want a doodle? i take requests!"),
+    say("gasp", "wah! my glasses nearly fell off!"),
+    say("pout", "careful! i almost drew a line through a whole ship."),
+    say("soft", "i'm here, i'm here. what do you need?"),
+    say("flustered", "d-don't look at page twelve. any page but twelve."),
+    say("giggle", "poke me again and i'll draw you with cat ears. hehe."),
+  ],
+  picked: [
+    say("flustered", "w-waaah! too high! my sketchbook!"),
+    say("gasp", "we're flying?! nobody told my twin tails!"),
+    say("flustered", "gently, please! i'm carrying important art!"),
+    say("worried", "this is not how the story was supposed to go…"),
+    say("giggle", "hehe, okay, okay. this is a little bit fun."),
+    say("pout", "i'm not a kitten! …fine. nya."),
+  ],
+  putDown: [
+    say("happy", "safe landing! ten points."),
+    say("soft", "phew. thank you for the lift, kiriya."),
+    say("flustered", "my tails are everywhere. give me a second."),
+    say("giggle", "again? no. maybe. later. hehe."),
+    say("gasp", "the cloud caught me! good cloud."),
+    say("smug", "nailed it. please don't check the replay."),
+  ],
+  birthday: [
+    say("sparkle", "happy birthday, kiriya!! i drew you a cake with eleven layers!"),
+    say("sparkle", "september seventeenth! the best page in the whole calendar!"),
+    say("happy", "happy birthday~ every page of my sketchbook is yours today."),
+    say("dreamy", "on your birthday, you're the main character of every story i draw."),
+    say("pray", "birthday confession: i'm so glad you exist. okay. i'm shy now."),
+    say("giggle", "candles, confetti, and a doodle of you in a crown. happy birthday!"),
+  ],
+  sweet: [
+    say("dreamy", "you and josh? my favourite ship. and it's canon!"),
+    say("shy", "you're the cutest person in this whole app. including me."),
+    say("soft", "your cosplay is so good it makes my pencil nervous."),
+    say("happy", "if i drew the best day ever, you'd be right in the middle."),
+    say("dreamy", "josh keeps leaving you little notes. i'm not crying. the cloud is."),
+    say("sparkle", "you're my muse, kiriya. officially. i wrote it in pen."),
+    say("soft", "whatever today was like, you did enough. you are enough."),
+    say("shy", "you make this cloud feel like home. there. i said it."),
+    say("giggle", "i drew a heart for every time you smiled today. i ran out of pages."),
+    say("pray", "confession: i'm your number one fan. okay, josh is. i'm number two."),
+    say("happy", "you, a cosplay and a con hall? my favourite kind of story."),
+    say("soft", "drink some water, okay? artist's orders."),
+  ],
+  visit: [
+    say("sparkle", "ooh, company! quick, look natural!"),
+    say("gasp", "a visitor?! hide the sketchbook! …no, show the sketchbook!"),
+    say("happy", "there's room on the cloud! scoot, scoot."),
+  ],
+  // Her own topics, one per behaviour in index.js.
+  sketching: [
+    say("focused", "shh… drawing… the hard part is always the hands."),
+    say("focused", "one more line… and one more… and one more…"),
+    say("giggle", "i'm drawing you! don't move. or do. i'll draw that too."),
+    say("focused", "cross-hatching. very serious business."),
+    say("pout", "why does every nose i draw look like a bean?"),
+    say("sparkle", "ooh, this one's going on the fridge. the cloud fridge."),
+    say("shy", "no peeking till it's done! …okay, a tiny peek."),
+    say("focused", "sketch now, colour later. colour never. hehe."),
+  ],
+  shipping: [
+    say("sparkle", "look! the moon and the sea. they'd be so cute together!"),
+    say("sparkle", "two teacups holding hands. well. holding handles."),
+    say("giggle", "these two pigeons share a bench every day. i'm just saying."),
+    say("sparkle", "the sun and the moon finally meet at sunset! my heart!"),
+    say("dreamy", "a strawberry and a shortcake. a classic for a reason."),
+    say("happy", "rain and an umbrella! they look out for each other!"),
+    say("sparkle", "headphones and a song. inseparable. iconic."),
+    say("giggle", "i shipped those two clouds. look, they're drifting closer!"),
+  ],
+  daydream: [
+    say("dreamy", "what if every cloud had a little someone sitting on it…"),
+    say("dreamy", "a sketchbook full of happy endings. that's the dream."),
+    say("dreamy", "if i close my eyes i can hear a con hall. merch! crowds!"),
+    say("soft", "someday i'll draw a whole comic about you. volume one."),
+    say("dreamy", "a tiny café, a window seat, a brand new sketchbook…"),
+  ],
+  confess: [
+    say("pray", "i have a confession… i stayed up drawing again."),
+    say("pray", "forgive me… i ate the last strawberry. it looked lonely."),
+    say("pray", "confession: i own fourteen sketchbooks. this is fifteen."),
+    say("pray", "i promised i'd stop shipping things. then i shipped the promise."),
+    say("pray", "i confess… i named the cloud. its name is fluffy."),
+    say("pray", "i doodled in the margins of something important. again."),
+    say("flustered", "i swore off cute things today. today i lost. twice."),
+  ],
+  giggle: [
+    say("giggle", "hehe… nothing! nothing. hehe."),
+    say("giggle", "i just thought of something too cute to say out loud."),
+    say("giggle", "fufu… my sketchbook knows things."),
+    say("giggle", "sorry, sorry! i remembered a doodle. hehe."),
+  ],
+  peeking: [
+    say("shy", "…is the coast clear?"),
+    say("shy", "i'm not hiding. this is a… reading position."),
+    say("shy", "peekaboo… did you see what i drew? no? good."),
+    say("worried", "did somebody say “show us the sketchbook”? no? phew."),
+  ],
+  theory: [
+    say("smug", "heh. i've noticed something. those two? best friends. definitely."),
+    say("smug", "my analysis is complete. the answer is: cute."),
+    say("smug", "according to my notes, you smile more on con days."),
+    say("smug", "the glasses see everything, kiriya. everything."),
+    say("smug", "theory: every snack tastes better shared."),
+  ],
+  fluster: [
+    say("flustered", "wh-why is it so warm on this cloud?!"),
+    say("flustered", "too cute… i can't… my glasses are fogging up!"),
+    say("flustered", "nooo, my eraser! it fell! it lives in the sky now!"),
+    say("flustered", "i wasn't staring! i was sketching. with my eyes."),
+  ],
+  cheer: [
+    say("sparkle", "go go kiriya! you can do anything!"),
+    say("sparkle", "cheering for you! with my paddle! it has a heart on it!"),
+    say("sparkle", "you're doing amazing! ten out of ten! eleven!"),
+    say("sparkle", "fighting! i believe in you!"),
+  ],
+  resist: [
+    say("flustered", "no! no more ships today! …unless."),
+    say("flustered", "must… resist… cute… pigeons…"),
+    say("flustered", "the sketchbook is closed! closed! …mostly closed."),
+  ],
+  sleepy: [
+    say("sleepy", "zz… just resting my glasses…"),
+    say("sleepy", "mm… five more pages…"),
+    say("sleepy", "the cloud is so soft… zz…"),
+    say("sleepy", "dreaming in pencil… zz…"),
+  ],
+};
+
+// Call and response when she and another character share the screen: [hers, theirs]. Each reply
+// is written in the other character's own voice (Maomao's tidy deadpan, Bamby's bright warmth,
+// classic Miku's sparkle, KAITO's gentle big-brother ease) and uses an expression from that
+// character's own face rig.
+export const visit = {
+  with: {
+    maomao: [
+      [say("sparkle", "maomao! can i draw you holding a herb? for… science."), say("deadpan", "Fine. But you're blocking my light.")],
+      [say("dreamy", "you and your herbs. a love story for the ages."), say("thinking", "They're medicine. Though I'll admit I'm fond of them.")],
+      [say("worried", "maomao, is this mushroom cute or poisonous?"), say("deadpan", "Both. Mostly the second. Put it down, please.")],
+      [say("happy", "i drew you a whole apothecary! with a kitten!"), say("skeptical", "The labels are all wrong. The kitten is acceptable.")],
+      [say("soft", "do you ever just sit on a cloud and think?"), say("pleased", "I usually think on the floor. The cloud is nicer, I'll grant you.")],
+    ],
+    bambi: [
+      [say("gasp", "an idol?! on MY cloud?! h-hi, bamby!"), say("happy", "hi hi! your cloud is so fluffy~ can i stay a little?")],
+      [say("sparkle", "bamby, can you do a spin? for reference! for art!"), say("happy", "a spin? easy! …ta-da! did you get it?")],
+      [say("happy", "i drew you and your members having a picnic!"), say("sparkle", "wah, so cute! can i show them? they'll love it!")],
+      [say("flustered", "your dancing is so good it makes my pencil wobble."), say("wink", "hehe, thank you! want to learn the move? one, two…")],
+      [say("soft", "is it true you practise every single day?"), say("happy", "every day! but today's a cloud break day~")],
+    ],
+    miku: [
+      [say("gasp", "wait… are you me? from a different song?"), say("happy", "and you're me with glasses! so cute! let's do a duet!")],
+      [say("dreamy", "your twin tails are so pretty and teal…"), say("joy", "yours are so green! like a forest that sings!")],
+      [say("shy", "can i draw you? you're my favourite reference."), say("happy", "only if you draw me with a leek! it's my best side.")],
+      [say("happy", "i've been practising my high notes too!"), say("sing", "really? let's try one together! la~ ♪")],
+      [say("shy", "shh… don't tell anyone about my sketchbook."), say("giggle", "my lips are sealed! …can i see it, though?")],
+    ],
+    kaito: [
+      [say("dreamy", "kaito and his ice cream… the most loyal couple in history."), say("happy", "ha ha, we do go way back. want a scoop?")],
+      [say("sparkle", "kaito! hold the cone just like that! don't move!"), say("worried", "it's melting, though… can i move a little?")],
+      [say("soft", "is your scarf warm? it looks like a hug."), say("gentle", "very warm. i'd lend it to you, but you're on a cloud.")],
+      [say("happy", "i drew you a cloud made of ice cream!"), say("sparkle", "that might be the nicest thing anyone's drawn for me.")],
+      [say("smug", "kaito. vanilla or chocolate? it decides everything."), say("sheepish", "…both? can i say both? i'm saying both.")],
+    ],
+  },
+};
