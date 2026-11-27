@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GameFrame, GameSymbol, MaomaoComment, SYMBOL_NAMES } from "./GamePieces.jsx";
 import { LANTERNS_LIT, SEQUENCE_SYMBOLS, lanternNeighbors, lanternTurn, newLanternGame, newSequenceGame, sequenceTurn } from "./littleGames.js";
 
@@ -13,11 +13,14 @@ const SEQUENCE_COMMENTS = {
   done: ["Three notes, correctly copied. I'll trust you with the labels now.", "All in order. You've saved me a surprising amount of work."],
 };
 
-export function HerbSequence() {
+export function HerbSequence({ onReward }) {
   const [game, setGame] = useState(() => newSequenceGame());
   const study = game.phase === "study";
   const solved = game.phase === "solved";
   const done = solved && game.round === 2;
+  useEffect(() => {
+    if (done) onReward?.({ sticker: "st-sprig", game: "herb-sequence", reason: "three notes copied" });
+  }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
   const lines = SEQUENCE_COMMENTS[game.event];
   const expression = solved ? "pleased" : game.event === "pick" || study ? "writing" : game.phase === "retry" ? "thinking" : "curious";
   const act = action => setGame(current => sequenceTurn(current, action));
@@ -64,11 +67,14 @@ const LANTERN_COMMENTS = {
   done: ["Three corridors lit. Excellent. I can finally get back to the storeroom.", "Every lantern accounted for. You have earned a quiet nod of approval."],
 };
 
-export function LanternPuzzle() {
+export function LanternPuzzle({ onReward }) {
   const [game, setGame] = useState(() => newLanternGame());
   const [hovered, setHovered] = useState(null);
   const solved = game.board === LANTERNS_LIT;
   const done = solved && game.round === 2;
+  useEffect(() => {
+    if (done) onReward?.({ sticker: "st-star", game: "lantern-puzzle", reason: "three corridors lit" });
+  }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
   const affected = hovered === null ? [] : lanternNeighbors(hovered);
   const lines = LANTERN_COMMENTS[game.event];
   const act = action => setGame(current => lanternTurn(current, action));

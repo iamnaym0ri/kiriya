@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { usePlayful, Bow } from "../../shared/play/PlayfulWorld.jsx";
 import { celebrate } from "../../shared/effects.js";
 import MaomaoMascot from "../mascot/MaomaoMascot.jsx";
 import { PALETTE_PASS_SCORE, newPaletteRounds, blendColour, matchScore } from "./palette.js";
 import "./PlayDesk.css";
-export default function PaletteParty() {
+export default function PaletteParty({ onReward }) {
   const [round, setRound] = useState(0);
   const [rounds, setRounds] = useState(() => newPaletteRounds());
   const [amount, setAmount] = useState(50);
@@ -17,6 +17,9 @@ export default function PaletteParty() {
   const [exact, setExact] = useState(false);
   const { moving } = usePlayful();
   const done = round === rounds.length;
+  useEffect(() => {
+    if (done) onReward?.({ sticker: "st-brush", game: "palette-party", reason: "a whole palette mixed" });
+  }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
   const current = rounds[Math.min(round, rounds.length - 1)];
   const colour = blendColour(current.a, current.b, amount);
   const matched = checked !== null && checked >= PALETTE_PASS_SCORE;
