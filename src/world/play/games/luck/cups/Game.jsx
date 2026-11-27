@@ -75,8 +75,11 @@ export default function CupsGame({ onReward }) {
   const knownBest = useRef(0);
   knownBest.current = Math.max(knownBest.current, best);
 
-  useEffect(() => () => {
-    alive.current = false;
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
   }, []);
 
   // Pause the shuffle while she's away; it carries on exactly where it was.
