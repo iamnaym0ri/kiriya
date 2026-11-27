@@ -1,0 +1,902 @@
+/* The middle-of-the-screen moment in notes & letters (Reveal.jsx, Reveals.jsx, Papers.jsx): a soft
+   lilac veil over everything, the paper centred between the status bar and the tab bar, what goes
+   under it, and the paper's three-panel fold. Transform and opacity only; nothing behind scrolls. */
+
+html.mail-reveal-open,
+html.mail-reveal-open body {
+  overflow: hidden;
+}
+
+.mail-reveal {
+  --reveal-w: 352px;
+  --reveal-ink: var(--theme-ink, #54385f);
+  --reveal-muted: var(--theme-muted, #7a6583);
+  --reveal-accent: var(--theme-accent, #785383);
+  --reveal-line: var(--theme-line, #d5bedf);
+  --reveal-paper: var(--theme-paper, #fff9fd);
+  position: fixed;
+  inset: 0;
+  z-index: 2147482000;
+  outline: none;
+  overscroll-behavior: contain;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--reveal-ink);
+}
+.mail-reveal[data-kind="letter"] {
+  --reveal-w: 404px;
+}
+.mail-reveal[data-kind="note"] {
+  --reveal-w: 372px;
+}
+
+.mail-reveal__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(80% 50% at 50% 44%, color-mix(in srgb, #fff8fd 70%, transparent), transparent 80%),
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-page, #efe6f5) 86%, transparent), color-mix(in srgb, var(--theme-soft, #e4d5ec) 88%, transparent));
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  backdrop-filter: blur(16px) saturate(1.25);
+  animation: reveal-veil-in 320ms ease-out both;
+}
+
+/* The column: clear of the status bar / Dynamic Island (and the ×) at the top, and of the tab bar
+   at the bottom, 16 pt from the sides. Taps on its empty parts fall through to the veil. */
+.mail-reveal__stage {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 58px);
+  bottom: calc(max(var(--app-tabs-h, 0px), env(safe-area-inset-bottom, 0px)) + 14px);
+  left: calc(env(safe-area-inset-left, 0px) + 16px);
+  right: calc(env(safe-area-inset-right, 0px) + 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  pointer-events: none;
+}
+.mail-reveal__stage > * {
+  pointer-events: auto;
+}
+
+.mail-reveal__close {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 7px);
+  right: calc(env(safe-area-inset-right, 0px) + 10px);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--reveal-muted);
+  cursor: pointer;
+  animation: reveal-fade-in 300ms 200ms ease-out both;
+}
+.mail-reveal__close::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--reveal-paper) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--reveal-line) 80%, transparent);
+  box-shadow: 0 4px 12px -6px rgb(84 56 95 / 0.4);
+}
+.mail-reveal__close svg {
+  position: relative;
+}
+
+/* ---------- the paper(s) ---------- */
+.mail-reveal__cards {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+  width: min(100%, var(--reveal-w));
+  pointer-events: none;
+}
+.reveal-card,
+.reveal-card__base,
+.reveal-paper {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+.reveal-card {
+  position: relative;
+  pointer-events: auto;
+}
+.reveal-card[data-phase="held"] {
+  visibility: hidden;
+}
+.reveal-card[data-phase="folded"] .reveal-card__base,
+.reveal-card[data-phase="held"] .reveal-card__base {
+  visibility: hidden;
+}
+.reveal-paper {
+  position: relative;
+  max-height: 100%;
+  overflow-wrap: anywhere;
+}
+.reveal-scroll {
+  position: relative;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  outline: none;
+}
+.reveal-scroll::-webkit-scrollbar {
+  display: none;
+}
+.reveal-scroll[data-below="1"] {
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 44px), transparent);
+}
+.reveal-scroll[data-above="1"] {
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 32px);
+  mask-image: linear-gradient(180deg, transparent, #000 32px);
+}
+.reveal-scroll[data-above="1"][data-below="1"] {
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 32px, #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 32px, #000 calc(100% - 44px), transparent);
+}
+
+/* A strip of tape that presses the paper down once it's open. */
+.reveal-paper__tape {
+  position: absolute;
+  z-index: 2;
+  top: -11px;
+  left: 50%;
+  width: 98px;
+  height: 24px;
+  translate: -50% 0;
+  rotate: -3deg;
+  background: color-mix(in srgb, #ecc3dc 80%, transparent);
+  clip-path: polygon(2% 0, 98% 0, 100% 14%, 98% 28%, 100% 43%, 98% 58%, 100% 76%, 98% 100%, 2% 100%, 0 84%, 2% 68%, 0 52%, 2% 36%, 0 18%);
+  pointer-events: none;
+}
+.reveal-fold .reveal-paper__tape {
+  visibility: hidden;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-card[data-phase="open"][data-mode="unfold"] .reveal-card__base .reveal-paper__tape {
+    animation: reveal-tape 380ms cubic-bezier(0.2, 0.8, 0.3, 1.2) both;
+  }
+}
+
+/* ---------- the fold: three copies of the paper, hinged at its thirds ---------- */
+.reveal-fold {
+  position: absolute;
+  inset: 0;
+  perspective: 1100px;
+  perspective-origin: 50% 30%;
+  pointer-events: none;
+}
+.reveal-fold__hinge {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.reveal-fold__h2 {
+  transform-origin: 50% 33.3333%;
+  transform: rotateX(178deg);
+}
+.reveal-fold__h3 {
+  transform-origin: 50% 66.6667%;
+  transform: rotateX(172deg);
+  opacity: 0;
+}
+.reveal-fold__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.reveal-fold__face > .reveal-paper {
+  flex: 1 1 auto;
+  height: 100%;
+  max-height: none;
+}
+.reveal-fold__p1 {
+  clip-path: inset(-40px -40px 66.6667% -40px);
+}
+.reveal-fold__p2 {
+  clip-path: inset(33.3333% -40px 33.3333% -40px);
+}
+.reveal-fold__p3 {
+  clip-path: inset(66.6667% -40px -40px -40px);
+}
+.reveal-fold__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(90 50 110 / 0.5), rgb(90 50 110 / 0.15));
+  opacity: 0;
+  pointer-events: none;
+}
+/* The outside of the folded paper: plain, with a little heart sticker holding it shut. */
+.reveal-fold__back {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e3d2df;
+  border-radius: 5px;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.7), transparent 40%),
+    linear-gradient(180deg, #fbf4ec, #f5ebe4);
+  box-shadow: 0 10px 24px -14px rgb(84 56 95 / 0.55);
+  transform: rotateX(180deg);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.reveal-fold__b2 {
+  top: 33.3333%;
+  height: 33.3334%;
+}
+.reveal-fold__b3 {
+  top: 66.6667%;
+  height: 33.3333%;
+}
+.reveal-fold__seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #a5789f;
+  font: 400 21px/1 var(--font-hand);
+}
+.reveal-fold__sticker {
+  width: 32px;
+  height: 32px;
+  rotate: -8deg;
+}
+.reveal-fold__word {
+  color: #e8ca86;
+  font: 26px/1 Georgia, serif;
+}
+/* the outside's two creases, like a letter folded in thirds */
+.reveal-fold__back::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px dashed color-mix(in srgb, #d8bfd2 70%, transparent);
+  border-radius: 3px;
+  pointer-events: none;
+}
+.reveal-fold__back:has(.reveal-fold__word) {
+  background: linear-gradient(180deg, #4d3768, #3d2954);
+  border-color: #7a62a0;
+}
+
+/* A little puff of hearts as it opens. */
+.reveal-hearts {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  pointer-events: none;
+}
+.reveal-hearts span {
+  position: absolute;
+  top: 4px;
+  left: calc(50% + (var(--i) - 2.5) * 36px);
+  color: #e0476f;
+  font: 19px/1 var(--font-hand);
+  opacity: 0;
+  animation: reveal-heart 1150ms calc(var(--i) * 55ms) ease-out both;
+}
+.reveal-hearts span:nth-child(3n) {
+  color: #b58ad0;
+}
+
+/* ---------- what goes under the paper ---------- */
+.mail-reveal__after {
+  flex: none;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(100%, var(--reveal-w));
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 300ms ease-out,
+    transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.mail-reveal__after:empty {
+  display: none;
+}
+.mail-reveal__after[data-shown] {
+  opacity: 1;
+  transform: none;
+}
+.mail-reveal__after:not([data-shown]) {
+  pointer-events: none;
+}
+.mail-reveal__after .reaction-bar {
+  justify-items: center;
+  width: 100%;
+}
+.mail-reveal__after .reaction-bar__row {
+  justify-content: center;
+}
+.mail-reveal__after .reaction-bar__heart,
+.mail-reveal__after .reaction-bar__more {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--reveal-line) 85%, transparent);
+  background: color-mix(in srgb, var(--reveal-paper) 92%, transparent);
+  box-shadow: 0 6px 16px -10px rgb(84 56 95 / 0.55);
+}
+.mail-reveal__after .reaction-bar__heart[aria-pressed="true"],
+.mail-reveal__after .reaction-bar__more[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--theme-soft, #e4d5ec) 92%, #fff);
+}
+.mail-reveal__after .reaction-bar__note {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--reveal-muted);
+  font: 500 12.5px/1.4 var(--font-ui);
+  text-align: center;
+  text-wrap: balance;
+}
+.mail-reveal__after .reaction-bar__tray {
+  max-width: 100%;
+}
+.mail-reveal__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.mail-reveal__pill,
+.mail-reveal__pill.save-memory {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid color-mix(in srgb, var(--reveal-line) 85%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--reveal-paper) 92%, transparent);
+  color: var(--reveal-accent);
+  font: 400 19px/1 var(--font-hand);
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px -10px rgb(84 56 95 / 0.55);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.mail-reveal__pill:disabled {
+  opacity: 0.7;
+}
+.mail-reveal__pill:active {
+  transform: scale(0.97);
+}
+.mail-reveal__pill--jar {
+  padding-left: 10px;
+  border-color: transparent;
+  background: linear-gradient(135deg, #8f63ad, #a4609a);
+  color: #fff;
+  font: 600 15px/1 var(--font-ui);
+}
+.mail-reveal__pill--jar .jar-mini {
+  width: 26px;
+  margin: -4px 0 -2px;
+}
+.mail-reveal__pill--go {
+  border-color: transparent;
+  background: var(--reveal-accent);
+  color: #fff;
+  font: 600 14.5px/1 var(--font-ui);
+}
+
+/* While the jar's note is on its way (only when the next one wasn't ready yet). */
+.jar-finding {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 24px 0;
+  color: var(--reveal-muted);
+  font: 400 21px/1.2 var(--font-hand);
+  pointer-events: auto;
+}
+.jar-finding__note {
+  width: 120px;
+  height: 64px;
+  border: 1px solid #e3d2df;
+  border-radius: 5px;
+  background:
+    radial-gradient(circle at 50% 50%, #e0476f 0 7px, transparent 8px),
+    linear-gradient(180deg, #fbf4ec, #f5ebe4);
+  box-shadow: 0 10px 24px -14px rgb(84 56 95 / 0.55);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .jar-finding__note {
+    animation: reveal-bob 900ms ease-in-out infinite alternate;
+  }
+}
+
+/* A paper that just left, swept aside (the jar's "another one"). */
+.mail-reveal__ghost {
+  position: absolute;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+.mail-reveal__ghost > .reveal-paper {
+  flex: 1 1 auto;
+  height: 100%;
+  max-height: none;
+}
+
+/* ---------- the papers ---------- */
+
+/* a note from the jar, on the jar's cream paper */
+.jar-paper {
+  border: 1px solid #decbdc;
+  border-radius: 6px;
+  background:
+    radial-gradient(120% 50% at 50% 0%, #fffefb, transparent 70%),
+    #fffdf9;
+  color: #4a3456;
+  box-shadow: 0 2px 0 #f3e8f1, 0 22px 40px -22px rgb(84 56 95 / 0.55);
+}
+.jar-paper__scroll {
+  padding: 28px 24px 20px;
+}
+.jar-paper__label {
+  margin: 0;
+  color: #8b6c92;
+  font: 10px/1.5 var(--font-pixel);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.jar-paper__hey {
+  margin: 14px 0 6px;
+  color: #a57aa1;
+  font: 400 24px/1.1 var(--font-hand);
+}
+.jar-paper__text {
+  margin: 0 0 16px;
+  font: 400 27px/1.22 var(--font-hand);
+  white-space: pre-line;
+}
+.jar-paper__byline {
+  margin: 0;
+  color: #917297;
+  font: 400 21px/1.2 var(--font-hand);
+  text-align: right;
+}
+.jar-paper__foot {
+  margin: 14px 0 0;
+  padding-top: 10px;
+  border-top: 1px dashed #e1cedf;
+  color: #836b8b;
+  font: 500 12px/1.4 var(--font-ui);
+}
+.jar-paper[data-sample] .jar-paper__label {
+  color: #b0305f;
+}
+
+/* a little note, on notepad paper */
+.note-sheet {
+  --rule: 30px;
+  border: 1px solid #ebdfe5;
+  border-radius: 5px;
+  background: #fffdf9;
+  color: #4a3456;
+  box-shadow: 0 1px 2px rgb(84 56 95 / 0.06), 0 22px 40px -22px rgb(84 56 95 / 0.5);
+}
+.note-sheet__scroll {
+  border-radius: inherit;
+  padding: 22px 20px 18px 44px;
+  background:
+    linear-gradient(90deg, transparent 30px, #f2b4cb 30px, #f2b4cb 31.5px, transparent 31.5px),
+    #fffdf9;
+}
+.note-sheet__tape {
+  width: 104px;
+}
+.note-sheet[data-kind="surprise"] .note-sheet__tape {
+  background: color-mix(in srgb, #f2c9a7 78%, transparent);
+}
+.note-sheet[data-kind="update"] .note-sheet__tape {
+  background: color-mix(in srgb, #c9d9f0 82%, transparent);
+}
+.note-sheet__mark {
+  position: absolute;
+  z-index: 1;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f6edf7;
+  color: var(--reveal-accent);
+}
+.note-sheet[data-kind="surprise"] .note-sheet__mark {
+  background: #fbe3ec;
+  color: #b04a78;
+}
+.note-sheet[data-kind="update"] .note-sheet__mark {
+  background: #f8edd6;
+  color: #9a7432;
+}
+.note-sheet__meta {
+  margin: 0 36px 0 0;
+  color: var(--reveal-muted);
+  font: 600 11.5px/1.4 var(--font-ui);
+  letter-spacing: 0.02em;
+}
+.note-sheet__title {
+  margin: 4px 0 8px;
+  color: #6f3f7f;
+  font: 700 25px/1.15 var(--font-hand);
+  text-wrap: balance;
+}
+.note-sheet__body {
+  background: repeating-linear-gradient(180deg, transparent 0 calc(var(--rule) - 1px), #dfe6f2 calc(var(--rule) - 1px) var(--rule));
+}
+.note-sheet__body p {
+  margin: 0 0 var(--rule);
+  font: 400 21px/var(--rule) var(--font-hand);
+  white-space: pre-line;
+}
+.note-sheet__body p:last-child {
+  margin-bottom: 0;
+}
+.note-sheet__sign {
+  margin: 12px 0 0;
+  color: #8a5b93;
+  font: 400 21px/var(--rule) var(--font-hand);
+  text-align: right;
+}
+
+/* a letter, on its writing paper */
+.letter-sheet {
+  border: 1px solid #ece0e6;
+  border-radius: 6px;
+  background:
+    radial-gradient(120% 60% at 50% 0%, #fffefb 0%, transparent 70%),
+    linear-gradient(180deg, #fffdf8, #fdf7ef);
+  color: #4a3456;
+  box-shadow: 0 1px 2px rgb(84 56 95 / 0.06), 0 24px 44px -24px rgb(84 56 95 / 0.55);
+}
+.letter-sheet::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 7px;
+  border: 1px solid #efe1e9;
+  border-radius: 3px;
+  pointer-events: none;
+}
+/* The folds stay, faintly, where it was folded in thirds. */
+.letter-sheet::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 32.9%, rgb(120 80 130 / 0.06) 33.3%, rgb(255 255 255 / 0.55) 33.6%, transparent 34.2%, transparent 66.2%, rgb(120 80 130 / 0.06) 66.6%, rgb(255 255 255 / 0.55) 66.9%, transparent 67.5%);
+  pointer-events: none;
+}
+.letter-sheet__scroll {
+  padding: 16px 24px 24px;
+}
+.letter-sheet__sprig {
+  display: grid;
+  place-items: center;
+  opacity: 0.9;
+}
+.letter-sheet__meta {
+  margin: 2px 0 0;
+  color: var(--reveal-muted);
+  font: 600 11px/1.4 var(--font-ui);
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+.letter-sheet__title {
+  margin: 4px 0 0;
+  color: #6f3f7f;
+  font: 700 24px/1.15 var(--font-hand);
+  text-align: center;
+  text-wrap: balance;
+}
+.letter-sheet__when {
+  margin: 6px 0 0;
+  color: #8a5b93;
+  font: 400 19px/1.2 var(--font-hand);
+  text-align: center;
+}
+.letter-sheet__greeting {
+  margin: 16px 0 8px;
+  color: #8a5b93;
+  font: 400 27px/1.2 "Parisienne", cursive;
+}
+.letter-sheet__body {
+  margin-top: 12px;
+}
+.letter-sheet__greeting + .letter-sheet__body {
+  margin-top: 0;
+}
+.letter-sheet__body p {
+  margin: 0 0 14px;
+  font: 400 21px/1.45 var(--font-hand);
+  white-space: pre-line;
+}
+.letter-sheet__sign {
+  margin-top: 18px;
+  text-align: right;
+}
+.letter-sheet__yours {
+  margin: 0;
+  color: var(--reveal-muted);
+  font: 400 19px/1.3 var(--font-hand);
+}
+.letter-sheet__name {
+  margin: 0;
+  color: #6f3f7f;
+  font: 400 34px/1.15 "Parisienne", cursive;
+}
+.letter-sheet[data-tone="night"] {
+  border-color: #6b5590;
+  background: linear-gradient(180deg, #fbf7ff, #f3ecfb);
+}
+
+/* a letter that isn't ready yet */
+.sealed-paper {
+  border: 1px solid #e6dcef;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fffdfc, #f8f2fb);
+  box-shadow: 0 22px 40px -22px rgb(84 56 95 / 0.55);
+}
+.sealed-paper__scroll {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 22px 20px 20px;
+  text-align: center;
+}
+.sealed-paper__envelope {
+  width: min(210px, 70%);
+  margin-bottom: 10px;
+}
+.sealed-paper__from {
+  margin: 0;
+  color: var(--reveal-muted);
+  font: 600 11.5px/1.4 var(--font-ui);
+}
+.sealed-paper__title {
+  margin: 0;
+  color: var(--reveal-ink);
+  font: 700 25px/1.15 var(--font-hand);
+  text-wrap: balance;
+}
+.sealed-paper__when {
+  margin: 6px 0 0;
+  color: #6f3f7f;
+  font: 400 21px/1.2 var(--font-hand);
+}
+.sealed-paper__count {
+  margin: 6px 0 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #f8edd6;
+  color: #85602a;
+  font: 600 13.5px/1 var(--font-ui);
+}
+.sealed-paper__note {
+  margin: 4px 0 0;
+  max-width: 30em;
+  color: var(--reveal-muted);
+  font: 400 14px/1.5 var(--font-ui);
+}
+
+/* a few quiet words */
+.message-paper {
+  border: 1px solid #e6dcef;
+  border-radius: 6px;
+  background: #fffdf9;
+  box-shadow: 0 22px 40px -22px rgb(84 56 95 / 0.55);
+}
+.message-paper__scroll {
+  padding: 28px 22px 22px;
+  text-align: center;
+}
+.message-paper__title {
+  margin: 0 0 6px;
+  color: var(--reveal-ink);
+  font: 700 25px/1.15 var(--font-hand);
+  text-wrap: balance;
+}
+.message-paper p {
+  margin: 0;
+  color: var(--reveal-muted);
+  font: 400 15px/1.5 var(--font-ui);
+}
+
+/* ---------- a sealed letter's first opening (Envelope.jsx), over the waiting letter ---------- */
+.envelope-opening {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: min(300px, 86%);
+  translate: -50% -50%;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.envelope-opening__art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.envelope-opening__seal {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: envelope-seal 400ms 520ms ease-in forwards;
+}
+.envelope-opening__flap {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: envelope-flap-close 240ms 860ms ease-in forwards;
+}
+.envelope-opening__flap-back {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scaleY(0);
+  animation: envelope-flap-open 280ms 1090ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+.envelope-opening__paper {
+  animation: envelope-paper 480ms 1300ms cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
+}
+.envelope-opening[data-leaving] {
+  pointer-events: none;
+  animation: envelope-sink 480ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+.envelope-opening[data-leaving] .envelope-opening__paper {
+  visibility: hidden;
+}
+
+/* ---------- motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .mail-reveal__veil,
+  .mail-reveal__close {
+    animation-duration: 160ms;
+    animation-delay: 0ms;
+  }
+  .reveal-card {
+    animation: reveal-fade-in 180ms ease-out both;
+  }
+  .mail-reveal__after {
+    transform: none;
+    transition: opacity 180ms ease-out;
+  }
+}
+.mail-reveal[data-exit] {
+  pointer-events: none;
+}
+.mail-reveal[data-exit] .mail-reveal__veil,
+.mail-reveal[data-exit] .mail-reveal__close {
+  animation: reveal-fade-out 240ms ease-in forwards;
+}
+.mail-reveal[data-exit="fade"] .mail-reveal__stage {
+  animation: reveal-out 220ms ease-in forwards;
+}
+.mail-reveal[data-exit="swipe"] .mail-reveal__stage {
+  animation: reveal-swipe-out 240ms ease-in forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mail-reveal[data-exit="fade"] .mail-reveal__stage,
+  .mail-reveal[data-exit="swipe"] .mail-reveal__stage {
+    animation: reveal-fade-out 160ms ease-in forwards;
+  }
+}
+
+@keyframes reveal-veil-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes reveal-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes reveal-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes reveal-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.96);
+  }
+}
+@keyframes reveal-swipe-out {
+  from {
+    transform: translate3d(0, var(--drag, 0px), 0);
+  }
+  to {
+    opacity: 0.4;
+    transform: translate3d(0, 100vh, 0);
+  }
+}
+@keyframes reveal-tape {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(1.18);
+  }
+}
+@keyframes reveal-heart {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.5);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc((var(--i) - 2.5) * 7px), -54px) scale(1.1) rotate(calc((var(--i) - 2.5) * 12deg));
+  }
+}
+@keyframes reveal-bob {
+  from {
+    transform: translateY(-4px) rotate(-3deg);
+  }
+  to {
+    transform: translateY(4px) rotate(3deg);
+  }
+}
+@keyframes envelope-seal {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(0.2) rotate(30deg);
+    opacity: 0;
+  }
+}
+@keyframes envelope-flap-close {
+  to {
+    transform: scaleY(0);
+  }
+}
+@keyframes envelope-flap-open {
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes envelope-paper {
+  to {
+    transform: translateY(-58px);
+  }
+}
+@keyframes envelope-sink {
+  to {
+    opacity: 0;
+    transform: translateY(46px) scale(0.92);
+  }
+}
