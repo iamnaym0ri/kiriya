@@ -10,6 +10,7 @@ import {
   chatSummary,
   names,
   deleteMessage,
+  editMessage,
   listMemories,
   listMessages,
   listStickers,
@@ -79,12 +80,23 @@ chatRoutes.post("/messages", async (c) => {
   }
 });
 
+chatRoutes.patch("/messages/:id", async (c) => {
+  const id = uuid.safeParse(c.req.param("id"));
+  if (!id.success) return c.json({ error: "not_found", message: "That message isn’t here." }, 404);
+  try {
+    const message = await editMessage(await getDb(), role(c), id.data, await c.req.json().catch(() => null));
+    return message ? c.json(message) : c.json({ error: "not_found", message: "Only your own words and captions can be edited." }, 404);
+  } catch (error) {
+    return fail(c, error, "That edit didn’t save.");
+  }
+});
+
 chatRoutes.delete("/messages/:id", async (c) => {
   const id = uuid.safeParse(c.req.param("id"));
   if (!id.success) return c.json({ error: "not_found", message: "That message isn’t here." }, 404);
-  return (await deleteMessage(await getDb(), role(c), id.data))
+  return (await deleteMessage(await getDb(), role(c), id.data, { after: background }))
     ? c.json({ ok: true })
-    : c.json({ error: "not_found", message: "Only your own messages can be unsent." }, 404);
+    : c.json({ error: "not_found", message: "Only your own messages can be deleted." }, 404);
 });
 
 chatRoutes.put("/messages/:id/reaction", async (c) => {
@@ -99,7 +111,10 @@ chatRoutes.post("/read", async (c) => c.json(await markRead(await getDb(), role(
 
 // Polling fallback only: with Ably, typing travels straight between the two phones.
 chatRoutes.post("/typing", async (c) => {
-  await setTyping(await getDb(), role(c));
+  const body = z.object({ stop: z.boolean().optional() }).strict().safeParse((await c.req.json().catch(() => null)) ?? {});
+  const db = await getDb();
+  if (body.success && body.data.stop) await clearTyping(db, role(c));
+  else await setTyping(db, role(c));
   return c.json({ ok: true });
 });
 
@@ -140,16 +155,54 @@ chatRoutes.delete("/stickers/:id", async (c) => {
 const gifCache = new Map();
 const GIF_TTL = 10 * 60 * 1000;
 const giphyKey = () => process.env.GIPHY_API_KEY;
-const gifShape = (gif) => ({
-  id: gif.id,
-  title: gif.title ?? "",
-  url: gif.images?.fixed_width?.url ?? gif.images?.original?.url,
-  still: gif.images?.fixed_width_still?.url ?? null,
-  width: Number(gif.images?.fixed_width?.width) || null,
-  height: Number(gif.images?.fixed_width?.height) || null,
-});
+const GIF_PAGE = 24;
+const MP4_BUDGET = 3_000_000; // bytes: GIPHY's full-size mp4 is crisp and still light; past this, a smaller one
+const WEBP_BUDGET = 2_500_000;
+const size = (value) => Number(value) || Infinity;
+/**
+ * The renditions the chat uses (GIPHY's rendition guide): in a message, the full-size MP4 played as a
+ * muted looping video (sharp, and a fraction of the GIF's weight) with a 480w still as its poster;
+ * in the picker, the 200w animated WebP. The full GIF is never used.
+ */
+export function gifShape(gif) {
+  const images = gif.images ?? {};
+  const original = images.original ?? {};
+  const fixed = images.fixed_width ?? {};
+  const small = images.downsized_small ?? {};
+  const mp4 = original.mp4 && size(original.mp4_size) <= MP4_BUDGET ? original.mp4 : small.mp4 || fixed.mp4 || original.mp4 || null;
+  const webp = original.webp && size(original.webp_size) <= WEBP_BUDGET ? original.webp : fixed.webp || null;
+  return {
+    id: gif.id,
+    title: gif.title ?? "",
+    // `url` stays a plain image for anything that can only show an <img> (memories, old builds).
+    url: webp ?? fixed.url ?? original.url,
+    mp4,
+    still: images["480w_still"]?.url ?? images.original_still?.url ?? images.fixed_width_still?.url ?? null,
+    width: Number(original.width) || Number(fixed.width) || null,
+    height: Number(original.height) || Number(fixed.height) || null,
+    preview: {
+      url: fixed.webp ?? fixed.url ?? null,
+      still: images.fixed_width_still?.url ?? null,
+      width: Number(fixed.width) || null,
+      height: Number(fixed.height) || null,
+    },
+  };
+}
+
+// Local development has no GIPHY key: a fixed page shaped exactly like GIPHY's responses
+// (real public media.giphy.com renditions) stands in, so the picker and bubbles can be built.
+async function devFixture(q, offset) {
+  const { readFile } = await import("node:fs/promises");
+  const data = JSON.parse(await readFile(new URL("../../scripts/fixtures/giphy-search.json", import.meta.url), "utf8"));
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const all = words.length ? data.data.filter((gif) => words.some((word) => gif.title.toLowerCase().includes(word))) : data.data;
+  const list = (all.length ? all : data.data).slice(offset, offset + GIF_PAGE);
+  return { data: list, pagination: { count: list.length, offset, total_count: all.length } };
+}
+
 chatRoutes.get("/gifs", async (c) => {
-  if (!giphyKey()) return c.json({ error: "not_configured", message: "GIF search isn’t set up yet." }, 503);
+  const dev = !giphyKey() && process.env.NODE_ENV !== "production";
+  if (!giphyKey() && !dev) return c.json({ error: "not_configured", message: "GIF search isn’t set up yet." }, 503);
   const query = z.object({ q: z.string().trim().max(60).optional(), offset: z.coerce.number().int().min(0).max(450).optional() }).strict().safeParse(c.req.query());
   if (!query.success) return c.json({ error: "bad_search", message: "That search didn’t work." }, 400);
   const { q = "", offset = 0 } = query.data;
@@ -157,16 +210,16 @@ chatRoutes.get("/gifs", async (c) => {
   const hit = gifCache.get(key);
   if (hit && Date.now() - hit.at < GIF_TTL) return c.json(hit.value);
   const url = new URL(q ? "https://api.giphy.com/v1/gifs/search" : "https://api.giphy.com/v1/gifs/trending");
-  url.searchParams.set("api_key", giphyKey());
-  url.searchParams.set("limit", "24");
+  url.searchParams.set("api_key", giphyKey() ?? "");
+  url.searchParams.set("limit", String(GIF_PAGE));
   url.searchParams.set("offset", String(offset));
   url.searchParams.set("rating", "pg-13");
   if (q) url.searchParams.set("q", q);
   try {
-    const data = await getJson(url.href, { timeoutMs: 8000 });
-    const value = { gifs: (data.data ?? []).map(gifShape).filter((g) => g.url), next: (data.pagination?.count ?? 0) === 24 ? offset + 24 : null };
+    const data = dev ? await devFixture(q, offset) : await getJson(url.href, { timeoutMs: 8000 });
+    const value = { gifs: (data.data ?? []).map(gifShape).filter((g) => g.url), next: (data.pagination?.count ?? 0) === GIF_PAGE ? offset + GIF_PAGE : null };
     if (gifCache.size > 200) gifCache.clear();
-    gifCache.set(key, { at: Date.now(), value });
+    if (!dev) gifCache.set(key, { at: Date.now(), value });
     return c.json(value);
   } catch {
     return c.json({ error: "gifs_down", message: "GIFs couldn’t load just now." }, 502);

@@ -1,7 +1,7 @@
 import { useId, useSyncExternalStore } from "react";
 import { C } from "./palette.js";
 import Face from "./Face.jsx";
-import { Arm, Cross, Heart, OpenBook, Paddle, Phone, Sketchbook, SmackBurst, Tail, Twinkle } from "./parts.jsx";
+import { Arm, Cross, Halo, Heart, Hymnal, OpenBook, Paddle, Phone, Sketchbook, SmackBurst, Tail, Twinkle } from "./parts.jsx";
 import "./miku-rotten.css";
 
 // Rotten Girl Miku: the fangirl from SAWTOWNE's "Confessions of a Rotten Girl", drawn from scratch
@@ -52,6 +52,9 @@ const POSES = {
   penance: { arms: "penance", face: "wince" }, // paddles herself for her sins, as in the MV
   phone: { arms: "phone", face: "feral" }, // squealing at her phone, feet kicking
   dance: { arms: "dance", face: "giggle" }, // a little hop-and-wave dance on the spot
+  ascend: { arms: "pray", face: "bliss" }, // a chapter so good she ascends: halo, floating, at peace
+  magazine: { arms: "magazine", face: "flustered" }, // "reading her hymnal" (a magazine is inside it)
+  point: { arms: "point", face: "smug" }, // the seme/uke verdict, delivered with a finger
 };
 export const POSE_NAMES = Object.keys(POSES);
 
@@ -299,6 +302,33 @@ const ARMS = {
       </g>
     ),
   }),
+  // A hymnal held up in both hands at her chin; the magazine inside pokes out of the top.
+  magazine: ({ facing }) => ({
+    back: (
+      <>
+        <Arm d="M82 168Q74 160 87 154" />
+        <Arm d="M138 168Q146 160 133 154" />
+      </>
+    ),
+    front: (
+      <g className="mr-magazine">
+        <Hymnal x={110} y={160} w={52} h={34} rotate={-2} facing={facing} />
+        <circle cx="86" cy="158" r="5" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
+        <circle cx="134" cy="157" r="5" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
+      </g>
+    ),
+  }),
+  // Pointing out at somebody (the verdict), the other hand on her hip.
+  point: {
+    back: <Arm d="M82 168Q70 178 84 186" hand={[85, 186]} handR={5} />,
+    front: (
+      <g className="mr-point-arm">
+        <Arm d="M138 168Q156 166 170 156" hand={[172, 155]} handR={5.2} />
+        <path d="M175 152.5l7-4.5" stroke={C.skinLine} strokeWidth="4.6" strokeLinecap="round" />
+        <path d="M175 152.5l7-4.5" stroke={C.skin} strokeWidth="2.6" strokeLinecap="round" />
+      </g>
+    ),
+  },
   show: {
     back: (
       <>
@@ -350,7 +380,7 @@ function Marks({ pose, expression }) {
           <circle cx="183.6" cy="54" r="2.6" fill={C.cross} />
         </g>
       )}
-      {(pose === "fluster" || pose === "nope" || pose === "fall" || pose === "phone" || pose === "penance" || expression === "flustered" || expression === "feral") && (
+      {(pose === "fluster" || pose === "nope" || pose === "fall" || pose === "phone" || pose === "penance" || pose === "magazine" || expression === "flustered" || expression === "feral" || expression === "rotten") && (
         <g className="mr-steam" fill="none" stroke="#c8bde0" strokeWidth="2.2" strokeLinecap="round">
           <path d="M168 22q6-4 4-10q-2-5 3-8" />
           <path d="M184 36q6-2 6-8q0-5 5-6" />
@@ -368,11 +398,24 @@ function Marks({ pose, expression }) {
           <Heart className="mr-heart2" x={28} y={74} size={8} />
         </g>
       )}
-      {(pose === "pray" || pose === "paddle" || expression === "sparkle") && (
+      {(pose === "pray" || pose === "paddle" || pose === "ascend" || expression === "sparkle") && (
         <g className="mr-twinkles">
           <Twinkle className="mr-tw1" x={190} y={60} r={6} />
           <Twinkle className="mr-tw2" x={28} y={84} r={4.5} fill="#bfe3c9" />
           <Twinkle className="mr-tw3" x={84} y={22} r={3.5} />
+        </g>
+      )}
+      {pose === "ascend" && (
+        <g className="mr-ascend">
+          <g className="mr-rays" stroke="#f7e3a0" strokeWidth="2.4" strokeLinecap="round" opacity=".8">
+            <path d="M110 6v-10M74 18l-7-7M146 18l7-7M58 44l-10-3M162 44l10-3" />
+          </g>
+          <Halo x={112} y={14} className="mr-halo" />
+        </g>
+      )}
+      {pose === "point" && (
+        <g className="mr-verdict" fill="none" stroke={C.bow} strokeWidth="2.6" strokeLinecap="round">
+          <path d="M188 128l10-6m-8 16 12 1m-14 10 9 7" />
         </g>
       )}
       {pose === "peek" && (

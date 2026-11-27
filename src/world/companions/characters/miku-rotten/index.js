@@ -9,11 +9,14 @@ import { lines, visit } from "./lines.js";
 // concept art and reference sheet: muted forest-green twin tails darkening to the tips, dark-red
 // cross hair ties, big round glasses that spiral when she's flustered, a white short-sleeved shirt
 // with a crimson ribbon crossed in an X, a charcoal plaid skirt, crew socks, black loafers. From the
-// MV: the wooden "SINNER" paddle (a nod to the con-floor yaoi paddle) she carries behind her back,
-// and her black "Yaoi Note". A girl at a religious school confessing her BL habit as a sin, paddling
-// herself for it and relapsing on the spot: she ships grown-up fictional boys, writes fanfic on her
-// cloud, squeals at new chapters, gets nosebleeds. Contract: src/world/companions/README.md and
-// docs/refactor/RENOVATION.md, "Round 2".
+// MV: the wooden "SINNER" paddle with the word burnt in (a nod to the con-floor yaoi paddle) she
+// carries behind her back, her black "Yaoi Note", the crazed spiral-eyed stare of its thumbnail, the
+// magazine she buys (here hidden inside a hymnal), and the halo when she ascends. A girl at a
+// Christian school whose teachers (KAITO teaches art, Gakupo P.E., Kiyoteru history) are all she can
+// think about, confessing her BL habit as a sin, paddling herself for it and relapsing on the spot:
+// she ships grown-up fictional men, writes fanfic on her cloud, judges seme and uke with a pointed
+// finger, squeals at new chapters, gets nosebleeds, ascends. Contract: src/world/companions/README.md
+// and docs/refactor/RENOVATION.md ("Round 2", "Character writing, round 3").
 export default {
   id: "miku-rotten",
   name: "Miku",
@@ -22,7 +25,7 @@ export default {
   size: SIZE,
   Body,
   // The shared ten, crouch, and her own: sketch, pray, fluster, peek, cheer, nope, glint, giggle,
-  // show, hug, paddle, smack, phone, dance.
+  // show, hug, paddle, smack, penance, phone, dance, ascend, magazine, point.
   poses: POSE_NAMES,
   expressions: EXPRESSIONS,
   Platform,
@@ -85,6 +88,43 @@ export default {
         { pose: "dance", expression: "giggle", seconds: [2.4, 3], bounce: 2 },
       ],
     },
+    // The chapter that finally delivers: nosebleed, and she ascends (halo, floating, at peace).
+    {
+      id: "ascend",
+      weight: 0.9,
+      pose: "ascend",
+      say: 0.85,
+      steps: [
+        { pose: "phone", expression: "rotten", seconds: [2, 2.6], topic: "phone" },
+        { pose: "fluster", expression: "nosebleed", seconds: [1.6, 2], topic: "nosebleed" },
+        { pose: "ascend", expression: "bliss", seconds: [3, 3.6], topic: "ascend" },
+      ],
+    },
+    // "Reading her hymnal" (the magazine she bought is inside it).
+    {
+      id: "magazine",
+      weight: 1.3,
+      pose: "magazine",
+      say: 0.8,
+      steps: [
+        { pose: "magazine", expression: "rotten", seconds: [2.6, 3.4], topic: "magazine" },
+        { pose: "magazine", expression: "nosebleed", seconds: [1.8, 2.4], topic: "hymnal", chance: 0.6 },
+      ],
+    },
+    // The seme/uke debate, both sides argued by her, pointing one way then the other, then a verdict.
+    {
+      id: "debate",
+      weight: 1.3,
+      pose: "point",
+      say: 0.9,
+      steps: [
+        { pose: "point", expression: "smug", seconds: [2, 2.6], topic: "seme" },
+        { pose: "point", expression: "feral", seconds: [2, 2.6], topic: "uke", turn: true },
+        { pose: "glint", expression: "smug", seconds: [1.8, 2.2], topic: "verdict" },
+      ],
+    },
+    // The thumbnail stare: spiral eyes, sweating, thinking something unrepeatable.
+    { id: "brainrot", weight: 1, pose: "idle", expression: "rotten", seconds: [3, 4.5], topic: "brainrot", say: 0.8 },
     { id: "show", weight: 2, pose: "show", expression: "sparkle", seconds: [4, 7], topic: "shipping" },
     { id: "dance", weight: 1.6, pose: "dance", expression: "giggle", seconds: [4, 6], topic: "dance" },
     { id: "paddle", weight: 1.4, pose: "paddle", expression: "smug", seconds: [3, 5], topic: "paddle" },
