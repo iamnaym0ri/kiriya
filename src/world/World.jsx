@@ -18,6 +18,8 @@ const MerchPage = lazy(() => import("./merch/MerchPage.jsx"));
 const NotesPage = lazy(() => import("./notes/NotesPage.jsx"));
 const ChatPage = lazy(() => import("./chat/ChatPage.jsx"));
 const MemoriesPage = lazy(() => import("./chat/MemoriesPage.jsx"));
+// Events & merch: the list and each event's page, pushed screens of the app's home tab (events-ui).
+const EventsRoutes = lazy(() => import("./events/EventsRoutes.jsx"));
 // The app's five sections (docs/refactor/RENOVATION.md): home, chat, play, notes & letters, and
 // the last one named after whoever is signed in.
 const MailSection = lazy(() => import("./mail/MailSection.jsx"));
@@ -63,6 +65,7 @@ export default function World() {
         <Route path="settings" element={lazyPage(SettingsPage)} />
         <Route path="saves" element={lazyPage(SavesPage)} />
         <Route path="merch" element={lazyPage(MerchPage)} />
+        <Route path="events/*" element={lazyPage(EventsRoutes)} />
         <Route path="notes" element={lazyPage(NotesPage)} />
         <Route path="chat" element={lazyPage(ChatPage)} />
         <Route path="memories" element={lazyPage(MemoriesPage)} />

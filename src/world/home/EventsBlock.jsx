@@ -1,12 +1,6 @@
-import { EventsStrip, HomeMerch } from "../feeds/FeedPieces.jsx";
+import HomeEvents from "../events/HomeEvents.jsx";
 
-// Events & merch on home: one full-width block. For now it is the website's events strip and merch
-// shelf; the events-ui agent's src/world/events/HomeEvents.jsx takes this slot at merge time.
+// Events & merch on home: one full-width block, built by events-ui (src/world/events/HomeEvents.jsx).
 export default function EventsBlock() {
-  return (
-    <section className="home-events" aria-label="Events and merch">
-      <EventsStrip standalone />
-      <HomeMerch />
-    </section>
-  );
+  return <HomeEvents />;
 }

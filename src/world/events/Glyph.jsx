@@ -1,0 +1,93 @@
+// Small line icons for the event page: actions, ways to get there, weather.
+export default function Glyph({ name, size = 20 }) {
+  const paths = {
+    calendar: (
+      <>
+        <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
+        <path d="M3.8 9.8h16.4M8 3.2v3.4M16 3.2v3.4M8.2 14h2M13.8 14h2M8.2 17.2h2" />
+      </>
+    ),
+    directions: (
+      <>
+        <path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z" />
+        <circle cx="12" cy="10" r="2.4" />
+      </>
+    ),
+    ticket: (
+      <>
+        <path d="M4 7.6c0-.9.7-1.6 1.6-1.6h12.8c.9 0 1.6.7 1.6 1.6v2.2a2.3 2.3 0 0 0 0 4.4v2.2c0 .9-.7 1.6-1.6 1.6H5.6c-.9 0-1.6-.7-1.6-1.6v-2.2a2.3 2.3 0 0 0 0-4.4z" />
+        <path d="M14.6 6.4v11.2" strokeDasharray="1 2.2" />
+      </>
+    ),
+    bag: (
+      <>
+        <path d="M5.2 8.6h13.6l-1 11.6H6.2z" />
+        <path d="M9 8.4c0-2.5 1.3-4.4 3-4.4s3 1.9 3 4.4" />
+      </>
+    ),
+    mrt: (
+      <>
+        <rect x="6" y="3.5" width="12" height="13" rx="3.2" />
+        <path d="M6.2 10.2h11.6M9.2 13.6h.1M14.8 13.6h.1M8.6 16.6 6.6 20.5M15.4 16.6l2 3.9" />
+      </>
+    ),
+    bus: (
+      <>
+        <rect x="5" y="3.5" width="14" height="14" rx="3" />
+        <path d="M5.2 11h13.6M8.6 14.4h.1M15.4 14.4h.1M7.6 17.5v2.5M16.4 17.5v2.5" />
+      </>
+    ),
+    walk: (
+      <>
+        <circle cx="13" cy="4.6" r="1.8" />
+        <path d="m10.2 21 2-6.4 2.6 2.4.8 4M12.2 14.6l.8-5.4-3.6 2-1 3.2M13 9.2l2.4 2.8 2.6.8" />
+      </>
+    ),
+    car: (
+      <>
+        <path d="M4.6 15.6v-3.2l1.8-4.6c.3-.7.9-1.1 1.6-1.1h8c.7 0 1.3.4 1.6 1.1l1.8 4.6v3.2z" />
+        <path d="M4.8 12.4h14.4M7.4 15.6v2.6M16.6 15.6v2.6" />
+      </>
+    ),
+    sunny: (
+      <>
+        <circle cx="12" cy="12" r="4.2" />
+        <path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" />
+      </>
+    ),
+    cloudy: <path d="M7.4 18.2h9.8a4 4 0 0 0 .4-8 5.6 5.6 0 0 0-10.8 1.4 3.3 3.3 0 0 0 .6 6.6z" />,
+    fair: (
+      <>
+        <path d="M9.6 6.4a3.6 3.6 0 0 1 6 2.2" />
+        <path d="M9.4 2.8v1.4M4.6 7.6H3.2M5.9 4.2l1 1" />
+        <path d="M8.2 19h8.8a3.6 3.6 0 0 0 .4-7.2 5 5 0 0 0-9.7 1.2 3 3 0 0 0 .5 6z" />
+      </>
+    ),
+    windy: <path d="M3.5 9.2h11a2.6 2.6 0 1 0-2.6-2.6M3.5 13.4h15.2a2.6 2.6 0 1 1-2.6 2.6M3.5 17.4h7" />,
+    hazy: <path d="M4 8.4h16M6 12h12M4 15.6h16M7.4 19.2h9.2" />,
+    rain: (
+      <>
+        <path d="M7.4 14.6h9.8a3.6 3.6 0 0 0 .4-7.2 5.2 5.2 0 0 0-10.1 1.3 3 3 0 0 0-.1 5.9z" />
+        <path d="M8.6 17.4l-1 2.6M12.4 17.4l-1 2.6M16.2 17.4l-1 2.6" />
+      </>
+    ),
+    thundery: (
+      <>
+        <path d="M7.4 13.8h9.8a3.6 3.6 0 0 0 .4-7.2 5.2 5.2 0 0 0-10.1 1.3 3 3 0 0 0-.1 5.9z" />
+        <path d="m12.6 14.6-2.2 3.6h3l-2 3.6" />
+      </>
+    ),
+    link: (
+      <>
+        <path d="M10.2 13.8a3.6 3.6 0 0 0 5.1 0l3-3a3.6 3.6 0 0 0-5.1-5.1l-1.2 1.2" />
+        <path d="M13.8 10.2a3.6 3.6 0 0 0-5.1 0l-3 3a3.6 3.6 0 0 0 5.1 5.1l1.2-1.2" />
+      </>
+    ),
+  };
+  return (
+    <svg className="ev-glyph" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      {paths[name] ?? paths.link}
+    </svg>
+  );
+}
+

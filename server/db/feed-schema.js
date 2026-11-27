@@ -203,22 +203,5 @@ export const feedStorage = pgTable("feed_storage", {
   totalStoreBytes: bigint("total_store_bytes", { mode: "number" }),
   measuredAt: stamp("measured_at"),
 });
-export const events = pgTable("events", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  city: text("city"),
-  country: text("country"),
-  venue: text("venue"),
-  startsOn: date("starts_on"),
-  endsOn: date("ends_on"),
-  tier: text("tier"),
-  url: text("url").notNull(),
-  sourceUrl: text("source_url"),
-  confidence: text("confidence").notNull().default("unconfirmed"),
-  dateEvidence: json("date_evidence", {}),
-  lastVerifiedAt: stamp("last_verified_at"),
-  pageHash: text("page_hash"),
-  status: text("status").notNull().default("upcoming"),
-  tags: json("tags", []),
-  hers: boolean("hers").notNull().default(false),
-});
+// `events` lives in events-schema.js (phase 6 events & merch engine).
+

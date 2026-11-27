@@ -8,6 +8,8 @@ import { SectionHeading } from "../collection/Collections.jsx";
 import { Icon, Modal } from "../../shared/WorldPrimitives.jsx";
 import { useMusic } from "../../shared/music/MusicRoom.jsx";
 import { FeedFacts, FeedLinks, FeedMedia } from "../feeds/FeedPieces.jsx";
+import { isAppShell } from "../../lib/native.js";
+import EventSaves from "../events/EventSaves.jsx";
 
 const GROUPS = [
   { label: "songs", kinds: ["song"] },
@@ -113,7 +115,12 @@ function SaveViewer({ save, onClose, onRemove, removing, canRemove }) {
   );
 }
 
+// Inside the app this is "events and merch i saved" (events-ui); the website keeps its keepsake box.
 export default function SavesPage() {
+  return isAppShell() ? <EventSaves /> : <WebSavesPage />;
+}
+
+function WebSavesPage() {
   const queryClient = useQueryClient();
   const session = useSession();
   const [open, setOpen] = useState(null);

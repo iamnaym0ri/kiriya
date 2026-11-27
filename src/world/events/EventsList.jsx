@@ -1,0 +1,162 @@
+// Everything on in Singapore (cons, fairs, pop-ups, merch), grouped by month, with filters.
+// A pushed screen inside the app's home tab.
+import { useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router";
+import { useAppBack } from "../../shared/AppFrame.jsx";
+import { groupOf } from "./eventFormat.js";
+import { useEventsList, useIsSaved, useMarkLooked, useMerchList, useNewness, useSavedList } from "./eventsData.js";
+import { EventRow, KindDoodle, MerchRow, Toaster, useNow } from "./EventPieces.jsx";
+import PasteLink from "./PasteLink.jsx";
+import "./events.css";
+
+const FILTERS = [
+  { key: "all", label: "all", test: () => true },
+  { key: "con", label: "cons", test: (item) => item.kind === "con" || item.kind === "concert" },
+  { key: "fair", label: "fairs", test: (item) => item.kind === "fair" },
+  { key: "popup", label: "pop-ups & cafés", test: (item) => item.kind === "popup" || item.kind === "cafe" },
+  { key: "merch", label: "merch", test: (item) => item.kind === "merch" },
+  { key: "saved", label: "saved", test: (item, { isSaved }) => isSaved(item) },
+  { key: "new", label: "new", test: (item, { newness }) => Boolean(newness(item)) },
+];
+
+const EMPTY = {
+  all: "nothing on the calendar yet. new cons, pop-ups and merch drops land here as soon as they’re announced.",
+  con: "no cons on the list right now.",
+  fair: "no fairs or markets on the list right now.",
+  popup: "no pop-ups or collab cafés right now.",
+  merch: "no merch on the list right now.",
+  saved: "tap the heart on anything and it waits for you here.",
+  new: "nothing new since you last looked ✓",
+};
+
+const HEART = "M12 20.3s-7.6-4.7-8.6-9.6C2.7 7.4 4.6 4.8 7.4 4.6c2-.2 3.6 1 4.6 2.6 1-1.6 2.6-2.8 4.6-2.6 2.8.2 4.7 2.8 4 6.1-1 4.9-8.6 9.6-8.6 9.6z";
+
+export default function EventsList() {
+  const back = useAppBack("/world");
+  const [params, setParams] = useSearchParams();
+  const key = FILTERS.some((f) => f.key === params.get("kind")) ? params.get("kind") : params.get("show") === "new" ? "new" : "all";
+  const filter = FILTERS.find((f) => f.key === key);
+  const list = useEventsList();
+  const past = useEventsList({ when: "past", enabled: key === "all" });
+  const merch = useMerchList({ enabled: key === "merch" });
+  const saved = useSavedList();
+  const isSaved = useIsSaved();
+  const newness = useNewness();
+  const now = useNow(60_000);
+  useMarkLooked(undefined, { enabled: list.isSuccess, delay: 2000 });
+  useEffect(() => {
+    document.title = "events & merch ♡";
+  }, []);
+
+  const helpers = useMemo(() => ({ isSaved, newness }), [isSaved, newness]);
+  const counts = useMemo(() => Object.fromEntries(FILTERS.map((f) => [f.key, list.items.filter((item) => f.test(item, helpers)).length])), [list.items, helpers]);
+  const groups = useMemo(() => {
+    const map = new Map();
+    for (const item of list.items.filter((item) => filter.test(item, helpers))) {
+      const group = groupOf(item, now);
+      if (!map.has(group.key)) map.set(group.key, { ...group, items: [] });
+      map.get(group.key).items.push(item);
+    }
+    return [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
+  }, [list.items, filter, helpers, now]);
+
+  // Merch pieces from the events (merch filter), and saved pieces (saved filter).
+  const pieces = key === "merch" ? merch.items : key === "saved" ? saved.merch : [];
+  const ended = key === "all" ? past.items.slice(0, 8) : [];
+  const savedCount = counts.saved + saved.merch.length;
+  const choose = (next) => setParams(next === "all" ? {} : { kind: next }, { replace: true, preventScrollReset: true });
+  const nothing = !groups.length && !pieces.length;
+
+  return (
+    <div className="app-screen ev-list">
+      <header className="app-section__head">
+        <button type="button" className="app-screen__back" onClick={back}>
+          home
+        </button>
+        <h1 className="app-section__title">events & merch</h1>
+        <div className="app-section__actions">
+          <PasteLink compact />
+        </div>
+        <p className="app-section__subtitle">cons, fairs, pop-ups and merch in singapore</p>
+      </header>
+      <div className="app-section__body">
+        <div className="ev-filters app-bleed" role="toolbar" aria-label="Show">
+          {FILTERS.filter((f) => ["all", "saved", "merch", key].includes(f.key) || counts[f.key] > 0).map((f) => {
+            const count = f.key === "saved" ? savedCount : counts[f.key];
+            return (
+              <button key={f.key} type="button" className="ev-filter" aria-pressed={f.key === key} onClick={() => choose(f.key)}>
+                {f.key === "saved" && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d={HEART} fill="currentColor" />
+                  </svg>
+                )}
+                {f.key === "new" && <span className="ev-filter__dot" aria-hidden="true" />}
+                {f.label}
+                {f.key !== "all" && count > 0 && <span className="ev-filter__count">{count}</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        {list.isPending && !list.items.length ? (
+          <div className="ev-skeleton" aria-label="Loading">
+            <div className="ev-skeleton__rows">
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+          </div>
+        ) : list.isError && !list.items.length ? (
+          <div className="app-card ev-trouble">
+            <p>the list couldn’t load just now.</p>
+            <button type="button" className="ev-pill-link" onClick={() => list.refetch()}>
+              try again
+            </button>
+          </div>
+        ) : nothing && !(key === "merch" && merch.isPending) ? (
+          <div className="app-card ev-empty">
+            <KindDoodle kind={key === "merch" ? "merch" : key === "popup" ? "popup" : key === "fair" ? "fair" : "con"} size={44} />
+            <p>{EMPTY[key]}</p>
+          </div>
+        ) : (
+          <>
+            {groups.map((group) => (
+              <section key={group.key} className="ev-group" aria-label={group.label}>
+                <h2 className="app-group-title">{group.label}</h2>
+                <ul className="app-list">
+                  {group.items.map((item) => (
+                    <EventRow key={item.id} item={item} now={now} save />
+                  ))}
+                </ul>
+              </section>
+            ))}
+            {pieces.length > 0 && (
+              <section className="ev-group" aria-label="Merch and exclusives">
+                <h2 className="app-group-title">{key === "saved" ? "merch i saved" : "merch & exclusives at the events"}</h2>
+                <ul className="app-list">
+                  {pieces.map((item) => (
+                    <MerchRow key={item.id} item={item} />
+                  ))}
+                </ul>
+              </section>
+            )}
+            {ended.length > 0 && (
+              <details className="ev-ended">
+                <summary className="app-group-title">
+                  just ended <span className="ev-ended__count">{ended.length}</span>
+                </summary>
+                <ul className="app-list">
+                  {ended.map((item) => (
+                    <EventRow key={item.id} item={item} now={now} save showNew={false} />
+                  ))}
+                </ul>
+              </details>
+            )}
+          </>
+        )}
+      </div>
+      <Toaster />
+    </div>
+  );
+}
