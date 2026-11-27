@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { schema } from "../db/client.js";
 import { env } from "../env.js";
 import { apnsConfigured, sendNative } from "./apns.js";
+import { WEBSITE_CLOSED } from "../../shared/siteClosed.js";
 
 let configured = false;
 
@@ -39,7 +40,12 @@ export function buildPayload({ title, body, navigate = "/world", badge = 1 }) {
  * Sends to every stored subscription (optionally one role), and to every install of the iPhone app
  * for that role. Removes subscriptions the browser dropped and tokens Apple says are gone.
  */
-export async function sendToSubscribers(db, message, { role = null, ttlSeconds = 6 * 60 * 60 } = {}) {
+export async function sendToSubscribers(db, message, { role: asked = null, ttlSeconds = 6 * 60 * 60 } = {}) {
+  // Until the app surprise (shared/siteClosed.js), nothing notifies Kiriya; Josh's phones still hear.
+  // (The delivery tests opt out with KIRIYA_NOTIFY_WHILE_CLOSED=1 to keep exercising her path.)
+  const held = WEBSITE_CLOSED && process.env.KIRIYA_NOTIFY_WHILE_CLOSED !== "1";
+  if (held && asked === "kiriya") return { sent: 0, failed: 0, targets: 0, held: true };
+  const role = held && asked == null ? "admin" : asked;
   const [web, native] = await Promise.all([
     webPushConfigured() ? sendWebPush(db, message, { role, ttlSeconds }) : { sent: 0, failed: 0, targets: 0 },
     sendNative(db, message, { role, ttlSeconds }).catch((error) => ({ sent: 0, failed: 0, targets: 0, error: String(error.message).slice(0, 200) })),

@@ -159,7 +159,8 @@ jobRoutes.post("/send-push", async (c) => {
     await db
       .update(schema.plannedPushes)
       .set({
-        status: result.sent > 0 ? "sent" : "failed",
+        // Held while the website is closed for the app surprise (shared/siteClosed.js): skipped, not failed.
+        status: result.held ? "skipped" : result.sent > 0 ? "sent" : "failed",
         sentAt: new Date(),
         detail: JSON.stringify(result),
       })

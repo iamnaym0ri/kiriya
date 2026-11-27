@@ -12,6 +12,8 @@ import { hashPassphrase } from "../server/auth/passphrase.js";
 for (const name of ["DATABASE_URL", "kData_DATABASE_URL", "BLOB_READ_WRITE_TOKEN", "QSTASH_TOKEN", "VAPID_PUBLIC_KEY", "VITE_VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "CRON_SECRET", "OPENAI_API_KEY", "APNS_KEY", "APNS_KEY_ID"])
   process.env[name] = "";
 const phrases = { kiriya: randomBytes(12).toString("hex"), admin: randomBytes(12).toString("hex") };
+// These tests check delivery to her phone, which is paused while the website is closed (shared/siteClosed.js).
+process.env.KIRIYA_NOTIFY_WHILE_CLOSED = "1";
 process.env.NODE_ENV = "production";
 process.env.VERCEL_ENV = "production";
 process.env.SITE_URL = "https://kiriya.love";

@@ -20,6 +20,8 @@ const vapid = webpush.generateVAPIDKeys();
 process.env.VAPID_PUBLIC_KEY = vapid.publicKey;
 process.env.VAPID_PRIVATE_KEY = vapid.privateKey;
 process.env.VAPID_SUBJECT = "mailto:test@kiriya.love";
+// These tests check delivery to her phone, which is paused while the website is closed (shared/siteClosed.js).
+process.env.KIRIYA_NOTIFY_WHILE_CLOSED = "1";
 process.env.NODE_ENV = "production";
 process.env.VERCEL_ENV = "production";
 process.env.SITE_URL = "https://kiriya.love";
