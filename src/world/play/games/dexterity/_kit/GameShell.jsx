@@ -121,7 +121,10 @@ export default function GameShell({
   // ---------- the engine ----------
   const hudSet = useCallback((name, text) => {
     const node = hudRefs.current[name];
-    if (node && node.textContent !== text) node.textContent = text;
+    if (!node) return;
+    if (node.dataset.kind === "hearts") {
+      if (node.dataset.value !== text) node.dataset.value = text;
+    } else if (node.textContent !== text) node.textContent = text;
   }, []);
 
   const finish = useCallback(
@@ -329,7 +332,17 @@ export default function GameShell({
           {hud.map((item) => (
             <span key={item.name} className="dex__chip" data-kind={item.kind ?? "text"}>
               {item.label && <small>{item.label}</small>}
-              <b ref={(node) => (hudRefs.current[item.name] = node)}>{item.initial ?? ""}</b>
+              {item.kind === "hearts" ? (
+                <b ref={(node) => (hudRefs.current[item.name] = node)} data-kind="hearts" data-value={item.initial ?? "3"} aria-label="hearts left">
+                  {Array.from({ length: item.max ?? 3 }, (_, i) => (
+                    <svg key={i} viewBox="0 0 20 18" data-index={i} aria-hidden="true">
+                      <path d="M10 16.6C3 11.6 1.4 7.4 2.8 4.6c1.4-2.9 5.3-3.2 7.2-.4 1.9-2.8 5.8-2.5 7.2.4 1.4 2.8-.2 7-7.2 12Z" />
+                    </svg>
+                  ))}
+                </b>
+              ) : (
+                <b ref={(node) => (hudRefs.current[item.name] = node)}>{item.initial ?? ""}</b>
+              )}
             </span>
           ))}
         </div>

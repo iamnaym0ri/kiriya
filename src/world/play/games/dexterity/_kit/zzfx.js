@@ -17,32 +17,29 @@
 
 export const ZZFX_RATE = 44100;
 
-export function zzfxSamples(
-  [
-    volume = 1,
-    randomness = 0.05,
-    frequency = 220,
-    attack = 0,
-    sustain = 0,
-    release = 0.1,
-    shape = 0,
-    shapeCurve = 1,
-    slide = 0,
-    deltaSlide = 0,
-    pitchJump = 0,
-    pitchJumpTime = 0,
-    repeatTime = 0,
-    noise = 0,
-    modulation = 0,
-    bitCrush = 0,
-    delay = 0,
-    sustainVolume = 1,
-    decay = 0,
-    tremolo = 0,
-    filter = 0,
-  ] = [],
-  { sampleRate = ZZFX_RATE, random = Math.random, gain = 0.3 } = {},
-) {
+export function zzfxSamples(params = [], { sampleRate = ZZFX_RATE, random = Math.random, gain = 0.3 } = {}) {
+  // Read by index: WebKit has thrown on a 21-element destructuring pattern with defaults.
+  let volume = params[0] ?? 1;
+  let randomness = params[1] ?? 0.05;
+  let frequency = params[2] ?? 220;
+  let attack = params[3] ?? 0;
+  let sustain = params[4] ?? 0;
+  let release = params[5] ?? 0.1;
+  let shape = params[6] ?? 0;
+  let shapeCurve = params[7] ?? 1;
+  let slide = params[8] ?? 0;
+  let deltaSlide = params[9] ?? 0;
+  let pitchJump = params[10] ?? 0;
+  let pitchJumpTime = params[11] ?? 0;
+  let repeatTime = params[12] ?? 0;
+  let noise = params[13] ?? 0;
+  let modulation = params[14] ?? 0;
+  let bitCrush = params[15] ?? 0;
+  let delay = params[16] ?? 0;
+  let sustainVolume = params[17] ?? 1;
+  let decay = params[18] ?? 0;
+  let tremolo = params[19] ?? 0;
+  let filter = params[20] ?? 0;
   const PI2 = Math.PI * 2;
   const abs = Math.abs;
   const sign = (v) => (v < 0 ? -1 : 1);

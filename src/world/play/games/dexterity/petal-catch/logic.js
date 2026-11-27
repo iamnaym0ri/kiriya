@@ -13,8 +13,8 @@ export function difficulty(time, calm = false) {
   const spawnRamp = 1 - Math.exp(-time / 60);
   const thornRamp = time < 8 ? 0 : 1 - Math.exp(-(time - 8) / 60);
   return calm
-    ? { fall: 78 + 62 * ramp, every: 1.1 - 0.42 * spawnRamp, thorn: time < 8 ? 0 : 0.06 + 0.08 * thornRamp }
-    : { fall: 96 + 112 * ramp, every: 0.92 - 0.47 * spawnRamp, thorn: time < 8 ? 0 : 0.12 + 0.16 * thornRamp };
+    ? { fall: 92 + 70 * ramp, every: 1.05 - 0.4 * spawnRamp, thorn: time < 8 ? 0 : 0.06 + 0.08 * thornRamp }
+    : { fall: 122 + 118 * ramp, every: 0.86 - 0.44 * spawnRamp, thorn: time < 8 ? 0 : 0.12 + 0.16 * thornRamp };
 }
 
 export function createPetals({ width = 414, height = 760, calm = false, random = Math.random } = {}) {
@@ -73,7 +73,7 @@ export function spawn(state, kind = chooseKind(state), x = null) {
   const level = difficulty(state.time, state.calm);
   item.active = true;
   item.kind = kind;
-  item.r = kind === "thorn" ? 17 : kind === "star" ? 16 : 14;
+  item.r = kind === "thorn" ? 19 : kind === "star" ? 17 : 15;
   item.sway = kind === "thorn" ? 6 + random() * 8 : 14 + random() * 22;
   item.x0 = x ?? item.sway + item.r + random() * Math.max(1, width - 2 * (item.sway + item.r));
   item.phase = random() * Math.PI * 2;

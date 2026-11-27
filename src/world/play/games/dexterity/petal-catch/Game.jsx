@@ -6,7 +6,7 @@ import STICKERS from "./stickers.js";
 
 const HUD = [
   { name: "score", label: "petals", initial: "0" },
-  { name: "lives", kind: "hearts", initial: "♥♥♥" },
+  { name: "lives", kind: "hearts", initial: "3" },
   { name: "streak" },
 ];
 

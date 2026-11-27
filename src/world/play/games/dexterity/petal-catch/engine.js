@@ -5,8 +5,10 @@ import { drawSprite, paintedCanvas, svgSprites } from "../_kit/sprites.js";
 import { SOUNDS, SPRITES, paintMeadow } from "./art.js";
 import { LIVES, aimBasket, createPetals, resizePetals, stepPetals } from "./logic.js";
 
-const HEARTS = ["♡♡♡", "♥♡♡", "♥♥♡", "♥♥♥"];
+const HEARTS = ["0", "1", "2", "3"];
 const LABELS = { 1: "+1", 2: "+2", 5: "+5" };
+// where caught petals settle in the basket: [x, y, rotation] from its centre
+const PILE = [[-24, -20, 0.4], [6, -22, -0.6], [28, -19, 1.2], [-8, -26, 2.1], [18, -28, 0.2], [-30, -26, -1], [0, -32, 0.9], [-16, -33, 1.7], [30, -27, -0.3]];
 
 export function createEngine({ ctx, hud, end }) {
   let width = 414;
@@ -140,7 +142,19 @@ export function createEngine({ ctx, hud, end }) {
       }
       const squash = basket.squash;
       const blink = state.hurt > 0 && Math.floor(state.hurt * 12) % 2 === 0;
-      drawSprite(ctx, sprites.basket, basket.x, basket.y + 4, basket.lean, 1 + squash * 0.08, 1 - squash * 0.1, blink ? 0.45 : 1);
+      ctx.save();
+      ctx.translate(basket.x, basket.y + 4);
+      ctx.rotate(basket.lean);
+      ctx.scale(1 + squash * 0.08, 1 - squash * 0.1);
+      if (blink) ctx.globalAlpha = 0.45;
+      // the petals she has caught so far, peeking over the rim
+      const pile = Math.min(PILE.length, Math.floor(state.caught / 4));
+      for (let i = 0; i < pile; i++) {
+        const spot = PILE[i];
+        drawSprite(ctx, i % 2 ? sprites.sakura : sprites.lilac, spot[0], spot[1], spot[2], 0.9);
+      }
+      ctx.drawImage(sprites.basket, -sprites.basket.w / 2, -sprites.basket.h / 2, sprites.basket.w, sprites.basket.h);
+      ctx.restore();
       if (preview) drawHint();
       particles.draw(ctx, "700 23px Gaegu, cursive", "#8d4fc4");
       ctx.restore();

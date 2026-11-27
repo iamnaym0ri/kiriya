@@ -79,9 +79,13 @@ export function makeSounds(designs) {
     if (!ctx || !designs[name]) return null;
     let found = buffers.get(name);
     if (!found) {
-      const samples = zzfxSamples(designs[name], { sampleRate: ZZFX_RATE });
-      found = ctx.createBuffer(1, samples.length || 1, ZZFX_RATE);
-      found.getChannelData(0).set(samples);
+      try {
+        const samples = zzfxSamples(designs[name], { sampleRate: ZZFX_RATE });
+        found = ctx.createBuffer(1, samples.length || 1, ZZFX_RATE);
+        found.getChannelData(0).set(samples);
+      } catch {
+        found = ctx.createBuffer(1, 1, ZZFX_RATE); // a sound that can't be made stays silent
+      }
       buffers.set(name, found);
     }
     return found;

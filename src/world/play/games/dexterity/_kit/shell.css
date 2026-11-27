@@ -55,8 +55,14 @@
   white-space: nowrap;
 }
 .dex__chip small { font: 10px/1 var(--font-pixel); letter-spacing: 0.06em; color: #8b6c95; }
-.dex__chip[data-kind="hearts"] b { color: #d4689c; letter-spacing: 0.04em; font-size: 19px; }
-.dex__chip:empty { display: none; }
+.dex__chip[data-kind="hearts"] { align-items: center; padding-inline: 9px; }
+.dex__chip[data-kind="hearts"] b { display: flex; gap: 3px; }
+.dex__chip[data-kind="hearts"] svg { width: 21px; height: 19px; fill: #f58cba; stroke: #2b1b35; stroke-width: 1.5; stroke-linejoin: round; transition: fill 0.2s, scale 0.2s; }
+.dex__chip[data-kind="hearts"] b[data-value="0"] svg,
+.dex__chip[data-kind="hearts"] b[data-value="1"] svg[data-index="1"],
+.dex__chip[data-kind="hearts"] b[data-value="1"] svg[data-index="2"],
+.dex__chip[data-kind="hearts"] b[data-value="2"] svg[data-index="2"] { fill: #f1e6f5; stroke: #b9a3c6; scale: 0.88; }
+.dex__chip:has(> b:empty) { display: none; }
 .dex__tools { display: flex; gap: 6px; pointer-events: auto; }
 .dex__tool {
   display: grid;

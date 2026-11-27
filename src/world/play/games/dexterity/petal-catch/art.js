@@ -29,11 +29,13 @@ export const SPRITES = {
     30, 30,
   ],
   thorn: [
-    `<path d="M7 33C14 25 22 15 33 7" fill="none" stroke="${"#2b1b35"}" stroke-width="7.5" stroke-linecap="round"/>
-     <path d="M7 33C14 25 22 15 33 7" fill="none" stroke="#7a4a63" stroke-width="4" stroke-linecap="round"/>
-     <path d="M12.5 26.5L5.5 21l9.3 2.3zM17.5 20.5l1.2-9 2.6 7.6zM23 14.8l8.6 3-8-.4zM26.6 11l-1.6-8.2 4.4 6.4zM15 24l7.5 5.6-9-2.4z" fill="#5a3248" ${line(1.5)}/>
-     <path d="M29 9.5c4 0 6.5 2.6 6 6.4-3.8.2-6.4-2.2-6-6.4Z" fill="#9fd08f" ${line(1.5)}/>`,
-    38, 38,
+    `<circle cx="22" cy="22" r="20" fill="#6b2f5a" opacity=".1"/>
+     <path d="M8 36C15 28 25 17 36 8" fill="none" stroke="#2b1b35" stroke-width="9" stroke-linecap="round"/>
+     <path d="M8 36C15 28 25 17 36 8" fill="none" stroke="#7a4467" stroke-width="5" stroke-linecap="round"/>
+     <path d="M12 30q4-5 8-9" fill="none" stroke="#a86c90" stroke-width="1.8" stroke-linecap="round"/>
+     <path d="M13.5 29L4.5 24.5l11.5.6zM16.5 30.5l5.6 9.2-9-4.6zM20 22l.2-11.2 4.2 8.6zM24.4 22.4l11 2.4-9.6 2zM29 14l-2.6-10 6.4 7.2zM31 15.5l9.6 3.4-10 .4z" fill="#4a2540" ${line(1.6)}/>
+     <path d="M34 9.5c5.4-.6 8.4 2.6 7.6 7.4-4.8.4-8-2.6-7.6-7.4Z" fill="#9fd08f" ${line(1.6)}/>`,
+    44, 44,
   ],
   basket: [
     `<path d="M10 27h84l-8.5 33c-1 4-4.2 6.4-8.4 6.4H26.9c-4.2 0-7.4-2.4-8.4-6.4Z" fill="#efcf9f" ${line(2.4)}/>
