@@ -147,10 +147,6 @@
     {
       "path": "/api/jobs/feeds/maintenance",
       "schedule": "35 9 * * *"
-    },
-    {
-      "path": "/api/jobs/feeds/events",
-      "schedule": "5 22 * * 0"
     }
   ]
 }

@@ -31,7 +31,8 @@ import { VoiceLexiconSchema, getFeedSettings } from "../feeds/settings.js";
 // Independent stage handlers register themselves with the runner on import.
 import "../feeds/maintenance.js";
 import "../feeds/diagnostics.js";
-import "../feeds/events.js";
+// The weekly OpenAI events stage (../feeds/events.js) was retired on 2026-11-26: phase 6's worker
+// (worker/**, server/lib/events/**) replaced it, so "events" now answers not_implemented.
 import { previewLexicon, rewriteBlurb } from "../feeds/admin-tools.js";
 
 function privateRoutes(...roles) {
