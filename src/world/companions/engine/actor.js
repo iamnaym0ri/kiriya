@@ -7,6 +7,7 @@
 // stage is paused, so a hidden home costs nothing and picks up where it left off.
 import { motionValue } from "motion/react";
 import { staysPut } from "./character.js";
+import { busyScore } from "./levels.js";
 import { placeMenu } from "./menu.js";
 import { clearStay, spotAt, writeStay } from "./stay.js";
 import { createLinePicker, fillName, greetTopics, readMs } from "./talk.js";
@@ -1199,7 +1200,13 @@ export class Actor {
     }
   }
 
-  /** Keeps the bubble near the head and fully inside the band (never under the top bar or tabs). */
+  /**
+   * Keeps the bubble near the head and fully inside the band (never under the top bar or tabs).
+   * Above the head reads most naturally, but when a new line starts, every place that fits (above,
+   * right, left) is checked once for what it would cover (busyScore: text, pictures, controls), and
+   * the clearest wins, so a bubble doesn't sit on her greeting or her name. The choice is kept for
+   * that line; it is only re-made if it stops fitting.
+   */
   placeBubble() {
     const el = this.els.bubble;
     if (!el) return;
@@ -1207,14 +1214,35 @@ export class Actor {
     const { w: bw, h: bh } = this.bubbleSize;
     const pad = 8;
     const head = this.y - this.h * (this.mode === "held" ? 1 : this.sy);
-    let place = "above";
-    let left = clamp(this.x - bw / 2, band.left + pad, band.right - pad - bw);
-    let top = head - 8 - bh;
-    if (top < band.top + pad) {
+    const sideTop = clamp(head + this.h * 0.12, band.top + pad, band.bottom - pad - bh);
+    const options = [];
+    const aboveTop = head - 8 - bh;
+    if (aboveTop >= band.top + pad) options.push({ place: "above", left: clamp(this.x - bw / 2, band.left + pad, band.right - pad - bw), top: aboveTop, bias: 0 });
+    const rightLeft = this.x + this.w * 0.42;
+    if (rightLeft + bw <= band.right - pad) options.push({ place: "right", left: rightLeft, top: sideTop, bias: 0.12 });
+    const leftLeft = this.x - this.w * 0.42 - bw;
+    if (leftLeft >= band.left + pad) options.push({ place: "left", left: leftLeft, top: sideTop, bias: 0.12 });
+    const id = this.view.get().bubble?.id;
+    let chosen = this.bubbleChoice?.id === id ? options.find((o) => o.place === this.bubbleChoice.place) : null;
+    if (!chosen && options.length) {
+      const scored = options.map((o) => ({ ...o, cost: (this.stage.options?.avoidText === false ? 0 : busyScore({ left: o.left, top: o.top, right: o.left + bw, bottom: o.top + bh }, this.stage.layer)) + o.bias }));
+      chosen = scored.reduce((best, o) => (o.cost < best.cost ? o : best));
+      this.bubbleChoice = { id, place: chosen.place };
+    }
+    let place;
+    let left;
+    let top;
+    if (chosen) {
+      ({ place, left, top } = chosen);
+    } else {
+      // Nothing fits cleanly (a narrow screen, a character near an edge): the old rule, clamped in.
       const roomRight = band.right - (this.x + this.w * 0.42);
       const roomLeft = this.x - this.w * 0.42 - band.left;
-      top = clamp(head + this.h * 0.12, band.top + pad, band.bottom - pad - bh);
-      if (roomRight >= bw + pad || roomRight >= roomLeft) {
+      top = aboveTop >= band.top + pad ? aboveTop : sideTop;
+      if (aboveTop >= band.top + pad) {
+        place = "above";
+        left = clamp(this.x - bw / 2, band.left + pad, band.right - pad - bw);
+      } else if (roomRight >= bw + pad || roomRight >= roomLeft) {
         place = "right";
         left = clamp(this.x + this.w * 0.42, band.left + pad, band.right - pad - bw);
       } else {
