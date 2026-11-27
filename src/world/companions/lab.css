@@ -1,0 +1,131 @@
+/* The dev-only companion lab (Lab.jsx). */
+.clab {
+  min-height: 100vh;
+}
+.clab[data-bg="plain"] {
+  min-height: 100vh;
+}
+.clab-panel {
+  position: fixed;
+  z-index: 115;
+  top: env(safe-area-inset-top);
+  left: 0;
+  right: 0;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--theme-paper, #fff9fd) 92%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--theme-line, #ceb2d9);
+  font: 12px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--theme-ink, #4b3557);
+}
+.clab-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+.clab-toggle,
+.clab-actions button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--theme-line, #ceb2d9);
+  border-radius: 999px;
+  background: var(--theme-paper, #fff);
+  color: inherit;
+  font: inherit;
+}
+.clab-readout {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+.clab-readout[data-bad] {
+  color: #b3261e;
+}
+.clab-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  padding: 8px 0 4px;
+  max-height: 60vh;
+  overflow: auto;
+}
+.clab-controls label {
+  display: grid;
+  gap: 2px;
+}
+.clab-controls select {
+  min-height: 32px;
+  font: inherit;
+  max-width: 100%;
+}
+.clab-controls .clab-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.clab-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.clab-text {
+  display: grid;
+  gap: 14px;
+  padding: 56px 16px 120px;
+}
+.clab-card {
+  padding: 14px 16px;
+  border: 1px solid var(--theme-line, #ceb2d9);
+  border-radius: 18px;
+  background: var(--theme-paper, #fff9fd);
+}
+.clab-card h2 {
+  margin: 0 0 4px;
+  font: 600 18px/1.2 var(--font-hand, inherit);
+}
+.clab-card p {
+  margin: 0 0 8px;
+}
+.clab-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 56px 12px 120px;
+}
+.clab-pose {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid var(--theme-line, #ceb2d9);
+  border-radius: 14px;
+  background: var(--theme-paper, #fff9fd);
+  font: 11px/1.2 ui-monospace, monospace;
+}
+.clab-pose__stage {
+  position: relative;
+}
+.clab-pose__body,
+.clab-pose__tile {
+  position: absolute;
+}
+.clab-pose__body > * {
+  width: 100%;
+  height: 100%;
+}
+.clab-pose__feet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 1px dashed #e06c9f;
+  opacity: 0.6;
+}

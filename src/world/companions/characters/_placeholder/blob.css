@@ -1,0 +1,113 @@
+/* The test blob's poses: transform-only, and nothing moves unless it is playing. */
+.blob {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.blob__body,
+.blob__leg,
+.blob__arm {
+  transform-box: fill-box;
+}
+.blob__body {
+  transform-origin: 50% 100%;
+}
+.blob__leg {
+  transform-origin: 50% 0;
+}
+.blob__arm--l {
+  transform-origin: 100% 0;
+}
+.blob__arm--r {
+  transform-origin: 0 0;
+}
+.blob[data-playing] .blob__body {
+  animation: blob-breathe 3.2s ease-in-out infinite;
+}
+.blob[data-playing][data-pose="walk"] .blob__body {
+  animation: blob-bounce 0.5s ease-in-out infinite;
+}
+.blob[data-playing][data-pose="walk"] .blob__leg--l {
+  animation: blob-step 0.5s ease-in-out infinite;
+}
+.blob[data-playing][data-pose="walk"] .blob__leg--r {
+  animation: blob-step 0.5s ease-in-out infinite reverse;
+}
+/* Sitting: the body drops to the feet line and the legs hang over the cloud's front edge. */
+.blob[data-pose="sit"] .blob__body {
+  translate: 0 9px;
+}
+.blob[data-pose="sit"] .blob__legs {
+  translate: 0 14px;
+}
+.blob[data-playing][data-pose="sit"] .blob__leg--l {
+  animation: blob-swing 1.8s ease-in-out infinite;
+}
+.blob[data-playing][data-pose="sit"] .blob__leg--r {
+  animation: blob-swing 1.8s ease-in-out -0.5s infinite;
+}
+.blob[data-pose="jump"] .blob__leg,
+.blob[data-pose="fall"] .blob__leg,
+.blob[data-pose="held"] .blob__leg {
+  rotate: 18deg;
+  translate: 0 -3px;
+}
+.blob[data-pose="jump"] .blob__arm--l,
+.blob[data-pose="held"] .blob__arm--l {
+  rotate: 60deg;
+}
+.blob[data-pose="jump"] .blob__arm--r,
+.blob[data-pose="held"] .blob__arm--r {
+  rotate: -60deg;
+}
+.blob[data-playing][data-pose="wave"] .blob__arm--r {
+  animation: blob-wave 0.5s ease-in-out infinite alternate;
+}
+.blob[data-pose="wave"] .blob__arm--r {
+  rotate: -120deg;
+}
+.blob[data-pose="sleep"] .blob__body {
+  translate: 0 6px;
+  scale: 1.04 0.94;
+}
+.blob[data-playing][data-pose="held"] .blob__legs {
+  animation: blob-swing 0.9s ease-in-out infinite;
+  transform-origin: 40px 82px;
+}
+@keyframes blob-breathe {
+  50% {
+    transform: scale(1.02, 0.98);
+  }
+}
+@keyframes blob-bounce {
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes blob-step {
+  0%,
+  100% {
+    transform: rotate(-16deg);
+  }
+  50% {
+    transform: rotate(16deg);
+  }
+}
+@keyframes blob-swing {
+  0%,
+  100% {
+    transform: rotate(-20deg);
+  }
+  50% {
+    transform: rotate(20deg);
+  }
+}
+@keyframes blob-wave {
+  from {
+    transform: rotate(20deg);
+  }
+  to {
+    transform: rotate(-20deg);
+  }
+}
