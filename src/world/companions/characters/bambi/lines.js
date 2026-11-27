@@ -33,7 +33,7 @@ export const lines = {
     say("flirty", "you came. okay. i'll dance properly now."),
     say("fond", "{name}. there you are. my favourite plli."),
     say("wink", "front row's free. it's yours. obviously."),
-    say("proud", "bambiriring. …that's my hello. the members hated it. you can have it."),
+    say("proud", "bambiriring. …i made that up. the members hated it. you can have it."),
   ],
   greetMorning: [
     say("sleepy", "morning. i'm awake. my hair isn't."),
@@ -214,7 +214,7 @@ export const lines = {
     say("focused", "hellelelele. five l's. not four."),
     say("curious", "five, six… then ssukguk. that's how it goes."),
     say("focused", "if the clap's late, everything's late. again."),
-    say("neutral", "horororo. new count. it changes. like the choreo."),
+    say("neutral", "shuung. new count. it changes. like the choreo."),
     say("cool", "changed the choreo. again. you were only gone a minute."),
     say("focused", "can't do it halfway. halfway isn't a dance."),
   ],
