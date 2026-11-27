@@ -87,13 +87,15 @@ export function PlayfulProvider({ children }) {
     };
   }, []);
   useEffect(() => {
-    document.documentElement.dataset.littleMotion = moving ? "on" : "off";
+    // "hidden" (the app in the background) only pauses: everything carries on from where it was
+    // when she comes back, instead of every animation restarting at once (a stall, then a jump).
+    document.documentElement.dataset.littleMotion = moving ? "on" : paused || reduced ? "off" : "hidden";
     try {
       localStorage.setItem("kiriya:quiet-motion", paused ? "yes" : "no");
     } catch {
       /* private browsing can disable storage */
     }
-  }, [moving, paused]);
+  }, [moving, paused, reduced]);
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) =>

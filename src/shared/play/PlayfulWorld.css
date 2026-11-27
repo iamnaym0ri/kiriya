@@ -17,17 +17,23 @@
     WebKit runs on the compositor side by side: `translate` only travels (down, or up for embers and
     bubbles) at an even speed while it fades in and out, and `transform` only sways (or spins,
     flickers, bobs) on its own rhythm. Two simple motions read as one soft, flowing fall.
+  - The fall never slows or stops: it is linear, and only the sway eases. (The old keyframes put
+    ease-in-out on every segment of the fall itself, so each charm came to a standstill at every
+    keyframe and set off again: a built-in stall several times per fall.)
+  - Fast enough not to creep (about 0.7 to 1.6 pt a frame), so a glyph never inches along at half a
+    pixel per frame; each is its own layer up front (will-change: transform, seven layers), so it
+    is composited at sub-pixel positions from the very first frame.
   - Only transforms and opacity move; fixed vh/px distances; no filters (the misty mood's softness is
-    a text-shadow, painted once); no will-change (they animate all the time, so they are promoted
-    anyway).
+    a text-shadow, painted once). Fades happen only at the edges: in the app a charm slides behind
+    the tab bar fully visible, instead of fading out mid-screen.
   - Starts are spread evenly through the fall (--k, set in PlayfulWorld.jsx), so they never clump.
   - Seven on a phone (nine on wide screens), four in the "overwhelmed" mood.
-  - Gone with the app in the background, with "still" motion and with Reduce Motion (the
-    html[data-little-motion="off"] rules below, set by PlayfulProvider).
+  - Paused in place (not restarted) while the app is in the background or she is in chat; gone with
+    "still" motion and with Reduce Motion (html[data-little-motion], set by PlayfulProvider).
 */
 .ambient-charms {
   --n: 9;
-  --dur: 30s;
+  --dur: 20s;
   --sway: 7s;
   position: fixed;
   inset: 0;
@@ -44,6 +50,7 @@
   color: var(--charm-color, #a481b0);
   font: 24px/1 Georgia, serif;
   opacity: 0;
+  will-change: transform;
   animation:
     charm-fall var(--dur) linear infinite,
     charm-sway var(--sway) ease-in-out infinite alternate;
@@ -60,9 +67,9 @@
 .ambient-charms > span:nth-child(4n + 4)::before { content: var(--charm-4, "❀"); }
 
 /* Each mood has its own weather. */
-:root[data-feeling="happy"] .ambient-charms { --dur: 22s; --sway: 5s; --charm-peak: 0.6; }
+:root[data-feeling="happy"] .ambient-charms { --dur: 18s; --sway: 5s; --charm-peak: 0.6; }
 :root[data-feeling="happy"] .ambient-charms > span { animation-name: charm-fall, charm-sway-wide; }
-:root[data-feeling="content"] .ambient-charms { --dur: 34s; --sway: 8s; --charm-peak: 0.5; }
+:root[data-feeling="content"] .ambient-charms { --dur: 24s; --sway: 8s; --charm-peak: 0.5; }
 :root[data-feeling="content"] .ambient-charms > span { font-size: 22px; }
 :root[data-feeling="excited"] .ambient-charms { --dur: 12s; --sway: 3s; --charm-peak: 0.75; }
 :root[data-feeling="excited"] .ambient-charms > span {
@@ -86,9 +93,9 @@
 }
 :root[data-feeling="angry"] .ambient-charms { --dur: 11s; --sway: 1.6s; --charm-peak: 0.75; }
 :root[data-feeling="angry"] .ambient-charms > span { font-size: 20px; animation-name: charm-rise, charm-flicker; }
-:root[data-feeling="anxious"] .ambient-charms { --dur: 22s; --sway: 4.5s; --charm-peak: 0.55; }
+:root[data-feeling="anxious"] .ambient-charms { --dur: 18s; --sway: 4.5s; --charm-peak: 0.55; }
 :root[data-feeling="anxious"] .ambient-charms > span { font-size: 26px; animation-name: charm-rise, charm-wobble; }
-:root[data-feeling="overwhelmed"] .ambient-charms { --dur: 32s; --sway: 6s; --charm-peak: 0.32; }
+:root[data-feeling="overwhelmed"] .ambient-charms { --dur: 26s; --sway: 6s; --charm-peak: 0.32; }
 :root[data-feeling="overwhelmed"] .ambient-charms > span {
   font-size: 34px;
   animation-name: charm-fall, charm-breathe;
@@ -148,19 +155,24 @@
 }
 
 /* In the app the charms are the background: behind every card (above the lilac wash), and only
-   between the status bar and the tab bar, so nothing moves under the frosted bars and makes them
-   blur again on every frame. */
+   between the compact top bar's place and the tab bar, so nothing ever moves under a frosted bar
+   (the status-bar strip, the compact bar that fades in on scroll, the tab bar) and makes it blur
+   again on every frame. They fade in over their first ~100 pt anyway, so the top edge never shows. */
 html.app-shell .ambient-charms {
   z-index: -1;
-  top: var(--app-safe-top, env(safe-area-inset-top));
+  top: calc(var(--app-safe-top, env(safe-area-inset-top)) + var(--app-bar-h, 44px));
   bottom: var(--app-tabs-h, 0px);
 }
 html.app-shell #root::after {
   z-index: -2;
 }
-/* The chat covers the whole screen with its own wallpaper: nothing to show, so nothing to animate. */
+/* The chat covers the whole screen with its own wallpaper: nothing to show, so nothing to draw. They
+   wait where they are (paused, not removed), so leaving chat doesn't restart them. */
 html.app-shell body[data-tab="chat"] .ambient-charms {
-  display: none;
+  visibility: hidden;
+}
+html.app-shell body[data-tab="chat"] .ambient-charms > span {
+  animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce) {
   .ambient-charms {
@@ -359,6 +371,12 @@ html.app-shell body[data-tab="chat"] .ambient-charms {
 [data-in-view="no"] *,
 [data-in-view="no"]::before,
 [data-in-view="no"]::after {
+  animation-play-state: paused !important;
+}
+/* The app in the background: everything holds still where it is and carries on when she's back. */
+html[data-little-motion="hidden"] *,
+html[data-little-motion="hidden"] *::before,
+html[data-little-motion="hidden"] *::after {
   animation-play-state: paused !important;
 }
 html[data-little-motion="off"] *,
