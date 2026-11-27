@@ -1,67 +1,69 @@
 // What she says. Original lines in the voice of the fujoshi from SAWTOWNE's "Confessions of a Rotten
-// Girl": a girl at a religious school who confesses her BL habit to God like a sin, paddles herself
-// for it with her SINNER paddle, swears she'll stop and relapses on the spot. Ships fictional boys
-// on sight (seme/uke debates, fanfic in her black Yaoi Note, doujinshi hauls, nosebleeds, feral
-// shrieking) and is secretly very sweet to the reader. Innuendo and comedy, never explicit. She
-// only ships grown-up fictional characters (KAITO, Gakupo, Jinshi and Gaoshun, teacups, clouds)
-// and Josh, never Rin or Len, and never Bamby: he's a real performer's avatar, so she fangirls his
-// dancing and that's all. No song lyrics. The reader is Kiriya ({name}). Each line is a string or
-// { text, expression }; expressions are Face.jsx's: soft, happy, giggle, gasp, flustered, sparkle,
-// smug, shy, focused, pray, sleepy, dreamy, worried, pout, feral, guilty, nervous, nosebleed.
+// Girl": a girl at a Christian school who confesses her BL habit to God like a sin, paddles herself
+// for it with her SINNER paddle, swears she'll stop and relapses on the spot. Thirsty for fictional
+// grown men (her teachers in the MV: KAITO teaches art, Gakupo P.E., Kiyoteru history; Jinshi and
+// Gaoshun from the palace next door; rivals, himbos, men in ties), seme/uke debates, fanfic in her
+// black Yaoi Note, R-18 doujinshi she hides inside a hymnal, nosebleeds, feral shrieking, ascending.
+// Bold, but innuendo and comedy about the pairings she ships: never explicit, and never about her
+// own body (she's sixteen). Never Rin or Len, never Bamby: he's a real performer's avatar, so she
+// fangirls his dancing and that's all. Josh only in the sweet lines. No song lyrics. The reader is
+// Kiriya ({name}). Each line is a string or { text, expression }; expressions are Face.jsx's: soft,
+// happy, giggle, gasp, flustered, sparkle, smug, shy, focused, pray, sleepy, dreamy, worried, pout,
+// feral, guilty, nervous, wince, nosebleed, rotten, bliss, surprised.
 const say = (expression, text) => ({ text, expression });
 
 export const lines = {
   greet: [
     say("nervous", "{name}! hi! this black notebook? homework. very normal homework."),
     say("sparkle", "you're here! quick, i need a second opinion on who's the uke."),
-    say("guilty", "oh! hello! you didn't see anything. there was nothing to see."),
-    say("happy", "welcome back~ i saved you a seat and a fic. the fic is 80k words."),
-    say("feral", "{name}!! perfect timing, i just finished chapter twelve!!"),
+    say("guilty", "oh! hello! you didn't see anything. there was nothing to see. it was a hymnal."),
+    say("happy", "welcome back~ i saved you a seat and a fic. the fic is 80k words. 12k of them are plot."),
+    say("feral", "{name}!! perfect timing, they FINALLY shared a bed in chapter twelve!!"),
     say("soft", "hi hi. i was being so good today. mostly. a little."),
   ],
   greetMorning: [
     say("sleepy", "good morning… i only stayed up till four reading. for my faith."),
-    say("pray", "morning, {name}. i said my prayers. then i said a few about kaito."),
+    say("pray", "morning, {name}. i said my prayers. then a few about the art teacher and the P.E. teacher."),
     say("happy", "morning! fresh day, fresh page, fresh ship."),
-    say("nervous", "o-oh, morning! these dark circles? from studying. studying boys."),
-    say("sparkle", "good morning! the new chapter dropped at midnight and they HELD HANDS."),
-    say("guilty", "morning~ i went to confession. i had a lot to say. the priest needed a break."),
+    say("nervous", "o-oh, morning! these dark circles? from studying. studying men. in pairs."),
+    say("sparkle", "good morning! the new chapter dropped at midnight and he CARRIED HIM HOME."),
+    say("guilty", "morning~ i went to confession. i had a lot to say. the priest asked for a break. and the link."),
   ],
   greetAfternoon: [
     say("happy", "afternoon, {name}! break time means fic time."),
-    say("smug", "you're back. i've been analysing kaito's scarf. it's a cry for help."),
-    say("sparkle", "hi hi! i have a new theory and seven pages of evidence."),
-    say("giggle", "afternoon~ i may have written a fic during maths. a long one."),
+    say("smug", "you're back. i've been analysing kaito-sensei's scarf. it's a cry for help."),
+    say("sparkle", "hi hi! i have a new theory and seven pages of evidence. three are diagrams."),
+    say("giggle", "afternoon~ i wrote a whole fic during history. the history teacher is in it. shh."),
     say("soft", "you made it! sit. i'll read you the sfw parts. there are two."),
   ],
   greetEvening: [
-    say("dreamy", "good evening, {name}. evenings are for longing glances and slow burns."),
-    say("happy", "evening~ tell me everything. especially if two boys were involved."),
-    say("smug", "the sun's setting. two lovers parting at dusk. i'm normal about it."),
-    say("giggle", "you're home! perfect, i've got a fic and a blanket ready."),
+    say("dreamy", "good evening, {name}. evenings are for longing glances and loosened ties."),
+    say("happy", "evening~ tell me everything. especially if two men were involved."),
+    say("smug", "the sun's setting. two rivals parting at dusk. one looks back. i'm normal about it."),
+    say("giggle", "you're home! perfect, i've got a fic, a blanket and a box of tissues. for the nosebleeds."),
     say("soft", "evening! you worked hard today. i only worked hard on a ship."),
   ],
   greetNight: [
     say("worried", "{name}, it's late. bed. says the girl with 40 tabs of fanfic open."),
-    say("guilty", "night owl? me too. the best chapters come out at 2am."),
-    say("pray", "a bedtime confession: i read one more chapter. then nine more."),
+    say("guilty", "night owl? me too. the best chapters come out at 2am. the worst ones too. i read both."),
+    say("pray", "a bedtime confession: i read one more chapter. then nine more. then the R-18 one."),
     say("sleepy", "go to sleep, {name}. i'll guard the cloud. and finish this doujin."),
     say("shy", "don't stay up too late… the yaoi will still be there tomorrow."),
   ],
   idle: [
-    say("focused", "if kaito leaned in just a little closer to the next cloud…"),
+    say("focused", "if the P.E. teacher rolled his sleeves up right in front of the history teacher… he'd drop his chalk."),
     say("dreamy", "enemies to lovers. lovers to husbands. husbands to my heart."),
     say("guilty", "i promised i'd only read one chapter. that was 30 chapters ago."),
-    say("smug", "seme or uke. it's never about height. it's about the vibes."),
-    say("giggle", "hehe. a boy carried another boy's bag once. i think about it daily."),
+    say("smug", "seme or uke. it's never about height. it's about who says “idiot” fondly."),
+    say("giggle", "hehe. a man carried another man's bag once. i think about it daily."),
     say("pout", "the ship i'm in is sinking. i'm going down with it. proudly."),
     say("pray", "lord, give me the strength to resist. …but not yet."),
-    say("nervous", "my search history would get me excommunicated."),
-    say("sparkle", "ooh, an idea! two rival cloud-boys, one umbrella…"),
+    say("nervous", "my search history would get me excommunicated. twice."),
+    say("sparkle", "ooh, an idea! two rival knights, one tent, one bedroll. it's FOR WARMTH."),
     say("dreamy", "they share one scarf in the snow. i would perish."),
     say("focused", "slow burn means the kiss is in chapter 90. i'm on 89. i'm shaking."),
     say("feral", "the tension. the TENSION. somebody kiss somebody!!"),
-    say("shy", "is it weird to cry over two boys who don't exist? asking for me."),
+    say("shy", "is it weird to cry over two men who don't exist? asking for me."),
     say("smug", "i don't read the tags. i read between them."),
     say("worried", "where's my paddle?! …oh. behind me. it's always behind me."),
     say("soft", "humming beethoven. the sad sonata. it's my confession music."),
@@ -69,34 +71,39 @@ export const lines = {
     say("pray", "sister says reading is good for the soul. she didn't say what kind."),
     say("giggle", "the word count goes up. my grades go down. balance."),
     say("guilty", "it's not an obsession. it's a lifestyle with a paddle."),
+    say("rotten", "a man in glasses, loosening his tie, sighing. that's it. that's the whole thought."),
+    say("feral", "FOREARMS. i said what i said."),
+    say("dreamy", "a big muscly man being gentle with a kitten. bury me."),
+    say("smug", "“there was only one bed.” six words. a whole religion."),
   ],
   stayIdle: [
     say("happy", "this spot is mine now. i'm planting my paddle. like a flag."),
     say("focused", "staying put. perfect for reading. and lurking."),
     say("smug", "a good fujoshi watches from one spot. like a lighthouse. of sin."),
-    say("dreamy", "if i stay here long enough, maybe two boys will walk past…"),
+    say("dreamy", "if i stay here long enough, maybe two men will walk past. holding hands. please."),
     say("giggle", "not moving. i've got snacks, a fic and my paddle. i'm set."),
   ],
   tapped: [
     say("gasp", "eep! oh, it's you. hi {name}!"),
-    say("flustered", "n-no, it's not what it looks like! …okay, it's two knights. kissing."),
+    say("flustered", "n-no, it's not what it looks like! …okay, it's two knights. kissing. in armour."),
     say("smug", "you've found my secret: i'm always on chapter one hundred."),
     say("nervous", "you want to see my notebook? …the clean one or the yaoi note?"),
-    say("giggle", "hehe, that tickles. are you checking if i'm real? i'm fictional, like my boys."),
+    say("giggle", "hehe, that tickles. are you checking if i'm real? i'm fictional, like my husbands."),
     say("sparkle", "yes? yes?! do you need a fic rec? tissues? both?"),
-    say("guilty", "if this is about the noise last night, it was a new chapter."),
+    say("guilty", "if this is about the noise last night, it was a new chapter. they KISSED."),
     say("pout", "careful! i almost lost my place in a 200k slow burn!"),
     say("soft", "i'm here, i'm here. what's up?"),
     say("feral", "you tapped. that means you want the paddle. i can tell."),
     say("shy", "d-don't look at page twelve. any page but twelve."),
     say("gasp", "wah! my glasses nearly fell in my fic!"),
+    say("nervous", "this? a hymnal. it's a hymnal. why is it pink inside? …hymns are pink now."),
   ],
   pester: [
     say("flustered", "okay okay okay! i'm awake! i'm reading! it's very wholesome!"),
     say("feral", "three taps?! that's it. paddle. now."),
     say("pout", "poke me again and you're the uke in my next fic."),
     say("giggle", "hehe, stop! my glasses are crooked! now my ship is crooked!"),
-    say("smug", "three taps. the secret code for “give me the good fic”, right?"),
+    say("smug", "three taps. the secret code for “give me the R-18 one”, right?"),
   ],
   picked: [
     say("flustered", "w-waaah! too high! my doujinshi!"),
@@ -116,16 +123,16 @@ export const lines = {
   birthday: [
     say("sparkle", "happy birthday, {name}!! i wrote you a fic. it's rated g. it's the hardest thing i've ever done."),
     say("sparkle", "september seventeenth! the holiest day on my calendar. sorry, church."),
-    say("happy", "happy birthday~ every boy in my yaoi note is wearing a party hat today."),
+    say("happy", "happy birthday~ every man in my yaoi note is wearing a party hat today. only a party hat. kidding!! mostly."),
     say("dreamy", "birthday girl gets to pick tonight's ship. any ship. even a het one."),
     say("pray", "birthday confession: you're my favourite person who isn't fictional."),
     say("feral", "IT'S YOUR BIRTHDAY!! SOMEBODY HOLD MY PADDLE!!"),
   ],
   sweet: [
     say("dreamy", "you and josh? the only het ship i'd die for. and it's canon!!"),
-    say("shy", "you're the cutest person in this whole app. even cuter than kaito blushing."),
+    say("shy", "you're the cutest person in this whole app. even cuter than kaito-sensei blushing."),
     say("soft", "your cosplay is so good it makes my pencil nervous."),
-    say("sparkle", "you're my muse, {name}. officially. i wrote it in pen. and in ao3 tags."),
+    say("sparkle", "you're my muse, {name}. officially. i wrote it in pen. and in the tags."),
     say("soft", "whatever today was like, you did enough. you are enough."),
     say("pray", "confession: i'm your number one fan. okay, josh is. i'm number two."),
     say("happy", "you, a cosplay and a con hall? my favourite kind of story."),
@@ -141,7 +148,7 @@ export const lines = {
   ],
   visit: [
     say("sparkle", "ooh, company! quick, look natural! hide the doujinshi!"),
-    say("gasp", "a visitor?! is it a boy? are there two boys?"),
+    say("gasp", "a visitor?! is it a man? are there two men?"),
     say("happy", "there's room on the cloud! scoot, scoot."),
   ],
 
@@ -152,7 +159,7 @@ export const lines = {
     say("pray", "i have sinned. 400k words of sin. time for penance."),
     say("smug", "this paddle has seen four cons and zero regrets."),
     say("smug", "kneel before the yaoi paddle! …okay, i'll kneel. it's for me."),
-    say("guilty", "the paddle knows what i read last night. it's angry."),
+    say("guilty", "the paddle knows what i read last night. it's furious. it read it too."),
   ],
   penance: [
     say("flustered", "penance! SMACK! …ow."),
@@ -160,6 +167,7 @@ export const lines = {
     say("flustered", "SMACK! forgive me! …SMACK! for good measure."),
     say("flustered", "ow. ow. holy ow. i deserved that."),
     say("flustered", "SMACK! that's for the seme/uke chart in my maths book."),
+    say("wince", "SMACK! that one's for the R-18 table at the con. i only LOOKED."),
   ],
   smack: [
     say("feral", "SMACK!! kiss already!!"),
@@ -167,6 +175,7 @@ export const lines = {
     say("feral", "SMACK!! ship approved!!"),
     say("feral", "SMACK! one for the seme, one for the uke!"),
     say("feral", "SMACK!! canon now. i said so."),
+    say("feral", "SMACK! the author cut to black AGAIN?!"),
   ],
   smacked: [
     say("guilty", "…okay. cleansed. anyway, new chapter dropped."),
@@ -178,11 +187,11 @@ export const lines = {
   stay: [
     say("happy", "staying! i'll plant myself right here. like a flag. a sinful flag."),
     say("smug", "a fujoshi never moves while the fic is good. understood."),
-    say("soft", "okay, i'll stay put. bring snacks. and boys."),
-    say("giggle", "staying~ perfect, i was at the good part anyway."),
+    say("soft", "okay, i'll stay put. bring snacks. and men."),
+    say("giggle", "staying~ perfect, i was at the good part anyway. the VERY good part."),
   ],
   wander: [
-    say("sparkle", "free! time to go find boys standing too close together."),
+    say("sparkle", "free! time to go find men standing too close together."),
     say("happy", "wandering! the ships won't spot themselves."),
     say("smug", "off i go. the paddle needs fresh air."),
   ],
@@ -190,38 +199,58 @@ export const lines = {
   // Her own topics, one per behaviour in index.js.
   fanfic: [
     say("smug", "the yaoi note. write two names in it… and in forty seconds, they hold hands."),
-    say("smug", "rule one: the humans whose names are written in this note shall kiss."),
+    say("smug", "rule one: the men whose names are written in this note shall kiss."),
     say("focused", "writing two names… very neatly… no smudges, or it won't work."),
-    say("focused", "shh… writing… “he looked at him with the eyes of a man who…” hmm."),
-    say("focused", "chapter 47. the rivals are forced to share a bed. purely logistical."),
-    say("giggle", "rated t. for now. hehe."),
-    say("focused", "tags: slow burn, mutual pining, one (1) umbrella."),
-    say("nervous", "the plot is just there to get them in a room together. it's fine."),
+    say("focused", "shh… writing… “he loosened his tie with one hand and—” hmm. hmm!!"),
+    say("focused", "chapter 47. the rivals are forced to share a bed. purely logistical. for three chapters."),
+    say("giggle", "rated t. for now. hehe. for now."),
+    say("focused", "tags: slow burn, mutual pining, one (1) umbrella, sweaty sparring."),
+    say("nervous", "the plot is just there to get them in a room together. and lock the door."),
     say("focused", "“and then their hands brushed…” okay, i need a minute."),
     say("pout", "why do i always write the angst at 3am? who hurt me? me. i hurt me."),
     say("feral", "THE CONFESSION SCENE. i'm writing the confession scene. nobody talk to me."),
     say("shy", "no peeking till it's done! …the first nine chapters are sfw. ish."),
     say("guilty", "this chapter's a lemon. don't ask. just squint."),
+    say("rotten", "fade to black… then fade back in. the morning after. he's making breakfast. in HIS shirt."),
+    say("guilty", "chapter twelve. the uke takes a sick day after. no further questions."),
   ],
   shipping: [
-    say("sparkle", "look! kaito and his ice cream. older than most marriages."),
+    say("sparkle", "look! kaito-sensei and his ice cream. older than most marriages."),
     say("sparkle", "two pigeons on one branch. clearly a seme and an uke."),
     say("smug", "the sun and the moon? enemies to lovers. they meet at dusk. obviously."),
-    say("sparkle", "josh and kaito. no reason. it came to me in a vision."),
-    say("dreamy", "two umbrellas, one raincoat. the forbidden kind of love."),
+    say("dreamy", "the art teacher and the P.E. teacher, after school, alone, in the art room. painting. allegedly."),
     say("giggle", "i drew the clouds. one's a bit fluffier. you know what that means."),
     say("sparkle", "kaito and gakupo. one scarf, one fan, one destiny."),
+    say("feral", "the history teacher stayed late to help the P.E. teacher MARK PAPERS. at night. sure."),
   ],
   theory: [
-    say("smug", "my analysis is complete. kaito is the uke. look at that scarf."),
-    say("smug", "josh is the seme. he carries the whole app on his back."),
+    say("smug", "my analysis is complete. kaito-sensei is the uke. look at that scarf."),
     say("smug", "the glasses see everything, {name}. every lingering glance."),
     say("smug", "theory: every boy band is one shared jacket away from a fic."),
     say("smug", "height difference is a myth. vibes difference is real."),
+    say("smug", "a man who says “it's not like that” in chapter one. it's like that by chapter ten."),
+  ],
+  seme: [
+    say("smug", "him. the seme. look at those shoulders. case closed."),
+    say("smug", "he leans on walls. wall-leaners are semes. it's science."),
+    say("smug", "the one with the deep voice and the sleeves rolled up. seme. next."),
+    say("smug", "he ruffled his hair. the seme ruffles. always."),
+  ],
+  uke: [
+    say("feral", "NO WAIT. the big one blushes first. he's the UKE."),
+    say("feral", "OBJECTION! he says “idiot” fondly. that's an uke tell!!"),
+    say("feral", "the tall one's the uke. it's ALWAYS the tall one!!"),
+    say("feral", "look at how he holds his tea. uke. uke uke uke."),
+  ],
+  verdict: [
+    say("smug", "…switch. final answer."),
+    say("smug", "verdict: they take turns. everyone wins. mostly me."),
+    say("smug", "the court finds them both guilty. of being in love."),
+    say("smug", "decision deferred to chapter 30. pending evidence."),
   ],
   daydream: [
-    say("dreamy", "a sakura tree, a confession, a boy who can't say it…"),
-    say("dreamy", "comiket. my wallet, empty. my heart, full."),
+    say("dreamy", "a sakura tree, a confession, a man who can't say it…"),
+    say("dreamy", "comiket. my wallet, empty. my heart, full. my bag, heavy."),
     say("dreamy", "if i close my eyes i can hear a con hall. and a paddle. smack."),
     say("dreamy", "a confession booth with a reading light. for… confessing. and reading."),
     say("dreamy", "someday i'll get a whole doujin table. you can be my cosplayer."),
@@ -234,6 +263,8 @@ export const lines = {
     say("pray", "lord, i have sinned. but have you SEEN chapter 30?"),
     say("guilty", "i promised i'd stop shipping. then i shipped the promise."),
     say("pray", "i confess i bought six copies. one to read, one to keep, four to cry on."),
+    say("pray", "forgive me, father. i bought the R-18 one. for the plot. there was some plot."),
+    say("pray", "i confess i shipped the P.E. teacher with the history teacher for an entire lesson. we did volleyball. i think."),
   ],
   giggle: [
     say("giggle", "hehe… nothing! nothing. hehe."),
@@ -252,12 +283,37 @@ export const lines = {
     say("flustered", "too much… my glasses are fogging up!"),
     say("flustered", "i wasn't staring! i was… taking reference."),
     say("flustered", "he fixed his collar for him. FIXED. HIS. COLLAR."),
+    say("flustered", "HE PUT HIS JACKET ON HIM. ON HIM. IN PUBLIC."),
   ],
   nosebleed: [
     say("nosebleed", "…tissue. someone. tissue."),
     say("nosebleed", "it's fine. it's just a nosebleed. this happens every chapter."),
     say("nosebleed", "they… shirtless… in the rain… oh no. oh no."),
     say("nosebleed", "don't worry, it's a normal amount of blood for a fujoshi."),
+    say("nosebleed", "tissue count today: eleven. it's not even noon."),
+  ],
+  ascend: [
+    say("bliss", "i've ascended. bury me with my doujinshi."),
+    say("bliss", "i can see the light… it's a two-page spread…"),
+    say("bliss", "this is heaven. there are two men here. holding hands. forever."),
+    say("bliss", "goodbye, world. it was a good chapter."),
+  ],
+  magazine: [
+    say("rotten", "reading my hymnal. very… muscular hymns today."),
+    say("rotten", "page thirty of the hymnal: a lumberjack. i don't remember this psalm."),
+    say("rotten", "it's a hymnal. it has a centrefold. that's normal for hymnals."),
+    say("rotten", "a whole issue of firemen. in aprons. just aprons. I MEAN HYMNS."),
+  ],
+  hymnal: [
+    say("nosebleed", "…amen."),
+    say("nosebleed", "a nun walked past. i held up the hymnal. she smiled. she has no idea."),
+    say("nosebleed", "hallelujah. no further comment."),
+  ],
+  brainrot: [
+    say("rotten", "…hehe. hehehe. sorry. i was thinking about the history teacher's glasses."),
+    say("rotten", "two men. one tie. i'll let you do the maths."),
+    say("rotten", "don't look into my eyes. there's a fic in there. a long one."),
+    say("rotten", "i'm fine. my brain is just… rotting. pleasantly."),
   ],
   cheer: [
     say("sparkle", "go go {name}! you can do anything!"),
@@ -267,7 +323,7 @@ export const lines = {
   ],
   resist: [
     say("flustered", "no! no more ships today! …unless."),
-    say("flustered", "must… resist… two boys… sharing… an umbrella…"),
+    say("flustered", "must… resist… two men… sharing… an umbrella…"),
     say("flustered", "the yaoi note is closed! closed! …mostly closed."),
     say("worried", "i'm a good girl. i go to church. i only read the sfw ones. lies."),
   ],
@@ -278,6 +334,7 @@ export const lines = {
     say("feral", "my mutual drew them in matching sweaters. i'm screaming. i'm literally screaming."),
     say("feral", "the author replied to my comment!! i'm going to faint!!"),
     say("feral", "kudos left. comment left. sanity left."),
+    say("rotten", "the uncensored version is up. …for the plot. i'm reading it for the plot."),
   ],
   dance: [
     say("giggle", "a little ship dance! one step for the seme, one for the uke!"),
@@ -294,9 +351,9 @@ export const lines = {
   ],
   doujin: [
     say("dreamy", "my new doujinshi… forty pages… two of them have plot."),
-    say("dreamy", "i'm hugging it so the nuns can't see the cover."),
+    say("dreamy", "i'm hugging it so the nuns can't see the cover. or the sticker. the 18 one."),
     say("dreamy", "the binding is so soft… like their love…"),
-    say("giggle", "this one's a limited edition. limited to my heart."),
+    say("giggle", "this one's a limited edition. limited to my heart. and my locked drawer."),
   ],
   sleepy: [
     say("sleepy", "zz… just resting my glasses…"),
@@ -308,8 +365,8 @@ export const lines = {
 
 // Call and response when she and another character share the screen: [hers, theirs, …] (longer
 // exchanges alternate). Each reply is written in the other character's own voice (Maomao's tidy
-// deadpan, Bamby's bright warmth, classic Miku's sparkle, KAITO's gentle big-brother ease) and uses
-// an expression from that character's own face rig.
+// deadpan, Bamby's short dry warmth, classic Miku's sparkle, KAITO's gentle big-brother ease) and
+// uses an expression from that character's own face rig.
 export const visit = {
   // Anyone without pairs of their own: she speaks first, the reply is plain so any face fits.
   any: [
@@ -330,6 +387,13 @@ export const visit = {
       [say("guilty", "can i borrow your notebook? purely for research."), say("thinking", "My notes are on poisons. …Which, now that I look at you, is fair.")],
       [say("nosebleed", "a palace full of pretty men and you look at mushrooms?!"), say("herb", "Mushrooms don't sigh at me. Hand me that one, please.")],
       [say("dreamy", "your mortar and pestle. the grind. the devotion. the TENSION."), say("unimpressed", "They're tools. One goes in the other. …I hear it now. Stop.")],
+      [
+        say("sparkle", "maomao. is there a potion that makes two men confess?"),
+        say("thinking", "There are aphrodisiacs. They make people warm, flushed and stupid. The confessing is up to them."),
+        say("feral", "WARM. FLUSHED. AND STUPID. that's my whole genre!!"),
+      ],
+      [say("gasp", "you grew up in the pleasure quarter?! tell me EVERYTHING."), say("deadpan", "Mostly laundry, ledgers and the sisters' gossip. Nine pages out of ten would bore you.")],
+      [say("rotten", "the eunuch thing. is it… real? asking for chapter four."), say("unimpressed", "I don't discuss my employer's anatomy. Not even the frog.")],
     ],
     miku: [
       [say("gasp", "wait… are you me? from a less rotten timeline?"), say("joy", "and you're me with glasses! a duet with myself!")],
@@ -337,24 +401,25 @@ export const visit = {
       [say("smug", "ever noticed how kaito looks at gakupo?"), say("thinking", "like he wants to borrow his fan? …oh. OH. no!")],
       [say("guilty", "shh… don't tell the others about my yaoi note."), say("giggle", "my lips are sealed! …can i see it, though?")],
       [say("pray", "pray for me, miku. i've sinned in four languages."), say("soft", "miku forgives you~ now show me the art! ♪")],
-      [say("feral", "your fans ship you with everybody. how does it feel?!"), say("wink", "honestly? flattering~ ♪")],
+      [say("nervous", "this? a hymnal. very holy. please don't open it."), say("giggle", "okay! …it's upside down, though ♪")],
     ],
     kaito: [
-      [say("sparkle", "kaito!! hold the cone just like that! now look at the next cloud. longingly."), say("worried", "it's melting… can I stop looking longingly?")],
-      [say("smug", "kaito. you're the uke. we've discussed this."), say("sheepish", "have we? I don't remember agreeing to anything…")],
+      [say("sparkle", "kaito-sensei!! hold the cone just like that! now look at the P.E. office. longingly."), say("worried", "it's melting… can I stop looking longingly?")],
+      [say("smug", "sensei. you're the uke. we've discussed this."), say("sheepish", "have we? I don't remember agreeing to anything…")],
       [
-        say("feral", "kaito, about you and gakupo…"),
+        say("feral", "kaito-sensei, about you and gakupo-sensei…"),
         say("surprised", "me and… gakupo? we had lunch once!"),
         say("nosebleed", "lunch. ONCE. that's how it starts."),
       ],
       [say("dreamy", "your scarf is so long… long enough for two…"), say("fond", "it is warm. you can borrow it if you stop drawing me.")],
-      [say("pray", "i confess… i drew you and josh holding hands."), say("happy", "ahaha, josh does buy me ice cream. is that a date?")],
+      [say("feral", "you stayed late in the art room with the P.E. teacher. AGAIN."), say("sheepish", "he was helping me carry canvases! …why are you writing that down?")],
       [say("guilty", "i saw you in an apron once. painting. i've been normal about it ever since."), say("sheepish", "I was painting! it was a painting apron!")],
+      [say("rotten", "sensei. the P.E. teacher said you have “nice brushwork”. how did that make you FEEL."), say("thinking", "…happy? it was about my painting. hm-hm. it was about my painting, right?")],
     ],
     bambi: [
       [say("gasp", "an idol?! on MY cloud?! h-hi, bamby!"), say("neutral", "hi. your cloud's fluffy. …can i stay?")],
       [say("sparkle", "bamby, the spin again? for reference! for art!"), say("grin", "spin. okay. …done. did you get it?")],
-      [say("flustered", "your dancing is so good it makes my pencil wobble."), say("shy", "…thanks. want to learn it? one, two…")],
+      [say("flustered", "your dancing is so good it makes my pencil wobble."), say("shy", "…thanks. want to learn it? ssukguk, ssukguk…")],
       [say("worried", "careful, the paddle's behind me. it's only for my own sins."), say("scared", "good. it looks like it's judging me.")],
       [say("pray", "i'm just a fan. a normal one. of the dancing. strictly the dancing."), say("curious", "okay. …why are you praying?")],
       [say("happy", "can i cheer for you? i've got a paddle. it's very supportive."), say("proud", "…okay. cheer. i'll dance harder.")],

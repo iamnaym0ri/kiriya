@@ -1202,6 +1202,129 @@
   }
 }
 
+/* --- Ascend: a chapter so good she leaves her body. Floating, halo bobbing, rays pulsing ------ */
+.mr[data-pose="ascend"] .mr-upper {
+  translate: 0 -6px;
+  animation: mr-ascend 3s ease-in-out infinite;
+}
+.mr[data-pose="ascend"] .mr-shadow {
+  opacity: 0.45;
+  scale: 0.8 0.8;
+}
+.mr[data-pose="ascend"] .mr-head {
+  rotate: -3deg;
+  translate: 0 -1px;
+}
+.mr[data-pose="ascend"] .mr-tail--l {
+  rotate: -6deg;
+}
+.mr[data-pose="ascend"] .mr-tail--r {
+  rotate: -6deg;
+}
+.mr-halo {
+  transform-origin: 112px 14px;
+}
+.mr-halo-in {
+  animation: mr-halo 3s ease-in-out infinite;
+}
+.mr-rays {
+  transform-origin: 110px 30px;
+  animation: mr-rays 1.5s ease-in-out infinite;
+}
+@keyframes mr-ascend {
+  0%,
+  100% {
+    translate: 0 -5px;
+  }
+  50% {
+    translate: 0 -12px;
+  }
+}
+@keyframes mr-halo {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -3px;
+  }
+}
+@keyframes mr-rays {
+  0%,
+  100% {
+    opacity: 0.35;
+    scale: 0.94;
+  }
+  50% {
+    opacity: 0.95;
+    scale: 1.04;
+  }
+}
+
+/* --- Magazine: the "hymnal" held up to her nose, trembling now and then ---------------------- */
+.mr-magazine {
+  transform-origin: 110px 168px;
+}
+.mr[data-pose="magazine"] .mr-magazine {
+  animation: mr-mag-shake 2.2s ease-in-out infinite;
+}
+.mr[data-pose="magazine"] .mr-head {
+  translate: 0 2px;
+}
+.mr-mag {
+  animation: mr-mag-peek 2.2s ease-in-out infinite;
+}
+@keyframes mr-mag-shake {
+  0%,
+  60%,
+  100% {
+    rotate: 0deg;
+  }
+  66%,
+  78% {
+    rotate: -2.5deg;
+  }
+  72%,
+  84% {
+    rotate: 2.5deg;
+  }
+}
+@keyframes mr-mag-peek {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -2px;
+  }
+}
+
+/* --- Point: the verdict, with a jab of the finger ------------------------------------------- */
+.mr-point-arm {
+  transform-origin: 138px 168px;
+}
+.mr[data-pose="point"] .mr-point-arm {
+  animation: mr-jab 1.2s cubic-bezier(0.3, 0, 0.2, 1) infinite;
+}
+.mr[data-pose="point"] .mr-head {
+  rotate: 3deg;
+}
+.mr-verdict {
+  animation: mr-twinkle 1.2s ease-in-out infinite;
+}
+@keyframes mr-jab {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  12% {
+    rotate: -5deg;
+  }
+  24% {
+    rotate: 2deg;
+  }
+}
+
 /* --- The nosebleed drips ------------------------------------------------------------------------ */
 .mr-bleed-drop {
   animation: mr-drip 1.6s ease-in infinite;
