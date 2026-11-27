@@ -173,8 +173,9 @@ export async function updateSignal(db, id, patch) {
 }
 
 /** The oldest queued signals; pasted links first (Josh is waiting on them). */
-export async function queuedSignals(db, { limit = 10, statuses = ["queued"] } = {}) {
+export async function queuedSignals(db, { limit = 10, statuses = ["queued"], now = new Date() } = {}) {
   const result = await db.execute(sql`SELECT * FROM event_signals WHERE status IN (${sql.join(statuses.map((s) => sql`${s}`), sql`, `)})
+    AND (payload->>'notBefore' IS NULL OR (payload->>'notBefore')::timestamptz <= ${now.toISOString()}::timestamptz)
     ORDER BY CASE origin WHEN 'link' THEN 0 WHEN 'refresh' THEN 1 ELSE 2 END, created_at ASC LIMIT ${limit}`);
   return rowsOf(result).map((r) => ({ ...r, sourceId: r.source_id, eventId: r.event_id, createdAt: r.created_at, updatedAt: r.updated_at }));
 }

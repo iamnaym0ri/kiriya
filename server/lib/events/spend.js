@@ -14,7 +14,12 @@ export const HARD_CEILING_USD = 20;
 export const PRICES = {
   "claude-haiku-5-5": { input: 0.1, output: 0.5, cacheWrite: 0.125, cacheRead: 0.01, longInput: 0.5, longOutput: 2.5, longAfter: 100_000 },
   "claude-opus-5-5": { input: 4, output: 20, cacheWrite: 5, cacheRead: 0.2 },
+  // What a server-side refusal fallback may answer with ("fallbacks": "default").
+  "claude-opus-5": { input: 5, output: 25, cacheWrite: 6.25, cacheRead: 0.5 },
+  "claude-opus-4-8": { input: 5, output: 25, cacheWrite: 6.25, cacheRead: 0.5 },
 };
+// An unknown model is priced like the dearest Opus above, so the ledger never under-counts.
+const FALLBACK_PRICE = PRICES["claude-opus-5"];
 export const WEB_SEARCH_USD = 0.01;
 
 // The most a single call may cost; a call is only started when this much is left.
@@ -26,8 +31,7 @@ const daysInMonth = (date) => new Date(Date.UTC(date.getUTCFullYear(), date.getU
 
 /** Micro-dollars for one response's usage (`usage` as the Messages API returns it). */
 export function priceUsage(model, usage = {}) {
-  const p = PRICES[model];
-  if (!p) throw new Error(`No price for model ${model}`);
+  const p = PRICES[model] ?? FALLBACK_PRICE;
   const input = usage.input_tokens ?? 0;
   const output = usage.output_tokens ?? 0;
   const write = usage.cache_creation_input_tokens ?? 0;
