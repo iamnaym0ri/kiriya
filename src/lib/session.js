@@ -15,6 +15,9 @@ export function useSession() {
   });
 }
 
+/** Josh's sign-in: the same app as hers, plus the controls to change what she sees. */
+export const useIsAdmin = () => useSession().data?.role === "admin";
+
 /** Forgets everything private on this device and shows the passphrase again. */
 export async function forgetSession(queryClient) {
   window.dispatchEvent(new Event("kiriya:locked"));

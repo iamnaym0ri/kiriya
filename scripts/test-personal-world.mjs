@@ -392,7 +392,8 @@ try {
   await test("A new letter can tell her phone, now or when it unlocks", async () => {
     const soon = await json(await request("admin/letters", { method: "POST", cookie: admin, body: { kind: "note", title: "for today", body: "hi", notify: true } }));
     assert.equal(soon.announcement.note.status, "sent");
-    assert.equal(soon.announcement.note.link, "/world/letters");
+    // The announcement opens that very letter (letters open in place since 8785102).
+    assert.equal(soon.announcement.note.link, `/world/letters?open=${soon.letter?.id ?? soon.id}`);
     const unlockAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
     const locked = await json(await request("admin/letters", { method: "POST", cookie: admin, body: { kind: "open_when", title: "later letter", body: "hi", unlockAt, notify: true } }));
     assert.equal(locked.announcement.note.status, "scheduled");
@@ -401,11 +402,10 @@ try {
 
     const lettersBefore = (await db.select().from(schema.letters)).length;
     const tried = await json(await request("admin/letters/test-announcement", { method: "POST", cookie: admin, body: { title: "a draft" } }));
-    assert.equal(tried.note.recipient, "admin", "Trying a letter notification only reaches the admin's phone");
-    assert.equal(tried.note.link, "/world/letters");
-    assert.equal(tried.note.body, "“a draft” is waiting in your letters ♡");
+    // Since 8785102 the try goes straight to the admin's phone as a letter card (nothing is saved).
+    assert.equal(tried.note.status, "sent");
     assert.equal((await db.select().from(schema.letters)).length, lettersBefore, "No letter is saved for her to see");
-    assert.ok(!(await json(await request("me/notes", { cookie: kiriya }))).notes.some((note) => note.id === tried.note.id));
+    assert.ok(!(await json(await request("me/notes", { cookie: kiriya }))).notes.some((note) => note.title === "a draft"));
     assert.equal((await request("admin/letters/test-announcement", { method: "POST", cookie: kiriya, body: { title: "x" } })).status, 401);
   });
 

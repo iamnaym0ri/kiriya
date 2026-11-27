@@ -6,10 +6,10 @@ import { Credits, Icon } from "../shared/WorldPrimitives.jsx";
 import { BirthdayRibbon, MotionToggle } from "../shared/play/PlayfulWorld.jsx";
 import { SketchbookProvider } from "./studio/SketchbookState.jsx";
 import { DailyStyleButton } from "../shared/DailyStyle.jsx";
-import MaomaoCompanion from "./mascot/MaomaoCompanion.jsx";
+import CompanionHost from "./companions/CompanionHost.jsx";
 import AppTabBar from "../shared/AppTabBar.jsx";
 import PullToRefresh from "../shared/PullToRefresh.jsx";
-import { isNativeApp } from "../lib/native.js";
+import { isAppShell } from "../lib/native.js";
 import "./WorldShell.css";
 const TABS = [
   { to: "/world#letters-hub", label: "letters & notes" },
@@ -140,8 +140,8 @@ export default function WorldShell() {
         {credits && <Credits onClose={() => setCredits(false)} />}
         {/* She lives here rather than on one page: mounted by the shell so she keeps her place,
             her mood and her train of thought while the route underneath her changes. */}
-        <MaomaoCompanion />
-        {isNativeApp() && (
+        <CompanionHost />
+        {isAppShell() && (
           <>
             <AppTabBar />
             <PullToRefresh />

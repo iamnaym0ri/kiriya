@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { and, desc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, schema } from "../db/client.js";
+import { COMPANION_IDS } from "../../shared/companions.js";
 import { env } from "../env.js";
 import { localDay, zonedParts } from "../lib/time.js";
 import { birthdayInfo } from "../lib/birthday.js";
@@ -169,6 +170,7 @@ const prefsPatch = z
   .object({
     motion: z.enum(["lively", "quiet"]),
     cornerSmall: z.boolean(),
+    companion: z.enum(COMPANION_IDS),
     sharing: z.object(Object.fromEntries(SHARING_KEYS.map((key) => [key, z.boolean()]))).partial().strict(),
     hints: z.partialRecord(z.enum(HINT_KEYS), z.boolean()),
   })

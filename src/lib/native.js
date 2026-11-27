@@ -11,6 +11,26 @@ const PUSH_OFF = "kiriya:app-push-off"; // she turned notifications off inside t
 
 export const isNativeApp = () => Capacitor.isNativePlatform();
 
+/**
+ * The app's own layout: five sections under a tab bar (docs/refactor/RENOVATION.md). True inside
+ * the iPhone app. On the website it stays false, so the site keeps its look, except in local
+ * development: open any page with `?app=1` (remembered for the tab, `?app=0` turns it off) to build
+ * and test the app layout in a browser or the iOS Simulator's Safari. Native-only features (push,
+ * haptics, widgets) still check isNativeApp().
+ */
+export const isAppShell = () => isNativeApp() || (import.meta.env.DEV && devAppPreview());
+
+function devAppPreview() {
+  try {
+    const flag = new URLSearchParams(window.location.search).get("app");
+    if (flag === "1") sessionStorage.setItem("kiriya:dev-app", "1");
+    if (flag === "0") sessionStorage.removeItem("kiriya:dev-app");
+    return sessionStorage.getItem("kiriya:dev-app") === "1";
+  } catch {
+    return false;
+  }
+}
+
 const read = (key) => {
   try {
     return localStorage.getItem(key);

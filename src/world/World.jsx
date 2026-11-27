@@ -5,6 +5,8 @@ import PageLoader from "../shared/PageLoader.jsx";
 import UnlockSheet from "../shared/UnlockSheet.jsx";
 import WorldShell from "./WorldShell.jsx";
 import TodayPage from "./today/TodayPage.jsx";
+import HomeSection from "./home/HomeSection.jsx";
+import { isAppShell } from "../lib/native.js";
 import "../styles/japanese-fonts.css";
 
 const ArtPage = lazy(() => import("./collection/ArtPage.jsx"));
@@ -16,6 +18,11 @@ const MerchPage = lazy(() => import("./merch/MerchPage.jsx"));
 const NotesPage = lazy(() => import("./notes/NotesPage.jsx"));
 const ChatPage = lazy(() => import("./chat/ChatPage.jsx"));
 const MemoriesPage = lazy(() => import("./chat/MemoriesPage.jsx"));
+// The app's five sections (docs/refactor/RENOVATION.md): home, chat, play, notes & letters, and
+// the last one named after whoever is signed in.
+const MailSection = lazy(() => import("./mail/MailSection.jsx"));
+const PlaySection = lazy(() => import("./play/PlaySection.jsx"));
+const MeSection = lazy(() => import("./me/MeSection.jsx"));
 
 const lazyPage = (Page) => (
   <Suspense fallback={<PageLoader />}>
@@ -36,10 +43,11 @@ export default function World() {
     );
   }
 
+  const Home = isAppShell() ? HomeSection : TodayPage;
   return (
     <Routes>
       <Route element={<WorldShell />}>
-        <Route index element={<TodayPage />} />
+        <Route index element={<Home />} />
         <Route path="letters" element={lazyPage(LettersPage)} />
         <Route path="art" element={lazyPage(ArtPage)} />
         <Route path="studio" element={lazyPage(StudioPage)} />
@@ -54,7 +62,10 @@ export default function World() {
         <Route path="notes" element={lazyPage(NotesPage)} />
         <Route path="chat" element={lazyPage(ChatPage)} />
         <Route path="memories" element={lazyPage(MemoriesPage)} />
-        <Route path="*" element={<TodayPage />} />
+        <Route path="mail" element={lazyPage(MailSection)} />
+        <Route path="play" element={lazyPage(PlaySection)} />
+        <Route path="me" element={lazyPage(MeSection)} />
+        <Route path="*" element={<Home />} />
       </Route>
     </Routes>
   );

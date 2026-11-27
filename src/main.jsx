@@ -19,7 +19,7 @@ import "./styles/feeling-corner.css";
 import "./styles/in-app.css";
 import ProfilePage from "./public/ProfilePage.jsx";
 import PageLoader from "./shared/PageLoader.jsx";
-import { isNativeApp } from "./lib/native.js";
+import { isNativeApp, isAppShell } from "./lib/native.js";
 
 // The private world and the admin desk are separate chunks: a visitor's phone never downloads them.
 const World = lazy(() => import("./world/World.jsx"));
@@ -28,6 +28,8 @@ const Admin = lazy(() => import("./admin/Admin.jsx"));
 const NativeApp = isNativeApp() ? lazy(() => import("./shared/NativeApp.jsx")) : null;
 // Lets the app-only styles (styles/in-app.css) apply before the first paint.
 if (NativeApp) document.documentElement.classList.add("in-app");
+// The app layout (five sections), in the app and in the local ?app=1 preview (lib/native.js).
+if (isAppShell()) document.documentElement.classList.add("app-shell");
 
 // When a session ends mid-visit, go back to the passphrase instead of showing broken pages.
 function onSessionEnded(error) {

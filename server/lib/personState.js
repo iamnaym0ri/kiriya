@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { schema } from "../db/client.js";
+import { COMPANION_IDS } from "../../shared/companions.js";
 import { ADDRESS_OPTIONS, moodByKey } from "../content/moods.js";
 
 export const PEOPLE = ["kiriya", "admin"];
@@ -84,6 +85,8 @@ export function resolvePrefs(prefs = {}) {
     // null: this device keeps its own motion setting until she picks one while unlocked.
     motion: prefs.motion ?? null,
     cornerSmall: prefs.cornerSmall ?? false,
+    // Who walks her home screen in the app (shared/companions.js).
+    companion: COMPANION_IDS.includes(prefs.companion) ? prefs.companion : "maomao",
     sharing: resolveSharing(prefs.sharing),
     sharingChosen: Boolean(prefs.sharing),
     pins: prefs.pins ?? [],
