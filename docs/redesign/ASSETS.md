@@ -113,3 +113,15 @@ private `quizzes/` upload folder and keeps its title, creator, licence and sourc
 | mulberry32 | Tommy Ettinger, public domain | Seedable randomness so the game rules are tested (`luck/_kit/random.js`). |
 | Capsule machine, charms, capsules, fortune tin and slip, teacups, lilac card deck, lanterns, six new stickers | Original code-native SVG/CSS | Drawn for kiriya.love in the site's hand-drawn lilac style; no commercial game's names, characters or trade dress. |
 | Dome physics | Original Verlet solver (`luck/capsule/dome.js`) | A dozen capsules tumbling in the glass; matter-js was considered and is ~80 KB for what fits in a page. |
+
+## Play: the artsy shelf (2026-11-27)
+
+Four games in `src/world/play/games/artsy/`. No maintained, permissively licensed colour-by-number, paper-doll or kaleidoscope game fitted (the ones found were unlicensed, GPL or unmaintained), so the game rules are written here on top of small permissive libraries. All pictures, scenes, the doll and her wardrobe are original SVG drawn for this site.
+
+| Piece | Source and licence | Use |
+| --- | --- | --- |
+| [@use-gesture/react](https://github.com/pmndrs/use-gesture) 10.3.1 | Paul Henschel and contributors, MIT | Pinch-zoom and pan in colour by number; drag, pinch-to-size-and-turn in sticker scenes; dragging clothes on and off the paper doll. |
+| [perfect-freehand](https://github.com/steveruizok/perfect-freehand) 1.2 (already in the sketchbook) | Steve Ruiz, MIT | Brush outlines in the kaleidoscope; the outline-to-path step follows its README. |
+| [canvas-confetti](https://github.com/catdad/canvas-confetti) (already in the site) | Kiril Vatev, ISC | The small burst when a colour-by-number picture is finished. |
+| Fluent Emoji Animated (already in the chat) | © Microsoft, MIT | The "cute" sticker drawer in sticker scenes. |
+| Six colour-by-number pictures, six sticker scenes, the paper doll, 5 hairstyles and 29 wardrobe pieces, game icons | Original, drawn for kiriya.love | `colour-by-number/pictures.js`, `sticker-scene/scenes.jsx`, `paper-doll/wardrobe.jsx`, each game's `index.js`. |

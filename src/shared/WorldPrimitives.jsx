@@ -237,6 +237,7 @@ export function Credits({ onClose }) {
         . Song details read with music-metadata (MIT); album covers found through MusicBrainz and the Cover Art Archive. Music belongs to its credited creators and plays through the original
         providers. The small mascot and stickers are fan-inspired illustrations.
       </p>
+      <p>Artsy games (colour by number, paper doll, sticker scenes, kaleidoscope): pictures, scenes, the doll and her wardrobe drawn for this site; gestures by @use-gesture (MIT), brush strokes by perfect-freehand (MIT), confetti by canvas-confetti (ISC).</p>
       <p>Rotten Girl Miku: original fan art of Hatsune Miku as in “Confessions of a Rotten Girl” (SAWTOWNE, 2025). Hatsune Miku © Crypton Future Media, INC. <a href="https://piapro.net" target="_blank" rel="noreferrer">www.piapro.net</a>, <a href="https://piapro.net/intl/en_character.html" target="_blank" rel="noreferrer">Piapro Character License</a>.</p>
       <h3>Daily feeds</h3>
       <p>

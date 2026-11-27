@@ -1,0 +1,162 @@
+/* paper doll: the doll on her backdrop, the wardrobe drawer, the drag ghost and the lookbook. */
+.pd-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0 12px 10px;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--a-line), 0 14px 30px -18px rgb(73 30 140 / 0.45);
+  touch-action: none;
+  transition: box-shadow 0.2s;
+}
+.pd-stage[data-target="yes"] {
+  box-shadow: 0 0 0 3px #b79be0, 0 14px 30px -18px rgb(73 30 140 / 0.45);
+}
+.pd-stage[data-target="off"] {
+  box-shadow: 0 0 0 3px #f6a9c7, 0 14px 30px -18px rgb(73 30 140 / 0.45);
+}
+.pd-doll {
+  position: absolute;
+  inset: 0;
+  animation: pd-bounce 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: 50% 90%;
+}
+.pd-doll__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+@keyframes pd-bounce {
+  0% {
+    transform: scale(0.97, 1.03);
+  }
+  50% {
+    transform: scale(1.02, 0.98);
+  }
+}
+.pd-tray {
+  display: grid;
+  gap: 4px;
+}
+.pd-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: var(--a-accent);
+  vertical-align: middle;
+}
+.pd-swatches {
+  gap: 6px;
+  padding-top: 0;
+}
+.pd-hint {
+  margin: 2px 16px 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font: 20px/1 var(--font-hand);
+  color: var(--a-ink-soft);
+}
+.pd-shelf {
+  align-items: stretch;
+}
+.pd-tile {
+  display: grid;
+  grid-template-rows: 64px auto;
+  justify-items: center;
+  gap: 2px;
+  width: 84px;
+  padding: 6px 4px 6px;
+  border: 1px solid var(--a-line-soft);
+  border-radius: 16px;
+  background: var(--a-wash);
+  cursor: grab;
+  touch-action: pan-x;
+}
+.pd-tile svg {
+  width: 64px;
+  height: 64px;
+  pointer-events: none;
+}
+.pd-tile span {
+  font: 600 11px/1.2 var(--font-ui);
+  color: var(--a-ink-soft);
+  text-align: center;
+}
+.pd-tile[aria-pressed="true"] {
+  background: #fffafd;
+  border-color: #bd9fd6;
+  box-shadow: 0 0 0 2px #e3d4ff;
+}
+.pd-her {
+  display: grid;
+  gap: 6px;
+}
+.pd-ghost {
+  position: absolute;
+  z-index: 30;
+  left: -48px;
+  top: -64px;
+  width: 96px;
+  height: 96px;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 10px rgb(73 30 140 / 0.3));
+  transition: opacity 0.15s;
+}
+.pd-ghost svg {
+  width: 100%;
+  height: 100%;
+}
+.pd-ghost[data-over="false"] {
+  opacity: 0.75;
+}
+.pd-empty {
+  margin: 24px 12px;
+  text-align: center;
+  font-size: 21px;
+  line-height: 1.3;
+  color: var(--a-ink-soft);
+}
+.pd-looks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+.pd-look {
+  position: relative;
+}
+.pd-look__wear {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 6px;
+  border: 1px solid var(--a-line);
+  border-radius: 16px;
+  background: var(--a-paper);
+  cursor: pointer;
+}
+.pd-look__wear svg {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  height: auto;
+  border-radius: 10px;
+}
+.pd-look__wear span {
+  font: 600 11px/1.2 var(--font-ui);
+  color: var(--a-ink-soft);
+}
+.pd-look__remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  color: var(--a-plum);
+  font: 700 16px/1 var(--font-ui);
+  cursor: pointer;
+}
