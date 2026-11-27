@@ -12,6 +12,14 @@ import "./capsule.css";
 
 const TAU = Math.PI * 2;
 const TRAY_KEY = "kiriya:luck-capsule-tray";
+const HELP = {
+  game: "capsule",
+  steps: [
+    ["↻", "turn the crank all the way round, or just tap it"],
+    ["✿", "open your capsule: a charm for your book, sometimes a sticker"],
+    ["3", "three capsules a day; a golden lantern can bring one more ✦"],
+  ],
+};
 const RARITY_LABEL = { everyday: "everyday charm", rare: "rare charm", sparkle: "sparkle charm" };
 
 const readTray = () => {
@@ -436,7 +444,7 @@ export default function CapsuleGame({ onReward }) {
 
   return (
     <LuckStage ref={stageRef} className="capsule-game" aria-label="charm capsule machine">
-      <StatusBar>
+      <StatusBar help={HELP}>
         <TurnDots capsule={capsule} />
         <button type="button" className="luck-chip" onClick={() => setBookOpen(true)} aria-label={`charm book, ${found} of ${capsule?.catalogue.length ?? 18} charms found`}>
           <BookIcon /> {found}/{capsule?.catalogue.length ?? 18}

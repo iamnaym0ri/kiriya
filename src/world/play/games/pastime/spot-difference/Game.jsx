@@ -65,6 +65,7 @@ export default function SpotDifference({ onReward }) {
   const [cheer, setCheer] = useState(null);
   const [shake, setShake] = useState(null);
   const [showDone, setShowDone] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const round = useMemo(() => buildRound(state.round), [state.round]);
   const done = state.found.length >= round.diffs.length;
   const { paused, resume } = usePause();
@@ -83,10 +84,10 @@ export default function SpotDifference({ onReward }) {
 
   // A gentle clock, stopped while she's away or the picture is done.
   useEffect(() => {
-    if (paused || done) return undefined;
+    if (paused || helpOpen || done) return undefined;
     const id = setInterval(() => setState((old) => ({ ...old, seconds: old.seconds + 1 })), 1000);
     return () => clearInterval(id);
-  }, [paused, done]);
+  }, [paused, helpOpen, done]);
 
   function onTap(event, side) {
     if (done || paused) return;
@@ -140,7 +141,7 @@ export default function SpotDifference({ onReward }) {
   }
 
   return (
-    <PastimeShell game={GAME} kicker={`picture ${state.round + 1} · ${round.title}`} help={HELP}>
+    <PastimeShell game={GAME} kicker={`picture ${state.round + 1} · ${round.title}`} help={HELP} onHelp={setHelpOpen}>
       <div className="spot">
         <div className="pastime-stats">
           <div className="pastime-stat spot-found">

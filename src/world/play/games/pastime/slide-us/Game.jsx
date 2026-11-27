@@ -102,12 +102,11 @@ function PhotoEditor({ open, photos, onClose }) {
 
 const HELP = (
   <>
-    <p>The picture has been cut into squares and mixed up. Slide them back.</p>
+    <p>The picture is cut into squares and mixed up. Slide them back home.</p>
     <ul>
-      <li>Tap a square next to the gap to slide it in. Tap one further along the same row or column to slide the whole line.</li>
-      <li>Hold <b>peek</b> to see the whole picture.</li>
-      <li><b>numbers</b> shows where each square belongs, for the trickier ones.</li>
-      <li>3×3 is a gentle start; 5×5 takes a while. Your puzzle waits for you if you leave.</li>
+      <li>Tap a square in line with the gap to slide it along (and any squares in between).</li>
+      <li>Hold <b>peek</b> to see the whole picture; <b>numbers</b> shows where each square goes.</li>
+      <li>3×3 is a gentle start; 5×5 takes a while. Your puzzle waits for you.</li>
     </ul>
   </>
 );
@@ -122,6 +121,7 @@ export default function SlideUs({ onReward }) {
   const [peek, setPeek] = useState(false);
   const [numbers, setNumbers] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const { paused, resume } = usePause();
   const stage = useRef(null);
   const board = useRef(null);
@@ -143,10 +143,10 @@ export default function SlideUs({ onReward }) {
 
   // The clock runs only while she's playing.
   useEffect(() => {
-    if (paused || !puzzle || solvedNow || peek) return undefined;
+    if (paused || helpOpen || !puzzle || solvedNow || peek) return undefined;
     const id = setInterval(() => setState((old) => ({ ...old, seconds: old.seconds + 1 })), 1000);
     return () => clearInterval(id);
-  }, [paused, puzzle, solvedNow, peek]);
+  }, [paused, helpOpen, puzzle, solvedNow, peek]);
 
   // New photos from Josh carry a little "new" until she's opened them.
   const unseen = new Set(photos.filter((photo) => !state.seen.includes(photo.id)).map((photo) => photo.id));
@@ -199,7 +199,7 @@ export default function SlideUs({ onReward }) {
   const best = state.best[`${picture?.id}:${n}`];
 
   return (
-    <PastimeShell game={GAME} kicker="us, in pieces · slide them home" help={HELP}>
+    <PastimeShell game={GAME} kicker="us, in pieces · slide them home" help={HELP} onHelp={setHelpOpen}>
       <div className="slide">
         <div className="slide-pictures" role="listbox" aria-label="Pictures">
           {pictures.map((each) => (

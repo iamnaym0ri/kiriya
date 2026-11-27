@@ -10,6 +10,14 @@ const SWATCHES = {
   plum: "#8e4f8f", "sky blue": "#9cc9f5", peach: "#ffc29f", "lavender grey": "#b9abc9", "sakura pink": "#ffd0de",
   "matcha green": "#a9c98a", "midnight blue": "#3b4a8c",
 };
+const HELP = {
+  game: "fortune",
+  steps: [
+    ["✦", "shake the tin for today's little slip (one a day)"],
+    ["♡", "untie the ribbon to unfold it"],
+    ["✿", "every slip is kept in your keepsakes"],
+  ],
+};
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const stamp = (day) => {
   const [y, m, d] = day.split("-").map(Number);
@@ -138,6 +146,8 @@ export default function FortuneGame({ onReward }) {
   const confettiRef = useRef(null);
   const area = useStageSize(areaRef);
   const [state, setState] = useState("tin"); // tin | shaking | landing | folded | unfolding | open
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const [drawn, setDrawn] = useState(null);
   const [message, setMessage] = useState("");
   const [keepOpen, setKeepOpen] = useState(false);
@@ -182,8 +192,8 @@ export default function FortuneGame({ onReward }) {
       play("whoosh");
       setState("landing");
       await wait(reduced ? 0 : 650);
-      setState("folded");
-      setMessage("tap the ribbon to unfold it");
+      // She may already have tapped the ribbon while the slip was landing: then it's unfolding.
+      setState((now) => (now === "landing" ? "folded" : now));
     } catch {
       setState("tin");
       setMessage("the tin is stuck. try again in a moment?");
@@ -192,7 +202,9 @@ export default function FortuneGame({ onReward }) {
   };
 
   const unfold = async () => {
-    if (state !== "folded") return;
+    // A tap as the slip lands counts too (the ribbon is already there to tap).
+    if (stateRef.current !== "folded" && stateRef.current !== "landing") return;
+    stateRef.current = "unfolding";
     setMessage("");
     play("pop");
     haptic("light");
@@ -223,7 +235,7 @@ export default function FortuneGame({ onReward }) {
 
   return (
     <LuckStage ref={stageRef} className="fortune-game" aria-label="fortune slip">
-      <StatusBar>
+      <StatusBar help={HELP}>
         <button type="button" className="luck-chip" onClick={() => setKeepOpen(true)} aria-label={`keepsakes, ${count} slips kept`}>
           <span aria-hidden="true">✿</span> keepsakes {count}
         </button>
@@ -246,7 +258,7 @@ export default function FortuneGame({ onReward }) {
           </>
         )}
         {state === "shaking" && <p className="luck-hand fortune-foot__line">shake, shake…</p>}
-        {(state === "folded" || state === "landing") && <p className="luck-hand fortune-foot__line">{message}</p>}
+        {(state === "folded" || state === "landing") && <p className="luck-hand fortune-foot__line">{state === "folded" ? "tap the ribbon to unfold it" : " "}</p>}
         {state === "open" && (
           <p className="luck-hand fortune-foot__line">
             a new slip {untilTomorrow()} ♡

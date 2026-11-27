@@ -2,9 +2,9 @@
   background: linear-gradient(#3e2c5e 0%, #5d4386 30%, #9a77b8 62%, #e3b4cf 86%, #f7cfd3 100%);
   color: #fff;
 }
-.lanterns-game .luck-chip { background: #ffffff24; border-color: #ffffff4d; color: #fff8ff; }
-.lanterns-game .luck-chip small { color: #f1e3ff; }
-.lanterns-game .luck-round { background: #ffffff24; border-color: #ffffff4d; color: #fff8ff; }
+.lanterns-game .luck-status .luck-chip { background: #ffffff24; border-color: #ffffff4d; color: #fff8ff; }
+.lanterns-game .luck-status .luck-chip small { color: #f1e3ff; }
+.lanterns-game .luck-status .luck-round { background: #ffffff24; border-color: #ffffff4d; color: #fff8ff; }
 .lanterns-count { gap: 6px; }
 .lanterns-count > span { width: 10px; height: 13px; border-radius: 45% 45% 40% 40%; border: 1.6px dashed #ffffff99; }
 .lanterns-count > span[data-on="true"] { background: #ffcf8a; border: 1.6px solid #fff3d6; box-shadow: 0 0 8px #ffcf8a; }
@@ -42,7 +42,8 @@
 .lantern-art__halo { animation: lanterns-flicker 1.8s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
 .lantern:nth-of-type(2n) .lantern-art__halo { animation-delay: -.7s; }
 .lantern:nth-of-type(3n) .lantern-art__halo { animation-delay: -1.2s; }
-@keyframes lanterns-flicker { from { opacity: .7; transform: scale(.95); } to { opacity: 1; transform: scale(1.12); } }
+/* A soft glow that breathes (the gradient already fades to nothing at its edge). */
+@keyframes lanterns-flicker { from { opacity: .55; transform: scale(.94); } to { opacity: .9; transform: scale(1.08); } }
 .lantern[data-kind="golden"] .lantern-art__halo { opacity: 1; }
 .lantern[data-caught="true"] .lantern-art { animation: lanterns-caught .5s ease-in forwards; }
 @keyframes lanterns-caught { 40% { transform: scale(1.35); opacity: 1; } to { transform: scale(.2) translateY(-30px); opacity: 0; } }

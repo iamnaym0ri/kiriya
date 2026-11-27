@@ -6,6 +6,14 @@ import { celebrate } from "../_kit/celebrate.js";
 import { GOLDEN_CHANCE, PICKS_PER_SKY, lanternAt, newSky } from "./logic.js";
 import "./lanterns.css";
 
+const HELP = {
+  game: "lanterns",
+  steps: [
+    ["✧", "tap a lantern to catch the wish it carries"],
+    ["3", "catch three and keep their wishes"],
+    ["✦", "a golden one sometimes carries a spare capsule coin"],
+  ],
+};
 const TINTS = {
   peach: ["#ffe2c2", "#ffb98a"],
   rose: ["#ffe0ec", "#ff9fc6"],
@@ -26,8 +34,13 @@ function LanternArt({ tint, id }) {
           <stop offset=".45" stopColor={light} />
           <stop offset="1" stopColor={deep} />
         </radialGradient>
+        <radialGradient id={`lantern-glow-${id}`}>
+          <stop offset="0" stopColor={light} stopOpacity=".9" />
+          <stop offset=".55" stopColor={deep} stopOpacity=".35" />
+          <stop offset="1" stopColor={deep} stopOpacity="0" />
+        </radialGradient>
       </defs>
-      <ellipse cx="29" cy="42" rx="28" ry="32" fill={deep} opacity=".22" className="lantern-art__halo" />
+      <ellipse cx="29" cy="40" rx="34" ry="38" fill={`url(#lantern-glow-${id})`} className="lantern-art__halo" />
       <rect x="20" y="6" width="18" height="6" rx="3" fill="#7e5a92" stroke="#4a2f57" strokeWidth="2" />
       <path d="M12 26c0-9 7-14 17-14s17 5 17 14v18c0 10-7 18-17 18S12 54 12 44z" fill={`url(#lantern-${id})`} stroke="#4a2f57" strokeWidth="2.4" />
       <path d="M29 13v49M20 15c-4 10-4 34 0 45M38 15c4 10 4 34 0 45" stroke={deep} strokeWidth="1.6" fill="none" opacity=".9" />
@@ -154,7 +167,7 @@ export default function LanternsGame({ onReward }) {
 
   return (
     <LuckStage className="lanterns-game" aria-label="wishing lanterns">
-      <StatusBar>
+      <StatusBar help={HELP}>
         <span className="luck-chip lanterns-count" aria-label={`${picks.length} of ${PICKS_PER_SKY} lanterns caught`}>
           {Array.from({ length: PICKS_PER_SKY }, (_, i) => (
             <span key={i} data-on={i < picks.length} aria-hidden="true" />

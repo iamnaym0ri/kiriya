@@ -7,6 +7,14 @@ import { MILESTONES, guessTurn, newGame } from "./logic.js";
 import "./cards.css";
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const HELP = {
+  game: "cards",
+  steps: [
+    ["↕", "will the next card be higher or lower? pick one"],
+    ["=", "the same number counts as right ♡"],
+    ["5", "keep the streak going: 5 and 10 in a row earn a sticker"],
+  ],
+};
 const SUIT_NAMES = { heart: "hearts", star: "stars", moon: "moons", flower: "flowers" };
 const RIGHT = ["yes!", "lucky you ♡", "spot on", "you read that card's mind", "ooh, nice"];
 const WRONG = ["aw, not that one. a fresh streak starts now ✿", "the cards were cheeky. new streak, same lovely you", "so close. let's go again ♡"];
@@ -133,7 +141,7 @@ export default function CardsGame({ onReward }) {
 
   return (
     <LuckStage className="cards-game" aria-label="lilac cards, higher or lower">
-      <StatusBar>
+      <StatusBar help={HELP}>
         <span className="luck-chip cards-streak" data-hot={game.streak >= 3} aria-label={`streak ${phase === "result" && pending ? pending.streak : game.streak}`}>
           <span aria-hidden="true">♡</span> streak {phase === "result" && pending ? pending.streak : game.streak}
         </span>

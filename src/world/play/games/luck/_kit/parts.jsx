@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useId, useRef } from "react";
+import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { unlockAudio, useSound } from "./sound.js";
 import "./kit.css";
 
@@ -32,23 +32,71 @@ export function SoundButton() {
   );
 }
 
-/** The strip under the sheet's top bar: the game's own chips on the left, sound on the right. */
-export function StatusBar({ children }) {
+const HOWTO_KEY = "kiriya:luck-howto";
+const seenHowTo = () => {
+  try {
+    return JSON.parse(localStorage.getItem(HOWTO_KEY) ?? "{}") ?? {};
+  } catch {
+    return {};
+  }
+};
+
+/**
+ * The strip under the sheet's top bar: the game's own chips on the left, "how to play" and sound on
+ * the right. `help` ({ game, steps: [[mark, text], …] }) is shown by itself the first time she
+ * opens the game, and again whenever she taps "?".
+ */
+export function StatusBar({ children, help }) {
+  const [firstTime] = useState(() => Boolean(help) && !seenHowTo()[help.game]);
+  const [open, setOpen] = useState(firstTime);
+  const close = () => {
+    setOpen(false);
+    if (!help || seenHowTo()[help.game]) return;
+    try {
+      localStorage.setItem(HOWTO_KEY, JSON.stringify({ ...seenHowTo(), [help.game]: Date.now() }));
+    } catch {
+      // Private mode: she'll simply see the how-to again next time.
+    }
+  };
   return (
-    <div className="luck-status">
-      <div className="luck-status__chips">{children}</div>
-      <SoundButton />
-    </div>
+    <>
+      <div className="luck-status">
+        <div className="luck-status__chips">{children}</div>
+        <div className="luck-status__end">
+          {help && (
+            <button type="button" className="luck-round luck-round--q" aria-label="how to play" onClick={() => setOpen(true)}>
+              <span aria-hidden="true">?</span>
+            </button>
+          )}
+          <SoundButton />
+        </div>
+      </div>
+      {help && (
+        <Panel open={open} onClose={close} title="how to play" className="luck-howto">
+          <ol className="luck-howto__steps">
+            {help.steps.map(([mark, text]) => (
+              <li key={text}>
+                <span className="luck-howto__mark" aria-hidden="true">{mark}</span>
+                <span>{text}</span>
+              </li>
+            ))}
+          </ol>
+          <button type="button" className="luck-btn luck-howto__go" onClick={close}>
+            {firstTime && !seenHowTo()[help.game] ? "let's play ♡" : "okay ♡"}
+          </button>
+        </Panel>
+      )}
+    </>
   );
 }
 
 /** A panel that slides up inside the stage (her charm book, her keepsakes). */
 export function Panel({ open, title, onClose, children, className = "" }) {
   const id = useId();
-  const closeRef = useRef(null);
+  const panelRef = useRef(null);
   useEffect(() => {
     if (!open) return undefined;
-    closeRef.current?.focus({ preventScroll: true });
+    panelRef.current?.focus({ preventScroll: true });
     const onKey = (event) => event.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -56,10 +104,10 @@ export function Panel({ open, title, onClose, children, className = "" }) {
   return (
     <div className={`luck-panel-layer ${className}`} data-open={open} aria-hidden={!open} inert={!open}>
       <button type="button" className="luck-panel-backdrop" tabIndex={-1} aria-label="close" onClick={onClose} />
-      <section className="luck-panel" role="dialog" aria-modal="true" aria-labelledby={id}>
+      <section ref={panelRef} className="luck-panel" role="dialog" aria-modal="true" aria-labelledby={id} tabIndex={-1}>
         <header className="luck-panel__head">
           <h2 id={id}>{title}</h2>
-          <button ref={closeRef} type="button" className="luck-round" aria-label="close" onClick={onClose}>
+          <button type="button" className="luck-round" aria-label="close" onClick={onClose}>
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
           </button>
         </header>

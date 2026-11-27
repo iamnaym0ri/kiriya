@@ -26,12 +26,11 @@ const HELP = (
   <>
     <p>Swipe up, down, left or right: every charm slides as far as it can.</p>
     <ul>
-      <li>Two matching charms that bump into each other become the next charm up the ladder.</li>
+      <li>Two matching charms that bump together become the next charm up the ladder.</li>
       <li>bead → heart → star → bell → ribbon → moon → blossom → gem → <b>crown</b>.</li>
-      <li>A new bead arrives after every move. Keep a corner tidy and the big charms together.</li>
-      <li>Three take-backs per board, for when a swipe goes the wrong way.</li>
+      <li>Three take-backs ↶ per board, for a swipe that goes the wrong way.</li>
     </ul>
-    <p>The board remembers where you were, so come back any time.</p>
+    <p>Keep the big charms together in a corner. The board waits for you.</p>
   </>
 );
 

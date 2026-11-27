@@ -183,3 +183,25 @@ html[data-little-motion="off"] .luck-panel, html[data-little-motion="off"] .luck
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* The status bar's right end: "how to play" and sound. */
+.luck-status__end { flex: none; display: flex; align-items: center; gap: 6px; }
+.luck-round--q span { font: 700 24px/1 var(--font-hand); margin-top: -2px; }
+
+/* The first-time how-to (StatusBar's `help`). */
+.luck-howto .luck-panel__body { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+.luck-howto__steps { list-style: none; margin: 4px 0 18px; padding: 0; display: grid; gap: 12px; }
+.luck-howto__steps li { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 12px; font: 21px/1.2 var(--font-hand); color: var(--luck-ink); }
+.luck-howto__mark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--luck-lilac);
+  border: 1.5px solid var(--luck-lilac-deep);
+  color: var(--luck-plum);
+  font: 700 20px/1 var(--font-hand);
+}
+.luck-howto__go { width: 100%; }
+.luck-panel:focus { outline: none; }

@@ -19,14 +19,28 @@ function restore() {
 
 const HELP = (
   <>
-    <p>Charms fall into the jar. Fill a whole row and it strings itself up and floats away.</p>
+    <p>Charms fall into the jar. Fill a whole row and it strings itself up and floats away ♡</p>
     <ul>
-      <li>Tap the jar to turn a charm; slide your finger left or right to move it; drag down to hurry it; flick down to drop it straight in.</li>
-      <li>The buttons underneath do the same, if you'd rather.</li>
-      <li>Tap <b>keep</b> to set a charm aside for later.</li>
-      <li>It stays slow and gentle; it only speeds up a little every ten rows. Leave the app and it waits for you.</li>
+      <li><b>slide</b> left or right to move a charm, <b>tap</b> the jar to turn it.</li>
+      <li><b>drag down</b> to hurry it, <b>flick down</b> to drop it straight in.</li>
+      <li><b>flick up</b>, or tap <b>keep</b>, to set one aside for later.</li>
     </ul>
+    <p>The buttons underneath do the same. It stays slow and gentle, and waits whenever you leave.</p>
   </>
+);
+
+/** The little drawn arrows on the buttons (text arrows draw differently on every phone). */
+const ICONS = {
+  left: <path d="M15 5l-8 7 8 7z" />,
+  right: <path d="M9 5l8 7-8 7z" />,
+  down: <path d="M5 8l7 9 7-9z" />,
+  turn: <path d="M18.4 9.2A7 7 0 1 0 19 14M19 4.5v5h-5" fill="none" strokeWidth="2.6" />,
+  drop: <><path d="M12 4v10M7 10l5 5 5-5" fill="none" strokeWidth="2.6" /><path d="M6 19.5h12" strokeWidth="2.6" /></>,
+};
+const ControlIcon = ({ name }) => (
+  <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="currentColor" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+    {ICONS[name]}
+  </svg>
 );
 
 export default function CharmDrop({ onReward }) {
@@ -36,8 +50,10 @@ export default function CharmDrop({ onReward }) {
   const [best, setBest] = useState(initial.best);
   const [cheer, setCheer] = useState(null);
   const [userPaused, setUserPaused] = useState(Boolean(initial.game));
+  const [helpOpen, setHelpOpen] = useState(false);
   const { paused: away, resume } = usePause();
   const paused = away || userPaused;
+  const running = !paused && !helpOpen && !hud.over;
   const stage = useRef(null);
   const canvas = useRef(null);
   const sprites = useRef(null);
@@ -81,7 +97,7 @@ export default function CharmDrop({ onReward }) {
 
   // Player actions. A move or turn on the floor gives the charm a moment longer before it settles.
   function act(kind) {
-    if (paused || game.current.over) return;
+    if (!runningRef.current) return;
     const before = game.current;
     let after = before;
     if (kind === "left") after = move(before, -1);
@@ -111,24 +127,37 @@ export default function CharmDrop({ onReward }) {
   const actRef = useRef(act);
   actRef.current = act;
 
-  // Draw and fall, every frame.
+  // Fall and draw, a frame at a time, only while she's playing: a paused, finished or waiting jar
+  // is painted once and the loop rests. A frame repaints only when something changed.
+  const runningRef = useRef(running);
+  runningRef.current = running;
+  const afterLockRef = useRef(afterLock);
+  afterLockRef.current = afterLock;
   useEffect(() => {
     const node = canvas.current;
     if (!node || !cell) return undefined;
     const dpr = Math.min(3, window.devicePixelRatio || 1);
-    node.width = COLS * cell * dpr;
-    node.height = ROWS * cell * dpr;
+    if (node.width !== COLS * cell * dpr || !sprites.current || sprites.current.cell !== cell) {
+      node.width = COLS * cell * dpr;
+      node.height = ROWS * cell * dpr;
+      sprites.current = { ...makeSprites(cell, dpr), cell };
+    }
     const ctx = node.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    sprites.current = makeSprites(cell, dpr);
+    if (!running) {
+      loop.current.flashes = [];
+      paint(ctx, game.current, cell, sprites.current, [], 0, calm);
+      return undefined;
+    }
     let frame = 0;
     let last = performance.now();
+    let painted = null;
     const draw = (now) => {
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
       const g = game.current;
-      if (!pausedRef.current && !g.over) {
-        const L = loop.current;
+      const L = loop.current;
+      if (!g.over) {
         if (resting(g)) {
           L.lock += dt;
           if (L.lock >= LOCK_DELAY) afterLockRef.current(drop(g));
@@ -141,16 +170,17 @@ export default function CharmDrop({ onReward }) {
           }
         }
       }
-      paint(ctx, game.current, cell, sprites.current, loop.current.flashes, now, calm);
-      frame = requestAnimationFrame(draw);
+      const life = calm ? 120 : 380;
+      L.flashes = L.flashes.filter((flash) => now - flash.at < life);
+      if (painted !== game.current || L.flashes.length) {
+        paint(ctx, game.current, cell, sprites.current, L.flashes, now, calm);
+        painted = game.current;
+      }
+      if (runningRef.current) frame = requestAnimationFrame(draw);
     };
     frame = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(frame);
-  }, [cell, calm]);
-  const pausedRef = useRef(paused);
-  pausedRef.current = paused || Boolean(hud.over);
-  const afterLockRef = useRef(afterLock);
-  afterLockRef.current = afterLock;
+  }, [cell, calm, running]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keep her place when she leaves.
   useEffect(() => {
@@ -240,7 +270,7 @@ export default function CharmDrop({ onReward }) {
   );
 
   return (
-    <PastimeShell game={GAME} kicker="charm drop · a slow little stack" help={HELP} actions={pauseButton}>
+    <PastimeShell game={GAME} kicker="charm drop · a slow little stack" help={HELP} actions={pauseButton} onHelp={setHelpOpen}>
       <div className="drop">
         <div className="drop-main">
           <div className="drop-stage" ref={stage}>
@@ -268,11 +298,11 @@ export default function CharmDrop({ onReward }) {
           </aside>
         </div>
         <div className="drop-controls">
-          <button type="button" className="pastime-button" onPointerDown={press("left")} onPointerUp={release} onPointerLeave={release} onPointerCancel={release} aria-label="Move left">◀</button>
-          <button type="button" className="pastime-button" onPointerDown={press("rotate")} aria-label="Turn">⟳</button>
-          <button type="button" className="pastime-button" onPointerDown={press("right")} onPointerUp={release} onPointerLeave={release} onPointerCancel={release} aria-label="Move right">▶</button>
-          <button type="button" className="pastime-button" onPointerDown={press("soft")} onPointerUp={release} onPointerLeave={release} onPointerCancel={release} aria-label="Down a little">▼</button>
-          <button type="button" className="pastime-button pastime-button--primary" onPointerDown={press("hard")} aria-label="Drop it in">⤓</button>
+          <button type="button" className="pastime-button" onPointerDown={press("left")} onPointerUp={release} onPointerLeave={release} onPointerCancel={release} aria-label="Move left"><ControlIcon name="left" /></button>
+          <button type="button" className="pastime-button" onPointerDown={press("rotate")} aria-label="Turn"><ControlIcon name="turn" /></button>
+          <button type="button" className="pastime-button" onPointerDown={press("right")} onPointerUp={release} onPointerLeave={release} onPointerCancel={release} aria-label="Move right"><ControlIcon name="right" /></button>
+          <button type="button" className="pastime-button" onPointerDown={press("soft")} onPointerUp={release} onPointerLeave={release} onPointerCancel={release} aria-label="Down a little"><ControlIcon name="down" /></button>
+          <button type="button" className="pastime-button pastime-button--primary" onPointerDown={press("hard")} aria-label="Drop it in"><ControlIcon name="drop" /></button>
         </div>
       </div>
       {paused && !over && (

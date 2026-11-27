@@ -111,8 +111,10 @@ export function HerbSprite() {
           </g>
         </symbol>
         <symbol id="herb-dew" viewBox="0 0 48 48">
-          <circle cx="24" cy="24" r="21" fill="#dff1ff" fillOpacity="0.7" stroke="#7fb0e0" strokeWidth="2" strokeDasharray="4 4" />
+          <circle cx="24" cy="24" r="21" fill="#dff1ff" fillOpacity="0.85" stroke="#8fbde6" strokeWidth="2" />
           <path d="M11 17c2-4 5-6 9-7" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+          <path d="M39 3.5c3 4 4.5 6.3 4.5 8.3a4.5 4.5 0 0 1-9 0c0-2 1.5-4.3 4.5-8.3z" fill="#9fd0f0" stroke="#4f7fae" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M37.4 11.4c0-1 .5-1.9 1.2-2.6" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" fill="none" />
         </symbol>
         <symbol id="herb-vine" viewBox="0 0 48 48">
           <g {...round} fill="none" stroke="#6a8f55" strokeWidth="2.6">
