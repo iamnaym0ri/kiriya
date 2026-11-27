@@ -45,7 +45,8 @@ const POSES = {
   show: { arms: "show", face: "sparkle" },
   hug: { arms: "hug", face: "dreamy" }, // the sketchbook (her doujinshi) clutched to her chest
   paddle: { arms: "brandish", face: "smug" }, // the paddle held up for all to see
-  smack: { arms: "smack", face: "feral" }, // winds up and slams it down: SMACK
+  smack: { arms: "smack", face: "feral" }, // winds up and slams it down on a ship: SMACK
+  penance: { arms: "penance", face: "wince" }, // paddles herself for her sins, as in the MV
   phone: { arms: "phone", face: "feral" }, // squealing at her phone, feet kicking
   dance: { arms: "dance", face: "giggle" }, // a little hop-and-wave dance on the spot
 };
@@ -62,10 +63,10 @@ function subscribeReduced(listener) {
 
 /* --- Arms and props, per pose. `back` is drawn behind her head, `front` over it. ------------- */
 
-const sideBook = (
+const sideBook = (facing) => (
   <g className="mr-sidebook">
     <Arm d="M82 168Q77 180 84 189" />
-    <Sketchbook x={86} y={194} w={20} h={25} rotate={12} />
+    <Sketchbook x={86} y={194} w={20} h={25} rotate={12} facing={facing} />
     <circle cx="85" cy="188" r="4.8" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
   </g>
 );
@@ -106,6 +107,19 @@ const ARMS = {
       </>
     ),
   }),
+  // Penance: her hand behind her back swings the paddle into her own behind. SMACK. Ow.
+  penance: ({ facing }) => ({
+    under: (
+      <>
+        <g className="mr-penance-paddle">
+          <Paddle x={146} y={192} rotate={-100} facing={facing} tipFirst grip={6} />
+        </g>
+        <Arm d="M138 168Q152 180 146 192" hand={[146, 192]} handR={5} />
+      </>
+    ),
+    back: <Arm className="mr-penance-off" d="M82 168Q66 172 70 156" hand={[70, 153]} handR={5} />,
+    front: <SmackBurst x={60} y={204} facing={facing} className="mr-penance-burst" />,
+  }),
   leaning: ({ facing }) => ({
     back: (
       <>
@@ -132,17 +146,17 @@ const ARMS = {
       </>
     ),
   },
-  hug: {
+  hug: ({ facing }) => ({
     back: (
       <>
         <Arm d="M82 168Q79 184 96 191" />
         <Arm d="M138 168Q143 180 128 178" />
-        <Sketchbook x={112} y={182} w={30} h={34} rotate={-10} className="mr-book" />
+        <Sketchbook x={112} y={182} w={30} h={34} rotate={-10} className="mr-book" facing={facing} />
         <circle cx="96" cy="191" r="4.8" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
         <circle cx="127" cy="176" r="4.8" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
       </>
     ),
-  },
+  }),
   up: {
     front: (
       <>
@@ -151,15 +165,15 @@ const ARMS = {
       </>
     ),
   },
-  wave: {
-    back: sideBook,
+  wave: ({ facing }) => ({
+    back: sideBook(facing),
     front: (
       <g className="mr-wave-arm">
         <Arm d="M138 168Q160 162 163 140" hand={[163, 136]} handR={5.4} />
         <path d="M159 131.5l-1.5-3m5.3 2.3v-3.4m4 4.2 1.6-2.8" stroke={C.skinLine} strokeWidth="1.2" strokeLinecap="round" />
       </g>
     ),
-  },
+  }),
   plant: {
     back: (
       <>
@@ -168,17 +182,17 @@ const ARMS = {
       </>
     ),
   },
-  cuddle: {
+  cuddle: ({ facing }) => ({
     back: (
       <>
         <Arm d="M82 168Q80 192 97 199" />
         <Arm d="M138 168Q140 192 123 199" />
-        <Sketchbook x={110} y={196} w={34} h={26} rotate={-4} />
+        <Sketchbook x={110} y={196} w={34} h={26} rotate={-4} facing={facing} />
         <circle cx="98" cy="199" r="4.8" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
         <circle cx="122" cy="199" r="4.8" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
       </>
     ),
-  },
+  }),
   dangle: {
     back: (
       <>
@@ -231,7 +245,7 @@ const ARMS = {
       </g>
     ),
   },
-  peek: {
+  peek: ({ facing }) => ({
     back: (
       <>
         <Arm d="M82 168Q76 160 82 151" />
@@ -240,12 +254,12 @@ const ARMS = {
     ),
     front: (
       <g className="mr-peek-book">
-        <Sketchbook x={110} y={150} w={58} h={38} rotate={-2} />
+        <Sketchbook x={110} y={150} w={58} h={38} rotate={-2} facing={facing} />
         <circle cx="82" cy="150" r="5" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
         <circle cx="138" cy="149" r="5" fill={C.skin} stroke={C.skinLine} strokeWidth="1.2" />
       </g>
     ),
-  },
+  }),
   cheer: ({ facing }) => ({
     back: <Arm d="M82 168Q80 180 92 178" hand={[93, 177]} handR={5.2} />,
     front: (
@@ -264,8 +278,8 @@ const ARMS = {
       </g>
     ),
   },
-  glasses: {
-    back: sideBook,
+  glasses: ({ facing }) => ({
+    back: sideBook(facing),
     front: (
       <g className="mr-glasses-hand">
         <Arm d="M138 168Q137 146 118 131" hand={[116, 129]} handR={5} />
@@ -273,15 +287,15 @@ const ARMS = {
         <path d="M114.5 125.5l-3.5-9" stroke={C.skin} strokeWidth="2.6" strokeLinecap="round" />
       </g>
     ),
-  },
-  giggle: {
-    back: sideBook,
+  }),
+  giggle: ({ facing }) => ({
+    back: sideBook(facing),
     front: (
       <g className="mr-giggle-hand">
         <Arm d="M138 168Q134 152 116 145" hand={[113, 142]} handR={6} />
       </g>
     ),
-  },
+  }),
   show: {
     back: (
       <>
@@ -333,7 +347,7 @@ function Marks({ pose, expression }) {
           <circle cx="183.6" cy="54" r="2.6" fill={C.cross} />
         </g>
       )}
-      {(pose === "fluster" || pose === "nope" || pose === "fall" || pose === "phone" || expression === "flustered" || expression === "feral") && (
+      {(pose === "fluster" || pose === "nope" || pose === "fall" || pose === "phone" || pose === "penance" || expression === "flustered" || expression === "feral") && (
         <g className="mr-steam" fill="none" stroke="#c8bde0" strokeWidth="2.2" strokeLinecap="round">
           <path d="M168 22q6-4 4-10q-2-5 3-8" />
           <path d="M184 36q6-2 6-8q0-5 5-6" />
@@ -384,7 +398,7 @@ export function resolvePose(pose, expression, prop = null, facing = 1) {
   return { name, face: expression ?? spec.face, arms: typeof arms === "function" ? arms({ facing }) : arms, seated };
 }
 const PROP_HOLDERS = {
-  paddle: new Set(["behind", "brandish", "smack", "cheer", "leaning"]),
+  paddle: new Set(["behind", "brandish", "smack", "penance", "cheer", "leaning"]),
   phone: new Set(["phone"]),
 };
 

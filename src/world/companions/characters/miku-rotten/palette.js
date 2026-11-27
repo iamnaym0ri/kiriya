@@ -2,7 +2,7 @@
 // muted forest green, not stock Miku's teal, darkening towards the tips; dark-red cross hair ties;
 // violet eyes behind round glasses; a white short-sleeved shirt, a crimson ribbon crossed in an X
 // (white edge stripe, dark button), a charcoal-navy plaid skirt with faint red lines, white crew
-// socks, black loafers; and her wooden paddle with red lettering. Outlines sit one shade darker
+// socks, black loafers; her wooden SINNER paddle and her black "Yaoi Note". Outlines sit one shade darker
 // than their fill, like Maomao's.
 export const C = {
   hair: "#4a8f69",
@@ -40,8 +40,9 @@ export const C = {
   brow: "#245a47",
   mouth: "#b2526e",
   mouthLine: "#8f4560",
-  book: "#cbb7ef",
-  bookDark: "#8c76bf",
+  book: "#2a2530", // the Yaoi Note: plain black, white title
+  bookDark: "#141118",
+  noteInk: "#f7f3fb",
   bookRing: "#5e5182",
   paper: "#fffdf8",
   paperLine: "#c9d8f2",

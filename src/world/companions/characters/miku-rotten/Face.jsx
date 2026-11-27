@@ -63,6 +63,7 @@ const FACES = {
   feral: { grin: 1, sparkle: 1, iris: 0.86, shine: 1.3, blush: 0.95, hatch: 0.9, browY: 86, browArch: 5, browTilt: -1.5, top: 104, arch: 99, bottom: 123, lower: 129 },
   guilty: { shadow: 1, grin: 0.65, iris: 0.8, lookX: 2.5, lookY: -1, blush: 1, hatch: 1, sweat: 1, browTilt: 5, browY: 89 },
   nervous: { grin: 0.75, sweat: 1, browTilt: 6, browY: 88, browArch: 3.5, blush: 0.42, iris: 0.92 },
+  wince: { open: 0, closedCurve: 2.5, wavy: 1, blush: 0.85, hatch: 0.9, sweat: 1, browTilt: 6, browY: 88, mouthW: 6 },
   nosebleed: { heart: 1, bleed: 1, lid: 1.5, blush: 1, hatch: 1, mouthW: 7, smile: 4.5, mouthOpen: 4, browTilt: 3, browY: 89 },
 };
 

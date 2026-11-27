@@ -69,26 +69,34 @@ export function Cross({ x, y, rotate = 0, scale = 1 }) {
   );
 }
 
-/** Her sketchbook, closed: lilac cover, spiral rings along the top, a heart sticker. */
-export function Sketchbook({ x, y, w = 30, h = 36, rotate = 0, className }) {
+/**
+ * Her notebook, closed: the MV's "Yaoi Note" (a Death Note parody), plain black with the title in
+ * white, where her fanfic lives. Centred on (x, y). With `facing` -1 (the engine mirrors her) the
+ * title mirrors back so it still reads.
+ */
+export function Sketchbook({ x, y, w = 30, h = 36, rotate = 0, className, facing = 1 }) {
   const left = -w / 2,
     top = -h / 2;
-  const rings = Math.max(3, Math.round(w / 7));
+  // Two lines, "YAOI" over "NOTE", as big as the cover allows.
+  const size = Math.min((w - 6) / 3.64, (h - 10) / 2.6);
   return (
     <g className={className} transform={`translate(${x} ${y}) rotate(${rotate})`}>
-      <rect x={left} y={top} width={w} height={h} rx="3" fill={C.book} stroke={C.bookDark} strokeWidth="1.5" />
-      <rect x={left + 2.5} y={top + 2.5} width={w - 5} height={h - 5} rx="2" fill="none" stroke="#e8dcfb" strokeWidth="1" opacity=".7" />
-      <path d={`M${left + 3} ${top + h - 4}h${w - 6}`} stroke={C.bookDark} strokeWidth="1" opacity=".35" />
-      {Array.from({ length: rings }, (_, i) => (
-        <ellipse key={i} cx={left + ((i + 0.5) * w) / rings} cy={top} rx="1.6" ry="3" fill="none" stroke={C.bookRing} strokeWidth="1.4" />
-      ))}
-      <Heart x={2} y={1} size={w * 0.3} />
-      <path d={`M${left + 5} ${top + h - 9}h${w * 0.35}`} stroke="#fff" strokeWidth="1.6" strokeLinecap="round" opacity=".7" />
+      <rect x={left} y={top} width={w} height={h} rx="2.4" fill={C.book} stroke={C.bookDark} strokeWidth="1.5" />
+      <path d={`M${left + 2.4} ${top + 1.6}v${h - 3.2}`} stroke="#4a4352" strokeWidth="1.4" strokeLinecap="round" opacity=".8" />
+      <path d={`M${left + 4} ${top + 3}h${w * 0.4}`} stroke="#fff" strokeWidth="1.2" strokeLinecap="round" opacity=".22" />
+      <g transform={`translate(${1.2} 0)${facing < 0 ? " scale(-1 1)" : ""}`}>
+        <g transform={`translate(0 ${-size * 0.68})`}>
+          <Lettering word="YAOI" size={size} color={C.noteInk} width={Math.max(1, size * 0.17)} />
+        </g>
+        <g transform={`translate(0 ${size * 0.68})`}>
+          <Lettering word="NOTE" size={size} color={C.noteInk} width={Math.max(1, size * 0.17)} />
+        </g>
+      </g>
     </g>
   );
 }
 
-/** The sketchbook held open, pages towards the viewer, with a doodle on it. */
+/** The Yaoi Note held open, pages towards the viewer, with a doodle on it. */
 export function OpenBook({ x, y, w = 48, h = 32, rotate = 0, doodle = "ship", className, drawing }) {
   const left = -w / 2,
     top = -h / 2;
@@ -219,14 +227,16 @@ export function Lettering({ word, size = 16, color = C.paddleInk, width = 3.2, g
 
 /**
  * Her paddle: the con-floor "yaoi paddle" she carries through the MV, a tan wooden board on a
- * long handle with the word in red hand lettering. Drawn standing up, the end of the handle at
+ * long handle, "SINNER" burnt into it in red (the MV; the song's concept art has "YAOI"). Drawn standing up, the end of the handle at
  * (0, 0) and the blade's tip at (0, -LEN); place it with x, y (the hand) and rotate. The engine
  * mirrors her whole body to face left, so with `facing` -1 the lettering mirrors back and still
  * reads. `grip` is how far up the handle her hand is; `tipFirst` turns the word round to read from
  * the tip, for when the blade points left.
  */
 export const PADDLE_LEN = 104;
-export function Paddle({ x, y, rotate = 0, word = "YAOI", facing = 1, className, grip = 8, tipFirst = false }) {
+export function Paddle({ x, y, rotate = 0, word = "SINNER", facing = 1, className, grip = 8, tipFirst = false }) {
+  const n = [...word].length;
+  const size = Math.min(15, (60 * 16) / Math.max(1, n * 15.4 - 3.4));
   return (
     <g className={className} transform={`translate(${x} ${y}) rotate(${rotate}) translate(0 ${grip})`}>
       {/* Handle with a rounded knob, then the blade, then the grain, the lettering and a shine. */}
@@ -243,7 +253,7 @@ export function Paddle({ x, y, rotate = 0, word = "YAOI", facing = 1, className,
       <path d="M-11-92V-56" stroke={C.paddleLight} strokeWidth="2.4" strokeLinecap="round" opacity=".9" />
       {/* The word runs along the blade, from the handle up (or from the tip down with tipFirst). */}
       <g transform={`translate(${tipFirst ? -1 : 1} -70) rotate(${tipFirst ? 90 : -90})${facing < 0 ? " scale(-1 1)" : ""}`}>
-        <Lettering word={word} size={15} />
+        <Lettering word={word} size={size} width={Math.max(2.4, size * 0.22)} />
       </g>
     </g>
   );

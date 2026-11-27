@@ -6,7 +6,7 @@ import "./bambi.css";
 // Bamby (PLAVE) as a hand-drawn chibi, in the house style Maomao set: big round head, short body,
 // soft gradients, a rim of colour on the shaded side, no outlines heavier than the lashes.
 // Original fan art after his PLBBUU look (2025) and his official chibi: short, fluffy bubblegum-pink
-// hair with a side-swept fringe, mauve-violet eyes, a periwinkle beret with a white and a pink star,
+// hair with a side-swept fringe, pink-magenta eyes, a periwinkle beret with a white and a pink star,
 // a cream knit sweater with a big pink star over a white turtleneck and a string of pastel beads,
 // periwinkle jeans with navy stars, pink sneakers. His heart sunglasses come out for the showing-off
 // poses. Every pose is CSS transforms on a fixed rig (see bambi.css); nothing re-renders per frame.
@@ -369,9 +369,9 @@ export default function BambyBody({
           <stop offset="1" stopColor="#f5cdb9" />
         </radialGradient>
         <linearGradient id={ids.iris} x1="0" y1="0" x2="0" y2="1">
-          <stop stopColor="#48253f" />
-          <stop offset=".5" stopColor="#a6638f" />
-          <stop offset="1" stopColor="#eab0d8" />
+          <stop stopColor="#4a1f40" />
+          <stop offset=".5" stopColor="#b4528f" />
+          <stop offset="1" stopColor="#f2a8d4" />
         </linearGradient>
         <radialGradient id={ids.blush}>
           <stop stopColor="#f48aa8" stopOpacity=".95" />

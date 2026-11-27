@@ -8,11 +8,12 @@ import { lines, visit } from "./lines.js";
 // Miku as the fujoshi of SAWTOWNE's "Confessions of a Rotten Girl" (2025), matched to the song's
 // concept art and reference sheet: muted forest-green twin tails darkening to the tips, dark-red
 // cross hair ties, big round glasses that spiral when she's flustered, a white short-sleeved shirt
-// with a crimson ribbon crossed in an X, a charcoal plaid skirt, crew socks, black loafers, and the
-// wooden "yaoi paddle" she carries behind her back. A Catholic-school girl confessing her BL habit
-// as a sin and relapsing on the spot: she ships boys, writes fanfic on her cloud, squeals at new
-// chapters on her phone, gets nosebleeds, and smacks things with the paddle. Contract:
-// src/world/companions/README.md and docs/refactor/RENOVATION.md, "Round 2".
+// with a crimson ribbon crossed in an X, a charcoal plaid skirt, crew socks, black loafers. From the
+// MV: the wooden "SINNER" paddle (a nod to the con-floor yaoi paddle) she carries behind her back,
+// and her black "Yaoi Note". A girl at a religious school confessing her BL habit as a sin, paddling
+// herself for it and relapsing on the spot: she ships grown-up fictional boys, writes fanfic on her
+// cloud, squeals at new chapters, gets nosebleeds. Contract: src/world/companions/README.md and
+// docs/refactor/RENOVATION.md, "Round 2".
 export default {
   id: "miku-rotten",
   name: "Miku",
@@ -48,8 +49,9 @@ export default {
     talkiness: 0.5,
     expressions: { tapped: "gasp", picked: "flustered", putDown: "happy", walk: "soft", jump: "gasp", stay: "smug", wander: "sparkle" },
   },
-  // The tap menu's own choice (README, "the tap menu and stay"): she holds the paddle up, winds up
-  // and SMACKS it down on her cloud, then looks very innocent. The paddle is the chip's icon.
+  // The tap menu's own choice (README, "the tap menu and stay"): she holds up her SINNER paddle,
+  // paddles herself for her sins (penance, SMACK), then relapses on the spot. The paddle is the
+  // chip's icon; "yaoi paddle" is what the con-floor prop it parodies was called.
   action: {
     id: "paddle",
     label: "yaoi paddle!",
@@ -61,7 +63,7 @@ export default {
     topic: "action",
     steps: [
       { pose: "paddle", prop: "paddle", expression: "smug", seconds: [1.6, 1.8], topic: "action" },
-      { pose: "smack", prop: "paddle", expression: "feral", seconds: [3, 3], topic: "smack" },
+      { pose: "penance", prop: "paddle", expression: "wince", seconds: [2.6, 2.6], topic: "penance" },
       { pose: "giggle", prop: "paddle", expression: "guilty", seconds: [1.8, 2.2], topic: "smacked" },
     ],
   },
@@ -86,6 +88,20 @@ export default {
     { id: "show", weight: 2, pose: "show", expression: "sparkle", seconds: [4, 7], topic: "shipping" },
     { id: "dance", weight: 1.6, pose: "dance", expression: "giggle", seconds: [4, 6], topic: "dance" },
     { id: "paddle", weight: 1.4, pose: "paddle", expression: "smug", seconds: [3, 5], topic: "paddle" },
+    // The paddle on a ship that won't kiss already: a slam on her cloud.
+    { id: "enforce", weight: 0.9, pose: "smack", expression: "feral", seconds: [3, 4.5], topic: "smack", say: 0.7 },
+    // Penance, then the relapse.
+    {
+      id: "penance",
+      weight: 0.7,
+      pose: "penance",
+      say: 0.7,
+      steps: [
+        { pose: "pray", expression: "pray", seconds: [2.2, 2.8], topic: "confess" },
+        { pose: "penance", expression: "wince", seconds: [2.6, 2.6], topic: "penance" },
+        { pose: "giggle", expression: "guilty", seconds: [1.8, 2.4], topic: "smacked", chance: 0.7 },
+      ],
+    },
     { id: "doujin", weight: 1.2, pose: "hug", expression: "dreamy", seconds: [4, 7], topic: "doujin" },
     { id: "nosebleed", weight: 1, pose: "fluster", expression: "nosebleed", seconds: [3, 5], topic: "nosebleed", say: 0.8 },
     { id: "daydream", weight: 2, pose: "sit", expression: "dreamy", seconds: [6, 10], topic: "daydream", level: "top" },
