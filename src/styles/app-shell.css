@@ -1,0 +1,501 @@
+/*
+  The iPhone app's frame and the shared section layout (docs/refactor/RENOVATION.md, "Contracts →
+  App layout"). Every rule hangs off html.app-shell (the app, and ?app=1 in local dev), so the website
+  never changes. Owner: the frame agent. Sections use the class names below and style only what is
+  their own; spacing, gutters, titles, cards and lists come from here so every tab reads the same.
+*/
+
+/* ---------- frame variables ---------- */
+html.app-shell {
+  --app-gutter: 16px;
+  --app-card-radius: 20px;
+  /* Tab bar: 52pt of buttons plus the home-indicator inset. */
+  --app-tabs-h: calc(52px + env(safe-area-inset-bottom));
+  /* What the tab bar covers right now: 0 while the keyboard is up (the bar hides then). */
+  --app-bottom: var(--app-tabs-h);
+  --app-safe-top: env(safe-area-inset-top);
+  /* The compact bar that appears once a section's large title scrolls away. */
+  --app-bar-h: 44px;
+  --app-card-bg: color-mix(in srgb, var(--theme-paper) 95%, transparent);
+  --app-card-line: color-mix(in srgb, var(--theme-line) 70%, transparent);
+  --app-card-shadow: 0 1px 2px rgb(84 56 95 / 0.05), 0 8px 22px -14px rgb(84 56 95 / 0.32);
+  --app-hairline: color-mix(in srgb, var(--theme-line) 80%, transparent);
+  --app-press: color-mix(in srgb, var(--theme-soft) 70%, transparent);
+  /* The rubber band at either end shows lilac paper, never white. */
+  background: var(--theme-page, #f2ebf7);
+  overscroll-behavior-x: none;
+  -webkit-tap-highlight-color: transparent;
+}
+html.app-shell body.keyboard-open {
+  --app-bottom: 0px;
+}
+/* The page itself starts under the status bar (in-app.css does the same for the native app). */
+html.app-shell body {
+  padding-top: env(safe-area-inset-top);
+  background: transparent;
+}
+
+/* ---------- the frame: what the website shows that the app doesn't ---------- */
+html.app-shell .world-footer,
+html.app-shell .skip-link {
+  display: none;
+}
+html.app-shell .world-content {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 0 calc(var(--app-bottom) + 32px);
+}
+/* Pages that haven't moved to the section markup yet keep a gutter, so nothing touches the edges. */
+html.app-shell .world-content:not(:has(> .app-section, > .app-screen, > .app-bleed)) {
+  padding-inline: max(var(--app-gutter), env(safe-area-inset-left)) max(var(--app-gutter), env(safe-area-inset-right));
+  padding-top: 12px;
+}
+
+/* The website's top bar, on home only: a compact wordmark that scrolls away with the page. */
+html.app-shell .world-mast {
+  position: relative;
+  top: auto;
+  height: auto;
+  min-height: 56px;
+  padding: 6px max(var(--app-gutter), env(safe-area-inset-left)) 2px;
+  border: 0;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  justify-content: flex-start;
+}
+html.app-shell .world-mast .tiny-wordmark {
+  font-size: 36px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+html.app-shell .world-mast__actions,
+html.app-shell .world-bookmarks,
+html.app-shell .world-mobile-menu {
+  display: none;
+}
+
+/* ---------- the compact bar (AppTopBar.jsx) ---------- */
+.app-topbar {
+  position: fixed;
+  z-index: 110;
+  inset: 0 0 auto;
+  height: calc(var(--app-safe-top) + var(--app-bar-h));
+  padding: var(--app-safe-top) max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  background: color-mix(in srgb, var(--theme-paper, #fff9fd) 86%, transparent);
+  -webkit-backdrop-filter: saturate(1.5) blur(18px);
+  backdrop-filter: saturate(1.5) blur(18px);
+  border-bottom: 0.5px solid var(--app-hairline);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 160ms ease, visibility 0s linear 160ms;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.app-topbar[data-shown="true"] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 160ms ease;
+}
+.app-topbar__title {
+  grid-column: 2;
+  max-width: 62vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+  border: 0;
+  background: none;
+  padding: 0 4px;
+  min-height: 44px;
+  color: var(--theme-ink);
+  font: 700 21px/44px var(--font-hand);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+.app-topbar__title--mark {
+  font: 30px/44px "Parisienne", cursive;
+  letter-spacing: 0;
+}
+html.app-shell .app-topbar .app-topbar__back {
+  grid-area: 1 / 1;
+  justify-self: start;
+  margin: 0 0 0 -4px;
+  max-width: 100%;
+}
+/* While a section is still at its top, only a strip of paper sits behind the status bar. */
+.app-topbar-strip {
+  position: fixed;
+  z-index: 109;
+  inset: 0 0 auto;
+  height: var(--app-safe-top);
+  background: color-mix(in srgb, var(--theme-paper, #fff9fd) 90%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+}
+/* in-app.css draws its own strip for the native app; the top bar's replaces it in the app layout. */
+html.app-shell.in-app body::before {
+  content: none;
+}
+
+/* ---------- a tab's root screen ---------- */
+html.app-shell :is(.app-section, .app-screen) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 680px;
+  margin-inline: auto;
+  padding-inline: max(var(--app-gutter), env(safe-area-inset-left)) max(var(--app-gutter), env(safe-area-inset-right));
+  min-width: 0;
+}
+/* Something that should run edge to edge (a photo strip, a carousel): it cancels the gutter. */
+html.app-shell .app-bleed {
+  margin-inline: calc(-1 * max(var(--app-gutter), env(safe-area-inset-left)));
+}
+html.app-shell .world-content > .app-bleed {
+  margin-inline: 0;
+}
+
+/* Large title row. Areas: the pushed screen's back button, the title with trailing actions, the subtitle. */
+html.app-shell .app-section__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "back back"
+    "title actions"
+    "subtitle subtitle";
+  align-items: center;
+  column-gap: 12px;
+  padding: 14px 0 18px;
+  margin: 0;
+  min-width: 0;
+}
+html.app-shell .app-section__title {
+  grid-area: title;
+  margin: 0;
+  min-width: 0;
+  color: var(--theme-ink);
+  font: 700 36px/1.08 var(--font-hand);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+html.app-shell .app-section__subtitle {
+  grid-area: subtitle;
+  margin: 4px 0 0;
+  max-width: 34em;
+  color: var(--theme-muted);
+  font: 400 14px/1.45 var(--font-ui);
+}
+html.app-shell .app-section__actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-height: 44px;
+}
+/* A round trailing button in the title row (compose, filter, …). */
+html.app-shell .app-action {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--app-card-line);
+  border-radius: 50%;
+  background: var(--app-card-bg);
+  color: var(--theme-accent);
+  font: 600 18px/1 var(--font-ui);
+  box-shadow: var(--app-card-shadow);
+  cursor: pointer;
+  position: relative;
+}
+html.app-shell .app-action::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+}
+html.app-shell .app-action:active {
+  transform: scale(0.94);
+  background: var(--app-press);
+}
+
+/* The content column: cards and lists, evenly spaced. */
+html.app-shell .app-section__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+}
+/* A small heading between groups of cards, like an iOS grouped list's section header. */
+html.app-shell .app-group-title {
+  margin: 14px 4px -6px;
+  color: var(--theme-muted);
+  font: 700 13px/1.3 var(--font-ui);
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+
+/* ---------- cards ---------- */
+html.app-shell .app-card {
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--app-card-line);
+  border-radius: var(--app-card-radius);
+  background: var(--app-card-bg);
+  box-shadow: var(--app-card-shadow);
+  color: var(--theme-ink);
+}
+html.app-shell .app-card--tint {
+  background: color-mix(in srgb, var(--theme-soft) 62%, var(--theme-paper));
+}
+html.app-shell .app-card--flush {
+  padding: 0;
+  overflow: hidden;
+}
+html.app-shell .app-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+  margin: -2px 0 10px;
+}
+html.app-shell .app-card--flush > .app-card__head {
+  margin: 0;
+  padding: 14px 16px 8px;
+}
+html.app-shell .app-card__title {
+  margin: 0;
+  min-width: 0;
+  color: var(--theme-ink);
+  font: 700 22px/1.15 var(--font-hand);
+  letter-spacing: -0.01em;
+}
+html.app-shell .app-card__action {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--theme-accent);
+  font: 600 14px/1 var(--font-ui);
+}
+html.app-shell .app-card__action :is(a, button):not(.admin-edit) {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+html.app-shell .app-card__body {
+  min-width: 0;
+  font: 400 15px/1.5 var(--font-ui);
+  color: var(--theme-ink);
+}
+html.app-shell .app-card__body > :first-child {
+  margin-top: 0;
+}
+html.app-shell .app-card__body > :last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- lists (iOS inset grouped rows) ---------- */
+html.app-shell .app-list {
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--app-card-line);
+  border-radius: var(--app-card-radius);
+  background: var(--app-card-bg);
+  box-shadow: var(--app-card-shadow);
+  overflow: hidden;
+}
+/* A list inside a card is part of it: no second border, rows run to the card's edges. */
+html.app-shell .app-card > .app-list,
+html.app-shell .app-card__body > .app-list {
+  margin-inline: -16px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+html.app-shell .app-card__body > .app-list:last-child {
+  margin-bottom: -16px;
+}
+html.app-shell .app-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 10px 16px;
+  color: var(--theme-ink);
+  font: 400 16px/1.35 var(--font-ui);
+  min-width: 0;
+}
+html.app-shell .app-row + .app-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 0;
+  border-top: 0.5px solid var(--app-hairline);
+}
+/* A row that is itself a link or button (or holds one that fills it). */
+html.app-shell .app-row:is(a, button),
+html.app-shell .app-row > :is(a, button):only-child {
+  width: 100%;
+  border: 0;
+  background: none;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+html.app-shell .app-row > :is(a, button):only-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -10px -16px;
+  padding: 10px 16px;
+  min-height: 52px;
+  box-sizing: border-box;
+  width: calc(100% + 32px);
+}
+html.app-shell .app-row:is(a, button):active,
+html.app-shell .app-row > :is(a, button):only-child:active {
+  background: var(--app-press);
+}
+/* A chevron at the end of rows that open something. */
+html.app-shell .app-row--more:not(:has(> :is(a, button):only-child))::after,
+html.app-shell .app-row--more > :is(a, button):only-child::after {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border: solid color-mix(in srgb, var(--theme-muted) 70%, transparent);
+  border-width: 2px 2px 0 0;
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+html.app-shell .app-row__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--theme-soft);
+  color: var(--theme-accent);
+}
+html.app-shell .app-row__text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+html.app-shell .app-row__text small,
+html.app-shell .app-row__detail {
+  color: var(--theme-muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+html.app-shell .app-row__detail {
+  flex: none;
+  margin-left: auto;
+}
+
+/* ---------- empty states ---------- */
+html.app-shell .app-empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--theme-muted);
+  font: 400 15px/1.5 var(--font-ui);
+}
+html.app-shell .app-empty strong {
+  color: var(--theme-ink);
+  font: 700 22px/1.2 var(--font-hand);
+}
+
+/* ---------- pushed screens (an event inside home, a letter inside notes & letters) ---------- */
+html.app-shell .app-screen__back {
+  grid-area: back;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  max-width: 100%;
+  margin: -10px 0 2px -10px;
+  padding: 0 10px 0 6px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--theme-accent);
+  font: 500 16px/1.2 var(--font-ui);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+/* The frame draws the chevron; put only the parent's name inside (e.g. "notes & letters"). */
+html.app-shell .app-screen__back::before {
+  content: "";
+  flex: none;
+  width: 11px;
+  height: 11px;
+  margin: 0 2px 0 6px;
+  border: solid currentColor;
+  border-width: 0 0 2.4px 2.4px;
+  border-radius: 1.5px;
+  transform: rotate(45deg);
+}
+html.app-shell .app-screen__back:active {
+  background: var(--app-press);
+}
+/* Arriving on a pushed screen: a quick slide from the right, as on iOS. Back and tab switches are instant. */
+@media (prefers-reduced-motion: no-preference) {
+  html.app-shell[data-nav="push"] .app-screen {
+    animation: app-screen-in 300ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  }
+}
+@keyframes app-screen-in {
+  from {
+    transform: translate3d(38%, 0, 0);
+    opacity: 0.4;
+  }
+}
+
+/* ---------- the website pieces the app never shows ---------- */
+html.app-shell .birthday-ribbon {
+  margin-bottom: 4px;
+}
+
+/* Frame-level fallback for the chat until its own app layout lands (owner: the mail agent): it is a
+   root tab now, so it sits between the status bar and the tab bar instead of under the old top bar. */
+html.app-shell .chat {
+  top: env(safe-area-inset-top);
+  bottom: var(--app-bottom);
+}
