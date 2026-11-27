@@ -1,0 +1,218 @@
+/* The pastime shelf's shared frame: lilac paper, hand-drawn titles, iPhone-sized controls. */
+html.pastime-open,
+html.pastime-open body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.pastime {
+  --ink: #3b2748;
+  --ink-soft: #745080;
+  --ink-faint: #9a83a6;
+  --paper: #fff9fd;
+  --paper-deep: #f4ebf8;
+  --line: #d9c1df;
+  --plum: #493653;
+  --lilac: #e1cfed;
+  --pink: #e58bb5;
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 1px 1px, #e6d7ee 1px, transparent 1.4px) 0 0 / 18px 18px,
+    linear-gradient(180deg, #fbf4fd 0%, #f6ecf9 100%);
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  font-family: var(--font-ui, system-ui);
+}
+.pastime button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+
+.pastime__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 8px 0 16px;
+  min-height: 44px;
+}
+.pastime__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--ink-soft);
+}
+.pastime__icon:active { background: #eadbf1; }
+.pastime__q { font: 700 22px/1 var(--font-hand, "Gaegu", cursive); }
+.pastime__kicker {
+  display: block;
+  min-width: 0;
+  font: 9px/1.4 var(--font-pixel, monospace);
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pastime__actions { display: flex; align-items: center; gap: 0; flex: none; }
+.pastime__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px 12px;
+  overflow: hidden;
+}
+
+/* Buttons */
+.pastime-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 16px;
+  border: 1.5px solid #c9aed8;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--plum);
+  font: 700 19px/1 var(--font-hand, "Gaegu", cursive);
+  box-shadow: 0 3px 0 #dccbe4;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.pastime-button:active { transform: translateY(2px); box-shadow: 0 1px 0 #dccbe4; }
+.pastime-button:disabled { opacity: 0.5; cursor: default; }
+.pastime-button--primary {
+  border-color: var(--plum);
+  background: var(--plum);
+  color: #fff9fd;
+  box-shadow: 0 3px 0 #2c1e33;
+}
+.pastime-button--primary:active { box-shadow: 0 1px 0 #2c1e33; }
+.pastime-button--small { min-height: 44px; padding: 6px 12px; font-size: 17px; }
+
+/* Stat chips under the header */
+.pastime-stats {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 10px;
+}
+.pastime-stat {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border: 1px dashed #cdb3d8;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--paper) 85%, transparent);
+}
+.pastime-stat__label { font: 9px/1.3 var(--font-pixel, monospace); letter-spacing: 0.08em; color: var(--ink-faint); text-transform: uppercase; }
+.pastime-stat__value { font: 700 22px/1 var(--font-hand, "Gaegu", cursive); color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* A sheet inside the game */
+.pastime-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 0 env(safe-area-inset-bottom);
+  background: color-mix(in srgb, #2a1736 30%, transparent);
+  animation: pastime-fade 0.18s ease-out;
+}
+.pastime-sheet__panel {
+  width: min(100%, 520px);
+  max-height: 85%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  margin: 0 10px 10px;
+  padding: 18px 20px 16px;
+  border: 1.5px solid #c9aed8;
+  border-radius: 24px;
+  background: var(--paper);
+  box-shadow: 0 10px 0 #e3d3ea, 0 20px 40px rgb(73 30 110 / 0.18);
+  outline: none;
+  animation: pastime-rise 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  -webkit-user-select: text;
+  user-select: text;
+}
+.pastime-sheet__title { margin: 0 0 8px; font: 700 28px/1 var(--font-hand, "Gaegu", cursive); color: var(--ink); }
+.pastime-sheet__body { font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
+.pastime-sheet__body p { margin: 0 0 10px; }
+.pastime-sheet__body ul { margin: 0 0 10px; padding: 0; list-style: none; display: grid; gap: 6px; }
+.pastime-sheet__body li { position: relative; padding-left: 20px; }
+.pastime-sheet__body li::before { content: "✿"; position: absolute; left: 0; top: 0; color: #c58bb8; }
+.pastime-sheet__body b { color: var(--ink); }
+.pastime-sheet__close { width: 100%; margin-top: 8px; }
+
+/* Paused */
+.pastime-paused {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, #fbf4fd 72%, transparent);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+.pastime-paused__card {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 22px 26px;
+  border: 1.5px solid #c9aed8;
+  border-radius: 22px;
+  background: var(--paper);
+  box-shadow: 0 6px 0 #e3d3ea;
+  text-align: center;
+}
+.pastime-paused__card p { margin: 0; font: 22px/1.1 var(--font-hand, "Gaegu", cursive); color: var(--ink-soft); }
+
+/* A small floating line ("lovely!", "garden cleared") */
+.pastime-cheer {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  z-index: 12;
+  pointer-events: none;
+  font: 700 34px/1 var(--font-hand, "Gaegu", cursive);
+  color: #8b4f9a;
+  text-shadow: 0 2px 0 #fff, 0 0 12px #fff;
+  white-space: nowrap;
+  animation: pastime-cheer 1.1s ease-out forwards;
+}
+
+@keyframes pastime-fade { from { opacity: 0; } }
+@keyframes pastime-rise { from { transform: translateY(40px); opacity: 0; } }
+@keyframes pastime-cheer {
+  0% { transform: translate(-50%, 10px) scale(0.8); opacity: 0; }
+  20% { transform: translate(-50%, 0) scale(1.05); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translate(-50%, -30px) scale(1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pastime *, .pastime *::before, .pastime *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  .pastime-cheer { animation: pastime-fade 0.2s ease-out reverse forwards 0.9s !important; transform: translate(-50%, 0); }
+}
+html[data-little-motion="off"] .pastime *,
+html[data-little-motion="off"] .pastime *::before,
+html[data-little-motion="off"] .pastime *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
