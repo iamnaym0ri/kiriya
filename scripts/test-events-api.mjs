@@ -252,6 +252,22 @@ try {
     assert.equal((await storeImageBytes(jpeg, { blob: { put: async () => puts.push(1) } })).url, stored.url, "the same picture is stored once, under one name");
   });
 
+  await test("A huge picture is stored at phone size; a small one exactly as it came", async () => {
+    const { default: sharp } = await import("sharp");
+    const { fitImage, storeImageBytes, MAX_IMAGE_SIDE } = await import("../server/lib/events/images.js");
+    const huge = await sharp({ create: { width: 6912, height: 4608, channels: 3, background: { r: 200, g: 170, b: 220 } } }).jpeg({ quality: 90 }).toBuffer();
+    const fitted = await fitImage(huge, "image/jpeg");
+    const meta = await sharp(fitted).metadata();
+    assert.equal(Math.max(meta.width, meta.height), MAX_IMAGE_SIDE);
+    assert.equal(meta.format, "jpeg");
+    let body = null;
+    await storeImageBytes(huge, { blob: { put: async (_p, b) => { body = b; } } });
+    assert.equal(Math.max((await sharp(body).metadata()).width, (await sharp(body).metadata()).height), MAX_IMAGE_SIDE, "stored at phone size");
+    const small = await sharp({ create: { width: 800, height: 600, channels: 3, background: "#fff" } }).png().toBuffer();
+    assert.equal(await fitImage(small, "image/png"), small, "small pictures are left alone");
+    assert.equal(await fitImage(Buffer.from("not a picture"), "image/jpeg").then((b) => b.toString()), "not a picture");
+  });
+
   await test("Push delivery is for the worker only (CRON_SECRET)", async () => {
     assert.equal((await request("jobs/events/deliver", { method: "POST", body: {} })).status, 401);
     const ok = await json(await request("jobs/events/deliver", { method: "POST", body: {}, headers: { authorization: `Bearer ${process.env.CRON_SECRET}` } }));

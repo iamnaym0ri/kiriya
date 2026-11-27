@@ -27,6 +27,30 @@ export function sniffImage(buffer) {
   return null;
 }
 
+/** The longest side a stored picture keeps: a phone never shows more. */
+export const MAX_IMAGE_SIDE = 1600;
+/** Pictures under this many bytes and within MAX_IMAGE_SIDE are stored exactly as they came. */
+const SMALL_ENOUGH = 700 * 1024;
+
+/**
+ * Shrinks a picture to at most MAX_IMAGE_SIDE on its long side, keeping its type (official pages
+ * share 7000 px photos: a slow download on mobile data and a lot of memory on an iPhone 11). Turned
+ * upright from its EXIF first. Anything sharp can't read is returned as it was.
+ */
+export async function fitImage(buffer, type) {
+  try {
+    const { default: sharp } = await import("sharp");
+    const meta = await sharp(buffer, { failOn: "none" }).metadata();
+    if ((meta.width ?? 0) <= MAX_IMAGE_SIDE && (meta.height ?? 0) <= MAX_IMAGE_SIDE && buffer.length <= SMALL_ENOUGH) return buffer;
+    const image = sharp(buffer, { failOn: "none" }).rotate().resize({ width: MAX_IMAGE_SIDE, height: MAX_IMAGE_SIDE, fit: "inside", withoutEnlargement: true });
+    if (type === "image/png") return await image.png({ compressionLevel: 9, palette: true }).toBuffer();
+    if (type === "image/webp") return await image.webp({ quality: 82 }).toBuffer();
+    return await image.jpeg({ quality: 82, mozjpeg: true }).toBuffer();
+  } catch {
+    return buffer;
+  }
+}
+
 /** Content-addressed names: the same picture is stored once, whoever sends it. */
 export function imageNames(buffer, type) {
   const hash = createHash("sha256").update(buffer).digest("hex");
@@ -47,9 +71,11 @@ export async function storeImageBytes(buffer, { blob, localDir = null, isProd = 
   const type = sniffImage(buffer);
   if (!type) throw Object.assign(new Error("not an image"), { code: "not_an_image" });
   if (buffer.length > MAX_IMAGE_BYTES) throw Object.assign(new Error("too big"), { code: "too_big" });
+  // Named after the picture as it came (so every copy of it dedupes), stored at phone size.
   const names = imageNames(buffer, type);
+  const body = await fitImage(buffer, type);
   if (blob) {
-    await blob.put(names.blob, buffer, type).catch((error) => {
+    await blob.put(names.blob, body, type).catch((error) => {
       if (!/exist/i.test(error?.message ?? "")) throw error;
     });
     return { url: mediaUrlFor(names.blob), pathname: names.blob };
@@ -58,7 +84,7 @@ export async function storeImageBytes(buffer, { blob, localDir = null, isProd = 
   const { mkdir, writeFile } = await import("node:fs/promises");
   const path = await import("node:path");
   await mkdir(localDir, { recursive: true });
-  await writeFile(path.join(localDir, names.local), buffer);
+  await writeFile(path.join(localDir, names.local), body);
   return { url: `/api/uploads/file/${names.local}`, pathname: names.local };
 }
 

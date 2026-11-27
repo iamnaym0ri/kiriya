@@ -8,6 +8,7 @@ import { env } from "../env.js";
 import { readSession } from "../auth/session.js";
 import { isPublicMedia } from "../lib/media.js";
 import { mediaSignatureOk } from "../lib/mediaLinks.js";
+import { fitImage } from "../lib/events/images.js";
 import { IMMUTABLE_FOLDERS, UPLOAD_FOLDERS } from "../../shared/uploadFolders.js";
 import {
   blobOptions,
@@ -300,8 +301,20 @@ uploadRoutes.get("/media", async (c) => {
     ...(range ? { headers: { Range: range } } : {}),
   });
   if (!result) return c.notFound();
+  // Event and merch pictures stored before they were sized for phones (lib/events/images.js
+  // fitImage) are shrunk on the way out, so no 7000 px photo ever reaches the app.
+  const contentType = result.blob.contentType ?? "application/octet-stream";
+  const length = Number(result.headers.get("Content-Length") ?? 0);
+  if (!range && pathname.startsWith("events/") && /^image\/(?:jpeg|png|webp)$/.test(contentType) && length > 700 * 1024) {
+    const original = Buffer.from(await new Response(result.stream).arrayBuffer());
+    const body = await fitImage(original, contentType);
+    return new Response(body, {
+      status: 200,
+      headers: { "Content-Type": contentType, "Cache-Control": cacheFor(pathname), "X-Content-Type-Options": "nosniff", "Content-Length": String(body.length) },
+    });
+  }
   const headers = new Headers({
-    "Content-Type": result.blob.contentType ?? "application/octet-stream",
+    "Content-Type": contentType,
     "Cache-Control": cacheFor(pathname),
     "X-Content-Type-Options": "nosniff",
     "Accept-Ranges": "bytes",
