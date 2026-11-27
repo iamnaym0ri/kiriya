@@ -6,8 +6,8 @@
   gap: 10px;
 }
 .charm .pastime-stats { margin: 0; flex: none; }
-.charm-takeback { flex: none; min-width: 92px; font-size: 22px; gap: 8px; }
-.charm-takeback__dots { font-size: 10px; letter-spacing: 2px; color: #b28ad0; }
+.charm-takeback { flex: none; align-self: stretch; min-width: 80px; height: auto; font-size: 24px; gap: 4px; }
+.charm-takeback__count { display: inline-grid; place-items: center; min-width: 22px; height: 22px; border-radius: 11px; background: #efe3f5; font-size: 15px; color: #8b6c95; }
 
 .charm-stage {
   flex: 1;

@@ -168,7 +168,7 @@ export default function CharmMerge({ onReward }) {
           <div className="pastime-stat"><span className="pastime-stat__label">best</span><span className="pastime-stat__value">{best}</span></div>
           <button type="button" className="pastime-button charm-takeback" onClick={takeBack} disabled={!undo || takeBacks <= 0}
             aria-label={`Take back the last move, ${takeBacks} left`}>
-            ↶ <span className="charm-takeback__dots" aria-hidden="true">{"●".repeat(takeBacks)}{"○".repeat(TAKE_BACKS - takeBacks)}</span>
+            <span aria-hidden="true">↶</span> <span className="charm-takeback__count" aria-hidden="true">{takeBacks}</span>
           </button>
         </div>
         <div className="charm-stage" ref={stage}>

@@ -3,6 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { seeded } from "../src/world/play/games/pastime/_shared/rng.js";
 import * as herb from "../src/world/play/games/pastime/herb-match/engine.js";
+import * as charms from "../src/world/play/games/pastime/charm-merge/engine.js";
 
 // ---------- herb patch (match-3) ----------
 
@@ -158,4 +159,92 @@ test("Herb patch: gardens grow gently, are finishable by a casual player, and sc
   assert.equal(herb.flowersFor({ ...g, moves: g.plan.par }), 3);
   assert.equal(herb.flowersFor({ ...g, moves: g.plan.par + 1 }), 2);
   assert.equal(herb.flowersFor({ ...g, moves: g.plan.par * 3 }), 1);
+});
+
+// ---------- charm ladder (merge) ----------
+
+const ladder = (rows) => {
+  let id = 1;
+  const cells = rows.flatMap((row) => row.map((tier) => (tier ? { id: id++, tier } : null)));
+  return { cells, score: 0, nextId: id, top: Math.max(1, ...rows.flat()), crowned: false, over: false, moves: 0 };
+};
+const tiers = (state) => state.cells.map((cell) => cell?.tier ?? 0);
+
+test("Charm ladder: a new board has two little charms", () => {
+  for (let s = 1; s < 30; s++) {
+    const game = charms.newGame(seeded(s));
+    const placed = game.cells.filter(Boolean);
+    assert.equal(placed.length, 2);
+    assert.ok(placed.every((cell) => cell.tier === 1 || cell.tier === 2));
+  }
+});
+
+test("Charm ladder: matching charms merge once per move, toward the swipe, and a new bead arrives", () => {
+  const game = ladder([
+    [1, 1, 1, 1],
+    [2, 0, 2, 0],
+    [3, 3, 0, 0],
+    [0, 0, 0, 0],
+  ]);
+  const { moved, state, merges } = charms.move(game, "left", () => 0.99);
+  assert.equal(moved, true);
+  const rows = [0, 1, 2, 3].map((r) => tiers(state).slice(r * 4, r * 4 + 4));
+  assert.deepEqual(rows[0], [2, 2, 0, 0], "four beads make two hearts, not one star");
+  assert.deepEqual(rows[1], [3, 0, 0, 0]);
+  assert.deepEqual(rows[2], [4, 0, 0, 0]);
+  assert.equal(merges.length, 4);
+  assert.equal(state.score, 4 + 4 + 8 + 16);
+  assert.equal(state.cells.filter(Boolean).length, 4 + 1, "one new charm");
+  assert.equal(state.top, 4);
+});
+
+test("Charm ladder: a swipe that moves nothing changes nothing", () => {
+  const game = ladder([
+    [1, 2, 0, 0],
+    [3, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+  ]);
+  const result = charms.move(game, "left", seeded(1));
+  assert.equal(result.moved, false);
+  assert.strictEqual(result.state, game);
+  assert.equal(charms.move(game, "up", seeded(1)).moved, false);
+  assert.equal(charms.move(game, "right", seeded(1)).moved, true);
+});
+
+test("Charm ladder: two gems make the crown, and a full board with no pairs is over", () => {
+  const game = ladder([
+    [8, 8, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+  ]);
+  const result = charms.move(game, "left", seeded(2));
+  assert.equal(result.state.top, charms.CROWN);
+  assert.equal(result.state.crowned, true);
+  assert.equal(charms.LADDER[charms.CROWN].name, "crown");
+  const stuck = ladder([
+    [1, 2, 1, 2],
+    [2, 1, 2, 1],
+    [1, 2, 1, 2],
+    [2, 1, 2, 1],
+  ]);
+  assert.equal(charms.movesAvailable(stuck.cells), false);
+  assert.equal(charms.movesAvailable(ladder([[1, 2, 1, 2], [2, 1, 2, 1], [1, 2, 1, 2], [2, 1, 2, 2]]).cells), true);
+});
+
+test("Charm ladder: long games keep ids unique and saved games are checked before resuming", () => {
+  const random = seeded(9);
+  let game = charms.newGame(random);
+  const dirs = ["left", "down", "right", "down"];
+  for (let i = 0; i < 400 && !game.over; i++) {
+    const result = charms.move(game, dirs[i % 4], random);
+    if (!result.moved) continue;
+    game = result.state;
+    const ids = game.cells.filter(Boolean).map((cell) => cell.id);
+    assert.equal(new Set(ids).size, ids.length);
+    assert.ok(charms.isGame(game));
+  }
+  assert.equal(charms.isGame({ cells: [1, 2, 3] }), false);
+  assert.equal(charms.isGame(null), false);
 });

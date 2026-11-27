@@ -21,10 +21,11 @@ export const CHARM_ART = [
   null,
   // 1 bead
   <g key="1" {...round}>
-    <path d="M24 6v8" stroke="#b7a1c6" strokeWidth="2" />
-    <circle cx="24" cy="27" r="13" fill="#f3ecfa" stroke="#9c82b4" strokeWidth="2.2" />
-    <circle cx="24" cy="27" r="3" fill="#fff" stroke="#9c82b4" strokeWidth="1.6" />
-    <path d="M16 22c1-3 4-5 7-5" stroke="#fff" strokeWidth="2.6" fill="none" />
+    <circle cx="24" cy="9" r="3.4" fill="none" stroke="#b7a1c6" strokeWidth="2" />
+    <circle cx="24" cy="26" r="13.5" fill="#eadff8" stroke="#9c82b4" strokeWidth="2.2" />
+    <circle cx="24" cy="26" r="9" fill="#f6f0fc" opacity="0.8" />
+    <path d="M15.5 22c1.2-3.6 4.4-6 8-6" stroke="#fff" strokeWidth="2.8" fill="none" />
+    <path d="M31 30l.9 2.2 2.2.9-2.2.9-.9 2.2-.9-2.2-2.2-.9 2.2-.9z" fill="#c9a8f5" />
   </g>,
   // 2 heart
   <g key="2" {...round}>
