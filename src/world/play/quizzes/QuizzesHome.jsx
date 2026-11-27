@@ -91,10 +91,8 @@ const RESULT_MARK = { right: "✓", wrong: "✗", match: "♡", differ: "✿" };
 /** The line under a past quiz: what happened, from whoever is looking. */
 export function historyLine(quiz, me, names) {
   const words = resultWords(quiz, me, names);
-  const answerer = answererOf(quiz);
-  const who = quiz.from === me && !quiz.test ? "you asked" : `${nameOf(names, quiz.from)} asked`;
-  if (!words) return who;
-  return `${who} · ${words.title.replace(/ ✨$/, "")} · ${timeAgo(quiz.reply?.at ?? quiz.createdAt)}${quiz.test && answerer === me ? " · test" : ""}`;
+  if (!words) return quiz.from === me ? "you asked" : `${nameOf(names, quiz.from)} asked`;
+  return `${words.title.replace(/ ✨$/, "")} · ${timeAgo(quiz.reply?.at ?? quiz.createdAt)}${quiz.test ? " · test" : ""}`;
 }
 
 export function resultMark(quiz) {

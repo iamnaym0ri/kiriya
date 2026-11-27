@@ -78,3 +78,11 @@ The screenshots in `strawpage-references/` document four live Strawpages for res
 ## Unified doodle tools
 
 The new brush previews and shape/stamp paths are original code-native SVG/canvas work in `src/world/play/MiniSketchbook.jsx` and `src/world/studio/drawingTools.js`. The drawing surface generates its own dotted/lined paper and deterministic crayon texture. No additional downloaded artwork or image generator was used. Existing Mixbox pigment mixing retains its CC BY-NC 4.0 attribution in the folded paint box. Saved drawings and uploaded artwork continue to use private media storage.
+
+## Quiz photos (2026-11-26)
+
+Quizzes for each other (`src/world/play/quizzes/openverse.js`) can use a stock photo found through the
+[Openverse API](https://api.openverse.org/v1/) (no key; any origin). Searches ask StockSnap, WordPress
+Photo Directory, Nappy and rawpixel first (mostly CC0), then Flickr; licences CC0, PDM, BY, BY-SA,
+BY-NC and BY-NC-SA only (no "no derivatives", since cards crop). A picked photo is copied into the
+private `quizzes/` upload folder and keeps its title, creator, licence and source, shown on the card.

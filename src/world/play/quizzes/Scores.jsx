@@ -78,7 +78,7 @@ export default function Scores() {
             <section className="app-card app-card--tint quiz-sync">
               <span className="quiz-sync__heart" aria-hidden="true">
                 <svg viewBox="0 0 24 24" width="26" height="26">
-                  <path d="M12 20.5s-7.5-4.4-9.2-9.3C1.6 7.8 3.8 4.5 7.2 4.5c2 0 3.6 1.1 4.8 2.8 1.2-1.7 2.8-2.8 4.8-2.8 3.4 0 5.6 3.3 4.4 6.7-1.7 4.9-9.2 9.3-9.2 9.3z" fill="currentColor" />
+                  <path d="M12 20.5s-7.5-4.4-9.2-9.3C1.6 7.8 3.8 4.5 7.2 4.5c2 0 3.6 1.1 4.8 2.8 1.2-1.7 2.8-2.8 4.8-2.8 3.4 0 5.6 3.3 4.4 6.7-1.7 4.9-9.2 9.3-9.2 9.3z" fill="#e0669d" />
                 </svg>
               </span>
               <p>

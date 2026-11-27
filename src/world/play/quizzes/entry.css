@@ -30,7 +30,7 @@
 }
 .quiz-entry__inner {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr) auto;
+  grid-template-columns: 94px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   min-height: 100px;
@@ -40,6 +40,7 @@
 .quiz-entry__art {
   width: 88px;
   height: 74px;
+  margin-left: 6px;
 }
 .quiz-entry__card {
   position: absolute;
