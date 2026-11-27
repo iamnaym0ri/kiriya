@@ -4,6 +4,7 @@ import { usePlayful } from "../../../shared/play/PlayfulContext.js";
 import { haptic } from "../../../lib/native.js";
 import { availableCompanions, loadCompanion } from "../registry.js";
 import { normaliseCharacter } from "./character.js";
+import DefaultPlatform from "./DefaultPlatform.jsx";
 import { StageSim } from "./stage.js";
 import ActorView from "./ActorView.jsx";
 import "./stage.css";
@@ -16,7 +17,7 @@ export function loadCharacter(id) {
     cache.set(
       id,
       loadCompanion(id)
-        .then((raw) => normaliseCharacter(raw))
+        .then((raw) => normaliseCharacter(raw, { Platform: DefaultPlatform }))
         .catch((error) => {
           console.error(`companion ${id} failed to load`, error);
           cache.delete(id);
@@ -107,7 +108,7 @@ export default function Stage({ hostId = "maomao", active = true, options, contr
       if (!live) return;
       if (character && tweak) {
         const movement = { ...character.movement, hop: null, bob: null, ...JSON.parse(tweak) };
-        character = normaliseCharacter({ ...character, movement });
+        character = normaliseCharacter({ ...character, movement }, { Platform: DefaultPlatform });
       }
       sim.setHost(character);
     });

@@ -2,6 +2,7 @@
 // visits, and the one frame loop that runs them all (README.md documents every option).
 import { Actor } from "./actor.js";
 import { buildLevels, busyScore, measureBand } from "./levels.js";
+import { placeSpot, readStay } from "./stay.js";
 import { createTicker } from "./ticker.js";
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -86,6 +87,8 @@ export class StageSim {
     };
     this.onScroll = () => {
       this.scrollAt = this.time;
+      // Scrolling the page closes the tap menu.
+      for (const actor of this.actors) actor.closeMenu("scroll");
     };
     document.addEventListener("visibilitychange", this.onVisibility);
     addEventListener("resize", this.onResize);
@@ -121,7 +124,10 @@ export class StageSim {
     if (active) {
       this.layout();
       this.rollVisit();
-    } else this.remember();
+    } else {
+      for (const actor of this.actors) actor.closeMenu("away");
+      this.remember();
+    }
   }
 
   setLively(lively) {
@@ -158,10 +164,13 @@ export class StageSim {
     if (changed) {
       for (const actor of this.actors) {
         if (actor.level == null) continue;
-        const index = Math.min(actor.level, levels.length - 1);
+        // Told to stay: back to its spot on the new levels (same level from the bottom, same share
+        // of the width), however the screen changed.
+        const spot = actor.staying && actor.spot ? placeSpot(actor.spot, levels, band) : null;
+        const index = spot ? spot.level : Math.min(actor.level, levels.length - 1);
         actor.level = index;
         actor.y = levels[index].y;
-        actor.x = clamp(actor.x, levels[index].x0, levels[index].x1);
+        actor.x = spot ? spot.x : clamp(actor.x, levels[index].x0, levels[index].x1);
         actor.tilesDirty = true;
         actor.fadeTiles(0, true);
         actor.groundTile(true);
@@ -229,20 +238,36 @@ export class StageSim {
     actor.resize();
     const remembered = memory.host?.id === character.id ? memory.host : null;
     const how = entrance ?? (old ? "drop" : "appear");
-    if (remembered && this.levels[remembered.level]) {
+    // Told to stay last time (kept on this phone): it is on its spot, and stays.
+    const stay = readStay(character.id);
+    const spot = stay && placeSpot(stay, this.levels, this.band);
+    if (spot) {
+      actor.staying = true;
+      actor.spot = stay;
+      actor.view.set({ staying: true });
+      if (remembered) {
+        actor.facing = remembered.facing ?? 1;
+        actor.turn = actor.facing;
+        actor.view.set({ facing: actor.facing });
+      }
+      if (how === "drop" && !remembered) actor.dropIn(spot.level, spot.x);
+      else actor.placeAt(spot.level, spot.x);
+      if (!remembered) actor.plan.push({ type: "wait", seconds: [1.1, 1.6] }, { type: "call", fn: (a) => a.greet() });
+    } else if (remembered && this.levels[remembered.level]) {
       actor.facing = remembered.facing ?? 1;
       actor.turn = actor.facing;
       actor.view.set({ facing: actor.facing });
       actor.placeAt(remembered.level, this.band.left + remembered.fx * this.band.width);
     } else {
-      const spot = this.findSpot(actor);
-      if (how === "drop") actor.dropIn(spot.level, spot.x);
-      else actor.placeAt(spot.level, spot.x);
+      const clear = this.findSpot(actor);
+      if (how === "drop") actor.dropIn(clear.level, clear.x);
+      else actor.placeAt(clear.level, clear.x);
       actor.plan.push({ type: "wait", seconds: [1.1, 1.6] }, { type: "say", topics: null, line: null });
       // Says hello a beat after arriving.
       actor.plan[1] = { type: "call", fn: (a) => a.greet() };
     }
-    if (!remembered && how !== "drop") actor.until = 0;
+    // Start its day (a remembered or staying host too: until now it waited forever on arrival).
+    if (actor.mode === "rest") actor.until = 0;
     if (old) setTimeout(() => this.publish(), 260);
     else this.publish();
     this.rollVisit();
@@ -278,7 +303,7 @@ export class StageSim {
 
   beginVisit(character) {
     const host = this.host;
-    if (!host || host.level == null || host.mode === "held" || host.mode === "air") {
+    if (!host || host.level == null || host.mode === "held" || host.mode === "air" || host.menu) {
       // Try again shortly: she is busy carrying it about.
       this.visitAt = this.time + 4;
       this.queuedVisitor = character;
@@ -293,11 +318,14 @@ export class StageSim {
     const roomLeft = host.x - level.x0;
     const roomRight = level.x1 - host.x;
     const side = roomLeft >= roomRight ? -1 : 1;
-    // Make room if the host is too near the end it will be visited from.
+    // Make room if the host is too near the end it will be visited from (unless it was told to
+    // stay: then the visitor comes as close as there is room for).
     let hostX = host.x;
-    if (side < 0 && roomLeft < gap) hostX = Math.min(level.x1, level.x0 + gap);
-    if (side > 0 && roomRight < gap) hostX = Math.max(level.x0, level.x1 - gap);
-    const meetX = hostX + side * gap;
+    if (!host.staying) {
+      if (side < 0 && roomLeft < gap) hostX = Math.min(level.x1, level.x0 + gap);
+      if (side > 0 && roomRight < gap) hostX = Math.max(level.x0, level.x1 - gap);
+    }
+    const meetX = host.staying ? clamp(hostX + side * gap, level.x0, level.x1) : hostX + side * gap;
     host.interrupt([
       ...(Math.abs(hostX - host.x) > 2 ? [{ type: "walk", to: hostX }] : []),
       { type: "face", dir: side },
@@ -445,7 +473,9 @@ export class StageSim {
     } else if (this.time - this.lastComfort < 5) return;
     this.lastComfort = this.time;
     const host = this.host;
-    if (!host || !this.lively || this.visit || host.level == null || host.mode !== "rest" || host.step?.type === "wait" || this.time - this.lastAvoid < 6) return;
+    // Never in the middle of something she asked for (the menu, its action) or told it (stay).
+    const busy = host.step?.type === "wait" || host.step?.type === "hold" || (host.step?.type === "act" && host.step.solid);
+    if (!host || !this.lively || this.visit || host.staying || host.menu || host.level == null || host.mode !== "rest" || busy || this.time - this.lastAvoid < 6) return;
     if (!this.options.avoidText) return;
     const here = this.spotScore(host, host.level, host.x);
     if (here < 0.35) return;

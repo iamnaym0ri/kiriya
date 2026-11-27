@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { availableCompanions } from "./registry.js";
 import Stage, { loadCharacter } from "./engine/Stage.jsx";
+import { clearStay } from "./engine/stay.js";
 import "./lab.css";
 
 // Dev-only companion lab: /world/companion-lab?c=<id>&v=<visitor> (docs/refactor/RENOVATION.md).
@@ -10,7 +11,10 @@ import "./lab.css";
 // shows every pose and every platform state side by side. Also on window.__companionStage for scripts.
 //
 // Query options (handy for screenshots): levels=2..6, speed=0.25..3, quiet=1|0, debug=1, bg=home|text|plain,
-// open=1 (panel open), tab=stage|poses, scale=0.7..1.2, ride=1|0 (try riding or trailing clouds).
+// open=1 (panel open), tab=stage|poses, scale=0.7..1.2, ride=1|0 (try riding or trailing clouds),
+// stay=1|0 (start told to stay, or wandering; leave it out to keep what this phone remembers),
+// face=<expression> (the pose gallery with one expression on every pose), demo=menu|action|stay|
+// wander (once it has settled: opens the menu, or chooses that chip, for devices nothing can tap).
 
 const HomeBackdrop = lazy(() => import("../home/HomeSection.jsx"));
 
@@ -34,19 +38,24 @@ function TextBackdrop() {
 
 function Readout({ sim }) {
   const [stats, setStats] = useState(null);
+  const [staying, setStaying] = useState(false);
   useEffect(() => {
-    const t = setInterval(() => setStats(sim.current?.ticker.stats() ?? null), 500);
+    const t = setInterval(() => {
+      setStats(sim.current?.ticker.stats() ?? null);
+      setStaying(Boolean(sim.current?.host?.staying));
+    }, 500);
     return () => clearInterval(t);
   }, [sim]);
   if (!stats) return <span className="clab-readout">paused</span>;
   return (
     <span className="clab-readout" data-bad={stats.long > 0 || stats.p95 > 20 ? "" : undefined}>
+      {staying ? "📍 " : ""}
       {stats.avg.toFixed(1)}ms · p95 {stats.p95.toFixed(1)} · max {stats.max.toFixed(0)} · long {stats.long} · js {stats.cost.toFixed(2)}
     </span>
   );
 }
 
-function Gallery({ character }) {
+function Gallery({ character, face }) {
   if (!character) return <p className="clab-note">loading…</p>;
   const { Body, Platform, size, movement, platformSurface } = character;
   const scale = 0.9;
@@ -62,13 +71,49 @@ function Gallery({ character }) {
               <Platform width={pw} state="steady" facing={1} riding={false} playing />
             </div>
             <div className="clab-pose__body" style={{ width: w, height: h, left: `calc(50% - ${w / 2}px)`, top: 8 }}>
-              <Body pose={pose} facing={1} playing frame={null} talking={false} />
+              <Body pose={pose} expression={face || undefined} facing={1} playing frame={null} talking={false} />
             </div>
             <i className="clab-pose__feet" style={{ top: h + 8 }} />
           </div>
           <figcaption>{pose}</figcaption>
         </figure>
       ))}
+      {(character.action?.steps ?? []).map((step, i) => (
+        <figure key={`action-${i}`} className="clab-pose">
+          <div className="clab-pose__stage" style={{ width: Math.max(w, pw) + 16, height: h + 40 }}>
+            <div className="clab-pose__tile" style={{ width: pw, left: `calc(50% - ${pw / 2}px)`, top: h + 8 - platformSurface * scale }}>
+              <Platform width={pw} state="steady" facing={1} riding={false} playing />
+            </div>
+            <div className="clab-pose__body" style={{ width: w, height: h, left: `calc(50% - ${w / 2}px)`, top: 8 }}>
+              <Body pose={character.resolvePose(step.pose)} expression={step.expression} prop={step.prop} facing={1} playing frame={null} talking={false} />
+            </div>
+            <i className="clab-pose__feet" style={{ top: h + 8 }} />
+          </div>
+          <figcaption>
+            {character.action.label} {i + 1}: {step.pose}
+            {step.prop ? ` + ${step.prop}` : ""}
+          </figcaption>
+        </figure>
+      ))}
+      {character.behaviours
+        .filter((b) => b.prop || b.steps?.some((step) => step.prop))
+        .flatMap((b) => (b.steps ?? [b]).filter((step) => step.prop).map((step, i) => ({ b, step, i })))
+        .map(({ b, step, i }) => (
+          <figure key={`b-${b.id}-${i}`} className="clab-pose">
+            <div className="clab-pose__stage" style={{ width: Math.max(w, pw) + 16, height: h + 40 }}>
+              <div className="clab-pose__tile" style={{ width: pw, left: `calc(50% - ${pw / 2}px)`, top: h + 8 - platformSurface * scale }}>
+                <Platform width={pw} state="steady" facing={1} riding={false} playing />
+              </div>
+              <div className="clab-pose__body" style={{ width: w, height: h, left: `calc(50% - ${w / 2}px)`, top: 8 }}>
+                <Body pose={character.resolvePose(step.pose)} expression={step.expression} prop={step.prop} facing={1} playing frame={null} talking={false} />
+              </div>
+              <i className="clab-pose__feet" style={{ top: h + 8 }} />
+            </div>
+            <figcaption>
+              {b.id}: {step.pose} + {step.prop}
+            </figcaption>
+          </figure>
+        ))}
       {["forming", "steady", "fading"].map((state) => (
         <figure key={state} className="clab-pose">
           <div className="clab-pose__stage" style={{ width: pw + 16, height: 60 }}>
@@ -110,6 +155,22 @@ export default function CompanionLab() {
   const avoidText = params.get("avoid") !== "0";
   const bg = params.get("bg") ?? "home";
   const ride = params.get("ride");
+  const stayParam = params.get("stay");
+  // stay=1 / stay=0 in the address: start staying (at the middle of the bottom level) or wandering.
+  const stayPrimed = useRef(false);
+  if (!stayPrimed.current && stayParam != null && typeof window !== "undefined") {
+    stayPrimed.current = true;
+    if (stayParam === "0") clearStay(id);
+    else if (stayParam === "1") {
+      try {
+        const all = JSON.parse(localStorage.getItem("kiriya:companion-stay") || "{}");
+        all[id] ??= { x: 0.5, level: 0 };
+        localStorage.setItem("kiriya:companion-stay", JSON.stringify(all));
+      } catch {
+        // Private mode: the stay button still works.
+      }
+    }
+  }
   const options = useMemo(
     () => ({
       levels,
@@ -124,6 +185,11 @@ export default function CompanionLab() {
     [levels, speed, scale, quiet, debug, avoidText, ride],
   );
 
+  // stay=… is a one-shot: drop it from the address so a reload keeps what the phone remembers.
+  useEffect(() => {
+    if (stayParam != null) set({ stay: "" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => {
     let live = true;
     setCharacter(null);
@@ -132,6 +198,25 @@ export default function CompanionLab() {
       live = false;
     };
   }, [id]);
+  // demo=…: a scripted tap for the Simulator, which nothing here can tap (dev only).
+  const demo = params.get("demo");
+  useEffect(() => {
+    if (!demo) return undefined;
+    let timer = 0;
+    const tick = () => {
+      const h = sim.current?.host;
+      if (!h || h.level == null || h.mode !== "rest" || h.opacity < 0.95 || (demo === "menu" && h.menu)) {
+        timer = setTimeout(tick, 300);
+        return;
+      }
+      h.tap();
+      // menu: tapped again every 4 s, so a screenshot taken any time later shows it open.
+      if (demo !== "menu") timer = setTimeout(() => h.choose(demo), 700);
+      else timer = setTimeout(tick, 4000);
+    };
+    timer = setTimeout(tick, 1800);
+    return () => clearTimeout(timer);
+  }, [demo]);
   useEffect(() => {
     window.__companionStage = sim.current;
     return () => {
@@ -174,7 +259,7 @@ export default function CompanionLab() {
         </Suspense>
       )}
       {tab === "stage" && bg === "text" && <TextBackdrop />}
-      {tab === "poses" && <Gallery character={character} />}
+      {tab === "poses" && <Gallery character={character} face={params.get("face") ?? ""} />}
 
       <div className="clab-panel" data-open={open ? "" : undefined} data-companion-edge={open ? undefined : "top"}>
         <div className="clab-bar">
@@ -297,7 +382,13 @@ export default function CompanionLab() {
               <button type="button" onClick={() => sim.current?.endVisit()}>end visit</button>
               <button type="button" onClick={jump}>jump</button>
               <button type="button" onClick={walkEdge}>walk to edge</button>
-              <button type="button" onClick={() => host()?.tap()}>tap</button>
+              <button type="button" onClick={() => host()?.tap()}>tap (menu)</button>
+              <button type="button" onClick={() => host()?.runAction()} disabled={!character?.action}>
+                {character?.action ? `${typeof character.action.icon === "string" ? character.action.icon : "✦"} ${character.action.label}` : "no action"}
+              </button>
+              <button type="button" onClick={() => host()?.setStay(true, { say: true })}>📍 stay</button>
+              <button type="button" onClick={() => host()?.setStay(false, { say: true })}>🌸 wander</button>
+              <button type="button" onClick={() => host()?.closeMenu("outside")}>close menu</button>
               <button type="button" onClick={() => force([])}>let go</button>
               <button type="button" onClick={() => sim.current?.setHost(null) || setTimeout(() => loadCharacter(id).then((c) => sim.current?.setHost(c, { entrance: "drop" })), 300)}>drop in</button>
               <button type="button" onClick={() => sim.current?.ticker.resetStats()}>reset stats</button>

@@ -18,7 +18,9 @@ const check = (where, entry) => {
 };
 
 test("Every topic the engine asks for is there, and each is deep enough not to repeat soon", () => {
-  for (const topic of ["greet", "greetMorning", "greetAfternoon", "greetEvening", "greetNight", "idle", "tapped", "pester", "picked", "putDown", "birthday", "sweet", "visit", "bye"]) {
+  for (const topic of ["greet", "greetMorning", "greetAfternoon", "greetEvening", "greetNight", "idle", "tapped", "pester", "picked", "putDown", "birthday", "sweet", "visit", "bye",
+    // Round 2: the tap menu (her vial), stay and wander, and her in-place moments.
+    "action", "actionAfter", "stay", "wander", "stayIdle", "coins", "stretch", "drying", "slugLook", "sunbeam"]) {
     assert.ok(lines[topic]?.length >= 6, `${topic} has ${lines[topic]?.length ?? 0} lines`);
   }
 });
@@ -30,7 +32,7 @@ test("Every line is a usable bubble with a face she can make", () => {
 test("Visits are pairs, Maomao first, with every other companion", () => {
   for (const id of COMPANION_IDS.filter((each) => each !== "maomao")) {
     const pairs = visit.with[id];
-    assert.ok(pairs?.length >= 5, `few visit lines with ${id}`);
+    assert.ok(pairs?.length >= 9, `few visit lines with ${id}`);
     pairs.forEach((pair, i) => {
       assert.equal(pair.length, 2, `${id}[${i}] is not a pair`);
       check(`${id}[${i}] mine`, pair[0]);

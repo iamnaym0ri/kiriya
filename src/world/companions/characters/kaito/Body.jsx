@@ -11,26 +11,33 @@ import "./kaito.css";
 // The drawing faces right (facing 1). Everything is transform/opacity animation in kaito.css, gated
 // by `playing` and by prefers-reduced-motion.
 
-const HAIR_LIGHT = "#7499ef";
+const HAIR_LIGHT = "#9cc4f2";
 const SKIN = "#ffe6d4";
 const SKIN_LINE = "#dfb39c";
 const COAT = "#fdfdff";
 const COAT_LINE = "#8c96c8";
-const TRIM = "#2a50c8";
+const TRIM = "#1466bc";
 const GOLD = "#f3c433";
 const GOLD_DARK = "#c4931c";
-const SCARF = "#3a62d6";
-const SCARF_DARK = "#2446ad";
-const SCARF_LIGHT = "#7fa1f0";
-const SHIRT = "#283150";
-const PANTS = "#4b5379";
-const BOOT = "#212c5e";
-const BOOT_BAND = "#6cc4ea";
+// Round 2, from Crypton's official costume sheet: the scarf's own blue (not violet), a navy shirt
+// that only shows below the belt, dusky violet-grey trousers, navy boots with a blue band.
+const SCARF = "#0069b6";
+const SCARF_DARK = "#003a7e";
+const SCARF_LIGHT = "#5c9ae0";
+const SCARF_FADE = "#6e9ccc";
+const SHIRT = "#232b4a";
+const PANTS = "#5e5a8e";
+const PANTS_SEAM = "#47436f";
+const BOOT = "#0f2f74";
+const BOOT_BAND = "#2e78c8";
+const ZIP = "#9aa6c8";
+const ZIP_PULL = "#7cc565";
 const INK = "#2b2f3d";
 
 // Poses every companion shares, then his own.
 export const SHARED_POSES = ["idle", "walk", "jump", "fall", "land", "sit", "wave", "react", "sleep", "held"];
-export const OWN_POSES = ["crouch", "icecream", "offer", "brainfreeze", "hum", "snuggle", "slip", "treat"];
+// Round 2 adds a sweeping stage bow (hand on his chest) and catching snowflakes, face up.
+export const OWN_POSES = ["crouch", "icecream", "offer", "brainfreeze", "hum", "snuggle", "slip", "treat", "bow", "snow"];
 export const POSES = [...SHARED_POSES, ...OWN_POSES];
 const POSE_ALIASES = { stand: "idle", picked: "held", dangle: "held", carried: "held", hop: "jump", eat: "icecream" };
 const SITTING = new Set(["sit", "sleep", "treat"]);
@@ -51,6 +58,8 @@ const POSE_FACE = {
   icecream: "lick",
   offer: "fond",
   brainfreeze: "brainfreeze",
+  bow: "proud",
+  snow: "joyful",
   hum: "happy",
   snuggle: "shy",
   slip: "surprised",
@@ -131,7 +140,7 @@ function ArmHand({ arm: [from, via, to], className, open = false, children }) {
  * A scarf tail as a ribbon in two pieces (so it can ripple): square-cut end with the gold corner
  * patch from his V3 design.
  */
-function Ribbon({ a, c1, b, c2, end, width, colour, stripe, className }) {
+function Ribbon({ a, c1, b, c2, end, width, colour, stripe, className, endColour = colour, endOpacity = 1 }) {
   const [dx, dy] = norm(end[0] - c2[0], end[1] - c2[1]);
   const [nx, ny] = [-dy, dx];
   const h = width / 2;
@@ -143,7 +152,7 @@ function Ribbon({ a, c1, b, c2, end, width, colour, stripe, className }) {
     <g className={`kaito__tail ${className}`}>
       <path d={`M${pt(a)}Q${pt(c1)} ${pt(b)}`} stroke={colour} strokeWidth={width} strokeLinecap="round" fill="none" />
       <g className="kaito__tail-end" style={{ transformOrigin: `${b[0]}px ${b[1]}px` }}>
-        <path d={`M${pt(b)}Q${pt(c2)} ${pt(end)}`} stroke={colour} strokeWidth={width} fill="none" />
+        <path d={`M${pt(b)}Q${pt(c2)} ${pt(end)}`} stroke={endColour} strokeWidth={width} fill="none" opacity={endOpacity} />
         <path d={`M${pt(b)}Q${pt(c2)} ${pt(end)}`} stroke={stripe} strokeWidth="1.3" strokeDasharray="2.5 3" fill="none" opacity=".9" />
         <path d={`M${pt(A)}L${pt(B)} ${pt(C)}Z`} fill={GOLD} stroke={GOLD_DARK} strokeWidth=".8" strokeLinejoin="round" />
       </g>
@@ -151,12 +160,27 @@ function Ribbon({ a, c1, b, c2, end, width, colour, stripe, className }) {
   );
 }
 
-/** The two scarf tails. Behind everything else; they hang in idle and stream out when he moves. */
-function Tails() {
+/** Poses where he is on the move: the scarf's tails stream out to one side behind him. */
+const STREAMING = new Set(["walk", "jump", "fall", "held", "slip", "crouch", "land"]);
+
+/**
+ * The two scarf tails, behind everything else. Standing, they hang down his back and one peeks out
+ * on each side of the coat down to its hem (the Nendoroid look), the lower third paler, as the
+ * official see-through scarf is; on the move they stream out behind him to one side.
+ */
+function Tails({ pose }) {
+  if (!STREAMING.has(pose)) {
+    return (
+      <g className="kaito__tails kaito__tails--hang">
+        <Ribbon className="kaito__tail--far" a={[70, 158]} c1={[57, 172]} b={[51, 188]} c2={[47, 200]} end={[46, 215]} width={10} colour={SCARF} stripe={SCARF_LIGHT} endColour={SCARF_FADE} endOpacity={0.8} />
+        <Ribbon className="kaito__tail--near" a={[130, 158]} c1={[143, 172]} b={[149, 188]} c2={[153, 200]} end={[154, 215]} width={10} colour={SCARF} stripe={SCARF_LIGHT} endColour={SCARF_FADE} endOpacity={0.8} />
+      </g>
+    );
+  }
   return (
     <g className="kaito__tails">
-      <Ribbon className="kaito__tail--far" a={[74, 161]} c1={[62, 172]} b={[54, 186]} c2={[48, 197]} end={[43, 208]} width={10.5} colour="#5c82e6" stripe="#b3c8f8" />
-      <Ribbon className="kaito__tail--near" a={[78, 160]} c1={[71, 178]} b={[67, 195]} c2={[64, 207]} end={[63, 220]} width={11.5} colour={SCARF} stripe={SCARF_LIGHT} />
+      <Ribbon className="kaito__tail--far" a={[74, 161]} c1={[62, 172]} b={[54, 186]} c2={[48, 197]} end={[43, 208]} width={10.5} colour="#2f7fc6" stripe="#b3d0f2" endColour={SCARF_FADE} endOpacity={0.75} />
+      <Ribbon className="kaito__tail--near" a={[78, 160]} c1={[71, 178]} b={[67, 195]} c2={[64, 207]} end={[63, 220]} width={11.5} colour={SCARF} stripe={SCARF_LIGHT} endColour={SCARF_FADE} endOpacity={0.8} />
     </g>
   );
 }
@@ -164,8 +188,9 @@ function Tails() {
 const BACK_HAIR =
   "M42 122C30 78 52 34 98 28C146 24 172 66 160 120L166 146 150 136 146 156 134 140H66L54 156 50 136 34 146Z";
 // The locks that flare out on his right (the viewer's left): the silhouette's signature bump.
+// Round 2: two straight points at temple-to-ear height, not three hooks.
 const FLICK =
-  "M60 48C46 38 31 39 17 47 30 50 38 57 45 68ZM47 68C35 63 24 68 15 79 27 78 35 82 42 89ZM42 91C34 90 28 95 24 104 30 102 37 103 42 108Z";
+  "M57 70C47 64 34 64 20 70 32 73 40 79 45 88ZM47 92C38 89 29 91 21 98 31 99 38 103 43 110Z";
 // The fringe: broad locks sweeping a touch to his right, a long one falling between the eyes, side
 // locks down to the jaw.
 const FRINGE =
@@ -178,16 +203,16 @@ function Boots({ sitting }) {
     return (
       <g className="kaito__legs kaito__legs--sit">
         {/* Knees towards her, peeking from under the coat. */}
-        <ellipse cx="91" cy="225" rx="7.5" ry="5.5" fill={PANTS} stroke="#3a4166" strokeWidth=".8" />
-        <ellipse cx="109" cy="225" rx="7.5" ry="5.5" fill={PANTS} stroke="#3a4166" strokeWidth=".8" />
+        <ellipse cx="91" cy="225" rx="7.5" ry="5.5" fill={PANTS} stroke={PANTS_SEAM} strokeWidth=".8" />
+        <ellipse cx="109" cy="225" rx="7.5" ry="5.5" fill={PANTS} stroke={PANTS_SEAM} strokeWidth=".8" />
         <g className="kaito__boot kaito__boot--l" style={{ transformOrigin: "91px 232px" }}>
           <path d="M87 222H99L98 240H86Z" fill={PANTS} />
-          <path d="M85 236H97V254Q97 261 90 261H84Q79 261 81 256L85 252Z" fill={BOOT} stroke="#141c40" strokeWidth=".9" />
+          <path d="M85 236H97V254Q97 261 90 261H84Q79 261 81 256L85 252Z" fill={BOOT} stroke="#0a1f4f" strokeWidth=".9" />
           <path d="M85 239H97" stroke={BOOT_BAND} strokeWidth="2.6" />
         </g>
         <g className="kaito__boot kaito__boot--r" style={{ transformOrigin: "109px 232px" }}>
           <path d="M101 222H113L114 240H102Z" fill={PANTS} />
-          <path d="M103 236H115V252L119 256Q121 261 116 261H110Q103 261 103 254Z" fill={BOOT} stroke="#141c40" strokeWidth=".9" />
+          <path d="M103 236H115V252L119 256Q121 261 116 261H110Q103 261 103 254Z" fill={BOOT} stroke="#0a1f4f" strokeWidth=".9" />
           <path d="M103 239H115" stroke={BOOT_BAND} strokeWidth="2.6" />
         </g>
       </g>
@@ -195,17 +220,18 @@ function Boots({ sitting }) {
   }
   return (
     <g className="kaito__legs">
+      {/* Knee-high navy boots under the coat, with the blue turned-down band. */}
       <g className="kaito__boot kaito__boot--l" style={{ transformOrigin: "91px 208px" }}>
-        <path d="M89 194H99L98 210H86Z" fill={PANTS} />
-        <path d="M85 206H97V224Q97 231 90 231H84Q79 231 81 226L85 222Z" fill={BOOT} stroke="#141c40" strokeWidth=".9" />
-        <path d="M85 209H97" stroke={BOOT_BAND} strokeWidth="2.6" />
-        <path d="M88 214v8" stroke="#3c4a8a" strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M89 194H99L98 206H86Z" fill={PANTS} />
+        <path d="M84.6 201H97.4V224Q97 231 90 231H84Q79 231 81 226L85 222Z" fill={BOOT} stroke="#0a1f4f" strokeWidth=".9" />
+        <path d="M84.2 202.6H97.8" stroke={BOOT_BAND} strokeWidth="3.4" />
+        <path d="M88 209v13" stroke="#2c4a92" strokeWidth="1.6" strokeLinecap="round" />
       </g>
       <g className="kaito__boot kaito__boot--r" style={{ transformOrigin: "109px 208px" }}>
-        <path d="M101 194H111L114 210H102Z" fill={PANTS} />
-        <path d="M103 206H115V222L119 226Q121 231 116 231H110Q103 231 103 224Z" fill={BOOT} stroke="#141c40" strokeWidth=".9" />
-        <path d="M103 209H115" stroke={BOOT_BAND} strokeWidth="2.6" />
-        <path d="M106 214v8" stroke="#3c4a8a" strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M101 194H111L114 206H102Z" fill={PANTS} />
+        <path d="M102.6 201H115.4V222L119 226Q121 231 116 231H110Q103 231 103 224Z" fill={BOOT} stroke="#0a1f4f" strokeWidth=".9" />
+        <path d="M102.2 202.6H115.8" stroke={BOOT_BAND} strokeWidth="3.4" />
+        <path d="M106 209v13" stroke="#2c4a92" strokeWidth="1.6" strokeLinecap="round" />
       </g>
     </g>
   );
@@ -214,26 +240,31 @@ function Boots({ sitting }) {
 function Coat({ id }) {
   return (
     <g className="kaito__coat">
-      {/* What shows through the open front: navy shirt, belt, trousers. */}
-      <path d="M95 160H105L111 194H89Z" fill={SHIRT} />
+      {/* Below the belt, where the coat opens into an upside-down V: navy shirt, belt, trousers. */}
+      <path d="M95 180H105L113 196H87Z" fill={SHIRT} />
       <path d="M88.5 190H111.5V195.5H88.5Z" fill="#1b2034" />
       <rect x="96.4" y="190.4" width="7.2" height="4.8" rx="1.1" fill="#eef4f8" stroke="#94a9bd" strokeWidth=".6" />
       <path d="M98.4 192.8h3.2" stroke="#3cc6b0" strokeWidth="1.4" strokeLinecap="round" />
-      <path d="M89 195.5H111L113.5 208H86.5Z" fill={PANTS} />
-      <path d="M100 196v11" stroke="#3a4166" strokeWidth="1" />
-      {/* The coat: two flared halves, blue edging, a few gold triangles. */}
+      <path d="M88 195.5H112L115 210H85Z" fill={PANTS} />
+      <path d="M100 196v13" stroke={PANTS_SEAM} strokeWidth="1" />
+      {/* The coat, zipped white right up to the scarf, opening below the belt; blue edging, gold. */}
       <g className="kaito__coat-halves">
-        <path d="M90 158Q74 159 67 170Q59 190 51 214Q66 223 85 219Q90 190 97 163Z" fill={`url(#${id}-coat)`} stroke={COAT_LINE} strokeWidth="1.3" strokeLinejoin="round" />
-        <path d="M110 158Q126 159 133 170Q141 190 149 214Q134 223 115 219Q110 190 103 163Z" fill={`url(#${id}-coat)`} stroke={COAT_LINE} strokeWidth="1.3" strokeLinejoin="round" />
+        <path d="M90 158Q74 159 67 170Q59 190 51 214Q66 223 84 220L100.6 184V158Z" fill={`url(#${id}-coat)`} stroke={COAT_LINE} strokeWidth="1.3" strokeLinejoin="round" />
+        <path d="M110 158Q126 159 133 170Q141 190 149 214Q134 223 116 220L99.4 184V158Z" fill={`url(#${id}-coat)`} stroke={COAT_LINE} strokeWidth="1.3" strokeLinejoin="round" />
         <path d="M57 202Q62 188 68 178M143 202Q138 188 132 178" stroke="#dfe4f5" strokeWidth="5" strokeLinecap="round" fill="none" />
-        <path d="M85 219Q90 190 97 163M115 219Q110 190 103 163" stroke={TRIM} strokeWidth="3" strokeLinecap="round" fill="none" />
+        <path d="M84 220 100 184M116 220 100 184" stroke={TRIM} strokeWidth="3" strokeLinecap="round" fill="none" />
+        <path d="M98.4 162V184M101.6 162V184" stroke={TRIM} strokeWidth="2" strokeLinecap="round" />
+        <path d="M100 162V184" stroke={ZIP} strokeWidth="1.1" strokeDasharray="1.4 1.2" />
+        <rect className="kaito__zip" x="98.6" y="172.4" width="2.8" height="5.6" rx="1.2" fill={ZIP_PULL} stroke="#4f8f45" strokeWidth=".6" />
         <path d="M51.6 214.6Q66 223 85 219M148.4 214.6Q134 223 115 219" stroke={TRIM} strokeWidth="4.6" strokeLinecap="round" fill="none" />
         <path d="M54 210.4Q67 217.6 85.6 214.6M146 210.4Q133 217.6 114.4 214.6" stroke="#c9d8ff" strokeWidth="1" fill="none" />
         <path d="M91 163Q82 171 73 184M109 163Q118 171 127 184" stroke={TRIM} strokeWidth="2.3" strokeLinecap="round" fill="none" />
         <path d="M108 174h9v3.4h-9Z" fill={TRIM} />
         <g fill={GOLD} stroke={GOLD_DARK} strokeWidth=".7" strokeLinejoin="round">
           <path d="M71 197h8l-4 4.4ZM121 197h8l-4 4.4Z" />
-          <path d="M80.4 216.8 88.2 218.6 83.6 224.6ZM119.6 216.8 111.8 218.6 116.4 224.6Z" />
+          {/* Small pentagon tabs at the inner hem corners, and one triangle by his left shoulder. */}
+          <path d="M82.4 217.6l5.2 1.4.6 4.4-3.4 2.8-3.4-2.6ZM117.6 217.6l-5.2 1.4-.6 4.4 3.4 2.8 3.4-2.6Z" fill="#f2d35b" stroke="#b8962a" />
+          <path d="M124 166.6l7 1.6-4.6 4.6Z" />
         </g>
       </g>
     </g>
@@ -245,9 +276,9 @@ function Headset() {
     <g className="kaito__headset">
       <path d="M152.4 123.6Q148 137 132.4 139.4" stroke={INK} strokeWidth="2.3" strokeLinecap="round" fill="none" />
       <ellipse cx="130.6" cy="139.6" rx="3.4" ry="2.5" fill={INK} />
-      <circle cx="157" cy="117" r="8.6" fill={GOLD} stroke={GOLD_DARK} strokeWidth="1.3" />
-      <circle cx="157" cy="117" r="4.6" fill={INK} />
-      <circle cx="157" cy="117" r="1.5" fill={GOLD} />
+      <circle cx="157" cy="117" r="8.6" fill="#f2c94c" stroke={GOLD_DARK} strokeWidth="1.3" />
+      <circle cx="157" cy="117" r="4.6" fill="#22252e" />
+      <circle cx="157" cy="117" r="1.5" fill="#f2c94c" />
       <path d="M151.2 112.4q2.6-3.4 6.6-3.6" stroke="#fff3c4" strokeWidth="1.5" strokeLinecap="round" fill="none" />
     </g>
   );
@@ -257,17 +288,17 @@ function Headset() {
 function ScarfRoll() {
   return (
     <g className="kaito__scarf">
+      {/* A fat roll high under his chin with one diagonal fold (round 2: no side knot). */}
       <path
-        d="M63 152Q100 166 137 152Q144 159 142 169Q100 189 58 169Q56 159 63 152Z"
+        d="M63 149Q100 162 137 149Q145 157 142 167Q100 183 58 167Q55 157 63 149Z"
         fill={SCARF}
         stroke={SCARF_DARK}
         strokeWidth="1.3"
         strokeLinejoin="round"
       />
-      <path d="M67 162Q100 176 133 162" stroke={SCARF_LIGHT} strokeWidth="2.4" strokeLinecap="round" fill="none" opacity=".8" />
-      <path d="M78 172q-7-1-11-6m59 6q7-1 11-6M96 179q4 1 9 0" stroke={SCARF_DARK} strokeWidth="1.2" strokeLinecap="round" fill="none" />
-      <path d="M61 159Q53 166 59 175Q69 179 77 171Q75 161 61 159Z" fill={SCARF} stroke={SCARF_DARK} strokeWidth="1.2" />
-      <path d="M62 165q5 2 10 1" stroke={SCARF_LIGHT} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <path d="M67 157Q100 170 133 157" stroke={SCARF_LIGHT} strokeWidth="2.6" strokeLinecap="round" fill="none" opacity=".75" />
+      <path d="M72 152Q98 171 136 163" stroke={SCARF_DARK} strokeWidth="1.4" strokeLinecap="round" fill="none" opacity=".75" />
+      <path d="M78 170q-7-1-11-5m59 5q7-1 11-5" stroke={SCARF_DARK} strokeWidth="1.1" strokeLinecap="round" fill="none" opacity=".7" />
     </g>
   );
 }
@@ -310,6 +341,8 @@ const ARMS = {
   scarf: [[[77, 170], [66, 166], [84, 152]], [[123, 170], [134, 166], [116, 152]]],
   windmill: [[[77, 169], [57, 158], [50, 138]], [[123, 170], [144, 175], [157, 160]]],
   treat: [[[77, 170], [72, 190], [86, 198]], [[123, 170], [146, 184], [121, 168]]],
+  chest: [[[77, 170], [80, 186], [94, 177]], [[123, 170], [143, 182], [152, 194]]],
+  palms: [[[77, 170], [58, 178], [52, 166]], [[123, 170], [142, 178], [148, 166]]],
 };
 const POSE_ARMS = {
   idle: "rest",
@@ -330,6 +363,8 @@ const POSE_ARMS = {
   snuggle: "scarf",
   slip: "windmill",
   treat: "treat",
+  bow: "chest",
+  snow: "palms",
 };
 const armsFor = (pose) => ARMS[POSE_ARMS[pose] ?? "rest"];
 
@@ -343,9 +378,13 @@ function Sleeves({ pose }) {
   );
 }
 
+/** Poses that draw their own ice cream (or need both hands); others hold the engine's `prop`. */
+const OWN_TREAT = new Set(["icecream", "offer", "brainfreeze", "treat", "snuggle", "sleep", "held", "slip"]);
+
 /** Hands and whatever they're holding: always in front of the scarf. */
-function Hands({ pose }) {
+function Hands({ pose, prop }) {
   const [l, r] = armsFor(pose);
+  const carried = prop === "icecream" && !OWN_TREAT.has(pose) ? handPoint(r[1], r[2]) : null;
   if (pose === "offer") {
     return (
       <g className="kaito__hands">
@@ -365,6 +404,7 @@ function Hands({ pose }) {
         {pose === "icecream" && <IceCone x={122} y={170} flavour="soda" />}
         {pose === "brainfreeze" && <IceCone x={142} y={203} flavour="soda" />}
         {pose === "treat" && <Spoon x={118} y={159} angle={-24} />}
+        {carried && <IceCone x={carried[0]} y={carried[1] - 1} flavour="soda" />}
       </ArmHand>
     </g>
   );
@@ -415,6 +455,22 @@ function Effects({ pose, expression, facing }) {
           <path d={`M${fx(174)} 84v8m-4-4h8`} />
         </g>
       )}
+      {pose === "snow" && (
+        <g className="kaito__snow" fill="#ffffff" stroke="#a9cdf0" strokeWidth=".8">
+          {[
+            [70, 40, 3.2],
+            [128, 30, 2.6],
+            [100, 22, 3.6],
+            [150, 52, 2.2],
+            [52, 60, 2.4],
+          ].map(([x, y, r], i) => (
+            <g key={x} className={`kaito__flake kaito__flake--${i + 1}`}>
+              <circle cx={x} cy={y} r={r} />
+              <path d={`M${x - r * 1.5} ${y}h${r * 3}M${x} ${y - r * 1.5}v${r * 3}`} stroke="#d5e8fb" strokeWidth=".9" />
+            </g>
+          ))}
+        </g>
+      )}
       {pose === "offer" && (
         <path
           className="kaito__heart"
@@ -437,14 +493,15 @@ function Effects({ pose, expression, facing }) {
 function Defs({ id }) {
   return (
     <defs>
+      {/* Round 2: azure royal blue (official #005CAD family), not violet. */}
       <linearGradient id={`${id}-hair`} x1="0" y1="0" x2=".3" y2="1">
-        <stop stopColor="#4a70e0" />
-        <stop offset=".55" stopColor="#2c52c4" />
-        <stop offset="1" stopColor="#1d388f" />
+        <stop stopColor="#3d7fd4" />
+        <stop offset=".55" stopColor="#1458b0" />
+        <stop offset="1" stopColor="#0a3c82" />
       </linearGradient>
       <linearGradient id={`${id}-hair-back`} x1="0" y1="0" x2="0" y2="1">
-        <stop stopColor="#2a4cb8" />
-        <stop offset="1" stopColor="#172d7a" />
+        <stop stopColor="#0e4a9a" />
+        <stop offset="1" stopColor="#072e66" />
       </linearGradient>
       <radialGradient id={`${id}-skin`} cx=".45" cy=".38" r=".7">
         <stop offset=".4" stopColor="#ffeada" />
@@ -471,7 +528,7 @@ function Defs({ id }) {
 }
 
 /** The whole figure, facing right, in the 200×236 box. Shared by the body and the portrait. */
-export function Figure({ id, pose, face, motion }) {
+export function Figure({ id, pose, face, motion, prop = null }) {
   const sitting = SITTING.has(pose);
   return (
     <g className="kaito__root">
@@ -479,7 +536,7 @@ export function Figure({ id, pose, face, motion }) {
         <g className="kaito__float">
           <Boots sitting={sitting} />
           <g className="kaito__upper">
-            <Tails />
+            <Tails pose={pose} />
             <g className="kaito__head kaito__head--back">
               <path d={BACK_HAIR} fill={`url(#${id}-hair-back)`} />
               <path className="kaito__flick" d={FLICK} fill={`url(#${id}-hair-back)`} />
@@ -491,11 +548,13 @@ export function Figure({ id, pose, face, motion }) {
               <path d={FRINGE} transform="translate(1 4)" fill="#5a4c95" opacity=".16" clipPath={`url(#${id}-face)`} />
               <KaitoFace expression={face} moving={motion} />
               <path d={FACE} fill={`url(#${id}-rim)`} />
+              {/* The earpiece sits under his side lock (worn, not an earring). */}
+              <Headset />
               <path d={FRINGE} fill={`url(#${id}-hair)`} />
               {/* Lock partings, then a broken shine ring across the crown. */}
               <path
                 d="M76 88C79 74 84 62 92 52M95 87C98 72 100 60 103 48M111 86C114 74 118 64 124 56M129 88C133 80 138 72 144 68M56 97C56 84 60 74 66 66"
-                stroke="#1c3690"
+                stroke="#08306e"
                 strokeWidth="1.3"
                 strokeLinecap="round"
                 fill="none"
@@ -503,7 +562,7 @@ export function Figure({ id, pose, face, motion }) {
               />
               <path
                 d="M60 70Q66 58 77 52M85 47Q95 43 104 44M112 45Q124 47 133 55M140 62Q145 68 148 76"
-                stroke="#b5caff"
+                stroke="#9cc4f2"
                 strokeWidth="3.4"
                 strokeLinecap="round"
                 fill="none"
@@ -511,12 +570,11 @@ export function Figure({ id, pose, face, motion }) {
               />
               <path d="M52 114q-1 13 1 22M149 110q1 13-1 22" stroke={HAIR_LIGHT} strokeWidth="1.8" strokeLinecap="round" fill="none" opacity=".7" />
               <KaitoBrows expression={face} moving={motion} />
-              <Headset />
               {(pose === "snuggle" || pose === "sleep") && <ScarfUp />}
             </g>
             <Sleeves pose={pose} />
             <ScarfRoll />
-            <Hands pose={pose} />
+            <Hands pose={pose} prop={prop} />
           </g>
         </g>
       </g>
@@ -526,7 +584,7 @@ export function Figure({ id, pose, face, motion }) {
 
 export const useReducedMotion = () => useSyncExternalStore(subscribeReducedMotion, readReducedMotion, () => true);
 
-function KaitoBody({ pose = "idle", expression, facing = 1, playing = true, talking = false }) {
+function KaitoBody({ pose = "idle", expression, facing = 1, playing = true, talking = false, prop = null }) {
   const id = useId();
   const reduced = useReducedMotion();
   const p = POSES.includes(pose) ? pose : POSE_ALIASES[pose] ?? "idle";
@@ -544,7 +602,7 @@ function KaitoBody({ pose = "idle", expression, facing = 1, playing = true, talk
       <svg viewBox="0 0 200 236" className="kaito__svg" overflow="visible">
         <Defs id={id} />
         <ellipse className="kaito__ground" cx="100" cy="231" rx="42" ry="6.5" fill={`url(#${id}-ground)`} />
-        <Figure id={id} pose={p} face={face} motion={motion} />
+        <Figure id={id} pose={p} face={face} motion={motion} prop={prop} />
         <Effects pose={p} expression={face} facing={facing} />
       </svg>
     </div>

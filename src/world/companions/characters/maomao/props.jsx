@@ -102,3 +102,69 @@ export function Mushroom() {
     </g>
   );
 }
+
+/**
+ * A small stoppered vial, held in her fingers (the tap menu's "show her a vial"). Its base sits at
+ * the origin; it is 19 wide and 31 tall.
+ */
+export function SmallVial({ transform, className = "mm-small-vial" }) {
+  return (
+    <g transform={transform} className={className}>
+      <rect x="-4.5" y="-31" width="9" height="6" rx="1.6" fill={WOOD} stroke="#8d7150" strokeWidth=".9" />
+      <path d="M-3.8-25.5h7.6v5.5q6 3 6 9.5v7.5q0 3.5-3.5 3.5H-6.7q-3.5 0-3.5-3.5V-10.5q0-6.5 6.4-9.5Z" fill={GLASS} stroke={GLASS_EDGE} strokeWidth="1.5" />
+      <path d="M-9.2-7h18.4v3.5q0 3-3 3H-6.2q-3 0-3-3Z" fill="#8fb7a8" opacity=".9" />
+      <path d="M-9.2-7q9.2 2.4 18.4 0" stroke="#bfe0cf" strokeWidth="1" fill="none" />
+      <path d="M-6.4-12.5q0-3.6 3-5.2" stroke="#fff" strokeWidth="1.4" fill="none" opacity=".75" strokeLinecap="round" />
+    </g>
+  );
+}
+
+/** Her coin pouch: soft leather, tied at the neck. Its bottom centre is at the origin. */
+export function Pouch({ transform }) {
+  return (
+    <g transform={transform} className="mm-pouch">
+      <path d="M-6-19q-9 5-8 13 1 7 14 7T14-6q1-8-8-13Z" fill="#c9a46a" stroke="#8d6c3f" strokeWidth="1.4" />
+      <path d="M-7-19q7 3 14 0" stroke="#8d6c3f" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M-2-20l-4-5m8 5 4-5" stroke="#8d6c3f" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M-8-8q2 5 7 6" stroke="#e0c48f" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+    </g>
+  );
+}
+
+/** One coin: a disc with a square hole, as the palace's were. */
+export function Coin({ cx, cy, r = 3.6, className }) {
+  return (
+    <g className={className}>
+      <circle cx={cx} cy={cy} r={r} fill="#e7c25a" stroke="#a9832a" strokeWidth=".9" />
+      <rect x={cx - r * 0.28} y={cy - r * 0.28} width={r * 0.56} height={r * 0.56} fill="#a9832a" />
+    </g>
+  );
+}
+
+/** A bundle of herbs hung upside down to dry, tied at the stems; the knot is at the origin. */
+export function HerbBundle({ transform }) {
+  return (
+    <g transform={transform} className="mm-bundle">
+      <path d="M-2 0l-6 24M0 0v28m2-28 6 24" stroke={LEAF_DARK} strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      <g fill={LEAF} stroke={LEAF_DARK} strokeWidth="1.1">
+        <ellipse cx="-8" cy="14" rx="4" ry="6.5" transform="rotate(20 -8 14)" />
+        <ellipse cx="-9" cy="24" rx="3.6" ry="6" transform="rotate(14 -9 24)" />
+        <ellipse cx="0" cy="20" rx="3.8" ry="6.5" />
+        <ellipse cx="1" cy="31" rx="3.2" ry="5.4" />
+        <ellipse cx="8" cy="15" rx="4" ry="6.5" transform="rotate(-20 8 15)" />
+        <ellipse cx="9" cy="25" rx="3.6" ry="6" transform="rotate(-14 9 25)" />
+      </g>
+      <path d="M-5 2h10" stroke="#c9a46a" strokeWidth="3.4" strokeLinecap="round" />
+      <path d="M3 2q4 6 2 11" stroke="#c9a46a" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+    </g>
+  );
+}
+
+/** The tap menu's chip icon: the same vial, small. */
+export function VialIcon({ size = 22 }) {
+  return (
+    <svg viewBox="-12 -34 24 38" width={size} height={size} aria-hidden="true" focusable="false">
+      <SmallVial className="mm-vial-icon" />
+    </svg>
+  );
+}

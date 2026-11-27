@@ -28,10 +28,11 @@ keeps `src/world/mascot/MaomaoCompanion.jsx`). This file is the contract between
   prefers ones that don't cover text, pictures or buttons. When home stops scrolling and it is
   standing over something she might want to read or tap, it moves somewhere clearer. Pages can mark
   things with `data-companion-avoid` (never stand here) or `data-companion-ok` (fine to cover).
-- **Touch**: a tap → `react` pose and a `tapped` line (three quick taps → `pester` if it has one).
-  Hold still ~0.4 s or start dragging → picked up by the scruff (`held` pose, a `picked` line),
-  swinging as it is carried. Let go → it falls (with a little of the throw) to the nearest level
-  below, lands on a fresh cloud, says a `putDown` line and carries on.
+- **Touch**: a tap → `react` pose and a `tapped` line (three quick taps → `pester` if it has one),
+  and the **tap menu** (see "The tap menu and stay"). Hold still ~0.4 s or start dragging →
+  picked up by the scruff (`held` pose, a `picked` line), swinging as it is carried. Let go → it
+  falls (with a little of the throw) to the nearest level below, lands on a fresh cloud, says a
+  `putDown` line and carries on. Told to stay, it drops straight down instead, and stays there.
 - **Visits**: once she has been on home a while (25–80 s), with a 35% chance and at most one visit
   per 20 minutes, another character arrives from the side with more room, they trade lines, the
   visitor waves and leaves the way it came. Never more than two on screen.
@@ -62,13 +63,14 @@ export default {
   behaviours: [ ... ],               // see "Behaviours"
   lines: { ... },                    // see "Lines"
   visit: { with: { ... } },          // see "Visits"
+  action: { ... },                   // see "The tap menu and stay" (optional, but every character has one)
   Thumb,                             // small portrait for her settings picker (not used by the engine)
 };
 ```
 
 ### Body
 
-`({ pose, expression, facing, playing, frame, talking }) => <svg …/>`
+`({ pose, expression, facing, playing, frame, talking, prop }) => <svg …/>`
 
 - Fill the box: the engine renders it in a box of exactly `size × scale` CSS px (about 0.9 on a
   414 pt phone, 0.8 at 375 pt) and scales it about the feet. Make the root `width: 100%;
@@ -88,6 +90,10 @@ export default {
 - `playing`: false in quiet mode, reduced motion and while paused. Stop every CSS animation then
   (e.g. gate them on a `data-playing` attribute).
 - `talking`: true while its bubble shows (a mouth that moves, if you like).
+- `prop`: a string or `null`: what it holds right now, from the running action step or behaviour
+  (`prop` on either; see "Steps"). Draw it in its hand (Rotten Girl's paddle, Miku's leek,
+  KAITO's ice cream); unknown props draw nothing. It is `null` while held. You may also hold
+  things in your own poses by your own means; `prop` is for the engine to ask for one.
 - `frame`: Motion values the engine updates without re-rendering you: `frame.time` (s),
   `frame.stride` (px walked so far, for syncing steps), `frame.speed` (px/s along the level),
   `frame.vy` (px/s, negative going up). Use them with `motion` components and `useTransform`, or
@@ -145,7 +151,7 @@ All optional; defaults in brackets. Distances are CSS px at scale 1.
 | `heldAt` [0.9] | where it is held when picked up, as a share of its height from the feet (the scruff) |
 | `sway` [1] | 0..2, how much it swings while carried |
 | `talkiness` [0.45] | 0..1, chance it says something as it starts a behaviour |
-| `expressions` [{}] | expressions for engine moments: `{ tapped, picked, putDown, walk, jump }` |
+| `expressions` [{}] | expressions for engine moments: `{ tapped, picked, putDown, walk, jump, stay, wander }` |
 
 ### Behaviours
 
@@ -170,6 +176,36 @@ twice in a row is less likely), maybe moves first, does it, then settles in `res
 | `roamPose` [walkPose], `roamSpeed` [1] | the pose and speed multiplier while roaming |
 | `hours` | `[from, to]` local hours when it can happen, e.g. `[22, 7]` for sleeping |
 | `quiet` [true] | false: never in quiet mode |
+| `prop` | a prop `Body` gets while it lasts (see "Steps") |
+| `bounce` | little hops on the spot as it starts: a count, or `{ count, height, every }` (see "Steps") |
+| `steps` | a little sequence instead of one pose: `[{ pose, prop, expression, seconds, topic, bounce, turn, chance }]` |
+
+Told to stay, it only picks behaviours **without `roam` or `level`**, and never moves first, so
+give it at least three of those (a dance or fidget, a humming or pondering moment, something of
+its own). With none, it just rests in `restPose`.
+
+### Steps
+
+Actions and behaviours can be a sequence of steps, played in order. Each step:
+
+| field | meaning |
+| --- | --- |
+| `pose` | the pose (default: the action's or behaviour's `pose`) |
+| `prop` | the prop (default: the action's or behaviour's; `null` puts it away) |
+| `expression` | the expression (default: the action's or behaviour's) |
+| `seconds` | `[min, max]` or one number (default: the action's or behaviour's `seconds`) |
+| `topic` | a line topic said as the step starts. In an action it is said to her (a solid bubble, always); in a behaviour it is an aside, with the behaviour's `say` chance |
+| `bounce` | hops on the spot: `2`, or `{ count, height: 9, every: 0.36 }` (px at scale 1, seconds per hop). The feet leave the cloud and come back with a little squash; none in quiet mode |
+| `turn` | `true`: turns to face the other way as the step starts (looking round) |
+| `chance` | 0..1: the step only plays that often (default 1), e.g. a brain freeze one time in three |
+
+```js
+{ id: "routine", weight: 2, steps: [
+  { pose: "hum", seconds: [2, 3], topic: "humming" },
+  { pose: "dance", seconds: 1.4, bounce: 3 },
+  { pose: "wave", seconds: 1, turn: true },
+] }
+```
 
 ### Lines
 
@@ -187,7 +223,10 @@ it has been heard.
 | `picked`, `putDown` | picked up; landed after being put down |
 | `visit` | a visit with nobody in `visit.with`: the visitor's hello and the host's answer |
 | `bye` | optional: the visitor's goodbye as it leaves |
-| any own topic | named by a behaviour's `topic` |
+| `action` | the tap menu's own choice, as it starts (default topic of `action`) |
+| `stay`, `wander` | told to stay; let go again |
+| `stayIdle` | optional: thinking aloud while staying (now and then instead of a behaviour's topic; falls back to `idle`) |
+| any own topic | named by a behaviour's or a step's `topic` |
 
 Unprompted lines are at least 14 s apart (21 s in quiet mode). A bubble stays up for 2.6–8 s
 depending on length, always fully on screen (above the head, or beside it near the top).
@@ -209,6 +248,44 @@ visit: {
 A pair lives in the file of whoever speaks first. When B visits A, the engine picks at random
 among A's `with.B` pairs and B's `with.A` pairs (longer exchanges alternate the same way). The
 first line comes with a `wave`. With none written, it uses `any`, then each one's `visit` lines.
+
+## The tap menu and stay
+
+A tap on her character (the host; a visitor only answers) opens a small frosted menu beside it with
+two 44 pt chips: its own **action** (`[icon label]`) and **📍 stay** (while staying: **🌸 wander**).
+A character without an `action` gets the stay chip alone.
+
+```js
+action: {
+  id: "vial",                    // unique within the character
+  label: "show her a vial",      // the chip's words: lowercase, at most ~20 characters
+  icon: "🧪",                    // one emoji, or a tiny component ({ size }) drawn in the chip
+  pose: "inspect",               // a pose from `poses`, held while it plays
+  prop: "vial",                  // optional: Body gets prop="vial" while it plays
+  expression: "curious",         // optional
+  seconds: [3, 5],               // how long it lasts (each step's default)
+  topic: "action",               // the lines topic said as it starts (default "action")
+  steps: [ /* optional: { pose, prop, expression, seconds, topic, bounce, turn }, see "Steps" */ ],
+}
+```
+
+- **The menu**: it waits (looking at her, in `restPose`) while the menu is open; it never covers
+  the status bar, the top bars or the tab bar, and keeps clear of its bubble: a column beside it
+  where there is room, else a row under its cloud or over its head. A tap elsewhere, a scroll, a
+  drag, leaving home or 5 s of nothing closes it; Escape too. Enter or Space on the focused body
+  opens it with the first chip focused. Visits wait until it closes.
+- **The action**: a solid line from its `topic` (or the first step's), then each step's pose, prop
+  and expression in turn, then back to its day. It plays where it stands, staying or not.
+- **Stay**: a `stay` line (and the `stay` expression), and from then on it doesn't travel: no
+  walks, hops between levels, floats, roaming, "somewhere clearer" moves, or making room for a
+  visitor (visitors still come and go, as close as there is room for). It keeps doing everything it
+  can do in place (behaviours without `roam` or `level`). Picked up and dropped, it falls straight
+  down (no throw) to the level below where she let go, and that is its spot now.
+- **Kept on this phone**: `localStorage["kiriya:companion-stay"] = { [id]: { x, level } }` (`x` the
+  share of the band's width, `level` counted from the bottom), so next time home opens it is on its
+  spot (the same level, or the top one if there are fewer; the same share of the width). Resizing
+  or turning the phone puts it back on its spot too.
+- **Wander**: a `wander` line (and expression), a happy little bounce, and it is free again.
 
 ## Stage options
 
@@ -237,6 +314,13 @@ frame-time readout (average, p95, max frame gap, long frames over 34 ms, the eng
 frame). Tap "lab ▾" for controls: character, visitor, a pose gallery (every pose on its cloud with
 the feet line marked, and the three platform states), what's behind (home, text cards, plain),
 levels, speed, scale, quiet/lively, show levels, avoid text, hold a pose, run a behaviour, say a
-topic, visit now, jump, walk to an edge, tap, drop in. The same settings work as query options
-(`levels`, `speed`, `scale`, `quiet=1|0`, `debug=1`, `bg=home|text|plain`, `tab=poses`, `open=1`),
-and `window.__companionStage` is the running engine for scripts.
+topic, visit now, jump, walk to an edge, tap (opens the menu), its action, stay, wander, close the
+menu, drop in. The pose gallery also shows each action step with its prop, and every behaviour
+prop. The readout starts with 📍 while it is staying. The same settings work as query options
+(`levels`, `speed`, `scale`, `quiet=1|0`, `debug=1`, `bg=home|text|plain`, `tab=poses`, `open=1`,
+and the one-shot `stay=1|0`: start staying at the bottom middle, or wandering), and
+`window.__companionStage` is the running engine for scripts (`host.tap()`, `host.choose("action" |
+"stay" | "wander")`, `host.runAction()`, `host.setStay(on)`, `host.closeMenu()`).
+
+Engine tests: `node --test scripts/test-companion-engine.mjs` (the menu, actions, steps, stay and
+its storage, without a browser). On touch: `.lab/menu.mjs` in the stage agent's worktree.

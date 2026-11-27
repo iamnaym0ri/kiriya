@@ -9,7 +9,7 @@ import "./MaomaoMascot.css";
 // docs/redesign/MAOMAO-CHARACTER-RESEARCH.md. Cat features are brief comic reactions.
 const HAIR = "#214844",
   HAIR_LIGHT = "#3c776b",
-  SKIN = "#ffe6d4";
+  SKIN = "#fde0c4";
 const ROBE = "#7daf80",
   ROBE_DARK = "#52826a",
   SKIRT = "#793d59";
@@ -89,8 +89,8 @@ export function MaomaoDefs({ id }) {
         <stop offset="1" stopColor="#1b3d3b" />
       </linearGradient>
       <radialGradient id={`${id}-skin`} cx=".45" cy=".38" r=".7">
-        <stop offset=".4" stopColor="#ffeada" />
-        <stop offset="1" stopColor="#f2cdb8" />
+        <stop offset=".4" stopColor="#fee5cd" />
+        <stop offset="1" stopColor="#f0c8a9" />
       </radialGradient>
       {/* A cool rim down the right edge and a warm sheen across the hair: the two cheapest
           things that stop a flat vector fill from reading as clip art. */}
@@ -116,56 +116,121 @@ export function MaomaoDefs({ id }) {
   );
 }
 
-/** The mass of hair behind her head and shoulders (drawn before the body). */
+/**
+ * The hair behind her head (drawn before the body). It is all pinned up into the bun, so the back
+ * of it stops at her jaw and her neck and collar show: only the side locks and the thin braids
+ * come lower.
+ */
 export function MaomaoBackHair({ id }) {
   return (
     <>
-      <ellipse cx="100" cy="95" rx="69" ry="64" fill={`url(#${id}-hair)`} />
-      <path d="M42 104q-6 40 13 64l6-51m97-13q6 40-13 64l-6-51" fill={HAIR} />
+      <ellipse cx="100" cy="96" rx="62" ry="58" fill={`url(#${id}-hair)`} />
+      <path d="M45 102q-4 30 9 46l5-38m96-8q4 30-9 46l-5-38" fill={HAIR} />
     </>
   );
 }
 
-/** The bun and its pale blue ribbon (drawn after the body, before the head). */
+/**
+ * The bun and its blue ribbon (drawn after the body, before the head). A small, neat bun tucked
+ * into the crown a little to her left, the bow's two loops standing up like ears (official
+ * standing model and the Nendoroid), not lying flat like a propeller.
+ */
 export function MaomaoBun({ id }) {
   return (
     <>
-      <circle cx="100" cy="34" r="21" fill={`url(#${id}-hair)`} />
+      <circle cx="104" cy="40" r="17" fill={`url(#${id}-hair)`} />
       <path
-        d="M86 29q12-13 27-3M111 19q10 9 6 19"
+        d="M92 36q10-11 23-3M114 27q8 7 5 16"
         fill="none"
         stroke={HAIR_LIGHT}
-        strokeWidth="2.5"
+        strokeWidth="2.3"
         strokeLinecap="round"
       />
-      {/* A soft bow with two upright loops, tied on the front of the bun (official standing
-          model and the Nendoroid both show loops, not a crescent). */}
-      <g className="mascot__ribbon">
+      <g className="mascot__ribbon" style={{ transformOrigin: "104px 31px" }}>
         <path
-          d="M100 25C92 16 83 7 78 11c-4 4 2 13 22 14ZM100 25c8-9 17-18 22-14 4 4-2 13-22 14Z"
-          fill="#9cacd2"
-          stroke="#647da7"
+          d="M104 31C99 21 95 9 89 10c-6 1-5 14 15 21ZM104 31c5-10 9-22 15-21 6 1 5 14-15 21Z"
+          fill="#84aaea"
+          stroke="#5d79bd"
           strokeWidth="1.3"
           strokeLinejoin="round"
         />
         <path
-          d="M97 23q-7-6-14-9m20 9q7-6 14-9"
-          stroke="#7f92c0"
-          strokeWidth="1.2"
+          d="M101 27q-4-7-8-12m14 12q4-7 8-12"
+          stroke="#6688cc"
+          strokeWidth="1.3"
           fill="none"
           strokeLinecap="round"
         />
+        <path d="M100 33l-5 9m13-9 5 8" stroke="#6f93dc" strokeWidth="2.6" strokeLinecap="round" />
         <ellipse
-          cx="100"
-          cy="25"
-          rx="4.2"
+          cx="104"
+          cy="31"
+          rx="4"
           ry="3.6"
-          fill="#aebbdc"
-          stroke="#647da7"
+          fill="#9dbcf0"
+          stroke="#5d79bd"
           strokeWidth="1.2"
         />
       </g>
     </>
+  );
+}
+
+/*
+ * The bandage on her LEFT forearm (the viewer's right while she faces us): it hides the scars from
+ * testing poisons and herbs on herself. Shown in every pose: as wraps at the wrist below the sleeve,
+ * and as a bandaged forearm where the sleeve slides back (a raised arm).
+ */
+const WRAP_EDGE = "#cfc6b8";
+const WRAP = "#f7f3ea";
+const pt = (x, y) => `${x.toFixed(1)} ${y.toFixed(1)}`;
+
+/**
+ * Two wraps across the wrist: parallel to the cuff line a→b, centred a share `k` of the way from the
+ * cuff's middle toward the hand, the second one a little nearer the hand.
+ */
+export function MaomaoWrap({ a, b, hand, k = 0.45, half = 4.8 }) {
+  const mx = (a[0] + b[0]) / 2;
+  const my = (a[1] + b[1]) / 2;
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+  const dx = (b[0] - a[0]) / len;
+  const dy = (b[1] - a[1]) / len;
+  const reach = Math.hypot(hand[0] - mx, hand[1] - my) || 1;
+  const tx = (hand[0] - mx) / reach;
+  const ty = (hand[1] - my) / reach;
+  const cx = mx + (hand[0] - mx) * k;
+  const cy = my + (hand[1] - my) * k;
+  const band = (ox, oy, h) => `M${pt(cx + ox - dx * h, cy + oy - dy * h)}L${pt(cx + ox + dx * h, cy + oy + dy * h)}`;
+  const d = band(0, 0, half) + band(tx * 2.9, ty * 2.9, half * 0.86);
+  return (
+    <g className="mascot__wrap" strokeLinecap="round" fill="none">
+      <path d={d} stroke={WRAP_EDGE} strokeWidth="4.4" />
+      <path d={d} stroke={WRAP} strokeWidth="2.9" />
+    </g>
+  );
+}
+
+/** A bare forearm wrapped in bandage from `from` (by the wrist) to `to` (toward the elbow). */
+export function MaomaoBandage({ from, to, width = 8.4 }) {
+  const [x0, y0] = from;
+  const [x1, y1] = to;
+  const len = Math.hypot(x1 - x0, y1 - y0) || 1;
+  const dx = (x1 - x0) / len;
+  const dy = (y1 - y0) / len;
+  const h = width / 2;
+  const turns = [0.18, 0.45, 0.72]
+    .map((t) => {
+      const cx = x0 + (x1 - x0) * t;
+      const cy = y0 + (y1 - y0) * t;
+      return `M${pt(cx + dy * h - dx * 1.3, cy - dx * h - dy * 1.3)}L${pt(cx - dy * h + dx * 1.3, cy + dx * h + dy * 1.3)}`;
+    })
+    .join("");
+  return (
+    <g className="mascot__wrap" fill="none">
+      <path d={`M${pt(x0, y0)}L${pt(x1, y1)}`} stroke={WRAP_EDGE} strokeWidth={width + 1.3} />
+      <path d={`M${pt(x0, y0)}L${pt(x1, y1)}`} stroke={WRAP} strokeWidth={width} />
+      <path d={turns} stroke="#d9d0c2" strokeWidth=".9" strokeLinecap="round" />
+    </g>
   );
 }
 
@@ -188,25 +253,27 @@ export function MaomaoCatEars() {
 export function MaomaoHead({ id, expression, moving }) {
   return (
     <g className="mascot__head">
-      <ellipse cx="46" cy="111" rx="7" ry="10" fill="#efc8b6" />
-      <ellipse cx="154" cy="111" rx="7" ry="10" fill="#efc8b6" />
+      <ellipse cx="46" cy="111" rx="7" ry="10" fill="#efc2a3" />
+      <ellipse cx="154" cy="111" rx="7" ry="10" fill="#efc2a3" />
       <path
         d="M45 92q0-42 55-43 55 1 55 43v24q-4 39-55 40-51-1-55-40Z"
         fill={`url(#${id}-skin)`}
       />
-      <g fill="#b58265">
+      {/* The freckles she paints on so nobody looks twice: a light dusting on her upper cheeks,
+          just under each eye. Kept small, warm and see-through, and clear of the middle of her
+          face (above the mouth, around the nose), so they never read as a moustache. */}
+      <g fill="#c48a6e" opacity=".55">
         {[
-          [84, 120],
-          [90, 116],
-          [97, 120],
-          [104, 116],
-          [111, 120],
-          [118, 124],
-          [88, 125],
-          [101, 126],
-          [109, 124],
-        ].map(([x, y]) => (
-          <circle key={`${x}-${y}`} cx={x} cy={y} r="1.25" />
+          [70.5, 128.4, 0.95],
+          [76, 130, 0.85],
+          [81.5, 128.6, 0.9],
+          [74, 133, 0.7],
+          [129.5, 128.4, 0.95],
+          [124, 130, 0.85],
+          [118.5, 128.6, 0.9],
+          [126, 133, 0.7],
+        ].map(([x, y, r]) => (
+          <circle key={`${x}-${y}`} cx={x} cy={y} r={r} />
         ))}
       </g>
       <MaomaoFace expression={expression} moving={moving} />
@@ -257,8 +324,9 @@ export function MaomaoBraids() {
             stroke={HAIR_LIGHT}
             strokeWidth="2"
           />
-          <circle cx={x} cy="141" r="4" fill="#c888a3" />
-          <circle cx={x} cy="167" r="3.5" fill="#85bbae" />
+          <circle cx={x} cy="141" r="4.2" fill="#f47c97" stroke="#8b3347" strokeWidth=".8" />
+          <circle cx={x} cy="167" r="3.6" fill="#5fc6c6" stroke="#2f8888" strokeWidth=".7" />
+          <circle cx={x - 1.2} cy="165.8" r="1.1" fill="#bff4f4" />
           <path d={`m${x - 3} 171-1 12q6 5 8-1l-2-11Z`} fill={HAIR} />
         </g>
       ))}
@@ -432,6 +500,7 @@ export default function MaomaoMascot({
               />
               <ellipse cx="62" cy="195" rx="8" ry="6" fill={SKIN} />
               <ellipse cx="132" cy="192" rx="9" ry="6" fill={SKIN} />
+              <MaomaoWrap a={[150, 187]} b={[131, 194]} hand={[132, 192]} k={0.2} />
             </g>
             <MaomaoBun id={id} />
             {cat && <MaomaoCatEars />}
@@ -456,6 +525,7 @@ export default function MaomaoMascot({
                   stroke="#ddb49e"
                   strokeWidth="1"
                 />
+                <MaomaoWrap a={[139, 139]} b={[155, 146]} hand={[144, 134]} k={0.4} />
                 <Herb transform="translate(39 194) rotate(-22) scale(.7)" />
               </g>
             ) : fascinated ? (
@@ -491,6 +561,7 @@ export default function MaomaoMascot({
                 />
                 <ellipse cx="89" cy="187" rx="8" ry="6" fill={SKIN} />
                 <ellipse cx="111" cy="187" rx="8" ry="6" fill={SKIN} />
+                <MaomaoWrap a={[120, 182]} b={[122, 192]} hand={[111, 187]} k={0.1} />
               </g>
             ) : writing ? (
               <g className="mascot__notebook mascot__gesture">
@@ -529,6 +600,7 @@ export default function MaomaoMascot({
                   />
                   <path d="m116 183-2 6 5-4" fill="#544656" />
                   <ellipse cx="129" cy="174" rx="8" ry="6" fill={SKIN} />
+                  <MaomaoWrap a={[132, 182]} b={[140, 174]} hand={[129, 174]} k={0.3} />
                 </g>
               </g>
             ) : sniffing ? (
@@ -543,6 +615,7 @@ export default function MaomaoMascot({
                 <path d="m115 179 12-3" stroke="#c5d491" strokeWidth="6" />
                 <Herb transform="translate(113 177) rotate(-14) scale(.76)" />
                 <ellipse cx="114" cy="177" rx="7" ry="6" fill={SKIN} />
+                <MaomaoWrap a={[120, 172]} b={[122, 182]} hand={[114, 177]} k={0.15} />
                 <Mortar />
                 <ellipse cx="77" cy="190" rx="7" ry="5" fill={SKIN} />
                 <path
@@ -567,6 +640,7 @@ export default function MaomaoMascot({
                     />
                     <path d="m131 193 16-7" stroke="#c5d491" strokeWidth="5" />
                     <ellipse cx="130" cy="191" rx="8" ry="6" fill={SKIN} />
+                    <MaomaoWrap a={[147, 186]} b={[131, 193]} hand={[130, 191]} k={0.25} />
                     <path
                       d="M69 169q17 20 30-11l-11-8"
                       fill={ROBE}

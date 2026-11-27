@@ -677,6 +677,82 @@
   50% { rotate: -118deg; }
 }
 
+/* ---- peace: a sideways V by her eye and a wink ----------------------------------------------------- */
+.hmiku[data-pose="peace"] .hmiku__arm--r {
+  rotate: 150deg;
+  scale: 1 1.2;
+  animation: hmiku-peace 1.6s ease-in-out infinite;
+}
+.hmiku[data-pose="peace"] .hmiku__arm--l {
+  rotate: -24deg;
+  animation: none;
+}
+.hmiku[data-pose="peace"] .hmiku__headrig {
+  rotate: -5deg;
+  animation: none;
+}
+.hmiku[data-pose="peace"] .hmiku__glints {
+  opacity: 1;
+}
+.hmiku[data-pose="peace"] .hmiku__root {
+  animation: hmiku-bounce 0.8s ease-in-out infinite;
+}
+@keyframes hmiku-peace {
+  0%, 100% { rotate: 150deg; }
+  50% { rotate: 156deg; }
+}
+
+/* ---- bow: a curtain call, the tails flopping forward and springing back ---------------------------- */
+.hmiku[data-pose="bow"] .hmiku__headrig {
+  animation: hmiku-bow 1.6s cubic-bezier(0.3, 0, 0.3, 1) both;
+}
+.hmiku[data-pose="bow"] .hmiku__arm--r {
+  rotate: -10deg;
+  animation: none;
+}
+.hmiku[data-pose="bow"] .hmiku__arm--l {
+  rotate: 10deg;
+  animation: none;
+}
+.hmiku[data-pose="bow"] .hmiku__tail--l,
+.hmiku[data-pose="bow"] .hmiku__tail--r {
+  animation: hmiku-bow-tail 1.6s cubic-bezier(0.3, 0, 0.3, 1) both;
+}
+@keyframes hmiku-bow {
+  0%, 100% { translate: 0 0; scale: 1 1; }
+  30%, 62% { translate: 0 14px; scale: 1 0.95; }
+}
+@keyframes hmiku-bow-tail {
+  0%, 100% { rotate: 0deg; }
+  34%, 60% { rotate: -14deg; }
+  80% { rotate: 5deg; }
+}
+
+/* ---- glowstick: her teal penlight, waved overhead in time ------------------------------------------ */
+.hmiku[data-pose="glowstick"] .hmiku__arm--l {
+  rotate: -158deg;
+  scale: 1 1.16;
+  animation: hmiku-glow-wave 1s ease-in-out infinite;
+}
+.hmiku[data-pose="glowstick"] .hmiku__arm--r {
+  rotate: 30deg;
+  animation: none;
+}
+.hmiku[data-pose="glowstick"] .hmiku__headrig {
+  animation: hmiku-sing-sway 1s ease-in-out infinite;
+}
+.hmiku__glowstick {
+  animation: hmiku-glow 1s ease-in-out infinite;
+}
+@keyframes hmiku-glow-wave {
+  0%, 100% { rotate: -140deg; }
+  50% { rotate: -176deg; }
+}
+@keyframes hmiku-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.82; }
+}
+
 /* ---- crouch: the wind-up before a hop ------------------------------------------------------------ */
 .hmiku[data-pose="crouch"] .hmiku__root {
   scale: 1.07 0.91;

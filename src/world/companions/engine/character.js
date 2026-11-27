@@ -1,6 +1,6 @@
 // Fills in everything a character file may leave out, so the engine can rely on one shape
-// (src/world/companions/README.md documents every field). Pure data: no React, no DOM.
-import DefaultPlatform from "./DefaultPlatform.jsx";
+// (src/world/companions/README.md documents every field). Pure data: no React, no DOM, so the
+// tests can load it (Stage.jsx hands in the default cloud).
 
 /** The poses every character draws (docs/refactor/RENOVATION.md, "Companions"). */
 export const SHARED_POSES = ["idle", "walk", "jump", "fall", "land", "sit", "wave", "react", "sleep", "held"];
@@ -46,7 +46,7 @@ export const MOVEMENT_DEFAULTS = {
   heldAt: 0.9, // where it is held when picked up, as a share of its height from the feet (the scruff)
   sway: 1, // 0..2: how much it swings while carried
   talkiness: 0.45, // 0..1: chance it says something as it starts a behaviour
-  expressions: {}, // expressions for engine moments: { tapped, picked, putDown, walk, jump, visit }
+  expressions: {}, // expressions for engine moments: { tapped, picked, putDown, walk, jump, stay, wander }
 };
 
 const BEHAVIOUR_DEFAULTS = {
@@ -58,6 +58,67 @@ const BEHAVIOUR_DEFAULTS = {
 };
 
 const asArray = (value) => (Array.isArray(value) ? value : value == null ? [] : [value]);
+const asSeconds = (value, fallback) => {
+  if (Array.isArray(value) && value.length) {
+    const lo = Math.max(0, Number(value[0]) || 0);
+    const hi = Math.max(lo, Number(value[1] ?? value[0]) || lo);
+    return [lo, hi];
+  }
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? [n, n] : fallback;
+};
+
+/** `bounce: 2` or `{ count, height, every }`: little hops on the spot (README.md, "Steps"). */
+function normaliseBounce(value) {
+  if (!value) return null;
+  const raw = typeof value === "object" ? value : { count: value };
+  const count = Math.max(0, Math.round(Number(raw.count) || 0));
+  if (!count) return null;
+  return { count, height: Number(raw.height) || 9, every: Math.max(0.18, Number(raw.every) || 0.36) };
+}
+
+/**
+ * One step of an action or a behaviour: `{ pose, prop, expression, seconds, topic, bounce, turn,
+ * chance }` (`chance`: 0..1, the step only plays that often; default 1).
+ * Anything left out comes from `base` (the action or behaviour it belongs to), except the topic.
+ */
+export function normaliseStep(step = {}, base = {}, movement = MOVEMENT_DEFAULTS) {
+  return {
+    pose: step.pose ?? base.pose ?? movement.restPose,
+    prop: step.prop === undefined ? (base.prop ?? null) : step.prop,
+    expression: step.expression ?? base.expression,
+    seconds: asSeconds(step.seconds, asSeconds(base.seconds, [2, 3])),
+    topic: step.topic ?? null,
+    bounce: normaliseBounce(step.bounce),
+    turn: Boolean(step.turn),
+    chance: step.chance == null ? 1 : Math.max(0, Math.min(1, Number(step.chance) || 0)),
+  };
+}
+
+/**
+ * The character's own choice in the tap menu (README.md, "The tap menu and stay"), or null.
+ * Always comes back with at least one step; the first says the action's topic (default "action").
+ */
+export function normaliseAction(raw, movement = MOVEMENT_DEFAULTS) {
+  if (!raw || typeof raw !== "object" || !String(raw.label ?? "").trim()) return null;
+  const base = { ...raw, seconds: asSeconds(raw.seconds, [3, 5]) };
+  const steps = (Array.isArray(raw.steps) && raw.steps.length ? raw.steps : [{}]).map((step) => normaliseStep(step, base, movement));
+  if (!steps[0].topic) steps[0].topic = raw.topic ?? "action";
+  return {
+    id: String(raw.id ?? "action"),
+    label: String(raw.label).trim(),
+    icon: raw.icon ?? null,
+    pose: steps[0].pose,
+    prop: steps[0].prop,
+    expression: steps[0].expression,
+    seconds: base.seconds,
+    topic: raw.topic ?? "action",
+    steps,
+  };
+}
+
+/** What it may do while told to stay: behaviours that don't travel (no `roam`, no `level`). */
+export const staysPut = (b) => !b.roam && !b.level;
 
 /** A line is a string or { text, expression, pose }: always hand back the object. */
 export function normaliseLine(line) {
@@ -92,8 +153,11 @@ function normaliseVisit(visit = {}) {
   return { with: withMap, any };
 }
 
-/** Takes a character module's default export and returns it with every engine field filled. */
-export function normaliseCharacter(raw) {
+/**
+ * Takes a character module's default export and returns it with every engine field filled.
+ * `defaults.Platform` is the cloud for characters that don't draw their own.
+ */
+export function normaliseCharacter(raw, defaults = {}) {
   if (!raw || !raw.Body) return null;
   const size = {
     width: Number(raw.size?.width) || 96,
@@ -121,11 +185,15 @@ export function normaliseCharacter(raw) {
       merged.pose = b.pose ?? movement.restPose;
       merged.seconds = Array.isArray(b.seconds) ? b.seconds : [Number(b.seconds) || 6, Number(b.seconds) || 6];
       merged.say = b.say ?? movement.talkiness;
+      merged.prop = b.prop ?? null;
+      merged.bounce = normaliseBounce(b.bounce);
+      merged.steps = Array.isArray(b.steps) && b.steps.length ? b.steps.map((step) => normaliseStep(step, merged, movement)) : null;
       return merged;
     });
   if (!behaviours.length) {
-    behaviours.push({ ...BEHAVIOUR_DEFAULTS, id: "rest", pose: movement.restPose, seconds: [6, 12], topic: "idle", say: movement.talkiness });
+    behaviours.push({ ...BEHAVIOUR_DEFAULTS, id: "rest", pose: movement.restPose, seconds: [6, 12], topic: "idle", say: movement.talkiness, prop: null, bounce: null, steps: null });
   }
+  const action = normaliseAction(raw.action, movement);
 
   return {
     ...raw,
@@ -136,7 +204,8 @@ export function normaliseCharacter(raw) {
     behaviours,
     lines: normaliseLines(raw.lines),
     visit: normaliseVisit(raw.visit),
-    Platform: raw.Platform ?? DefaultPlatform,
+    action,
+    Platform: raw.Platform ?? defaults.Platform ?? null,
     platformSurface: Number(raw.Platform?.surface) || 0,
     resolvePose,
   };
