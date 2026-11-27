@@ -1,32 +1,39 @@
 import { useId } from "react";
 import "./bambi.css";
 
-// Bamby's cloud: a little stage. A flat, glossy pink-lilac top to dance on, soft puffs underneath,
-// and flowers along the front edge that bloom as it forms (his ability: shut your eyes, open them,
-// flowers). It pulses softly on the beat while it holds him, and drops its petals as it fades.
-// Pure SVG + CSS (transform/opacity only).
+// Bamby's cloud: a little stage. A flat, glossy top to dance on, a fluffy scalloped underside,
+// and flowers tucked along the front that bloom as it forms (his ability: shut your eyes, open
+// them, flowers). It glows softly on the beat while it holds him, and drops its petals as it fades.
+// One path per layer, transform/opacity animation only.
 
 const HEIGHT = 30;
+const TOP = 5; // the deck line
 export const PLATFORM_SURFACE = 6; // px from the box top to where his feet stand
 
-/** Puff centres along the cloud's underside, as fractions of the width, with radii in px. */
-function puffs(width) {
-  const count = Math.max(3, Math.round(width / 26));
-  return Array.from({ length: count }, (_, i) => {
-    const t = count === 1 ? 0.5 : i / (count - 1);
-    const edge = Math.abs(t - 0.5) * 2; // 0 in the middle, 1 at the ends
-    return { x: 10 + t * (width - 20), r: 10.5 - edge * 3.5 + (i % 2) * 1.6, i };
-  });
+function shape(w) {
+  const n = Math.max(2, Math.round((w - 16) / 22));
+  const step = (w - 16) / n;
+  let d = `M14 ${TOP}H${w - 14}C${w - 3} ${TOP - 2} ${w + 2} ${13} ${w - 8} 19`;
+  const bumps = [];
+  for (let i = 0; i < n; i += 1) {
+    const x0 = w - 8 - i * step;
+    const x1 = x0 - step;
+    const mid = (x0 + x1) / 2;
+    const dip = 9 + (i % 2) * 2.5;
+    d += `Q${mid.toFixed(1)} ${19 + dip} ${x1.toFixed(1)} 19`;
+    bumps.push({ x0, x1, mid, dip, i });
+  }
+  d += `C-2 13 3 ${TOP - 2} 14 ${TOP}Z`;
+  return { d, bumps };
 }
 
 export default function BambyPlatform({ width = 100, state = "steady" }) {
   const raw = useId().replace(/[:«»]/g, "");
-  const top = `bp${raw}-top`;
-  const body = `bp${raw}-body`;
+  const fill = `bp${raw}-fill`;
   const glow = `bp${raw}-glow`;
-  const w = Math.max(48, width);
-  const list = puffs(w);
-  const flowers = list.filter((p) => p.i % 2 === 1 || list.length <= 3);
+  const w = Math.max(48, Math.round(width));
+  const { d, bumps } = shape(w);
+  const flowers = bumps.filter((b) => b.i % 2 === 0);
   return (
     <svg
       className="bamby-cloud"
@@ -38,42 +45,31 @@ export default function BambyPlatform({ width = 100, state = "steady" }) {
       style={{ "--w": `${w}px`, overflow: "visible" }}
     >
       <defs>
-        <linearGradient id={top} x1="0" y1="0" x2="0" y2="1">
-          <stop stopColor="#fff6fb" />
-          <stop offset="1" stopColor="#fbdcec" />
-        </linearGradient>
-        <linearGradient id={body} x1="0" y1="0" x2="0" y2="1">
-          <stop stopColor="#f8dcf0" />
-          <stop offset="1" stopColor="#dccbf6" />
+        <linearGradient id={fill} x1="0" y1="0" x2="0" y2="1">
+          <stop stopColor="#fff7fb" />
+          <stop offset=".3" stopColor="#fde4f1" />
+          <stop offset="1" stopColor="#e2d1fa" />
         </linearGradient>
         <radialGradient id={glow}>
-          <stop stopColor="#ff9fcb" stopOpacity=".55" />
-          <stop offset="1" stopColor="#ff9fcb" stopOpacity="0" />
+          <stop stopColor="#ff8fc2" stopOpacity=".5" />
+          <stop offset="1" stopColor="#ff8fc2" stopOpacity="0" />
         </radialGradient>
       </defs>
-      <g className="bamby-cloud__all" style={{ transformOrigin: `${w / 2}px 8px` }}>
-        <g className="bamby-cloud__puffs">
-          {list.map((p) => (
-            <circle
-              key={p.i}
-              className="bamby-cloud__puff"
-              cx={p.x}
-              cy={14}
-              r={p.r}
-              fill={`url(#${body})`}
-              stroke="#cdb2ea"
-              strokeWidth="1.2"
-              style={{ "--i": Math.abs(p.i - (list.length - 1) / 2), transformOrigin: `${p.x}px 10px` }}
-            />
+      <g className="bamby-cloud__all">
+        <path className="bamby-cloud__shape" d={d} fill={`url(#${fill})`} stroke="#d5b5e9" strokeWidth="1.3" strokeLinejoin="round" />
+        {/* Volume: a soft inner arc in each scallop, and the deck's gloss. */}
+        <g stroke="#fff" strokeLinecap="round" fill="none">
+          {bumps.map((b) => (
+            <path key={b.i} d={`M${(b.x0 - 4).toFixed(1)} 19.5Q${b.mid.toFixed(1)} ${(19 + b.dip * 0.62).toFixed(1)} ${(b.x1 + 4).toFixed(1)} 19.5`} strokeWidth="1.4" opacity=".55" />
           ))}
+          <path d={`M16 ${TOP + 2.4}H${(w * 0.46).toFixed(1)}`} strokeWidth="2" opacity=".95" />
+          <path d={`M${(w * 0.54).toFixed(1)} ${TOP + 2.4}H${(w * 0.62).toFixed(1)}`} strokeWidth="2" opacity=".7" />
         </g>
-        {/* The stage top: flat, so his feet have somewhere to stand, with a soft gloss. */}
-        <rect className="bamby-cloud__deck" x="3" y="2" width={w - 6} height="9" rx="4.5" fill={`url(#${top})`} stroke="#e7b5d4" strokeWidth="1.1" />
-        <path d={`M10 4.6h${w * 0.32}`} stroke="#fff" strokeWidth="1.8" strokeLinecap="round" opacity=".9" />
-        <ellipse className="bamby-cloud__beat" cx={w / 2} cy="6" rx={Math.min(30, w * 0.32)} ry="5" fill={`url(#${glow})`} />
-        {flowers.map((p, n) => (
-          <g key={p.i} className="bamby-cloud__flower" style={{ "--i": n, transformOrigin: `${p.x}px 20px` }}>
-            <g transform={`translate(${p.x} 20) scale(.62)`}>
+        <path d={`M8 ${TOP + 7}H${w - 8}`} stroke="#f2c6dd" strokeWidth="1" strokeDasharray="1 5" strokeLinecap="round" opacity=".9" />
+        <ellipse className="bamby-cloud__beat" cx={w / 2} cy={TOP + 1} rx={Math.min(32, w * 0.34)} ry="5" fill={`url(#${glow})`} />
+        {flowers.map((b, n) => (
+          <g key={b.i} className="bamby-cloud__flower" style={{ "--i": n, transformOrigin: `${b.mid}px 20px` }}>
+            <g transform={`translate(${b.mid.toFixed(1)} 20) scale(.66)`}>
               {[0, 72, 144, 216, 288].map((a) => (
                 <ellipse key={a} cy="-4.6" rx="3.3" ry="4.6" fill={n % 2 ? "#fff3f9" : "#ffbad8"} stroke="#e47bab" strokeWidth=".9" transform={`rotate(${a})`} />
               ))}

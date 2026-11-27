@@ -2,7 +2,7 @@
    cheap on an iPhone 11 and stops cleanly under reduced motion. Each pose sets a STATIC base that
    reads on its own (what reduced motion and `playing={false}` show), then animates on top.
    Pivots, in the 200×236 drawing: feet 100,230 · neck 100,152 · shoulders 73/127,163 ·
-   elbows 69/131,181 · hips 89/111,197. */
+   elbows 69/131,181 · hips 89/111,191. */
 
 .bamby {
   display: block;
@@ -43,10 +43,10 @@
   transform-origin: 132px 199px;
 }
 .bamby__leg--l {
-  transform-origin: 89px 197px;
+  transform-origin: 89px 191px;
 }
 .bamby__leg--r {
-  transform-origin: 111px 197px;
+  transform-origin: 111px 191px;
 }
 .bamby__shoe--l {
   transform-origin: 80px 229px;
@@ -171,24 +171,30 @@
   animation: bamby-walk-bob var(--cycle) ease-in-out infinite;
 }
 .bamby[data-pose="walk"] .bamby__leg--l {
-  rotate: 20deg;
+  rotate: 7deg;
   animation: bamby-walk-leg-l var(--cycle) ease-in-out infinite;
 }
 .bamby[data-pose="walk"] .bamby__leg--r {
-  rotate: -20deg;
+  rotate: -7deg;
   animation: bamby-walk-leg-r var(--cycle) ease-in-out infinite;
 }
 .bamby[data-pose="walk"] .bamby__arm--l {
-  rotate: -14deg;
+  rotate: 22deg;
   animation: bamby-walk-arm-l var(--cycle) ease-in-out infinite;
 }
 .bamby[data-pose="walk"] .bamby__arm--r {
-  rotate: 14deg;
+  rotate: 6deg;
   animation: bamby-walk-arm-r var(--cycle) ease-in-out infinite;
 }
 .bamby[data-pose="walk"] .bamby__fore--l,
 .bamby[data-pose="walk"] .bamby__fore--r {
   animation: bamby-walk-fore var(--cycle) ease-in-out infinite;
+}
+.bamby[data-pose="walk"] .bamby__shoe--l {
+  animation: bamby-walk-shoe-l var(--cycle) ease-in-out infinite;
+}
+.bamby[data-pose="walk"] .bamby__shoe--r {
+  animation: bamby-walk-shoe-r var(--cycle) ease-in-out infinite;
 }
 .bamby[data-pose="walk"] .bamby__head {
   animation: bamby-walk-head var(--cycle) ease-in-out infinite;
@@ -218,58 +224,86 @@
 @keyframes bamby-walk-leg-l {
   0%,
   100% {
-    rotate: 22deg;
+    rotate: 7deg;
     translate: 0 0;
   }
   25% {
-    translate: 0 -3px;
+    rotate: -3deg;
+    translate: 0 -8px;
   }
   50% {
-    rotate: -22deg;
+    rotate: -7deg;
+    translate: 0 0;
+  }
+  75% {
+    rotate: 0deg;
     translate: 0 0;
   }
 }
 @keyframes bamby-walk-leg-r {
   0%,
   100% {
-    rotate: -22deg;
+    rotate: -7deg;
+    translate: 0 0;
+  }
+  25% {
+    rotate: 0deg;
     translate: 0 0;
   }
   50% {
-    rotate: 22deg;
+    rotate: 7deg;
     translate: 0 0;
   }
   75% {
-    translate: 0 -3px;
+    rotate: -3deg;
+    translate: 0 -8px;
   }
 }
-@keyframes bamby-walk-arm-l {
-  0%,
-  100% {
-    rotate: -16deg;
-  }
-  50% {
-    rotate: 30deg;
-  }
-}
-@keyframes bamby-walk-arm-r {
-  0%,
-  100% {
-    rotate: 16deg;
-  }
-  50% {
-    rotate: -30deg;
-  }
-}
-@keyframes bamby-walk-fore {
+@keyframes bamby-walk-shoe-l {
   0%,
   50%,
   100% {
     rotate: 0deg;
   }
-  25%,
-  75% {
+  25% {
+    rotate: -12deg;
+  }
+}
+@keyframes bamby-walk-shoe-r {
+  0%,
+  50%,
+  100% {
     rotate: 0deg;
+  }
+  75% {
+    rotate: 12deg;
+  }
+}
+@keyframes bamby-walk-arm-l {
+  0%,
+  100% {
+    rotate: 22deg;
+  }
+  50% {
+    rotate: -6deg;
+  }
+}
+@keyframes bamby-walk-arm-r {
+  0%,
+  100% {
+    rotate: 6deg;
+  }
+  50% {
+    rotate: -22deg;
+  }
+}
+@keyframes bamby-walk-fore {
+  0%,
+  100% {
+    rotate: -8deg;
+  }
+  50% {
+    rotate: 8deg;
   }
 }
 @keyframes bamby-walk-head {
@@ -1392,16 +1426,16 @@
   translate: 0 -5px;
 }
 .bamby[data-pose="vroom"] .bamby__arm--l {
-  rotate: -20deg;
+  rotate: 22deg;
 }
 .bamby[data-pose="vroom"] .bamby__arm--r {
-  rotate: 20deg;
+  rotate: -22deg;
 }
 .bamby[data-pose="vroom"] .bamby__fore--l {
-  rotate: -64deg;
+  rotate: -86deg;
 }
 .bamby[data-pose="vroom"] .bamby__fore--r {
-  rotate: 64deg;
+  rotate: 86deg;
 }
 .bamby[data-pose="vroom"] .bamby__hand--r {
   animation: bamby-throttle 380ms ease-in-out infinite alternate;
@@ -1506,21 +1540,25 @@
   }
 }
 
-/* --- snack: a peach (his favourite), held up in both hands, nibbling --------------------------- */
+/* --- snack: a peach (his favourite) held in both hands at his chest, munching ------------------ */
 .bamby[data-pose="snack"] .bamby__arm--l {
-  rotate: -4deg;
+  rotate: -20deg;
 }
 .bamby[data-pose="snack"] .bamby__fore--l {
-  rotate: -118deg;
+  rotate: -92deg;
 }
 .bamby[data-pose="snack"] .bamby__arm--r {
-  rotate: 8deg;
+  rotate: 20deg;
 }
 .bamby[data-pose="snack"] .bamby__fore--r {
-  rotate: 102deg;
+  rotate: 92deg;
 }
 .bamby[data-pose="snack"] .bamby__head {
   animation: bamby-munch 700ms ease-in-out infinite;
+}
+.bamby__peach {
+  transform-origin: 100px 165px;
+  animation: bamby-peach 700ms ease-in-out infinite;
 }
 @keyframes bamby-munch {
   0%,
@@ -1529,8 +1567,17 @@
     rotate: 0deg;
   }
   50% {
-    translate: 0 1.2px;
+    translate: 0 1.4px;
     rotate: 1deg;
+  }
+}
+@keyframes bamby-peach {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -1.5px;
   }
 }
 
@@ -1650,16 +1697,16 @@
   animation: bamby-tremble 90ms linear infinite;
 }
 .bamby[data-pose="scared"] .bamby__arm--l {
-  rotate: 120deg;
+  rotate: 140deg;
 }
 .bamby[data-pose="scared"] .bamby__arm--r {
-  rotate: -120deg;
+  rotate: -140deg;
 }
 .bamby[data-pose="scared"] .bamby__fore--l {
-  rotate: -60deg;
+  rotate: -40deg;
 }
 .bamby[data-pose="scared"] .bamby__fore--r {
-  rotate: 60deg;
+  rotate: 40deg;
 }
 .bamby[data-pose="scared"] .bamby__leg--l {
   rotate: 10deg;
@@ -1747,9 +1794,9 @@
 }
 
 /* ===============================================================================================
-   His cloud (Platform.jsx). forming: the deck unrolls from the middle, puffs swell out from the
-   centre, then the flowers pop open. steady: a soft beat glow, puffs breathing. fading: the puffs
-   shrink away and the flowers drop their petals.
+   His cloud (Platform.jsx). forming: it puffs out from the middle with a little overshoot, then
+   the flowers pop open one by one. steady: breathing, a soft glow on the beat, flowers swaying.
+   fading: it shrinks back into itself and the flowers drop their petals.
    =============================================================================================== */
 .bamby-cloud {
   display: block;
@@ -1758,65 +1805,52 @@
 .bamby-cloud * {
   transform-box: view-box;
 }
-.bamby-cloud__deck {
+.bamby-cloud__all {
+  transform-origin: calc(var(--w) / 2) 8px;
+}
+.bamby-cloud__beat {
   transform-origin: calc(var(--w) / 2) 6px;
 }
-.bamby-cloud[data-state="forming"] .bamby-cloud__deck {
-  animation: bamby-deck-in 360ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-}
-.bamby-cloud[data-state="forming"] .bamby-cloud__puff {
-  animation: bamby-puff-in 420ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
-  animation-delay: calc(var(--i) * 50ms);
+.bamby-cloud[data-state="forming"] .bamby-cloud__all {
+  animation: bamby-cloud-in 420ms cubic-bezier(0.25, 1.4, 0.5, 1) both;
 }
 .bamby-cloud[data-state="forming"] .bamby-cloud__flower {
   animation: bamby-cloud-flower-in 420ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
-  animation-delay: calc(180ms + var(--i) * 70ms);
+  animation-delay: calc(160ms + var(--i) * 80ms);
 }
 .bamby-cloud[data-state="forming"] .bamby-cloud__beat {
   opacity: 0;
 }
+.bamby-cloud[data-state="steady"] .bamby-cloud__all {
+  animation: bamby-cloud-breathe 3.2s ease-in-out infinite;
+}
 .bamby-cloud[data-state="steady"] .bamby-cloud__beat {
   animation: bamby-beat 500ms ease-out infinite;
-}
-.bamby-cloud[data-state="steady"] .bamby-cloud__puff {
-  animation: bamby-puff-breathe 3.2s ease-in-out infinite;
-  animation-delay: calc(var(--i) * -0.5s);
 }
 .bamby-cloud[data-state="steady"] .bamby-cloud__flower {
   animation: bamby-cloud-flower-sway 2.4s ease-in-out infinite;
   animation-delay: calc(var(--i) * -0.6s);
 }
 .bamby-cloud[data-state="fading"] .bamby-cloud__all {
-  animation: bamby-cloud-out 620ms ease-in both;
-}
-.bamby-cloud[data-state="fading"] .bamby-cloud__puff {
-  animation: bamby-puff-out 560ms ease-in both;
-  animation-delay: calc(var(--i) * 40ms);
+  animation: bamby-cloud-out 600ms ease-in both;
 }
 .bamby-cloud[data-state="fading"] .bamby-cloud__flower {
-  animation: bamby-petal-drop 600ms ease-in both;
-  animation-delay: calc(var(--i) * 60ms);
+  animation: bamby-petal-drop 520ms ease-in both;
+  animation-delay: calc(var(--i) * 50ms);
 }
 .bamby-cloud[data-state="fading"] .bamby-cloud__beat {
   opacity: 0;
 }
-@keyframes bamby-deck-in {
-  from {
-    scale: 0.1 0.6;
+@keyframes bamby-cloud-in {
+  0% {
+    scale: 0.15 0.35;
     opacity: 0;
   }
-  to {
-    scale: 1 1;
+  45% {
     opacity: 1;
   }
-}
-@keyframes bamby-puff-in {
-  from {
-    scale: 0;
-    opacity: 0;
-  }
-  to {
-    scale: 1;
+  100% {
+    scale: 1 1;
     opacity: 1;
   }
 }
@@ -1830,23 +1864,23 @@
     rotate: 0deg;
   }
 }
+@keyframes bamby-cloud-breathe {
+  0%,
+  100% {
+    scale: 1 1;
+  }
+  50% {
+    scale: 1.012 1.03;
+  }
+}
 @keyframes bamby-beat {
   0% {
     opacity: 0.95;
     scale: 1 1;
   }
   100% {
-    opacity: 0.25;
+    opacity: 0.2;
     scale: 1.25 1.1;
-  }
-}
-@keyframes bamby-puff-breathe {
-  0%,
-  100% {
-    scale: 1;
-  }
-  50% {
-    scale: 1.05;
   }
 }
 @keyframes bamby-cloud-flower-sway {
@@ -1860,16 +1894,12 @@
 }
 @keyframes bamby-cloud-out {
   0% {
+    scale: 1 1;
     opacity: 1;
   }
   100% {
+    scale: 0.6 0.4;
     opacity: 0;
-  }
-}
-@keyframes bamby-puff-out {
-  to {
-    scale: 0.3;
-    translate: 0 3px;
   }
 }
 @keyframes bamby-petal-drop {

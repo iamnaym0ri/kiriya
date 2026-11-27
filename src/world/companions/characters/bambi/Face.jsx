@@ -6,7 +6,7 @@
 export const EYE_Y = 113;
 const EYES_X = [77, 123];
 const INK = "#3b2440";
-const BROW = "#93406c";
+const BROW = "#a1497a";
 
 const BASE = {
   eyes: "open", // open | happy | sleep | squeeze | wink | star
@@ -195,7 +195,7 @@ export function BambyBrows({ expression }) {
             d={`M${x - inner * 11} ${y + (tilt < 0 ? tilt * 0.4 : 0)}Q${x} ${y - 3.2} ${x + inner * 10} ${y + tilt}`}
             fill="none"
             stroke={BROW}
-            strokeWidth="2.4"
+            strokeWidth="2.1"
             strokeLinecap="round"
           />
         );

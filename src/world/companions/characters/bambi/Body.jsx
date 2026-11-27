@@ -15,7 +15,7 @@ const SKIN = "#ffe7d8";
 const SKIN_LINE = "#e3b19c";
 const JACKET = "#fdfbff";
 const JACKET_LINE = "#8f84a8";
-const BLACK = "#2d2838";
+const BLACK = "#352d47";
 const PINK = "#ef7fb4";
 const PANTS = "#3c3549";
 
@@ -63,14 +63,13 @@ function Arm({ side, children }) {
     <g className={`bamby__arm bamby__arm--${side}`}>
       <path d={`M${sx} 163L${ex} 181`} stroke={JACKET_LINE} strokeWidth="15.4" strokeLinecap="round" />
       <path d={`M${sx} 163L${ex} 181`} stroke={JACKET} strokeWidth="12.6" strokeLinecap="round" />
-      <path d={`M${sx} 163L${sx - (left ? 1.2 : -1.2)} 169`} stroke={BLACK} strokeWidth="12.6" strokeLinecap="round" />
       <path d={`M${ex + (left ? 3.4 : -3.4)} 171l${left ? -1 : 1} 9`} stroke={PINK} strokeWidth="1.6" strokeLinecap="round" />
       <g className={`bamby__fore bamby__fore--${side}`}>
         <path d={`M${ex} 181L${wx} 195`} stroke={JACKET_LINE} strokeWidth="14.6" strokeLinecap="round" />
         <path d={`M${ex} 181L${wx} 195`} stroke={JACKET} strokeWidth="11.8" strokeLinecap="round" />
         <path d={`M${wx} 193.5v3`} stroke={left ? BLACK : PINK} strokeWidth="12" />
         <g className={`bamby__hand bamby__hand--${side}`}>
-          <circle cx={wx} cy="201" r="6.4" fill={SKIN} stroke={SKIN_LINE} strokeWidth="1.1" />
+          <circle cx={wx} cy="201.5" r="7" fill={SKIN} stroke={SKIN_LINE} strokeWidth="1.1" />
           {children}
         </g>
       </g>
@@ -86,13 +85,13 @@ function Leg({ side }) {
     <g className={`bamby__leg bamby__leg--${side}`}>
       <g className={`bamby__shin bamby__shin--${side}`}>
         <path
-          d={`M${x - 8.5} 196h17l-.6 27h-15.8Z`}
+          d={`M${x - 8.5} 189h17l-.6 34h-15.8Z`}
           fill={PANTS}
           stroke="#272231"
           strokeWidth="1.2"
           strokeLinejoin="round"
         />
-        <path d={`M${x + out * 7} 199l${out * 0.3} 21`} stroke="#f6f1ff" strokeWidth="1.6" strokeLinecap="round" opacity=".85" />
+        <path d={`M${x + out * 7} 192l${out * 0.3} 28`} stroke="#f6f1ff" strokeWidth="1.6" strokeLinecap="round" opacity=".85" />
         <g className={`bamby__shoe bamby__shoe--${side}`}>
           <path
             d={`M${x - 11 + out * 2} 229c0-8 4.5-10.5 11-10.5s11 2.5 11 10.5Z`}
@@ -156,40 +155,73 @@ function Flower({ x, y, r = 1, tone = "#ffb3d4", className = "" }) {
   );
 }
 
+/** A curly outline: straight segments between the points, each bulged outward into a soft bump. */
+function curls(points, bulge, cx = 100, cy = 88) {
+  let d = `M${points[0][0]} ${points[0][1]}`;
+  for (let i = 1; i < points.length; i += 1) {
+    const [x0, y0] = points[i - 1];
+    const [x1, y1] = points[i];
+    const mx = (x0 + x1) / 2;
+    const my = (y0 + y1) / 2;
+    const len = Math.hypot(mx - cx, my - cy) || 1;
+    const qx = mx + ((mx - cx) / len) * bulge;
+    const qy = my + ((my - cy) / len) * bulge;
+    d += `Q${qx.toFixed(1)} ${qy.toFixed(1)} ${x1} ${y1}`;
+  }
+  return d;
+}
+
+// His hair is fluffy and wavy all over: a cloud of soft curls rather than a smooth bob.
+const HAIR_OUTLINE = [
+  [46, 136], [37, 120], [33, 101], [36, 81], [44, 63], [57, 47], [74, 36], [92, 30], [110, 30],
+  [128, 35], [144, 46], [157, 62], [165, 80], [168, 100], [164, 120], [155, 136],
+];
+const BACK_HAIR = `${curls(HAIR_OUTLINE, 5.5)}L146 142H54Z`;
+const CROWN = "M44 104C42 64 66 41 100 41s58 23 56 63";
+// The fringe's lower edge, right to left: wavy locks that hook at the tips, down to the brows.
+const FRINGE_EDGE =
+  "M156 104C152 98 150 92 148 85C147 93 145 99 139 102C140 94 137 87 132 81C131 90 128 96 122 99C123 91 120 85 115 79C114 88 111 95 105 98C106 90 103 84 98 79C97 88 94 94 88 97C89 89 86 84 81 80C80 89 77 95 71 99C72 91 69 86 65 83C64 92 61 98 56 102C56 96 53 92 51 88C50 96 48 101 44 104";
+const FRINGE = `${CROWN}${FRINGE_EDGE.replace(/^M156 104/, "")}Z`;
+const BACK_HEAD = `${curls(
+  [[60, 146], [44, 132], [36, 114], [33, 95], [37, 76], [46, 59], [60, 45], [78, 35], [100, 30], [122, 35], [140, 45], [154, 59], [163, 76], [167, 95], [164, 114], [156, 132], [140, 146]],
+  5.5,
+)}C132 151 124 149 118 152C112 148 104 148 100 152C96 148 88 148 82 152C76 149 68 151 60 146Z`;
+const SIDE_LOCKS =
+  "M48 93C42 103 40 115 42 126C39 125 36 127 36 130C41 135 49 133 52 126C53 119 55 113 56 108C56 113 58 117 61 119C59 111 59 103 60 97ZM152 93C158 103 160 115 158 126C161 125 164 127 164 130C159 135 151 133 148 126C147 119 145 113 144 108C144 113 142 117 139 119C141 111 141 103 140 97Z";
+
 function Hair({ ids }) {
   return (
     <>
-      {/* The fluffy mass behind the face, with a curl out at each side of the nape. */}
+      <path d={BACK_HAIR} fill={`url(#${ids.hair})`} stroke={HAIR_LINE} strokeWidth="1.6" strokeLinejoin="round" />
+      {/* Curl texture on the crown and sides. */}
       <path
-        d="M41 136C29 120 28 97 34 78 40 55 57 36 79 29c14-6 32-6 46-1 22 7 38 25 42 49 5 21 2 42-7 59-4 6-11 6-13 0l-1-6H55l-2 6c-3 6-9 5-12 0Z"
-        fill={`url(#${ids.hair})`}
-        stroke={HAIR_LINE}
-        strokeWidth="1.6"
-        strokeLinejoin="round"
+        d="M58 56q5-7 13-5m10-11q7-5 15-2m12-1q8-3 14 2m11 7q7 0 10 7M41 92q-2-8 2-14m116 14q2-8-2-14M42 118q-3-6-1-12m118 12q3-6 1-12"
+        stroke={HAIR_DEEP}
+        strokeWidth="1.7"
+        fill="none"
+        strokeLinecap="round"
       />
-      <path d="M46 126q-6-10-6-24m118 24q6-10 6-24" stroke={HAIR_DEEP} strokeWidth="2" fill="none" strokeLinecap="round" />
     </>
   );
 }
 
 function Fringe({ ids }) {
-  // Wavy, choppy fringe swept a little to his right, tips curling, down to the brows.
-  const d =
-    "M45 106C37 72 61 45 100 45s65 27 55 61c-3-6-6-12-10-20-2 7-5 13-11 17-1-9-3-15-8-21-3 9-8 15-16 19 1-9-1-15-5-21-4 8-10 14-19 17 2-8 1-14-2-19-4 8-9 13-16 16 1-7 0-12-3-17-4 9-8 16-15 26Z";
   return (
     <>
-      <path d={d} fill={`url(#${ids.hair})`} stroke={HAIR_LINE} strokeWidth="1.6" strokeLinejoin="round" />
-      <path d={d} fill={`url(#${ids.sheen})`} />
-      {/* Strand lines and the side locks that frame his cheeks. */}
+      <path d={FRINGE} fill={`url(#${ids.hair})`} />
+      <path d={FRINGE} fill={`url(#${ids.sheen})`} />
+      <path d={FRINGE_EDGE} stroke={HAIR_LINE} strokeWidth="1.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+      {/* Strand lines running down into each lock. */}
       <path
-        d="M64 64q-8 10-9 22m25-30q-5 12-3 26m22-28q2 12-2 24m19-21q6 9 5 20m15-11q4 6 4 14"
+        d="M140 64q6 10 6 22m-22-34q5 12 4 26m-20-30q3 13 1 26m-18-25q0 12-4 24m-14-18q-4 9-5 19m-12-6q-4 6-5 12"
         stroke={HAIR_DEEP}
-        strokeWidth="1.6"
+        strokeWidth="1.5"
         fill="none"
         strokeLinecap="round"
       />
-      <path d="M46 92c-6 14-4 30 5 42 1-12 5-24 10-34Zm108 0c6 14 4 30-5 42-1-12-5-24-10-34Z" fill={`url(#${ids.hair})`} stroke={HAIR_LINE} strokeWidth="1.4" strokeLinejoin="round" />
-      <path d="M70 52q14-8 30-7" stroke="#ffe0ee" strokeWidth="3" fill="none" strokeLinecap="round" opacity=".8" />
+      <path d={SIDE_LOCKS} fill={`url(#${ids.hair})`} stroke={HAIR_LINE} strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M68 50q14-8 30-8" stroke="#ffe3f0" strokeWidth="3.2" fill="none" strokeLinecap="round" opacity=".85" />
+      <path d="M112 44q9 1 15 5" stroke="#ffe3f0" strokeWidth="2.2" fill="none" strokeLinecap="round" opacity=".6" />
     </>
   );
 }
@@ -200,7 +232,7 @@ function BackView({ ids }) {
     <g className="bamby__back">
       <path d="M94 148h12v12H94Z" fill="#f3cdb9" />
       <path
-        d="M80 156c10-4 30-4 40 0l11 10c3 10 4 20 3 32-22 6-46 6-68 0-1-12 0-22 3-32Z"
+        d="M80 156c10-4 30-4 40 0l11 10c3 8 4 16 3 25-22 6-46 6-68 0-1-9 0-17 3-25Z"
         fill={JACKET}
         stroke={JACKET_LINE}
         strokeWidth="1.6"
@@ -208,31 +240,26 @@ function BackView({ ids }) {
       <path d="M80 156c10-4 30-4 40 0l11 10c-9 4-19 3-31 6-12-3-22-2-31-6Z" fill={BLACK} />
       <path
         className="bamby__back-heart"
-        d="M100 192c-10-6-10-13-5-14 2.4-.4 4 1.2 5 3 1-1.8 2.6-3.4 5-3 5 1 5 8-5 14Z"
+        d="M100 186c-10-6-10-13-5-14 2.4-.4 4 1.2 5 3 1-1.8 2.6-3.4 5-3 5 1 5 8-5 14Z"
         fill={PINK}
         stroke="#c4568d"
         strokeWidth="1"
       />
-      <path d="M66 197c22 6 46 6 68 0v4c-22 6-46 6-68 0Z" fill={PINK} />
+      <path d="M66 190c22 6 46 6 68 0v4c-22 6-46 6-68 0Z" fill={PINK} />
       <g className="bamby__head bamby__head--back">
+        <ellipse cx="38" cy="112" rx="6" ry="9" fill="#f2c6b2" stroke={SKIN_LINE} strokeWidth="1" />
+        <ellipse cx="162" cy="112" rx="6" ry="9" fill="#f2c6b2" stroke={SKIN_LINE} strokeWidth="1" />
+        <path d={BACK_HEAD} fill={`url(#${ids.hair})`} stroke={HAIR_LINE} strokeWidth="1.6" strokeLinejoin="round" />
         <path
-          d="M44 128C30 106 33 70 52 50c15-16 33-21 48-21s34 5 48 21c19 20 22 56 8 78-6 10-18 18-28 20H72c-10-2-22-10-28-20Z"
-          fill={`url(#${ids.hair})`}
-          stroke={HAIR_LINE}
-          strokeWidth="1.6"
-        />
-        <path
-          d="M66 70q8 30 4 64m30-96q-4 40 0 100m34-68q-8 30-4 64M50 100q4 18 12 32m88-32q-4 18-12 32"
+          d="M70 60q-6 12-3 24m31-46q-4 14-1 26m30-18q4 12 1 24M52 96q-2 10 2 20m96-20q2 10-2 20M66 100q-4 12 0 24m34-30q-3 14 0 26m34-20q4 12 0 24"
           stroke={HAIR_DEEP}
-          strokeWidth="1.8"
+          strokeWidth="1.7"
           fill="none"
           strokeLinecap="round"
         />
         <path d="M82 140q6 8 0 14m36-14q-6 8 0 14m-18-16v14" stroke={HAIR_DEEP} strokeWidth="1.8" fill="none" strokeLinecap="round" />
         <path d="M100 30c-3-9 5-16 13-12-6 1-8 5-7 10" fill={HAIR} stroke={HAIR_LINE} strokeWidth="1.4" />
-        <g transform="translate(0 -2)">
-          <path d="M78 50q11-4 22-1.2 11-2.8 22 1.2" stroke="#d2417f" strokeWidth="2.4" fill="none" />
-        </g>
+        <HeartShades />
       </g>
     </g>
   );
@@ -284,12 +311,12 @@ export default function BambyBody({
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id={ids.hair} x1="0" y1="0" x2=".25" y2="1">
-          <stop stopColor="#ffc4dc" />
-          <stop offset=".45" stopColor={HAIR} />
-          <stop offset="1" stopColor="#e88ab4" />
+        <linearGradient id={ids.hair} gradientUnits="userSpaceOnUse" x1="80" y1="28" x2="112" y2="150">
+          <stop stopColor="#ffc6de" />
+          <stop offset=".4" stopColor={HAIR} />
+          <stop offset="1" stopColor="#e584b0" />
         </linearGradient>
-        <linearGradient id={ids.sheen} x1="0" y1="0" x2=".2" y2="1">
+        <linearGradient id={ids.sheen} gradientUnits="userSpaceOnUse" x1="90" y1="40" x2="104" y2="104">
           <stop offset=".15" stopColor="#fff" stopOpacity="0" />
           <stop offset=".38" stopColor="#fff" stopOpacity=".38" />
           <stop offset=".6" stopColor="#fff" stopOpacity="0" />
@@ -334,21 +361,21 @@ export default function BambyBody({
               <g className="bamby__torso">
                 <path d="M94 147h12v13H94Z" fill="#f3cdb9" />
                 <path
-                  d="M80 156c10-4 30-4 40 0l11 10c3 10 4 20 3 32-22 6-46 6-68 0-1-12 0-22 3-32Z"
+                  d="M80 156c10-4 30-4 40 0l11 10c3 8 4 16 3 25-22 6-46 6-68 0-1-9 0-17 3-25Z"
                   fill={JACKET}
                   stroke={JACKET_LINE}
                   strokeWidth="1.6"
                 />
-                <path d="M131 166c3 10 4 20 3 32-6 2-11 3-17 3 6-12 9-24 14-35Z" fill="#e7e0f3" opacity=".8" />
+                <path d="M131 166c3 8 4 16 3 25-6 2-11 3-17 3 6-10 9-19 14-28Z" fill="#e7e0f3" opacity=".8" />
                 <path d="M80 156c10-4 30-4 40 0l11 10c-9 4-19 3-31 6-12-3-22-2-31-6Z" fill={BLACK} />
                 <path d="M90 152.5h20l-2.5 6.5h-15Z" fill={BLACK} stroke="#4a4258" strokeWidth=".8" />
-                <path d="M100 160v40" stroke={PINK} strokeWidth="1.7" />
-                <path d="M71 171c-2 9-2 18-1 26m59-26c2 9 2 18 1 26" stroke={PINK} strokeWidth="1.6" fill="none" strokeLinecap="round" />
+                <path d="M100 160v33" stroke={PINK} strokeWidth="1.7" />
+                <path d="M71 171c-2 7-2 13-1 19m59-19c2 7 2 13 1 19" stroke={PINK} strokeWidth="1.6" fill="none" strokeLinecap="round" />
                 <path
-                  d="M114 183c-5-3-5-6.6-2.6-7 1.2-.2 2 .6 2.6 1.5.6-.9 1.4-1.7 2.6-1.5 2.4.4 2.4 4-2.6 7Z"
+                  d="M114 179c-5-3-5-6.6-2.6-7 1.2-.2 2 .6 2.6 1.5.6-.9 1.4-1.7 2.6-1.5 2.4.4 2.4 4-2.6 7Z"
                   fill={PINK}
                 />
-                <path d="M66 197c22 6 46 6 68 0v4c-22 6-46 6-68 0Z" fill={PINK} stroke="#c4568d" strokeWidth=".8" />
+                <path d="M66 190c22 6 46 6 68 0v4c-22 6-46 6-68 0Z" fill={PINK} stroke="#c4568d" strokeWidth=".8" />
               </g>
               <g className="bamby__head">
                 <Hair ids={ids} />
@@ -369,18 +396,17 @@ export default function BambyBody({
                       <rect x="56" y="99" width="88" height="28" rx="14" fill={`url(#${ids.skin})`} />
                       <path d="M68 106l14 6.5-14 6.5M132 106l-14 6.5 14 6.5" fill="none" stroke="#3b2440" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                     </g>
-                    <Flower x={36} y={84} r={1.15} className="bamby__flower--1" />
-                    <Flower x={164} y={80} r={1.05} tone="#fff0f7" className="bamby__flower--2" />
-                    <Flower x={28} y={124} r={0.85} tone="#fff0f7" className="bamby__flower--3" />
-                    <Flower x={172} y={122} r={0.95} className="bamby__flower--4" />
-                    <Flower x={58} y={34} r={0.8} tone="#ffd0e6" className="bamby__flower--5" />
-                    <Flower x={146} y={30} r={0.9} tone="#ffd0e6" className="bamby__flower--6" />
+                    <Flower x={32} y={84} r={1.6} className="bamby__flower--1" />
+                    <Flower x={168} y={78} r={1.5} tone="#fff0f7" className="bamby__flower--2" />
+                    <Flower x={26} y={124} r={1.2} tone="#fff0f7" className="bamby__flower--3" />
+                    <Flower x={174} y={120} r={1.3} className="bamby__flower--4" />
+                    <Flower x={54} y={32} r={1.15} tone="#ffd0e6" className="bamby__flower--5" />
+                    <Flower x={148} y={28} r={1.25} tone="#ffd0e6" className="bamby__flower--6" />
                   </g>
                 )}
               </g>
-              <Arm side="l">
-                {known === "snack" && <Peach />}
-              </Arm>
+              {known === "snack" && <Peach />}
+              <Arm side="l" />
               <Arm side="r" />
             </>
           )}
@@ -403,6 +429,15 @@ export default function BambyBody({
       </g>
       {known === "vroom" && (
         <g className="bamby__vroom" stroke="#b9a6d8" strokeWidth="2.4" strokeLinecap="round" fill="none">
+          {/* The bike is imaginary (that's the joke), so it's only a dashed sketch: seen head-on,
+              handlebars in his hands, a wheel between his knees, a headlight, two mirrors. */}
+          <g className="bamby__bike" strokeDasharray="3.5 3.5" strokeWidth="2" opacity=".8">
+            <path d="M72 184h56M72 184l-6-12m62 12 6-12" />
+            <circle cx="64" cy="168" r="4" />
+            <circle cx="136" cy="168" r="4" />
+            <ellipse cx="100" cy="219" rx="7" ry="13" />
+            <path d="M92 186l4 20m12-20-4 20" />
+          </g>
           <path className="bamby__speed bamby__speed--1" d="M30 170h-20" />
           <path className="bamby__speed bamby__speed--2" d="M34 190h-26" />
           <path className="bamby__speed bamby__speed--3" d="M30 210h-16" />
@@ -439,12 +474,19 @@ export default function BambyBody({
 }
 
 function Peach() {
+  // A big ripe peach with a bite out of it, held up at his chest in both hands.
   return (
     <g className="bamby__peach">
-      <circle cx="80" cy="194" r="9" fill="#ffc2a6" stroke="#e8907a" strokeWidth="1.2" />
-      <path d="M80 186q-3 8 0 16" stroke="#f0a28c" strokeWidth="1.2" fill="none" />
-      <circle cx="84" cy="191" r="3" fill="#ff9fb0" opacity=".6" />
-      <path d="M80 185q3-5 8-4-3 4-8 4Z" fill="#8cc07a" stroke="#5f9152" strokeWidth=".8" />
+      <path
+        d="M100 150c-11 0-16 7-16 15 0 9 8 15 16 15s16-6 16-15c0-4-1.5-7-4-9-2.4 1.6-5.4.2-5.4-2.6-1.6-2-4-3.4-6.6-3.4Z"
+        fill="#ffc6a8"
+        stroke="#e58d78"
+        strokeWidth="1.3"
+      />
+      <path d="M100 151q-4 13 0 28" stroke="#f0a089" strokeWidth="1.2" fill="none" />
+      <ellipse cx="92" cy="161" rx="5.5" ry="7" fill="#ff9db3" opacity=".55" />
+      <path d="M92 157q2-3 5-3" stroke="#fff" strokeWidth="1.6" fill="none" strokeLinecap="round" opacity=".8" />
+      <path d="M100 150q2-7 11-7-3 6-11 7Z" fill="#8cc07a" stroke="#5f9152" strokeWidth=".8" />
     </g>
   );
 }
