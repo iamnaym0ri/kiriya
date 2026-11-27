@@ -1,7 +1,7 @@
 // Small pieces every events & merch screen shares: the hand-drawn kind doodles, date tiles,
 // status chips, the save heart, "new" marks, source links and the live countdown.
 import { memo, useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import {
   chipsFor,
   dayNumber,
@@ -250,11 +250,13 @@ export function Countdown({ to, label, compact = false }) {
 /** One event or drop as a row: date tile, name, where and when, chips; opens its page. */
 export function EventRow({ item, now, save = false, showNew = true }) {
   const mine = useEventsPersonal();
+  const { pathname } = useLocation();
+  const from = pathname.startsWith("/world/events") ? "events" : pathname.startsWith("/world/saves") ? "saved" : "home";
   const newness = showNew ? mine.newness(item) : null;
   const where = item.kind === "merch" ? item.drop?.where?.[0]?.name : item.venue?.name;
   return (
     <li className="app-row ev-row" data-ended={["ended", "sold_out", "cancelled"].includes(phaseOf(item, now).phase) ? "" : undefined}>
-      <Link className="ev-row__link" to={eventPath(item.id)}>
+      <Link className="ev-row__link" to={eventPath(item.id)} state={{ from }}>
         <DateTile item={item} now={now} />
         <span className="ev-row__text">
           <span className="ev-row__name">

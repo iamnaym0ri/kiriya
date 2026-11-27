@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, Navigate } from "react-router";
+import { isAppShell } from "../../lib/native.js";
 import { SectionHeading } from "../collection/Collections.jsx";
 import { FeedCard, FeedProgress, FeedSection, useSectionFeed } from "../feeds/FeedPieces.jsx";
 
 const options = (entries, key) =>
   [...new Set(entries.flatMap((e) => e.primary.tags?.[key] ?? []))].sort();
 
+// Inside the app, merch lives in the events & merch list (events-ui); the website keeps its shelf.
 export default function MerchPage() {
+  return isAppShell() ? <Navigate replace to="/world/events?kind=merch" /> : <WebMerchPage />;
+}
+
+function WebMerchPage() {
   const shelf = useSectionFeed("merch");
   const [fandom, setFandom] = useState("");
   const [type, setType] = useState("");
