@@ -238,6 +238,19 @@ html.app-shell .home-glance .app-row__icon[data-kind="heart"] { background: #f6e
   stroke-width: 2.4;
   stroke-linecap: round;
 }
+/* Narrower phones have less margin beside the frame: the corner charms tuck in so none is cut by the
+   screen's edge. */
+@media (max-width: 390px) {
+  .home-stage__star {
+    right: -7px;
+  }
+  .home-stage__spark {
+    right: -6px;
+  }
+  .home-stage__heart {
+    left: -9px;
+  }
+}
 @media (prefers-reduced-motion: no-preference) {
   html[data-little-motion="on"] .home-stage__star {
     animation: home-star-twinkle 3.6s ease-in-out infinite;
