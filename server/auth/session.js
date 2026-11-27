@@ -115,12 +115,24 @@ export async function readSession(c) {
   return session;
 }
 
+/**
+ * "See it as kiriya" (src/lib/viewAs.js): Josh's own session, sending `x-view-as: kiriya`, is
+ * answered as hers wherever she could go. Reads only: anything that would change something is
+ * turned away, so the preview can't reach her, mark anything as seen or speak for her.
+ */
+const PREVIEW_MESSAGE = "just peeking at her side ♡ switch back to josh to change things.";
+const previewsHer = (c, session, roles) => session.role === "admin" && roles.includes("kiriya") && c.req.header("x-view-as") === "kiriya";
+
 /** Middleware: only these roles get through; everyone else gets a plain 401. */
 export function requireRole(...roles) {
   return async (c, next) => {
-    const session = await readSession(c);
+    let session = await readSession(c);
     if (!session || !roles.includes(session.role)) {
       return c.json({ error: "locked", message: "Enter the passphrase to open this." }, 401);
+    }
+    if (previewsHer(c, session, roles)) {
+      if (c.req.method !== "GET" && c.req.method !== "HEAD") return c.json({ error: "preview", message: PREVIEW_MESSAGE }, 403);
+      session = { ...session, role: "kiriya", previewBy: "admin" };
     }
     c.set("session", session);
     c.header("Cache-Control", "private, no-store");

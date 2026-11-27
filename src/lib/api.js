@@ -7,6 +7,8 @@
 // sessionStorage (it survives an in-app reload, and is gone when the app is closed: Face ID then
 // opens it again). Private photo links arrive signed for this, see server/lib/mediaLinks.js.
 
+import { PREVIEW_MESSAGE, blockedInPreview, speaksAsHer } from "./viewAs.js";
+
 export class ApiError extends Error {
   constructor(status, body) {
     super(body?.message ?? `Request failed (${status})`);
@@ -50,6 +52,8 @@ export const apiUrl = (path) => `${API_ORIGIN}/api${path}`;
 export const authHeaders = () => (isBundledApp && token ? { Authorization: `Bearer ${token}` } : {});
 
 export async function api(path, { method = "GET", body, signal } = {}) {
+  // Josh previewing her side (lib/viewAs.js): reads speak as her, and nothing can be changed.
+  if (blockedInPreview(path, method)) throw new ApiError(403, { error: "preview", message: PREVIEW_MESSAGE });
   // Changing the passphrase also hands back a fresh session (the old one may be signed out with it).
   const session = path === "/session" || path.startsWith("/session/") || path.startsWith("/me/passphrase");
   const response = await fetch(apiUrl(path), {
@@ -61,6 +65,7 @@ export async function api(path, { method = "GET", body, signal } = {}) {
       ...authHeaders(),
       ...(isBundledApp && session ? { "x-kw-token": "1" } : {}),
       ...(method !== "GET" ? { "Content-Type": "application/json", "x-kw": "1" } : {}),
+      ...(speaksAsHer(path) ? { "x-view-as": "kiriya" } : {}),
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });

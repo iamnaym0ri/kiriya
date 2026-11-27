@@ -42,7 +42,8 @@ export default function NativeApp() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const session = useSession();
-  const role = session.data?.role ?? null;
+  // This phone's own pieces (widget key, badges) follow who really signed in, even in the preview.
+  const role = session.data?.realRole ?? session.data?.role ?? null;
   // The bundled app keeps its token for the life of the app (an in-app update reloads the page
   // without closing it), so only a fresh start needs Face ID.
   const [locked, setLocked] = useState(() => Boolean(enrolledDevice()) && !(isBundledApp && appToken()));

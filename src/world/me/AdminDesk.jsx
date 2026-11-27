@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
 import { api } from "../../lib/api.js";
-import { useIsAdmin } from "../../lib/session.js";
+import { switchViewAs, useIsAdmin } from "../../lib/session.js";
 import { Group, Note, Row, SwitchRow } from "./parts.jsx";
 
 // Josh's desk inside his tab: shortcuts into the places where he edits what she sees in place
@@ -31,11 +32,19 @@ const sgTime = (value) => new Date(value).toLocaleString("en-SG", { timeZone: "A
 
 export default function AdminDesk({ jar }) {
   const test = useAppTest();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  // Her side of the app, read-only, until "back to josh" (lib/viewAs.js, shared/ViewAsBanner.jsx).
+  const seeHerSide = async () => {
+    await switchViewAs(queryClient, "kiriya");
+    navigate("/world", { replace: true });
+  };
   const waiting = jar?.counts?.waiting ?? 0;
   const fresh = jar?.counts?.inJar ?? 0;
   return (
     <>
       <Group title="your desk" note="every change shows on her phone the next time she opens the app.">
+        <Row onClick={seeHerSide} icon="eye" tone="plum" label="see it as kiriya" hint="her app exactly as she sees it. just looking: nothing changes" more />
         <Row to="/world" icon="home" tone="lilac" label="edit home" hint="tap the pencils on the greeting, photos, songs and pinboard" />
         <Row to="/world/mail?compose=note" icon="note" tone="pink" label="write a little note" />
         <Row to="/world/mail?compose=letter" icon="letter" tone="peach" label="write a letter" />

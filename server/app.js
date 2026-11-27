@@ -32,7 +32,7 @@ app.use(
   "*",
   cors({
     origin: (origin) => (env.appOrigins.includes(origin) ? origin : null),
-    allowHeaders: ["Authorization", "Content-Type", "x-kw", "x-kw-token", "Range"],
+    allowHeaders: ["Authorization", "Content-Type", "x-kw", "x-kw-token", "x-view-as", "Range"],
     allowMethods: ["GET", "HEAD", "PUT", "POST", "PATCH", "DELETE"],
     maxAge: 86400,
     credentials: false,

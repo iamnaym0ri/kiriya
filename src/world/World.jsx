@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useNavigate } from "react-router";
 import { useSession } from "../lib/session.js";
 import PageLoader from "../shared/PageLoader.jsx";
 import UnlockSheet from "../shared/UnlockSheet.jsx";
+import ViewAsBanner from "../shared/ViewAsBanner.jsx";
 import WorldShell from "./WorldShell.jsx";
 import TodayPage from "./today/TodayPage.jsx";
 import HomeSection from "./home/HomeSection.jsx";
@@ -51,7 +52,9 @@ export default function World() {
 
   const Home = isAppShell() ? HomeSection : TodayPage;
   return (
-    <Routes>
+    <>
+      <ViewAsBanner />
+      <Routes>
       <Route element={<WorldShell />}>
         <Route index element={<Home />} />
         <Route path="letters" element={lazyPage(LettersPage)} />
@@ -77,6 +80,7 @@ export default function World() {
         {GameLab && <Route path="game-lab" element={lazyPage(GameLab)} />}
         <Route path="*" element={<Home />} />
       </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 }

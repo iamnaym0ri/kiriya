@@ -59,7 +59,8 @@ chatRoutes.get("/messages", async (c) => {
     unreadMessages(db, role(c)),
     names(db),
   ]);
-  return c.json({ ...page, reads, typing, unread, me: role(c), names: who, live: ablyConfigured() });
+  // Josh previewing her side reads the chat by polling: a live token would let his phone speak as her.
+  return c.json({ ...page, reads, typing, unread, me: role(c), names: who, live: ablyConfigured() && !c.get("session").previewBy });
 });
 
 chatRoutes.get("/summary", async (c) => {
@@ -103,6 +104,7 @@ chatRoutes.post("/typing", async (c) => {
 });
 
 chatRoutes.get("/realtime", async (c) => {
+  if (c.get("session").previewBy) return c.json({ error: "preview", message: "Live chat is off while you peek at her side." }, 403);
   if (!ablyConfigured()) return c.json({ error: "not_configured", message: "Live chat isn’t set up; checking every few seconds instead." }, 503);
   return c.json(await realtimeToken(role(c)));
 });

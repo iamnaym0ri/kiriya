@@ -1,26 +1,56 @@
+import { useCallback, useSyncExternalStore } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, setAppToken } from "./api.js";
+import { setViewingAs, subscribeViewAs, viewingAs } from "./viewAs.js";
 import { clearPersistedCache } from "./persist.js";
 import { forgetThisPhone, isNativeApp } from "./native.js";
 
 export const sessionKey = ["session"];
 
+/** "kiriya" while Josh previews her side of the app (lib/viewAs.js), else null. */
+export const useViewingAs = () => useSyncExternalStore(subscribeViewAs, viewingAs, () => null);
+
+/**
+ * The signed-in session. While Josh previews her side, `role` reads "kiriya" everywhere (so every
+ * screen draws her version) and `realRole` still says "admin".
+ */
 export function useSession() {
+  const as = useViewingAs();
+  const select = useCallback(
+    (data) => (as && data?.role === "admin" ? { ...data, role: as, realRole: data.role, previewing: true } : { ...data, realRole: data?.role ?? null }),
+    [as],
+  );
   return useQuery({
     queryKey: sessionKey,
     queryFn: () => api("/session"),
     staleTime: 60_000,
     // Sessions last two days; coming back to the app is when that's most likely to have happened.
     refetchOnWindowFocus: true,
+    select,
   });
 }
 
 /** Josh's sign-in: the same app as hers, plus the controls to change what she sees. */
 export const useIsAdmin = () => useSession().data?.role === "admin";
 
+/** Who is really signed in on this phone, preview or not (device pieces: widgets, badges). */
+export const useRealRole = () => useSession().data?.realRole ?? null;
+
+/**
+ * Starts or ends the preview. Everything loaded so far was Josh's view, so it is dropped (and the
+ * copy kept on the device) and loads again from her side, or back from his.
+ */
+export async function switchViewAs(queryClient, value) {
+  await queryClient.cancelQueries();
+  setViewingAs(value);
+  queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== sessionKey[0] });
+  await clearPersistedCache().catch(() => {});
+}
+
 /** Forgets everything private on this device and shows the passphrase again. */
 export async function forgetSession(queryClient) {
   window.dispatchEvent(new Event("kiriya:locked"));
+  setViewingAs(null);
   await queryClient.cancelQueries();
   // Keep the session query so mounted providers receive the locked state.
   // Removing it first leaves their observers attached to the old record.
