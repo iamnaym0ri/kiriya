@@ -71,7 +71,7 @@ const mix = (value, amount, into) => formatHex(interpolate([solid(into), solid(v
 const ratio = (a, b) => wcagContrast(solid(a), solid(b));
 
 test("Every theme defines the whole palette the chat takes", () => {
-  const contract = ["--chat-active", "--chat-sleep", "--chat-danger", "--chat-bg", "--chat-ink", "--chat-meta", "--chat-line", "--chat-accent", "--chat-accent-ink", "--chat-mine", "--chat-mine-ink", "--chat-theirs", "--chat-theirs-ink", "--chat-bar", "--chat-bar-ink", "--chat-field", "--chat-field-ink", "--chat-menu", "--chat-menu-ink", "--chat-reply"];
+  const contract = ["--chat-active", "--chat-sleep", "--chat-active-ink", "--chat-sleep-ink", "--chat-danger", "--chat-bg", "--chat-ink", "--chat-meta", "--chat-line", "--chat-accent", "--chat-accent-ink", "--chat-mine", "--chat-mine-ink", "--chat-theirs", "--chat-theirs-ink", "--chat-bar", "--chat-bar-ink", "--chat-field", "--chat-field-ink", "--chat-menu", "--chat-menu-ink", "--chat-reply"];
   assert(THEMES.length >= 8);
   for (const key of ["white", "cream", "dark", "love", "lilac"]) assert(THEMES.some((theme) => theme.key === key), key);
   for (const { key } of THEMES) for (const name of contract) assert(themeVars[key]?.[name], `${key} is missing ${name}`);
@@ -92,6 +92,8 @@ test("Header, composer, menus, quotes and the background's own words pass WCAG A
       ["bar", "accent", 3],
       ["bar", "active", 3],
       ["bar", "sleep", 3],
+      ["bar", "active-ink", 4.5],
+      ["bar", "sleep-ink", 4.5],
       ["field", "field-ink", 4.5],
       ["field", "meta", 3],
       ["menu", "menu-ink", 4.5],

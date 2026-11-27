@@ -110,17 +110,17 @@
   background: color-mix(in srgb, var(--chat-meta) 60%, transparent);
 }
 .chat__status:is([data-state="active"], [data-state="typing"]) .chat__dot {
-  background: #3fae74;
+  background: var(--chat-active, #3fae74);
 }
 .chat__status:is([data-state="active"], [data-state="typing"]) .chat__state {
-  color: color-mix(in srgb, #2f8d5b 80%, var(--chat-meta));
+  color: var(--chat-active-ink, color-mix(in srgb, #2f8d5b 80%, var(--chat-meta)));
 }
 .chat__status:is([data-state="active"], [data-state="typing"]) .chat__dot::after {
   content: "";
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  background: #3fae74;
+  background: var(--chat-active, #3fae74);
   opacity: 0;
   animation: chat-dot 2.4s ease-out infinite;
 }
@@ -131,11 +131,11 @@
   flex: none;
   width: 11px;
   height: 11px;
-  fill: #e0a43c;
+  fill: var(--chat-sleep, #e0a43c);
   rotate: -20deg;
 }
 .chat__status[data-state="sleep"] .chat__state {
-  color: color-mix(in srgb, #b9802a 85%, var(--chat-meta));
+  color: var(--chat-sleep-ink, color-mix(in srgb, #b9802a 85%, var(--chat-meta)));
 }
 @media (prefers-reduced-motion: reduce) {
   .chat__dot::after {
