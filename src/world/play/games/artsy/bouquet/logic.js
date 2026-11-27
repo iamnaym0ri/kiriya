@@ -6,7 +6,7 @@
 export const W = 300;
 export const H = 400;
 export const TIE = [150, 300];
-export const FAN = { cx: 150, cy: 166, rx: 120, ry: 116, top: 40, bottom: 262 };
+export const FAN = { cx: 150, cy: 162, rx: 118, ry: 114, top: 40, bottom: 250 };
 export const MAX_FLOWERS = 40;
 export const MAX_SHELF = 24;
 export const MIN_SIZE = 0.45;
