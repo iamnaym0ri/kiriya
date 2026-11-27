@@ -18,9 +18,9 @@ Read `PLAN.md` (ground rules, decisions) and `HANDOFF.md` (how the code fits tog
 | Home centre stage | Editable by Josh: the greeting ("there you are, lovely."), the photo carousel, the caption under it ("ur cosplay is cute. u make it unforgettable."). |
 | Songs | Josh uploads **audio files** (name, artist, cover art and length read from the file's own tags; cover art looked up in an open database when missing) or pastes **YouTube links** (YouTube's own small player, inside the card, as its terms require). A file plays in our own player and keeps playing with the screen locked. Several songs, for her to discover each time she opens the app. |
 | Pinboard | The birthday wish and the "From Josh" note become a pinboard: the birthday wish stays pinned; below it, notes Josh pins and changes from his phone. Something new pinned shows as new. |
-| Characters | Five: **Maomao** (refined), **Miku as in "Confessions of a Rotten Girl"** (SAWTOWNE, 2025; the agent confirms the look), **Bambi** (PLAVE), **Hatsune Miku**, **KAITO**. She picks one in her settings; another one drops by for a visit now and then (call-and-response bubbles). |
+| Characters | Five: **Maomao** (refined), **Miku as in "Confessions of a Rotten Girl"** (SAWTOWNE, 2025; the agent confirms the look), **Bamby** (PLAVE), **Hatsune Miku**, **KAITO**. She picks one in her settings; another one drops by for a visit now and then (call-and-response bubbles). |
 | Where they live | The app's home section only (the website keeps Maomao on every page, as now). |
-| Movement | Invisible levels across the screen. Wherever a character walks, a cloud platform forms under its feet (in front of it as it goes, fading away behind). Each character has its own platform design and its own way of moving: Miku sits on her cloud swinging her legs, Maomao stands and ponders, Bambi roams and does what he does best. |
+| Movement | Invisible levels across the screen. Wherever a character walks, a cloud platform forms under its feet (in front of it as it goes, fading away behind). Each character has its own platform design and its own way of moving: Miku sits on her cloud swinging her legs, Maomao stands and ponders, Bamby roams and does what he does best. |
 | Scope | Everything: the renovation, the characters, phase 5 (quizzes + 25 games) and phase 6 (events & merch). |
 | Shipping | Josh pushes nothing until everything is done; then the coordinator deploys this as one new version. Local commits are fine. |
 
@@ -39,7 +39,7 @@ Read `PLAN.md` (ground rules, decisions) and `HANDOFF.md` (how the code fits tog
   voice clips or song audio, and never quote song lyrics beyond a few words. Dialogue is original
   and in character. Credits: Crypton characters (Miku, KAITO) under the Piapro Character License
   ("© Crypton Future Media, INC. www.piapro.net" + PCL link); Maomao (The Apothecary Diaries, ©
-  Natsu Hyuuga / Shufunotomo / Square Enix) and Bambi (PLAVE, © VLAST) as fan art credits.
+  Natsu Hyuuga / Shufunotomo / Square Enix) and Bamby (PLAVE, © VLAST) as fan art credits.
 - **Writing in the UI:** short, warm, lowercase-friendly, in the voice the site already uses.
   Never mention AI, agents or how something was made, in the UI or in any copy she sees.
 - **Phone first:** iPhone 11 (414×896 pt, the real test phone) and 375 pt wide phones. Safe areas,
@@ -334,7 +334,7 @@ Josh tested the first build on his iPhone. What he asked for, and who does it:
 | --- | --- | --- |
 | r2-events | `r2/events`, `~/kiriya-wt/r2-events`, 5311 | Events and merch, engine and screens (`worker/**`, `server/routes/events*.js`, `server/lib/events/**`, the events tables, `src/world/events/**`, `src/world/merch/**`, `src/world/home/EventsBlock.jsx`). |
 | r2-stage | `r2/stage`, `~/kiriya-wt/r2-stage`, 5312 | The companion engine (tap menu, "stay"), plus refining **Maomao**, **Hatsune Miku** and **KAITO** (`src/world/companions/**` except `characters/miku-rotten` and `characters/bambi`; `shared/companions.js`). |
-| r2-chars | `r2/chars`, `~/kiriya-wt/r2-chars`, 5313 | Refining **Rotten Girl Miku** and **Bambi** (`src/world/companions/characters/miku-rotten/**`, `characters/bambi/**`). |
+| r2-chars | `r2/chars`, `~/kiriya-wt/r2-chars`, 5313 | Refining **Rotten Girl Miku** and **Bamby** (`src/world/companions/characters/miku-rotten/**`, `characters/bambi/**`). |
 | r2-play | `r2/play`, `~/kiriya-wt/r2-play`, 5314 | Play: paper doll, a new game in place of the sticker scene, kaleidoscope, a dedicated doodle gallery (`src/world/play/**` except quizzes, `src/world/studio/**`). |
 | r2-home | `r2/home`, `~/kiriya-wt/r2-home`, 5315 | Home layout and header, the background animation's smoothness, the note jar, and the spacing/overflow pass over home, chat, notes & letters and the last tab (`src/world/home/**` except `EventsBlock.jsx`, `src/world/WorldShell.*`, `src/styles/**`, `src/shared/AppTabBar.*`, `src/shared/play/PlayfulWorld.*`, `src/world/mail/**`, `src/world/notes/**`, `src/world/letters/**`, `src/world/chat/**` (layout), `src/world/me/**` (layout)). |
 | coordinator | `connection-refactor` | Chat not loading (fixed d0ae76c: Vercel's rewrite echoes `route=`), the "see it as kiriya" preview for Josh, merging, the iPhone and simulator pass, the deploy. |
@@ -389,6 +389,6 @@ research (official profiles, wikis, the source works, fan consensus; looking at 
 reference is fine, but everything drawn is original SVG, nothing traced or embedded). Lines don't
 have to be SFW where the character would go there: **Rotten Girl Miku** is a fujoshi, so BL
 shipping, seme/uke talk, fanfic and doujin jokes, nosebleeds, flustered yelling and her paddle are
-in character. Keep it to innuendo and comedy, never explicit sexual description. **Bambi** is the
+in character. Keep it to innuendo and comedy, never explicit sexual description. **Bamby** (official romanisation; the id stays `bambi`) is the
 avatar of a real performer: playful and flirty-cute is fine, nothing sexual. Nothing may name
 real people other than the characters themselves.
