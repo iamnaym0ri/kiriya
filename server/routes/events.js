@@ -6,7 +6,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { requireRole } from "../auth/session.js";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { getDb, schema } from "../db/client.js";
 import { env } from "../env.js";
 import { localDay } from "../lib/time.js";
@@ -303,8 +303,22 @@ eventAdminRoutes.get("/status", async (c) => {
     worker: worker ? { ...worker, healthy: Boolean(fresh) } : { healthy: false, lastTickAt: null, message: "the worker hasn't checked in yet" },
     queue: await signalCounts(handle),
     sources: sources.sources ?? [],
+    // The latest research failures with their error, so a broken key or request shows here.
+    recentFailures: (await handle.select({ id: schema.eventSignals.id, origin: schema.eventSignals.origin, title: schema.eventSignals.title, message: schema.eventSignals.message, attempts: schema.eventSignals.attempts, updatedAt: schema.eventSignals.updatedAt })
+      .from(schema.eventSignals).where(eq(schema.eventSignals.status, "failed")).orderBy(desc(schema.eventSignals.updatedAt)).limit(8)),
     recentUpdates: (await recentLog(handle, { limit: 15 })).map((e) => ({ id: e.id, eventId: e.eventId, at: new Date(e.at).toISOString(), kind: e.kind, title: e.title, push: e.push, pushedAt: e.pushedAt ? new Date(e.pushedAt).toISOString() : null })),
   });
+});
+
+/** After a fix (a key, a bad request): puts every failed research item back in the queue. */
+eventAdminRoutes.post("/retry-failed", async (c) => {
+  const handle = await db();
+  const rows = await handle
+    .update(schema.eventSignals)
+    .set({ status: "queued", attempts: 0, message: "back in the queue", updatedAt: new Date() })
+    .where(eq(schema.eventSignals.status, "failed"))
+    .returning({ id: schema.eventSignals.id });
+  return c.json({ requeued: rows.length });
 });
 
 eventAdminRoutes.patch("/:id", async (c) => {

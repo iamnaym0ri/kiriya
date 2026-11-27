@@ -45,7 +45,8 @@ export function investigationParams({ signals, current = null, today, refresh = 
     output_config: { effort: "medium" },
     system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
     tools: [
-      { type: "web_search_20260209", name: "web_search", max_uses: refresh ? 3 : 5, user_location: { type: "approximate", city: "Singapore", country: "SG", timezone: "Asia/Singapore" } },
+      // No user_location: web search rejects SG as its country code (the prompt already says Singapore).
+      { type: "web_search_20260209", name: "web_search", max_uses: refresh ? 3 : 5 },
       { type: "web_fetch_20260209", name: "web_fetch", max_uses: refresh ? 4 : 6, max_content_tokens: 8000, blocked_domains: blocked },
       { name: "submit_dossier", description: TOOL_DESCRIPTION, input_schema: draftJsonSchema() },
     ],
