@@ -7,7 +7,7 @@ import { useNotes } from "../../lib/notes.js";
 import { useIsAdmin } from "../../lib/session.js";
 import { useToday } from "../../lib/world.js";
 import { tapByKey } from "../../../shared/taps.js";
-import { nameOf, useJarSummary } from "../mail/useMail.js";
+import { letterIdOf, nameOf, useJarSummary } from "../mail/useMail.js";
 import HomeIcon from "./icons.jsx";
 
 const plural = (count, one, many) => (count === 1 ? one : many.replace("#", count > 9 ? "9+" : count));
@@ -73,15 +73,19 @@ export default function GlanceCard({ home }) {
   const rows = [];
   // New notes come first: his little notes, then the jar. Each is marked new until she's seen it
   // (opening a note, or pulling from the jar, clears it everywhere at once).
-  const unreadNote = notes?.notes?.find((note) => !note.openedAt);
-  if (notes?.unread > 0)
+  // A new letter's announcement is the letter's own row below, not a little note.
+  const unreadNotes = (notes?.notes ?? []).filter((note) => !note.openedAt && !letterIdOf(note));
+  const unreadNote = unreadNotes[0];
+  if (unreadNotes.length > 0)
     rows.push({
       key: "notes",
       icon: "note",
       fresh: true,
-      to: unreadNote && notes.unread === 1 ? `/world/notes?open=${unreadNote.id}` : "/world/mail",
-      title: admin ? plural(notes.unread, "a new little note", "# new little notes") : plural(notes.unread, `a new little note from ${from} ♡`, `# new little notes from ${from} ♡`),
-      detail: unreadNote ? `“${unreadNote.title}”` : null,
+      to: unreadNotes.length === 1 ? `/world/notes?open=${unreadNote.id}` : "/world/mail",
+      title: admin
+        ? plural(unreadNotes.length, "a new little note", "# new little notes")
+        : plural(unreadNotes.length, `a new little note from ${from} ♡`, `# new little notes from ${from} ♡`),
+      detail: `“${unreadNote.title}”`,
     });
   if (jar?.fresh > 0)
     rows.push({
@@ -186,7 +190,7 @@ function Row({ row }) {
         {row.detail && <small>{row.detail}</small>}
       </span>
       {row.badge && <span className="home-glance__badge">{row.badge}</span>}
-      {row.fresh && !row.badge && <span className="home-glance__new" aria-label="new" />}
+      {row.fresh && !row.badge && <span className="home-glance__new" aria-hidden="true" />}
     </>
   );
 }
