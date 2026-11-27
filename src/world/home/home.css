@@ -66,6 +66,18 @@ html.app-shell .home-glance .app-list {
   font: 700 16px/1.1 var(--font-hand);
   white-space: nowrap;
 }
+/* New notes for her: a little pink dot by the chevron and a stronger line, until she has seen them. */
+.home-glance [data-fresh] .home-glance__title {
+  font-weight: 650;
+}
+.home-glance__new {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #d64a7c;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #d64a7c 18%, transparent);
+}
 .home-glance__calm .app-row__text small {
   white-space: normal;
 }
@@ -83,7 +95,7 @@ html.app-shell .home-glance .app-row__icon[data-kind="heart"] { background: #f6e
 .home-stage {
   display: grid;
   justify-items: center;
-  margin: 10px 0 4px;
+  margin: 8px 0 0;
   text-align: center;
 }
 .home-stage__hello {

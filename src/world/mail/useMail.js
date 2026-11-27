@@ -27,8 +27,21 @@ export function useLetters() {
   });
 }
 
-export function useJarSummary() {
-  return useQuery({ queryKey: jarKey, queryFn: ({ signal }) => api("/me/note-jar", { signal }), staleTime: 60_000 });
+/**
+ * The note jar at a glance (`fresh`: notes Josh added that she hasn't pulled yet). One cache entry
+ * for the tab bar's badge, home's what's new and this section. Like the mailbox, it's checked again
+ * whenever the app comes back to the front and every few minutes while it's open; pulling a note
+ * refreshes it (today/NoteJar.jsx invalidates every ["me", "note-jar", …] entry).
+ */
+export function useJarSummary({ enabled = true } = {}) {
+  return useQuery({
+    queryKey: jarKey,
+    queryFn: ({ signal }) => api("/me/note-jar", { signal }),
+    enabled,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 5 * 60_000,
+  });
 }
 
 /**
