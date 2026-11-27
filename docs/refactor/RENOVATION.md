@@ -175,7 +175,10 @@ Names every character uses (agreed 2026-11-26): shared poses `idle`, `walk`, `ju
 `land`, `sit`, `wave`, `react`, `sleep`, `held` (picked up, dangling), plus their own (Maomao's rest
 pose is `ponder`). Line topics: `greet` (fallback) and `greetMorning` / `greetAfternoon` /
 `greetEvening` / `greetNight`, `idle`, `tapped`, `picked`, `putDown`, `birthday`, `sweet`, plus
-their own; visits in `visit.with.<id>`. Every line (in `lines` and `visit`) is either a string or
+their own; visits in `visit.with.<id>` as pairs `[mine, theirs]`: the first line is this
+character's, the second is the other one's reply, so a pair lives in the file of whoever speaks
+first. Sitting poses may hang legs below the feet line over the cloud's front edge, so the engine
+draws `Body` above `Platform`. Every line (in `lines` and `visit`) is either a string or
 `{ text, expression }`: the engine passes that expression to `Body` while the bubble shows. Her
 pick can also be `"none"` (a quiet home): the engine then shows nobody, visits included.
 
