@@ -1,32 +1,69 @@
 import { useCallback, useEffect, useImperativeHandle, useRef } from "react";
-import { PAPERS, SIZES, drawingHistory, isShape, renderInk, renderPaper } from "./drawingTools.js";
+import { PAPERS, SIZES, appendInk, drawingHistory, isShape, renderInk, renderPaper } from "./drawingTools.js";
 import "./DrawingCanvas.css";
 
-/** Keeps editable strokes in logical coordinates, independent of display/export size. */
+/**
+ * Keeps editable strokes in logical coordinates, independent of display/export size. Finished
+ * strokes are kept painted on an offscreen layer, so while a finger draws, each frame copies that
+ * layer and paints only the stroke in progress: a full page draws as smoothly as an empty one.
+ */
 export default function DrawingCanvas({ color, size, tool, paper, ref, onChange, initialDrawing,
   opacity = 1, mirror = false, fill = true, disabled = false, aspect = 1.25, label = "Drawing canvas" }) {
   const wrapRef = useRef(null), inkRef = useRef(null), paperRef = useRef(null);
   const strokes = useRef([...(initialDrawing?.strokes ?? [])]);
   const undone = useRef([...(initialDrawing?.undone ?? [])]);
   const active = useRef(null), pointer = useRef(null), frame = useRef(0);
+  // The finished strokes, painted once (`count` of them); rebuilt on undo, redo, clear and resize.
+  const layer = useRef({ canvas: null, count: -1 });
+  const paperDrawn = useRef("");
   const redraw = useCallback(() => {
     const ink = inkRef.current, page = paperRef.current;
     if (!ink?.width) return;
-    renderPaper(page.getContext("2d"), paper, page.width, page.height);
-    renderInk(ink.getContext("2d"), active.current ? [...strokes.current, active.current] : strokes.current, ink.width, ink.height);
+    const paperKey = `${paper}:${page.width}x${page.height}`;
+    if (paperDrawn.current !== paperKey) {
+      renderPaper(page.getContext("2d"), paper, page.width, page.height);
+      paperDrawn.current = paperKey;
+    }
+    const done = layer.current;
+    if (!done.canvas) done.canvas = document.createElement("canvas");
+    const back = done.canvas;
+    if (back.width !== ink.width || back.height !== ink.height) {
+      back.width = ink.width;
+      back.height = ink.height;
+      done.count = -1;
+    }
+    const all = strokes.current;
+    if (done.count < 0 || done.count > all.length) renderInk(back.getContext("2d"), all, back.width, back.height);
+    else if (done.count < all.length) appendInk(back.getContext("2d"), all.slice(done.count), back.width, back.height);
+    done.count = all.length;
+    const ctx = ink.getContext("2d");
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, ink.width, ink.height);
+    ctx.drawImage(back, 0, 0);
+    if (active.current) appendInk(ctx, [active.current], ink.width, ink.height);
   }, [paper]);
+  /** Undo, redo and clear change what's finished: the layer is painted again from the strokes. */
+  const invalidate = () => { layer.current.count = -1; };
   const schedule = useCallback(() => { cancelAnimationFrame(frame.current); frame.current = requestAnimationFrame(redraw); }, [redraw]);
   useEffect(() => {
     let disposed = false;
     const observer = new ResizeObserver(([entry]) => {
       if (disposed || !inkRef.current || !paperRef.current) return;
       const width = Math.max(1, Math.round(entry.contentRect.width * Math.min(window.devicePixelRatio || 1, 2.5)));
-      for (const canvas of [inkRef.current, paperRef.current]) { canvas.width = width; canvas.height = Math.round(width * aspect); }
+      const height = Math.round(width * aspect);
+      if (inkRef.current.width === width && inkRef.current.height === height) return;
+      for (const canvas of [inkRef.current, paperRef.current]) { canvas.width = width; canvas.height = height; }
+      paperDrawn.current = "";
       schedule();
     });
     observer.observe(wrapRef.current);
     return () => { disposed = true; observer.disconnect(); cancelAnimationFrame(frame.current); };
   }, [aspect, schedule]);
+  useEffect(() => schedule(), [schedule]); // a new paper
+  useEffect(() => () => {
+    if (layer.current.canvas) layer.current.canvas.width = layer.current.canvas.height = 0;
+    layer.current = { canvas: null, count: -1 };
+  }, []);
   const change = () => { schedule(); onChange?.(drawingHistory(strokes.current, undone.current)); };
   const point = event => {
     const rect = inkRef.current.getBoundingClientRect();
@@ -58,7 +95,7 @@ export default function DrawingCanvas({ color, size, tool, paper, ref, onChange,
   }
   function undo() {
     if (disabled || active.current || !strokes.current.length) return;
-    undone.current.push(strokes.current.at(-1)); strokes.current = strokes.current.slice(0, -1); change();
+    undone.current.push(strokes.current.at(-1)); strokes.current = strokes.current.slice(0, -1); invalidate(); change();
   }
   function redo() {
     if (disabled || active.current || !undone.current.length) return;
@@ -67,7 +104,7 @@ export default function DrawingCanvas({ color, size, tool, paper, ref, onChange,
   useImperativeHandle(ref, () => ({
     snapshot: () => ({ strokes: strokes.current.slice(), undone: undone.current.slice() }), undo, redo,
     clear() { if (disabled) return; strokes.current = [...strokes.current, { tool: "clear" }]; undone.current = []; change(); },
-    reset() { if (disabled) return; strokes.current = []; undone.current = []; change(); },
+    reset() { if (disabled) return; strokes.current = []; undone.current = []; invalidate(); change(); },
     async export(maxWidth = 1600) {
       const width = maxWidth, height = Math.round(width * aspect);
       const out = document.createElement("canvas"), ink = document.createElement("canvas");

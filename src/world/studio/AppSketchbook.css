@@ -1,0 +1,496 @@
+/* The sketchbook in the app (AppSketchbook.jsx): the artsy shelf's look (kit.css), a ring-bound page
+   that fills the stage, and a tray of colours and tools. */
+
+/* The play hub opens the sketchbook in a scrolling, padded stage (made for the website's notebook);
+   this one fills the stage like a game instead. */
+.game-sheet__stage.play-sketch-stage:has(> .sk) {
+  padding: 0;
+  overflow: hidden;
+}
+
+.sk-bar {
+  gap: 6px;
+}
+.sk-bar .artsy-chip svg {
+  width: 20px;
+  height: 20px;
+}
+.sk-bar .artsy-chip--primary[aria-pressed="true"] {
+  background: #efe2f8;
+  border-color: #bd9fd6;
+  color: var(--a-plum);
+  box-shadow: 0 2px 0 #e6d8ef;
+}
+
+/* ---------- the page ---------- */
+.sk-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 4px 0 12px;
+  touch-action: none;
+}
+.sk-page {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+.sk-rings {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  width: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 18px 0;
+  margin-right: -8px;
+}
+.sk-rings i {
+  display: block;
+  width: 22px;
+  height: 9px;
+  border: 2px solid #b1a0b5;
+  border-radius: 9px;
+  background: #f5eef8;
+  box-shadow: 0 1px 0 #fff;
+}
+.sk-sheet {
+  position: relative;
+  padding: 0;
+  border-radius: 4px 16px 16px 4px;
+  box-shadow: 0 0 0 1px var(--a-line), 0 3px 0 #e6d8ef, 0 18px 36px -22px rgb(73 30 140 / 0.45);
+  overflow: hidden;
+  background: #fff;
+}
+.sk-sheet .canvas-wrap {
+  border-radius: 0;
+  box-shadow: none;
+}
+.sk-sheet .canvas-ink {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.sk-hello {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font-size: 28px;
+  line-height: 1.1;
+  color: #c3afc8;
+  text-align: center;
+  rotate: -5deg;
+}
+.sk-hello b {
+  font-weight: 400;
+  font-size: 21px;
+}
+
+/* ---------- the tray: colours, then the dock ---------- */
+.sk-tray {
+  display: grid;
+  gap: 6px;
+  padding: 8px 0;
+}
+.sk-colours {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  padding: 0 12px;
+}
+.sk-swatch {
+  position: relative;
+  height: 44px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.sk-swatch::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(36px, calc(100% - 6px));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--swatch);
+  border: 3px solid #fff;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 1px rgb(73 52 89 / 0.18), 0 2px 0 rgb(73 52 89 / 0.12);
+  transform: translate(-50%, -50%);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.sk-swatch[aria-checked="true"]::before {
+  transform: translate(-50%, -50%) scale(1.12);
+  box-shadow: 0 0 0 2px var(--a-plum), 0 3px 0 rgb(73 52 89 / 0.2);
+}
+.sk-swatch--box::before {
+  display: none;
+}
+.sk-swatch--box svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(36px, calc(100% - 4px));
+  height: min(36px, calc(100% - 4px));
+  color: var(--a-plum);
+  transform: translate(-50%, -50%);
+}
+.sk-swatch--box[aria-expanded="true"] svg {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+.sk-swatch--any {
+  display: grid;
+  place-items: center;
+  color: var(--a-plum);
+  font: 26px/1 var(--font-hand);
+}
+.sk-swatch--any::before {
+  background: conic-gradient(#f6a9c7, #efcf88, #a9dcc8, #8fb3e8, #c9b1ee, #f6a9c7);
+  opacity: 0.55;
+}
+.sk-swatch--any span {
+  position: relative;
+}
+.sk-swatch--any input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.sk-dock {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 5px;
+  padding: 0 12px;
+}
+.sk-dock__button {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 6px 1px 5px;
+  border: 1px solid var(--a-line-soft);
+  border-radius: 16px;
+  background: var(--a-wash);
+  color: var(--a-plum);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 0.15s, transform 0.12s;
+}
+.sk-dock__button:active {
+  transform: translateY(1px);
+}
+.sk-dock__button[data-on] {
+  background: #fffafd;
+  border-color: #bd9fd6;
+  box-shadow: 0 0 0 2px #e3d4ff;
+}
+.sk-dock__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 26px;
+}
+.sk-dock__icon svg {
+  width: 100%;
+  height: 100%;
+}
+.sk-dock__label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 600 11px/1.1 var(--font-ui);
+  color: var(--a-ink-soft);
+}
+.sk-dot {
+  display: block;
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+  background: currentColor;
+}
+.sk-paper {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1.5px var(--a-line), inset 0 -3px 0 rgb(0 0 0 / 0.06);
+}
+.sk-paper--small {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+.sk-paper[data-paper="dots"] {
+  background-image: radial-gradient(#cdb9d4 1px, transparent 1.3px) !important;
+  background-size: 7px 7px !important;
+  background-color: #fffdfb !important;
+}
+.sk-paper[data-paper="ruled"] {
+  background-image: repeating-linear-gradient(180deg, transparent 0 6px, #dfccdf 6px 7px) !important;
+  background-color: #fffaf6 !important;
+}
+
+/* ---------- pop-ups above the dock ---------- */
+.sk-pop-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 0;
+  background: rgb(48 18 98 / 0.08);
+  animation: artsy-fade 0.15s ease-out;
+}
+.sk-pop {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(100% + 8px);
+  display: grid;
+  gap: 10px;
+  padding: 10px 10px 12px;
+  border: 1px solid var(--a-line);
+  border-radius: 20px;
+  background: var(--a-paper);
+  box-shadow: 0 14px 34px -14px rgb(73 30 140 / 0.45);
+  animation: sk-pop 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes sk-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+.sk-pop__title {
+  margin: 0 4px;
+  font: 700 20px/1 var(--font-hand);
+  color: var(--a-ink);
+}
+.sk-pop__grid {
+  display: grid;
+  gap: 6px;
+}
+.sk-pop__grid--five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.sk-pop__grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.sk-option {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 60px;
+  padding: 6px 2px;
+  border: 1px solid var(--a-line-soft);
+  border-radius: 14px;
+  background: var(--a-wash);
+  color: var(--a-plum);
+  font: 600 12px/1.1 var(--font-ui);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.sk-option svg {
+  width: 44px;
+  height: 24px;
+}
+.sk-option[aria-checked="true"] {
+  background: #fffafd;
+  border-color: #bd9fd6;
+  box-shadow: 0 0 0 2px #e3d4ff;
+}
+.sk-pop__toggle {
+  justify-self: start;
+}
+.sk-pop__toggle svg {
+  width: 26px;
+  height: 26px;
+}
+.sk-sizes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.sk-size-option {
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  border: 1px solid var(--a-line-soft);
+  border-radius: 14px;
+  background: var(--a-wash);
+  cursor: pointer;
+}
+.sk-size-option span {
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+  background: var(--ink);
+}
+.sk-size-option[aria-checked="true"] {
+  background: #fffafd;
+  border-color: #bd9fd6;
+  box-shadow: 0 0 0 2px #e3d4ff;
+}
+.sk-slider {
+  display: grid;
+  gap: 2px;
+  padding: 0 4px;
+  color: var(--a-ink-soft);
+  font: 600 13px/1.2 var(--font-ui);
+}
+.sk-slider span {
+  display: flex;
+  justify-content: space-between;
+}
+.sk-slider output {
+  font: 18px/1 var(--font-hand);
+  color: var(--a-plum);
+}
+.sk-slider input {
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  accent-color: #9a6cc8;
+}
+.sk-all-colours {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.sk-more {
+  display: grid;
+  gap: 6px;
+}
+.sk-more__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 6px 12px;
+  border: 1px solid var(--a-line-soft);
+  border-radius: 16px;
+  background: var(--a-wash);
+  color: var(--a-plum);
+  text-align: left;
+  cursor: pointer;
+}
+.sk-more__row svg {
+  flex: none;
+  width: 32px;
+  height: 32px;
+}
+.sk-more__row span {
+  display: grid;
+  gap: 2px;
+  font: 600 15px/1.2 var(--font-ui);
+}
+.sk-more__row small {
+  font: 500 12px/1.3 var(--font-ui);
+  color: var(--a-ink-soft);
+}
+
+/* ---------- sheets: keep, mix, an idea ---------- */
+.sk-keep {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding-bottom: 4px;
+}
+.sk-keep__frame {
+  display: grid;
+  place-items: center;
+  width: min(62vw, 260px, 38vh);
+  aspect-ratio: 1;
+  padding: 8px;
+  border: 1px solid var(--a-line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 3px 0 #ebdff3;
+  color: var(--a-ink-soft);
+  font-size: 20px;
+  rotate: -1.5deg;
+}
+.sk-keep__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+}
+.sk-keep__name {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  color: var(--a-ink-soft);
+  font: 600 13px/1.2 var(--font-ui);
+}
+.sk-keep__name input {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--a-line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--a-ink);
+  font: 20px/1.2 var(--font-hand);
+  -webkit-user-select: text;
+  user-select: text;
+}
+.sk-keep__buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(172px, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+.sk-keep__buttons > * {
+  min-width: 0;
+  padding-inline: 10px;
+}
+.sk-wait {
+  padding: 24px 0;
+  text-align: center;
+  font-size: 20px;
+  color: var(--a-ink-soft);
+}
+.sk-mix .mixer {
+  padding: 0 0 8px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.sk-mix .mixer__title {
+  display: none;
+}
+.sk-idea {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 8px 4px 12px;
+}
+.sk-idea__words {
+  margin: 0;
+  padding: 18px 20px;
+  border: 1px solid #e8d6dc;
+  background: #fffdf6;
+  box-shadow: 2px 3px 0 #e9d9e6;
+  rotate: -1deg;
+  font-size: 23px;
+  line-height: 1.3;
+  color: #6c4b74;
+  text-align: center;
+}

@@ -9,6 +9,9 @@ export const PAPERS = {
   night: { label: "Night", fill: "#19083a" },
 };
 export const SIZES = [4, 10, 24];
+/** The sketchbook's quick inks, and every paint in its box. */
+export const INKS = ["#674c87", "#d185ad", "#39968e", "#493653", "#edba69"];
+export const PALETTE = [...INKS, "#ffffff", "#f6b6cf", "#a7bf7c", "#995cf7", "#365dd7", "#e96675", "#6f6879"];
 export const BRUSHES = [
   { id: "pen", label: "Brush" }, { id: "pencil", label: "Pencil" },
   { id: "marker", label: "Marker" }, { id: "crayon", label: "Crayon" },
@@ -116,6 +119,10 @@ function paintStroke(ctx, stroke) {
 export function renderInk(ctx, strokes, width, height) {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, width, height);
+  appendInk(ctx, strokes, width, height);
+}
+/** Paints strokes on top of what's already there (renderInk = clear + appendInk). */
+export function appendInk(ctx, strokes, width, height) {
   ctx.setTransform(width / 800, 0, 0, width / 800, 0, 0);
   for (const stroke of strokes) {
     if (stroke.tool === "clear") { ctx.clearRect(0, 0, 800, height / width * 800); continue; }
