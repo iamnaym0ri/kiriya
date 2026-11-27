@@ -10,6 +10,7 @@ import * as crane from "../src/world/play/games/dexterity/crane-flight/logic.js"
 import * as songs from "../src/world/play/games/dexterity/rhythm-tap/songs.js";
 import * as chart from "../src/world/play/games/dexterity/rhythm-tap/chart.js";
 import * as rhythm from "../src/world/play/games/dexterity/rhythm-tap/play.js";
+import { RATE, renderSamples } from "../src/world/play/games/dexterity/rhythm-tap/synth.js";
 
 const run = (step, state, seconds, dt = 1 / 60, each) => {
   for (let t = 0; t < seconds; t += dt) {
@@ -353,6 +354,20 @@ describe("rhythm tap", () => {
     assert.equal(songs.midi("C4"), 60);
     assert.equal(songs.midi("C#6"), 85);
     assert.deepEqual(songs.chord("Bb"), { root: 10, minor: false });
+  });
+
+  test("the band renders each song: the right length, audible, never clipping", () => {
+    const song = songs.SONGS[1];
+    const samples = renderSamples(song);
+    assert.ok(Math.abs(samples.length / RATE - songs.songLength(song) - 1.2) < 0.01);
+    let peak = 0;
+    let energy = 0;
+    for (const v of samples) {
+      peak = Math.max(peak, Math.abs(v));
+      energy += v * v;
+    }
+    assert.ok(peak <= 0.93 && Math.sqrt(energy / samples.length) > 0.05);
+    assert.deepEqual(renderSamples(song).slice(0, 5000), samples.slice(0, 5000), "the same every time");
   });
 
   test("charts follow the tune, use every lane and stay playable", () => {
