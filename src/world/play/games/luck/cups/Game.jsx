@@ -1,12 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { ConfettiCanvas, LuckStage, StatusBar } from "../_kit/parts.jsx";
-import { haptic, useLuck, useSaveBest, usePageVisible, useReducedMotion, useStageSize } from "../_kit/hooks.js";
+import { haptic, useLuck, useSaveBest, useReducedMotion, useStageSize } from "../_kit/hooks.js";
 import { play } from "../_kit/sound.js";
 import { celebrate } from "../_kit/celebrate.js";
 import { LIVES, MILESTONES, applySwaps, followCharm, planSwaps, roundSettings, swapDuration } from "./logic.js";
 import "./cups.css";
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const HELP = {
+  game: "cups",
+  steps: [
+    ["star", "watch which cup the little star hides under"],
+    ["swap", "follow that cup while they shuffle, then tap it"],
+    ["heart", "three hearts; every round is a little quicker"],
+  ],
+};
 const CHEERS = ["there it is!", "sharp eyes ♡", "you followed it perfectly", "yay, found it!", "nothing gets past you"];
 const MISSES = ["so close! it was this one ♡", "sneaky little star. it was here", "almost! it was hiding here"];
 
@@ -54,7 +62,6 @@ export default function CupsGame({ onReward }) {
   const luck = useLuck();
   const saveBest = useSaveBest();
   const reduced = useReducedMotion();
-  const visible = usePageVisible();
   const tableRef = useRef(null);
   const confettiRef = useRef(null);
   const table = useStageSize(tableRef);
@@ -82,13 +89,20 @@ export default function CupsGame({ onReward }) {
     };
   }, []);
 
-  // Pause the shuffle while she's away; it carries on exactly where it was.
+  // Pause the shuffle the moment she leaves (straight from the event, before the app is frozen);
+  // it carries on exactly where it was when she's back.
+  const away = useRef(typeof document !== "undefined" && document.visibilityState === "hidden");
   useEffect(() => {
-    for (const animation of running.current) {
-      if (visible) animation.play();
-      else animation.pause();
-    }
-  }, [visible]);
+    const onVisibility = () => {
+      away.current = document.visibilityState === "hidden";
+      for (const animation of running.current) {
+        if (away.current) animation.pause();
+        else animation.play();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
 
   const cups = slotOf.length;
   const width = table.width || 360;
@@ -149,7 +163,7 @@ export default function CupsGame({ onReward }) {
         { duration, easing: "ease-in-out" },
       );
       running.current = [front, back].filter(Boolean);
-      if (!visible) running.current.forEach((animation) => animation.pause());
+      if (away.current) running.current.forEach((animation) => animation.pause());
       current = applySwaps(current, [[a, b]]);
       if (nodeA) nodeA.style.transform = `translateX(${xb}px)`;
       if (nodeB) nodeB.style.transform = `translateX(${xa}px)`;
@@ -227,7 +241,7 @@ export default function CupsGame({ onReward }) {
 
   return (
     <LuckStage className="cups-game" aria-label="teacup shuffle">
-      <StatusBar>
+      <StatusBar help={HELP}>
         <Hearts lives={lives} />
         <span className="luck-chip">round {round}</span>
         {best > 0 && <span className="luck-chip"><small>BEST</small> {best}</span>}

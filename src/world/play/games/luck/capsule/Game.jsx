@@ -12,6 +12,14 @@ import "./capsule.css";
 
 const TAU = Math.PI * 2;
 const TRAY_KEY = "kiriya:luck-capsule-tray";
+const HELP = {
+  game: "capsule",
+  steps: [
+    ["crank", "turn the crank all the way round, or just tap it"],
+    ["capsule", "open your capsule: a charm for your book, sometimes a sticker"],
+    ["3", "three capsules a day; a golden lantern can bring one more"],
+  ],
+};
 const RARITY_LABEL = { everyday: "everyday charm", rare: "rare charm", sparkle: "sparkle charm" };
 
 const readTray = () => {
@@ -424,10 +432,13 @@ export default function CapsuleGame({ onReward }) {
     if (thenBook) setBookOpen(true);
   };
 
-  // A new day (or a spare coin) wakes the machine: yesterday's "napping" note goes.
+  // A new day (or a spare coin) wakes the machine: yesterday's "napping" note goes. Only on that
+  // change, so it never wipes another line (like "your capsule is still waiting").
+  const leftBefore = useRef(left);
   useEffect(() => {
-    if (left > 0 && phase === "idle") setMessage("");
-  }, [left, phase]);
+    if (leftBefore.current === 0 && left > 0) setMessage((line) => (line.includes("napping") ? "" : line));
+    leftBefore.current = left;
+  }, [left]);
 
   const found = capsule ? capsule.catalogue.filter((charm) => capsule.charms[charm.id]).length : 0;
   const hint = message || (luck.isError ? "the machine can't reach home right now. try again soon."
@@ -436,7 +447,7 @@ export default function CapsuleGame({ onReward }) {
 
   return (
     <LuckStage ref={stageRef} className="capsule-game" aria-label="charm capsule machine">
-      <StatusBar>
+      <StatusBar help={HELP}>
         <TurnDots capsule={capsule} />
         <button type="button" className="luck-chip" onClick={() => setBookOpen(true)} aria-label={`charm book, ${found} of ${capsule?.catalogue.length ?? 18} charms found`}>
           <BookIcon /> {found}/{capsule?.catalogue.length ?? 18}

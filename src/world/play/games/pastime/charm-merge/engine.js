@@ -93,6 +93,7 @@ export function movesAvailable(cells) {
   for (let y = 0; y < SIZE; y++)
     for (let x = 0; x < SIZE; x++) {
       const tile = cells[at(x, y)];
+      if (tile.tier >= TOP) continue; // the dream crown is the very top: two of them can't merge
       if ((x + 1 < SIZE && cells[at(x + 1, y)]?.tier === tile.tier) || (y + 1 < SIZE && cells[at(x, y + 1)]?.tier === tile.tier)) return true;
     }
   return false;

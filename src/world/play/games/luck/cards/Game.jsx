@@ -3,10 +3,18 @@ import { ConfettiCanvas, LuckStage, StatusBar } from "../_kit/parts.jsx";
 import { haptic, useLuck, useSaveBest, useReducedMotion } from "../_kit/hooks.js";
 import { play } from "../_kit/sound.js";
 import { celebrate } from "../_kit/celebrate.js";
-import { MILESTONES, guessTurn, newGame } from "./logic.js";
+import { MILESTONES, chances, guessTurn, newDeck, newGame } from "./logic.js";
 import "./cards.css";
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const HELP = {
+  game: "cards",
+  steps: [
+    ["updown", "higher or lower? each button shows how many cards left would make it right"],
+    ["same", "the same number counts as right, too"],
+    ["5", "keep the streak going: 5 and 10 in a row earn a sticker"],
+  ],
+};
 const SUIT_NAMES = { heart: "hearts", star: "stars", moon: "moons", flower: "flowers" };
 const RIGHT = ["yes!", "lucky you ♡", "spot on", "you read that card's mind", "ooh, nice"];
 const WRONG = ["aw, not that one. a fresh streak starts now ✿", "the cards were cheeky. new streak, same lovely you", "so close. let's go again ♡"];
@@ -130,10 +138,13 @@ export default function CardsGame({ onReward }) {
 
   const showing = phase === "guess" ? null : pending?.last;
   const left = game.deck.length;
+  // What's still in the deck (a fresh deck when it's empty): a same number counts as right either way.
+  const odds = chances(game.current, left ? game.deck : newDeck(Math.random, game.current));
+  const total = odds.higher + odds.lower + odds.same;
 
   return (
     <LuckStage className="cards-game" aria-label="lilac cards, higher or lower">
-      <StatusBar>
+      <StatusBar help={HELP}>
         <span className="luck-chip cards-streak" data-hot={game.streak >= 3} aria-label={`streak ${phase === "result" && pending ? pending.streak : game.streak}`}>
           <span aria-hidden="true">♡</span> streak {phase === "result" && pending ? pending.streak : game.streak}
         </span>
@@ -179,11 +190,11 @@ export default function CardsGame({ onReward }) {
       <div className="cards-actions">
         <button type="button" className="luck-btn cards-btn" onClick={() => guess("higher")} disabled={phase !== "guess"}>
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          higher
+          <span className="cards-btn__text">higher<small>{odds.higher + odds.same} of {total}</small></span>
         </button>
         <button type="button" className="luck-btn cards-btn" onClick={() => guess("lower")} disabled={phase !== "guess"}>
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 5v14M5.5 12.5L12 19l6.5-6.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          lower
+          <span className="cards-btn__text">lower<small>{odds.lower + odds.same} of {total}</small></span>
         </button>
       </div>
       <ConfettiCanvas ref={confettiRef} />

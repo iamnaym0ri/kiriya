@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { isMuted, onMutedChange, setMuted } from "./sound.js";
+import { load, save } from "./storage.js";
 import "./pastime.css";
 
 /** True while the app is in the background or the screen is off. */
@@ -76,12 +77,25 @@ export function PastimeSheet({ open, title, children, onClose, closeLabel = "oka
 /**
  * What every pastime game sits in, inside the hub's sheet (which owns the title and "‹ play"): a
  * slim line with the game's little kicker, sound and "how to play". It fills its container and
- * keeps the page from scrolling or zooming underneath the game.
+ * keeps the page from scrolling or zooming underneath the game. The how-to opens by itself the
+ * first time she plays a game; `onHelp(open)` lets a game with a clock or falling pieces wait.
  */
-export default function PastimeShell({ game, kicker, help, actions, children, className = "" }) {
+export default function PastimeShell({ game, kicker, help, actions, children, className = "", onHelp }) {
   const muted = useMuted();
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [firstTime, setFirstTime] = useState(() => Boolean(help) && !load("seen-help", {})[game]);
+  const [helpOpen, setHelpOpen] = useState(firstTime);
   const root = useRef(null);
+  const onHelpRef = useRef(onHelp);
+  onHelpRef.current = onHelp;
+  useEffect(() => {
+    onHelpRef.current?.(helpOpen);
+  }, [helpOpen]);
+  const closeHelp = () => {
+    setHelpOpen(false);
+    if (!firstTime) return;
+    save("seen-help", { ...load("seen-help", {}), [game]: Date.now() });
+    setFirstTime(false);
+  };
 
   useEffect(() => {
     const html = document.documentElement;
@@ -116,7 +130,7 @@ export default function PastimeShell({ game, kicker, help, actions, children, cl
       </div>
       <div className="pastime__body">{children}</div>
       {help && (
-        <PastimeSheet open={helpOpen} title="how to play" onClose={() => setHelpOpen(false)}>
+        <PastimeSheet open={helpOpen} title="how to play" onClose={closeHelp} closeLabel={firstTime ? "let's play ♡" : "okay ♡"}>
           {help}
         </PastimeSheet>
       )}

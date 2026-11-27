@@ -25,8 +25,7 @@ export function audioContext() {
   const Context = typeof window !== "undefined" && (window.AudioContext || window.webkitAudioContext);
   if (!Context) return null;
   try {
-    // Ambient: respects the silent switch and mixes with her music instead of stopping it.
-    if (navigator.audioSession) navigator.audioSession.type = "ambient";
+    // The audio session (ambient while a luck game is open) is set by ./sound.js.
     zzfxX = new Context();
   } catch {
     zzfxX = null;

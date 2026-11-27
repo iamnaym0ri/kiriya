@@ -26,12 +26,11 @@ const HELP = (
   <>
     <p>Swipe up, down, left or right: every charm slides as far as it can.</p>
     <ul>
-      <li>Two matching charms that bump into each other become the next charm up the ladder.</li>
+      <li>Two matching charms that bump together become the next charm up the ladder.</li>
       <li>bead → heart → star → bell → ribbon → moon → blossom → gem → <b>crown</b>.</li>
-      <li>A new bead arrives after every move. Keep a corner tidy and the big charms together.</li>
-      <li>Three take-backs per board, for when a swipe goes the wrong way.</li>
+      <li>Three take-backs per board, for a swipe that goes the wrong way.</li>
     </ul>
-    <p>The board remembers where you were, so come back any time.</p>
+    <p>Keep the big charms together in a corner. The board waits for you.</p>
   </>
 );
 
@@ -168,7 +167,8 @@ export default function CharmMerge({ onReward }) {
           <div className="pastime-stat"><span className="pastime-stat__label">best</span><span className="pastime-stat__value">{best}</span></div>
           <button type="button" className="pastime-button charm-takeback" onClick={takeBack} disabled={!undo || takeBacks <= 0}
             aria-label={`Take back the last move, ${takeBacks} left`}>
-            <span aria-hidden="true">↶</span> <span className="charm-takeback__count" aria-hidden="true">{takeBacks}</span>
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14L4.5 9.5 9 5" /><path d="M5 9.5h9a5.5 5.5 0 0 1 0 11h-3" /></svg>
+            <span className="charm-takeback__count" aria-hidden="true">{takeBacks}</span>
           </button>
         </div>
         <div className="charm-stage" ref={stage}>
@@ -205,7 +205,7 @@ export default function CharmMerge({ onReward }) {
         <div className="charm-sheet-art"><CharmArt tier={game.top} size={72} /></div>
         <p>You reached the <b>{LADDER[game.top].name}</b> with {game.score} points{game.score >= best && game.score > 0 ? ", your best yet ♡" : "."}</p>
         <div className="charm-sheet-actions">
-          {undo && takeBacks > 0 && <button type="button" className="pastime-button" onClick={takeBack}>take back ↶</button>}
+          {undo && takeBacks > 0 && <button type="button" className="pastime-button" onClick={takeBack}>take back</button>}
           <button type="button" className="pastime-button pastime-button--primary" onClick={fresh}>new board ↺</button>
         </div>
       </PastimeSheet>
