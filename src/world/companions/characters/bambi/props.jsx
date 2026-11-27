@@ -4,8 +4,9 @@
 // Each one-off arm here replaces his rigged right arm for the poses that need a bent elbow the
 // rig can't make cleanly (the rig is two straight segments with CSS rotations).
 
-const JACKET = "#fdfbff";
-const JACKET_LINE = "#8f84a8";
+const JACKET = "#f7ebdf"; // his cream knit sweater (Body.jsx)
+const JACKET_LINE = "#c4a693";
+const KNIT = "#e9d5c4";
 const PINK = "#ef7fb4";
 const PINK_LINE = "#d2417f";
 const SKIN = "#ffe7d8";
@@ -18,7 +19,7 @@ function BentArm({ d, hand, cuff, children, className }) {
     <g className={className}>
       <path d={d} fill="none" stroke={JACKET_LINE} strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" />
       <path d={d} fill="none" stroke={JACKET} strokeWidth="12.2" strokeLinecap="round" strokeLinejoin="round" />
-      {cuff && <path d={cuff} stroke={PINK} strokeWidth="11.6" strokeLinecap="butt" />}
+      {cuff && <path d={cuff} stroke={KNIT} strokeWidth="11.6" strokeLinecap="butt" />}
       <g className="bamby__phand">
         <circle cx={hand[0]} cy={hand[1]} r="7" fill={SKIN} stroke={SKIN_LINE} strokeWidth="1.1" />
         {children}
@@ -101,14 +102,14 @@ export function Notes() {
   return (
     <g className="bamby__sing-notes" fill="#b28bd8" stroke="#b28bd8">
       <g className="bamby__sing-note bamby__sing-note--1">
-        <path d="M58 66v-13l8-2.6v13" strokeWidth="1.8" fill="none" />
-        <circle cx="55.6" cy="66" r="2.8" stroke="none" />
-        <circle cx="63.6" cy="63.4" r="2.8" stroke="none" />
+        <path d="M22 84v-13l8-2.6v13" strokeWidth="1.8" fill="none" />
+        <circle cx="19.6" cy="84" r="2.8" stroke="none" />
+        <circle cx="27.6" cy="81.4" r="2.8" stroke="none" />
       </g>
       <g className="bamby__sing-note bamby__sing-note--2">
-        <path d="M40 92v-12" strokeWidth="1.8" fill="none" />
-        <path d="M40 80q5 1 6 6" strokeWidth="1.8" fill="none" />
-        <circle cx="37.6" cy="92" r="2.8" stroke="none" />
+        <path d="M16 116v-12" strokeWidth="1.8" fill="none" />
+        <path d="M16 104q5 1 6 6" strokeWidth="1.8" fill="none" />
+        <circle cx="13.6" cy="116" r="2.8" stroke="none" />
       </g>
     </g>
   );

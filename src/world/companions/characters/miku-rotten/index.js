@@ -46,7 +46,7 @@ export default {
     heldAt: 0.36, // lifted by the back of her collar
     sway: 1.1,
     talkiness: 0.5,
-    expressions: { tapped: "gasp", picked: "flustered", putDown: "happy", walk: "soft", jump: "gasp" },
+    expressions: { tapped: "gasp", picked: "flustered", putDown: "happy", walk: "soft", jump: "gasp", stay: "smug", wander: "sparkle" },
   },
   // The tap menu's own choice (README, "the tap menu and stay"): she holds the paddle up, winds up
   // and SMACKS it down on her cloud, then looks very innocent. The paddle is the chip's icon.
@@ -70,7 +70,19 @@ export default {
   behaviours: [
     { id: "fanfic", weight: 5, pose: "sketch", expression: "focused", seconds: [9, 16], topic: "fanfic" },
     { id: "swing", weight: 2.5, pose: "sit", expression: "happy", seconds: [7, 12], topic: "idle" },
-    { id: "phone", weight: 2.5, pose: "phone", expression: "feral", seconds: [4, 7], topic: "phone", say: 0.7 },
+    { id: "phone", weight: 2, pose: "phone", expression: "feral", seconds: [4, 7], topic: "phone", say: 0.7 },
+    // A new chapter drops: she squeals at her phone, hopping, gets a nosebleed, then a victory dance.
+    {
+      id: "chapter",
+      weight: 1.2,
+      pose: "phone",
+      say: 0.8,
+      steps: [
+        { pose: "phone", expression: "feral", seconds: [2.4, 3], topic: "phone", bounce: { count: 3, height: 6, every: 0.32 } },
+        { pose: "fluster", expression: "nosebleed", seconds: [2, 2.6], topic: "nosebleed" },
+        { pose: "dance", expression: "giggle", seconds: [2.4, 3], bounce: 2 },
+      ],
+    },
     { id: "show", weight: 2, pose: "show", expression: "sparkle", seconds: [4, 7], topic: "shipping" },
     { id: "dance", weight: 1.6, pose: "dance", expression: "giggle", seconds: [4, 6], topic: "dance" },
     { id: "paddle", weight: 1.4, pose: "paddle", expression: "smug", seconds: [3, 5], topic: "paddle" },
