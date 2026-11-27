@@ -86,7 +86,7 @@ export function resolvePrefs(prefs = {}) {
     motion: prefs.motion ?? null,
     cornerSmall: prefs.cornerSmall ?? false,
     // Who walks her home screen in the app (shared/companions.js).
-    companion: COMPANION_IDS.includes(prefs.companion) ? prefs.companion : "maomao",
+    companion: prefs.companion === "none" || COMPANION_IDS.includes(prefs.companion) ? prefs.companion : "maomao",
     sharing: resolveSharing(prefs.sharing),
     sharingChosen: Boolean(prefs.sharing),
     pins: prefs.pins ?? [],
