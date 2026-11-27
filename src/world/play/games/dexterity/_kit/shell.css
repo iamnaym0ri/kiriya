@@ -28,6 +28,7 @@
 /* ---------- the little bar over the play field ---------- */
 .dex__hud {
   position: absolute;
+  z-index: 2;
   inset: 0 0 auto;
   display: flex;
   align-items: flex-start;
@@ -92,6 +93,7 @@
 /* ---------- cards: start, paused, end of a round ---------- */
 .dex__veil {
   position: absolute;
+  z-index: 3;
   inset: 0;
   display: grid;
   place-items: center;

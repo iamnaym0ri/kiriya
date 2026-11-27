@@ -20,6 +20,26 @@ const errors = [];
 
 async function open(id, phone) {
   const context = await browser.newContext({ ...phone, reducedMotion: calm ? "reduce" : "no-preference" });
+  // Silent runs: headless WebKit plays real audio through the computer's speakers. Every audio
+  // graph still runs, but the destination games see is a gain node set to zero.
+  await context.addInitScript(() => {
+    let proto = (window.AudioContext || window.webkitAudioContext)?.prototype;
+    while (proto && !Object.getOwnPropertyDescriptor(proto, "destination")) proto = Object.getPrototypeOf(proto);
+    const real = proto && Object.getOwnPropertyDescriptor(proto, "destination");
+    if (!real) return;
+    Object.defineProperty(proto, "destination", {
+      configurable: true,
+      get() {
+        if (!this.__silent) {
+          const gain = this.createGain();
+          gain.gain.value = 0;
+          gain.connect(real.get.call(this));
+          this.__silent = gain;
+        }
+        return this.__silent;
+      },
+    });
+  });
   const unlock = await context.request.post(`${BASE}/api/session/unlock`, { headers: { "x-kw": "1" }, data: { passphrase: "kiriya" } });
   if (unlock.status() !== 200) throw new Error(`unlock failed: ${unlock.status()}`);
   const page = await context.newPage();
@@ -30,6 +50,13 @@ async function open(id, phone) {
     if (message.type() === "info" && message.text().startsWith("reward")) report[id].rewards.push(message.text());
   });
   await page.goto(`${BASE}/world/game-lab?g=${id}&app=1`);
+  const silent = await page.evaluate(() => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const muted = ctx.destination instanceof GainNode && ctx.destination.gain.value === 0;
+    ctx.close();
+    return muted;
+  });
+  if (!silent) throw new Error("audio is not muted for this run");
   await page.locator(".dex__play:not([disabled])").waitFor();
   await page.evaluate(() => document.fonts.ready);
   return { context, page };

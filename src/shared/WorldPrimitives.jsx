@@ -202,6 +202,7 @@ export function Credits({ onClose }) {
       </p>
       <p>Bamby (PLAVE) © VLAST — fan art, drawn for this app.</p>
       <p>Pastime games: charm ladder adapted from <a href="https://github.com/gabrielecirulli/2048" target="_blank" rel="noreferrer">2048</a> by Gabriele Cirulli (MIT); charm drop adapted from <a href="https://github.com/jakesgordon/javascript-tetris" target="_blank" rel="noreferrer">javascript-tetris</a> by Jake Gordon (MIT); herb patch follows <a href="https://github.com/PlaytestersKitchen/match-three-js" target="_blank" rel="noreferrer">match-three-js</a> (MIT). Their pictures are drawn for this site.</p>
+      <p>Dexterity games: mochi tower adapted from <a href="https://github.com/iamkun/tower_game" target="_blank" rel="noreferrer">tower_game</a> by iamkun (MIT); paper-crane flight adapted from <a href="https://github.com/nebez/floppybird" target="_blank" rel="noreferrer">floppybird</a> by Nebez Briefkani (Apache-2.0); little sounds made with <a href="https://github.com/KilledByAPixel/ZzFX" target="_blank" rel="noreferrer">ZzFX</a> by Frank Force (MIT). Their pictures, chiptunes and Negi are made for this site.</p>
       <h3>Reference collection</h3>
       <p>
         Maomao portraits and botanical images are from the supplied reference
