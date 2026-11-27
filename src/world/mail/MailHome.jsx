@@ -50,7 +50,7 @@ function LetterTile({ letter, admin, isNew, onOpen }) {
     ? opensIn(letter.unlockAt)
     : letter.author === "maomao"
       ? "fan writing ♡"
-      : letter.kind === "open_when" && letter.openWhen
+      : letter.kind === "open_when" && letter.openWhen && !letter.title.toLowerCase().includes(letter.openWhen.toLowerCase())
         ? `open when ${letter.openWhen}`
         : when(letterDate(letter));
   const herMark = admin && letter.author !== "maomao" && !letter.locked ? (letter.openedAt ? "she opened it" : "not opened yet") : null;
