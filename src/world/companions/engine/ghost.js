@@ -185,10 +185,20 @@ export function playGhost(snap, layer, live, { ms = 160, only = false, glide = t
     node.style.transition = "none";
   }
   const keep = only ? shown.size > 0 : true;
-  if (only) {
-    // Just what React removed or redrew fades out from where it was.
+  if (only && keep) {
+    // Just what React removed or redrew fades out from where it was. Everything else leaves the
+    // copy before it is styled (hidden parts would still cost a style pass): only the shown parts,
+    // the groups that hold them (for their transforms) and the gradients stay.
+    const shownNodes = new Set([...shown].map((i) => all[i]).filter(Boolean));
+    const path = new Set();
+    for (const node of shownNodes) for (let p = node; p && !path.has(p); p = p.parentNode) path.add(p);
+    for (const node of all) {
+      // Kept: the path to a shown part, everything inside a shown part, and the gradients.
+      if (path.has(node) || !path.has(node.parentNode) || shownNodes.has(node.parentNode) || node.localName === "defs") continue;
+      node.remove();
+    }
     clone.style.setProperty("visibility", "hidden");
-    for (const i of shown) all[i]?.style.setProperty("visibility", "visible");
+    for (const node of shownNodes) node.style.setProperty("visibility", "visible");
   }
 
   const arrive = () => {
