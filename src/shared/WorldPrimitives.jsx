@@ -201,6 +201,7 @@ export function Credits({ onClose }) {
         © Microsoft, MIT licence. GIF search powered by GIPHY.
       </p>
       <p>Bamby (PLAVE) © VLAST — fan art, drawn for this app.</p>
+      <p>Luck games: little sounds made with <a href="https://github.com/KilledByAPixel/ZzFX" target="_blank" rel="noreferrer">ZzFX</a> by Frank Force (MIT); confetti by canvas-confetti (ISC).</p>
       <h3>Reference collection</h3>
       <p>
         Maomao portraits and botanical images are from the supplied reference

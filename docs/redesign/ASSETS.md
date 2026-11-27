@@ -91,3 +91,15 @@ The new brush previews and shape/stamp paths are original code-native SVG/canvas
 ## Companion: Rotten Girl Miku
 
 `src/world/companions/characters/miku-rotten/` is original SVG/CSS fan art: Hatsune Miku as she appears in "Confessions of a Rotten Girl" (SAWTOWNE, 2025; [MV](https://www.youtube.com/watch?v=sV2H712ldOI)), redrawn from scratch in the house chibi style. Nothing from the MV is traced or embedded, and her dialogue is original (no lyrics). Hatsune Miku © Crypton Future Media, INC. www.piapro.net, used under the [Piapro Character License](https://piapro.net/intl/en_character.html) (non-commercial fan creation).
+
+## Game library: the luck shelf (2026-11-27)
+
+`src/world/play/games/luck/`: charm capsules, fortune slip, teacup shuffle, lilac cards, wishing lanterns. No maintained permissive implementation fitted these mechanics well (the shell-game, higher-or-lower and lantern projects found were tiny, unlicensed, rigged or three.js scenes), so the rules, the art and every line of writing are original; the small libraries below do the rest.
+
+| Piece | Source and licence | Use |
+| --- | --- | --- |
+| [ZzFX](https://github.com/KilledByAPixel/ZzFX) (ZzFXMicro 1.4.0) | Frank Force, MIT; vendored with its licence header in `luck/_kit/zzfx.js` | Synthesises the games' little sounds; every sound is an original parameter set (`luck/_kit/sound.js`). Optional, one switch, ambient audio session. |
+| [canvas-confetti](https://github.com/catdad/canvas-confetti) | Kiriakos Krastillis, ISC (already a dependency) | Lilac confetti on the game's own canvas for new charms, milestones and golden lanterns; off with reduced motion. |
+| mulberry32 | Tommy Ettinger, public domain | Seedable randomness so the game rules are tested (`luck/_kit/random.js`). |
+| Capsule machine, charms, capsules, fortune tin and slip, teacups, lilac card deck, lanterns, six new stickers | Original code-native SVG/CSS | Drawn for kiriya.love in the site's hand-drawn lilac style; no commercial game's names, characters or trade dress. |
+| Dome physics | Original Verlet solver (`luck/capsule/dome.js`) | A dozen capsules tumbling in the glass; matter-js was considered and is ~80 KB for what fits in a page. |
