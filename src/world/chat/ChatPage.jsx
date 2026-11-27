@@ -74,7 +74,7 @@ function glide(root, before, { skip } = {}) {
 }
 
 function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loadingOlder, onOlder, actions, preview, flashId, viewport, jumpRef }) {
-  const { scrollToMessage } = useMessageScroller();
+  const { scrollToMessage, scrollToEnd } = useMessageScroller();
   jumpRef.current = scrollToMessage;
   const content = useRef(null);
   const other = me === "kiriya" ? "admin" : "kiriya";
@@ -87,6 +87,7 @@ function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loading
   useLayoutEffect(() => {
     const now = new Map(list.map((m) => [m.id, m]));
     const newlyGone = [...shownBefore.current.values()].filter((m) => now.has(m.id) && isGone(now.get(m.id)) && !ghosts.has(m.id));
+    shownBefore.current = new Map(list.filter((m) => !isGone(m)).map((m) => [m.id, m]));
     if (!newlyGone.length) return;
     setGhosts((current) => {
       const next = new Map(current);
@@ -103,9 +104,11 @@ function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loading
     }, reducedMotion() ? 0 : LEAVE_MS);
   }, [list]); // eslint-disable-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
-    if (!pendingGlide.current) return;
-    glide(content.current, pendingGlide.current);
+    const before = pendingGlide.current;
+    if (!before) return;
     pendingGlide.current = null;
+    // Measured once the scroller has settled its own position (still before the frame is drawn).
+    requestAnimationFrame(() => glide(content.current, before));
   }, [ghosts]);
 
   const visible = useMemo(() => list.filter((m) => !isGone(m) || ghosts.has(m.id)).map((m) => (isGone(m) ? { ...ghosts.get(m.id), leaving: true } : m)), [list, ghosts]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -129,7 +132,15 @@ function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loading
     const fresh = [...arriving.current].filter((key) => !known.current.has(key));
     for (const m of visible) known.current.add(keyOf(m));
     newestAt.current = visible.reduce((latest, m) => (m.createdAt > latest ? m.createdAt : latest), newestAt.current);
-    if (!fresh.length || !node || reducedMotion()) return;
+    if (!fresh.length || !node) return;
+    // Something she just sent always comes into view, even if she'd scrolled back up.
+    const mineSent = visible.some((m) => fresh.includes(keyOf(m)) && m.sender === me);
+    const away = node.scrollHeight - node.scrollTop - node.clientHeight > 80;
+    if (mineSent && away) {
+      requestAnimationFrame(() => scrollToEnd({ behavior: reducedMotion() ? "auto" : "smooth" }));
+      return;
+    }
+    if (reducedMotion()) return;
     const top = node.scrollTop;
     // The scroller follows the bottom right after this (before the screen is drawn); measure how far it moved.
     requestAnimationFrame(() => {
