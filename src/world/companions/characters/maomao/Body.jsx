@@ -20,11 +20,16 @@ import {
   SKIRT_EDGE,
   SKIRT_FOLD,
   COLLAR,
+  COLLAR_EDGE,
 } from "./palette.js";
 import {
+  Coin,
   HeldMortar,
+  HerbBundle,
   Mushroom,
   Notebook,
+  Pouch,
+  SmallVial,
   Sprig,
   Teacup,
   Vial,
@@ -67,6 +72,12 @@ export const POSE_FACE = {
   tea: "pleased",
   yawn: "sleepy",
   crouch: "focused",
+  // Round 2: the vial held up to the light (the tap menu's action), counting her coins, a cat's
+  // stretch, and a bundle of herbs shaken out to dry.
+  appraise: "curious",
+  coins: "skeptical",
+  stretch: "amused",
+  bundle: "pleased",
 };
 export const POSES = Object.keys(POSE_FACE);
 
@@ -212,9 +223,10 @@ function Torso({ id }) {
     <g className="mm-torso">
       <path d="M82 143h36l22 22-8 29q-30 9-64 0l-8-29Z" {...robe} />
       <path d="M82 143h36l22 22-8 29q-30 9-64 0l-8-29Z" fill={`url(#${id}-cloth)`} />
-      {/* White under-collar, the mint band crossing left over right, and the side tie. */}
+      {/* White under-collar, the two-tone mint band crossing left over right, and the side tie. */}
       <path d="m84 146 16 17 16-17-6-6H90Z" fill={INNER} />
-      <path d="m85 146 15 17m17-17-24 41" stroke={COLLAR} strokeWidth="6" fill="none" />
+      <path d="m85 146 15 17m17-17-24 41" stroke={COLLAR_EDGE} strokeWidth="7.4" fill="none" />
+      <path d="m85 146 15 17m17-17-24 41" stroke={COLLAR} strokeWidth="4.6" fill="none" />
       <path d="m118 147-25 42-1 6m-7-47 12 12" stroke={ROBE_DARK} strokeWidth="2" fill="none" />
       <path d="m93 187-7-4-5 4 9 2-5 9m7-10 8 7" fill="none" stroke={ROBE_DARK} strokeWidth="2" />
     </g>
@@ -381,8 +393,71 @@ function YawnArms() {
   );
 }
 
+/** Holding a vial up to the light, turning it, her other hand at her side. */
+function AppraiseArms() {
+  return (
+    <g className="mm-arms mm-arms--appraise">
+      <g className="mm-arm mm-arm--l">
+        <path d="M66 158q-14 10-18 32l20 8 11-31Z" {...robe} />
+        <path d="m51 188 17 6" {...cuff} />
+        <ellipse cx="60" cy="196" rx="7.5" ry="6" {...hand} />
+      </g>
+      <path d="M126 152c10-2 22 4 30 14l8 12c-8 6-18 4-24-2l-12-12c-4-4-4-8-2-12Z" {...robe} />
+      <g className="mm-appraise-hand">
+        <path d="M158 170l5-30" stroke={SKIN} strokeWidth="8" strokeLinecap="round" />
+        <path d="M158 170l5-30" stroke={SKIN_EDGE} strokeWidth="8" strokeLinecap="round" opacity=".22" />
+        <SmallVial transform="translate(164 132) rotate(6)" />
+        <path d="M157 134q1-6 7-6t7 6q-1 5-7 5t-7-5Z" {...hand} />
+        <path d="M159 131q5-2 9 0" stroke={SKIN_EDGE} strokeWidth=".9" fill="none" />
+        <path className="mm-vial-glint" d="M182 96l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" fill="#fff6c9" stroke="#d8c36a" strokeWidth=".8" />
+      </g>
+      <path d="M150 168q8 6 14 4" stroke={CUFF} strokeWidth="5" strokeLinecap="round" fill="none" />
+    </g>
+  );
+}
+
+/** Counting her coins: the pouch in one hand, coins in the other palm, one being flipped. */
+function CoinArms() {
+  return (
+    <g className="mm-arms mm-arms--coins">
+      <path d="M70 152c-12 6-18 20-16 33 2 9 12 14 24 13l10-2-2-16c-10 0-14-6-16-28Z" {...robe} />
+      <Pouch transform="translate(84 201)" />
+      <ellipse cx="80" cy="194" rx="6.5" ry="5.5" {...hand} />
+      <path d="M130 152c14 6 20 24 12 34-4 4-10 4-16 0l-8-10c6-2 10-10 12-24Z" {...robe} />
+      <path d="m120 178 9 9" stroke={CUFF} strokeWidth="5" strokeLinecap="round" />
+      <g className="mm-coin-hand">
+        <path d="M104 184q4-6 13-5t12 6q-2 6-12 6t-13-7Z" {...hand} />
+        <Coin cx={112} cy={181} r={3.4} />
+        <Coin cx={119} cy={180.5} r={3.4} />
+      </g>
+      <g className="mm-coin-flip">
+        <Coin cx={116} cy={164} r={3.8} />
+      </g>
+    </g>
+  );
+}
+
+/** Drying herbs: a bundle held out by its knot and given a shake, the other hand at her side. */
+function BundleArms() {
+  return (
+    <g className="mm-arms mm-arms--bundle">
+      <g className="mm-arm mm-arm--l">
+        <path d="M66 158q-14 10-18 32l20 8 11-31Z" {...robe} />
+        <path d="m51 188 17 6" {...cuff} />
+        <ellipse cx="60" cy="196" rx="7.5" ry="6" {...hand} />
+      </g>
+      <path d="M128 154c12 0 22 6 28 14l4 8c-6 5-14 4-20 0l-10-10c-4-4-5-8-2-12Z" {...robe} />
+      <g className="mm-bundle-hand">
+        <HerbBundle transform="translate(161 152)" />
+        <ellipse cx="161" cy="152" rx="6.5" ry="6" {...hand} />
+      </g>
+      <path d="M150 170q7 5 12 3" stroke={CUFF} strokeWidth="5" strokeLinecap="round" fill="none" />
+    </g>
+  );
+}
+
 /** Her own poses carry their tools. */
-function PropArms({ pose }) {
+function PropArms({ pose, prop }) {
   switch (pose) {
     case "grind":
       return (
@@ -408,7 +483,7 @@ function PropArms({ pose }) {
           <path d="M130 152c12 8 14 22 6 30l-14 4-6-12c6-2 12-8 14-22Z" {...robe} />
           <path d="m116 176 6 10" stroke={CUFF} strokeWidth="5" strokeLinecap="round" />
           <g className="mm-sniff-hand">
-            <Sprig transform="translate(112 170) rotate(-24) scale(.62)" />
+            {prop === "vial" ? <SmallVial transform="translate(113 170) rotate(-18) scale(.78)" /> : <Sprig transform="translate(112 170) rotate(-24) scale(.62)" />}
             <ellipse cx="112" cy="171" rx="6.5" ry="6" {...hand} />
           </g>
         </g>
@@ -480,8 +555,16 @@ function PropArms({ pose }) {
 }
 
 /** Arms drawn behind the braids (resting) or in front of everything (holding things up). */
-function armsFor(pose) {
+function armsFor(pose, prop) {
   switch (pose) {
+    case "appraise":
+      return { front: <AppraiseArms /> };
+    case "coins":
+      return { front: <CoinArms /> };
+    case "stretch":
+      return { front: <RaisedArms /> };
+    case "bundle":
+      return { front: <BundleArms /> };
     case "walk":
       return { back: <RestArms /> };
     case "jump":
@@ -509,7 +592,7 @@ function armsFor(pose) {
     case "sleep":
       return { back: <ClaspedArms /> };
     default:
-      return { front: <PropArms pose={pose} /> };
+      return { front: <PropArms pose={pose} prop={prop} /> };
   }
 }
 
@@ -581,12 +664,14 @@ function PartyHat() {
 /** Faces whose mouth is already open: no extra talking mouth over them. */
 const OPEN_MOUTH = new Set(["herb", "startled", "alarmed", "ew", "sparkle", "sleepy", "delighted", "party"]);
 
-export default function Body({ pose = "idle", expression, facing = 1, playing = true, talking = false }) {
+export default function Body({ pose = "idle", expression, facing = 1, playing = true, talking = false, prop = null }) {
   const uid = `mm${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const shape = POSE_FACE[pose] ? pose : "idle";
   const face = expression ?? POSE_FACE[shape];
-  const cat = shape === "held" || face === "ew" || face === "herb";
-  const arms = armsFor(shape);
+  // The comic cat ears (and tail): carried by the scruff, the bug look, and pure joy over an herb,
+  // a poison, or a good stretch.
+  const cat = shape === "held" || shape === "stretch" || face === "ew" || face === "herb" || face === "poison";
+  const arms = armsFor(shape, prop);
   return (
     <svg
       className="mm"

@@ -12,7 +12,8 @@ import "./lab.css";
 //
 // Query options (handy for screenshots): levels=2..6, speed=0.25..3, quiet=1|0, debug=1, bg=home|text|plain,
 // open=1 (panel open), tab=stage|poses, scale=0.7..1.2, ride=1|0 (try riding or trailing clouds),
-// stay=1|0 (start told to stay, or wandering; leave it out to keep what this phone remembers).
+// stay=1|0 (start told to stay, or wandering; leave it out to keep what this phone remembers),
+// face=<expression> (the pose gallery with one expression on every pose).
 
 const HomeBackdrop = lazy(() => import("../home/HomeSection.jsx"));
 
@@ -53,7 +54,7 @@ function Readout({ sim }) {
   );
 }
 
-function Gallery({ character }) {
+function Gallery({ character, face }) {
   if (!character) return <p className="clab-note">loading…</p>;
   const { Body, Platform, size, movement, platformSurface } = character;
   const scale = 0.9;
@@ -69,7 +70,7 @@ function Gallery({ character }) {
               <Platform width={pw} state="steady" facing={1} riding={false} playing />
             </div>
             <div className="clab-pose__body" style={{ width: w, height: h, left: `calc(50% - ${w / 2}px)`, top: 8 }}>
-              <Body pose={pose} facing={1} playing frame={null} talking={false} />
+              <Body pose={pose} expression={face || undefined} facing={1} playing frame={null} talking={false} />
             </div>
             <i className="clab-pose__feet" style={{ top: h + 8 }} />
           </div>
@@ -238,7 +239,7 @@ export default function CompanionLab() {
         </Suspense>
       )}
       {tab === "stage" && bg === "text" && <TextBackdrop />}
-      {tab === "poses" && <Gallery character={character} />}
+      {tab === "poses" && <Gallery character={character} face={params.get("face") ?? ""} />}
 
       <div className="clab-panel" data-open={open ? "" : undefined} data-companion-edge={open ? undefined : "top"}>
         <div className="clab-bar">

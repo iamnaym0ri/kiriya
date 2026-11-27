@@ -905,6 +905,134 @@
   }
 }
 
+/* --- appraise: a vial held up to the light, turned slowly, her head tipped toward it --------- */
+.mm[data-pose="appraise"] .mm-head {
+  rotate: 4deg;
+  translate: 1px -1px;
+}
+.mm-appraise-hand {
+  transform-origin: 158px 170px;
+  animation: mm-appraise 2.8s ease-in-out infinite;
+}
+.mm-vial-glint {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mm-twinkle 1.4s ease-in-out infinite;
+}
+@keyframes mm-appraise {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  30% {
+    rotate: -5deg;
+  }
+  65% {
+    rotate: 3deg;
+  }
+}
+
+/* --- coins: counting into her palm, a coin flipped now and then --------------------------- */
+.mm[data-pose="coins"] .mm-head {
+  rotate: 3deg;
+  translate: 0 2px;
+}
+.mm-coin-hand {
+  transform-origin: 117px 186px;
+  animation: mm-count 1.1s ease-in-out infinite;
+}
+.mm-coin-flip {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mm-flip 1.6s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+@keyframes mm-count {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  45% {
+    translate: 0 1.5px;
+  }
+}
+@keyframes mm-flip {
+  0%,
+  100% {
+    translate: 0 14px;
+    scale: 1 1;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  45% {
+    translate: 0 -6px;
+    scale: 0.15 1;
+  }
+  60% {
+    scale: 1 1;
+  }
+  88% {
+    translate: 0 14px;
+    opacity: 1;
+  }
+}
+
+/* --- stretch: arms up like a cat after a nap, a long reach, a little wobble ------------------ */
+.mm[data-pose="stretch"] .mm-whole {
+  animation: mm-stretch 2.6s ease-in-out infinite;
+}
+.mm[data-pose="stretch"] .mm-head {
+  rotate: -3deg;
+}
+.mm[data-pose="stretch"] .mm-tail {
+  transform-origin: 141px 205px;
+  animation: mm-tail 1.6s ease-in-out infinite;
+}
+@keyframes mm-stretch {
+  0%,
+  100% {
+    scale: 1 1;
+    rotate: 0deg;
+  }
+  40%,
+  60% {
+    scale: 0.985 1.04;
+    rotate: 1.5deg;
+  }
+  75% {
+    rotate: -1deg;
+  }
+}
+
+/* --- bundle: herbs hung to dry, given a brisk shake ----------------------------------------- */
+.mm[data-pose="bundle"] .mm-head {
+  rotate: 3deg;
+}
+.mm-bundle-hand {
+  transform-origin: 161px 152px;
+  animation: mm-shake 1.8s ease-in-out infinite;
+}
+@keyframes mm-shake {
+  0%,
+  40%,
+  100% {
+    rotate: 0deg;
+  }
+  8% {
+    rotate: 9deg;
+  }
+  16% {
+    rotate: -8deg;
+  }
+  24% {
+    rotate: 6deg;
+  }
+  32% {
+    rotate: -3deg;
+  }
+}
+
 /* --- When she isn't playing (quiet mode, offscreen) or the phone asks for less motion -------- */
 .mm[data-playing="off"] *,
 .mm[data-playing="off"] {
