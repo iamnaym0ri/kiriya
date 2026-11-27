@@ -1,18 +1,21 @@
 // Where they write (round 3). Left to right: a quick signal, GIFs, the paper clip (up to 10 photos
 // and videos at once), the field ("talk to me baby") and the voice note button, which becomes send
 // while there are words or pictures. Emoji, stickers and Genmoji come from the iPhone's own
-// keyboard; pasted pictures (a copied sticker or photo) join the tray like picked ones.
+// keyboard: in the app the field is a plain-text contenteditable (RichField.jsx), so the keyboard
+// offers stickers and Genmoji; each one is lifted out of the words into the tray and goes as its own
+// sticker message. Pasted pictures join the tray too (a copied sticker as a sticker).
 import { useEffect, useRef, useState } from "react";
 import { ALBUM_MAX, newClientId } from "../../lib/chat.js";
 import { sealFile } from "../../lib/chatCrypto.js";
 import { uploadFile } from "../../lib/uploads.js";
-import { haptic, tapFeedback } from "../../lib/native.js";
+import { haptic, isAppShell, tapFeedback } from "../../lib/native.js";
 import { PREVIEW_MESSAGE } from "../../lib/viewAs.js";
 import { TAPS } from "../../../shared/taps.js";
 import { prepare, release } from "./attachments.js";
 import { clock } from "./media.jsx";
 import { snippetOf } from "./Message.jsx";
 import GifPicker from "./GifPicker.jsx";
+import { RichField, looksLikeSticker, setText as setFieldText, stickerPng } from "./RichField.jsx";
 import { ChatIcon } from "./parts.jsx";
 
 const MAX_VOICE_SECONDS = 120;
@@ -20,6 +23,17 @@ const CAPTION_MAX = 500;
 const TEXT_MAX = 4000;
 const finePointer = () => window.matchMedia?.("(pointer: fine)").matches;
 const lockedHint = "the chat is still unlocking on this phone ♡ your words are kept; try again in a moment.";
+const STICKERS_MAX = 10;
+
+/** The rich field (stickers and Genmoji from the keyboard) is the app's; `kiriya:plain-field` = "1" turns it off. */
+function richFieldWanted() {
+  if (!isAppShell()) return false;
+  try {
+    return localStorage.getItem("kiriya:plain-field") !== "1";
+  } catch {
+    return true;
+  }
+}
 
 /** 32 bars from a recording, for the little waveform. */
 async function peaksOf(blob) {
@@ -70,7 +84,7 @@ function Tray({ attachments, onRemove }) {
   return (
     <div className="tray" role="list" aria-label={`${attachments.length} of ${ALBUM_MAX} attached`}>
       {attachments.map((a) => (
-        <span key={a.id} className="tray__item" role="listitem" data-type={a.type ?? "loading"}>
+        <span key={a.id} className="tray__item" role="listitem" data-type={a.type ?? "loading"} aria-label={a.type === "sticker" ? "a sticker" : undefined}>
           {a.previewUrl || a.poster?.previewUrl ? <img src={a.type === "video" ? (a.poster?.previewUrl ?? "") : a.previewUrl} alt="" draggable="false" /> : <span className="tray__loading" aria-label="getting it ready" />}
           {a.type === "video" && (
             <span className="tray__duration" aria-hidden="true">
@@ -95,6 +109,7 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
   const [recording, setRecording] = useState(null); // { recorder, started, stream }
   const [elapsed, setElapsed] = useState(0);
   const ownField = useRef(null);
+  const [rich] = useState(richFieldWanted);
   const field = fieldRef ?? ownField;
   const picker = useRef(null);
   const chunks = useRef([]);
@@ -114,14 +129,17 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
     if (editing) {
       draft.current = text;
       setText(editing.body ?? "");
+      if (rich) setFieldText(field.current, editing.body ?? "");
       setPanel(null);
       requestAnimationFrame(() => {
         const node = field.current;
         node?.focus({ preventScroll: true });
-        node?.setSelectionRange?.(node.value.length, node.value.length);
+        if (rich) setFieldText(node, editing.body ?? "");
+        else node?.setSelectionRange?.(node.value.length, node.value.length);
       });
     } else if (draft.current !== null) {
       setText(draft.current ?? "");
+      if (rich) setFieldText(field.current, draft.current ?? "");
       draft.current = null;
     }
   }, [editing]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -131,10 +149,10 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
   }, [field]);
   useEffect(() => {
     const el = field.current;
-    if (!el) return;
+    if (!el || rich) return;
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
-  }, [text, field, attachments.length]);
+  }, [text, field, attachments.length, rich]);
   useEffect(() => {
     if (!recording) return undefined;
     const timer = setInterval(() => {
@@ -161,10 +179,33 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
     tapFeedback();
   };
 
+  /** A sticker or Genmoji from the keyboard (or a pasted sticker): a chip in the tray, sent as its own message. */
+  function addSticker(picture) {
+    if (attachments.filter((a) => a.type === "sticker").length >= STICKERS_MAX) return setHint("that’s a lot of stickers at once ♡ send these first.");
+    haptic("light");
+    setAttachments((current) => [...current, { id: `s${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, type: "sticker", file: picture.file, width: picture.width, height: picture.height, alt: picture.alt, mime: "image/png", previewUrl: URL.createObjectURL(picture.file) }]);
+  }
+
+  /** Pasted or dropped pictures: a copied sticker (small, see-through) as a sticker, the rest as photos. */
+  async function addPasted(files) {
+    const photos = [];
+    for (const file of files) {
+      if (await looksLikeSticker(file)) {
+        const png = await stickerPng(file).catch(() => null);
+        if (png) {
+          addSticker(png);
+          continue;
+        }
+      }
+      photos.push(file);
+    }
+    if (photos.length) addFiles(photos);
+  }
+
   async function addFiles(files) {
     const list = [...files].filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/") || /\.(mov|mp4|m4v|heic|jpe?g|png|webp|gif)$/i.test(file.name ?? ""));
     if (!list.length) return;
-    const room = ALBUM_MAX - attachments.length;
+    const room = ALBUM_MAX - attachments.filter((a) => a.type !== "sticker").length;
     if (room <= 0) return setHint(`up to ${ALBUM_MAX} at a time ♡`);
     if (list.length > room) setHint(`up to ${ALBUM_MAX} at a time ♡ the first ${room} are in.`);
     const placeholders = list.slice(0, room).map((file, i) => ({ id: `loading-${Date.now()}-${i}`, loading: true, name: file.name }));
@@ -197,6 +238,7 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
 
   function clearAfterSend() {
     setText("");
+    if (rich) setFieldText(field.current, "");
     setAttachments([]);
     notifyTyping("");
   }
@@ -212,16 +254,29 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
       return;
     }
     if (attachments.some((a) => a.loading)) return setHint("one moment, still getting them ready…");
-    if (ready.length) {
+    // Stickers go first, each as its own little message; then the photos (with the words as their
+    // caption) or the words. A reply quotes only the first thing sent.
+    const stickers = ready.filter((a) => a.type === "sticker");
+    const photos = ready.filter((a) => a.type !== "sticker");
+    let quote = replyTo;
+    const next = () => {
+      const value = quote;
+      quote = null;
+      return value;
+    };
+    // Each one shows at once; each is posted only after the one before it (`after`), so the order holds.
+    let after = null;
+    const go = (message) => {
+      const sent = onSend({ ...message, ...(after ? { after } : {}) });
+      after = Promise.resolve(sent);
+    };
+    for (const sticker of stickers) go({ clientId: newClientId(), kind: "sticker", body: "", sticker, replyTo: next() });
+    if (photos.length) {
       const caption = body.length <= CAPTION_MAX ? body : "";
-      onSend({ clientId: newClientId(), kind: "image", body: caption, attachments: ready, replyTo });
-      if (body && !caption) onSend({ clientId: newClientId(), kind: "text", body, replyTo: null });
-      clearAfterSend();
-      tapFeedback();
-      return;
-    }
-    if (!body) return;
-    onSend({ clientId: newClientId(), kind: "text", body, replyTo });
+      go({ clientId: newClientId(), kind: "image", body: caption, attachments: photos, replyTo: next() });
+      if (body && !caption) go({ clientId: newClientId(), kind: "text", body: body.slice(0, TEXT_MAX), replyTo: null });
+    } else if (body) go({ clientId: newClientId(), kind: "text", body: body.slice(0, TEXT_MAX), replyTo: next() });
+    if (!stickers.length && !photos.length && !body) return;
     clearAfterSend();
     tapFeedback();
   }
@@ -278,6 +333,7 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
   }
 
   const ready = attachments.length > 0;
+  const photosReady = attachments.some((a) => a.type !== "sticker");
   const hasText = text.trim().length > 0;
   const canSend = hasText || ready || Boolean(editing);
   const keepFocus = (event) => event.preventDefault();
@@ -291,7 +347,7 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
       onDrop={(event) => {
         if (!event.dataTransfer?.files?.length) return;
         event.preventDefault();
-        addFiles(event.dataTransfer.files);
+        addPasted([...event.dataTransfer.files]);
       }}
     >
       {panel === "signals" && (
@@ -382,12 +438,30 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
               </>
             )}
             <div className="composer__field">
+              {rich ? (
+                <RichField
+                  ref={field}
+                  label="Message"
+                  placeholder={editing?.kind === "image" ? "add a caption" : photosReady ? "add a caption…" : "talk to me baby"}
+                  empty={!text}
+                  onFocus={() => setPanel(null)}
+                  onBlur={() => notifyTyping("")}
+                  onText={(value) => {
+                    setText(value);
+                    if (!editing) notifyTyping(value);
+                  }}
+                  onGlyph={(picture) => (editing ? setHint("stickers go in their own message ♡ finish the edit first.") : addSticker(picture))}
+                  onFiles={(files) => !editing && addPasted(files)}
+                  onSubmit={send}
+                  onEscape={() => editing && onCancelEdit()}
+                />
+              ) : (
               <textarea
                 ref={field}
                 rows={1}
                 value={text}
                 maxLength={editing?.kind === "image" || ready ? undefined : TEXT_MAX}
-                placeholder={editing?.kind === "image" ? "add a caption" : ready ? "add a caption…" : "talk to me baby"}
+                placeholder={editing?.kind === "image" ? "add a caption" : photosReady ? "add a caption…" : "talk to me baby"}
                 aria-label="Message"
                 enterKeyHint="send"
                 onFocus={() => setPanel(null)}
@@ -400,7 +474,7 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
                   const files = [...(event.clipboardData?.files ?? [])].filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/"));
                   if (!files.length || editing) return;
                   event.preventDefault();
-                  addFiles(files);
+                  addPasted(files);
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.shiftKey && finePointer()) {
@@ -410,6 +484,7 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
                   if (event.key === "Escape" && editing) onCancelEdit();
                 }}
               />
+              )}
             </div>
           </>
         )}

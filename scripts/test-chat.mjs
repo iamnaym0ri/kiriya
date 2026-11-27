@@ -110,6 +110,11 @@ try {
     await send(her, { kind: "gif", media: { url: "https://media2.giphy.com/media/abc/200w.gif", giphyId: "abc" } });
     await send(her, { kind: "sticker", media: { url: "/stickers/fluent/sparkling-heart.webp" } });
     await send(her, { kind: "sticker", media: { url: "/stickers/fluent/not-a-real-one.webp" } }, 400);
+    // The iPhone's own stickers and Genmoji: a PNG uploaded to the chat folder.
+    const iphone = await send(her, { kind: "sticker", media: { url: "/api/uploads/media?path=chat%2F173-ab12cd34.png", width: 320, height: 300, mime: "image/png", alt: "cat with a heart" } });
+    assert.equal(iphone.media.alt, "cat with a heart");
+    await send(her, { kind: "sticker", media: { url: "/api/uploads/media?path=art%2F173-ab12cd34.png", width: 320, height: 300 } }, 400);
+    await send(her, { kind: "sticker", media: { url: "https://evil.example/s.png" } }, 400);
     await send(her, { kind: "voice", media: { url: "/api/uploads/media?path=chat%2F172-ab12cd34.m4a", duration: 4.2, peaks: [0.1, 0.8, 0.4] } });
     await send(her, { kind: "tap", body: "hug" });
   });
