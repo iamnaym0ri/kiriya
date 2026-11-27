@@ -85,6 +85,45 @@ time.
   last tab `/world/me`. Old routes (`/world/notes`, `/world/letters`, `/world/settings`, notification
   `navigate` paths such as `/world/notes?open=<id>`) must keep working and land in the right tab.
 - `useIsAdmin()` (`src/lib/session.js`): Josh's sign-in.
+- **Section markup** (decided 2026-11-26; the frame agent styles it, everything scoped to
+  `html.app-shell`; until frame's styles land, keep your own fallback styles for these classes in
+  your own stylesheet):
+
+  ```html
+  <div class="app-section app-section--home">        <!-- one per tab root -->
+    <header class="app-section__head">               <!-- right under the status bar -->
+      <h1 class="app-section__title">home</h1>       <!-- large title -->
+      <p class="app-section__subtitle">…</p>         <!-- optional -->
+      <div class="app-section__actions">…</div>      <!-- optional trailing buttons (AdminEdit, compose) -->
+    </header>
+    <div class="app-section__body">                  <!-- the content column -->
+      <section class="app-card">                     <!-- a grouped card -->
+        <header class="app-card__head"><h2 class="app-card__title">…</h2><div class="app-card__action">…</div></header>
+        <div class="app-card__body">…</div>
+      </section>
+      <ul class="app-list"><li class="app-row">…</li></ul>  <!-- iOS-style inset grouped rows -->
+    </div>
+  </div>
+  <div class="app-screen">                           <!-- a pushed screen inside a tab -->
+    <header class="app-section__head"><button class="app-screen__back">…</button><h1 class="app-section__title">…</h1></header>
+    <div class="app-section__body">…</div>
+  </div>
+  ```
+
+  CSS variables the frame sets on `html.app-shell`: `--app-gutter` (16px), `--app-tabs-h` (tab bar
+  height including the home-indicator inset; pad the bottom of anything that scrolls to the end),
+  `--app-card-radius`. `body.keyboard-open` is set while the keyboard is up (Capacitor Keyboard, or
+  `visualViewport` in Safari); the tab bar hides then. The tab bar stays visible in chat.
+- **The website's top bar (`.world-mast`) shows on home only** in the app; every other tab starts
+  right under the status bar with its own `.app-section__head` (in-app.css already pads the body by
+  the status bar). The floating "little corner" (`.daily-style-corner`) is hidden in the app; the home
+  section shows it as a widget instead.
+- **Deep links in the app:** `/world/notes?open=<id>` → `/world/mail?note=<id>`,
+  `/world/letters?open=<id>` → `/world/mail?letter=<id>` (the mail agent redirects from its pages),
+  `/world#letters-hub` → `/world/mail`, `/world#note-jar` and the "pull a note" quick action →
+  `/world/mail#note-jar`, `/world?event=<id>#events` → that event's page (events-ui),
+  `/world#play-desk` → `/world/play`, `/world/settings` → `/world/me`. The frame agent implements the
+  mapping in one place and documents the full list here.
 
 ### Admin in place
 
@@ -153,8 +192,13 @@ export default {
 };
 ```
 
-`Game.jsx` gets `({ onExit, onReward })`: `onReward({ sticker })` ties into the existing sticker
-collection. `src/world/play/games/registry.js` finds every game by folder (`import.meta.glob`), so
+`Game.jsx` gets `({ onExit, onReward })`. A reward is `onReward({ sticker: "st-…", game: "<game-id>",
+reason: "first garden cleared" })`, with a sticker id from her collection's catalogue
+(`server/content/birthday.js`, the `st-*` ids; `shared/stickers.js` is the chat's sticker pack, not
+this). The frame agent's hub saves it (a `POST /me/stickers` route the frame agent adds) and shows a
+small "you got a sticker" moment. New sticker designs: put them in your game folder as
+`stickers.js` (`[{ id: "st-…", art: <svg component or path>, name, line }]`) and list them in your
+report; the coordinator adds them to the catalogue. `src/world/play/games/registry.js` finds every game by folder (`import.meta.glob`), so
 adding a game needs no shared file. The **frame agent** owns the registry and the play hub. Until
 the hub lands, open a game in the dev-only lab: `/world/game-lab?g=<id>`.
 
