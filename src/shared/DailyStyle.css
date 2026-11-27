@@ -1,0 +1,192 @@
+/*
+  Her little corner's check-in as an iPhone sheet (DailyStyle.jsx, AppCornerSheet). App only: the
+  website keeps its popover by the floating corner (styles/feeling-corner.css).
+  - Opens by sliding up over a shade that fades in; closes the same way (transform and opacity only).
+  - A grabber and header that stay put; the check-in scrolls inside the sheet and nowhere else.
+  - MoodCheckin's footer (the "keep" button) is sticky at the very bottom of the scroller, on solid
+    paper that runs under the home indicator, so nothing shows scrolling underneath it.
+*/
+.corner-sheet {
+  --corner-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+.corner-sheet__shade {
+  position: absolute;
+  inset: 0;
+  background: rgb(25 8 58 / 0.3);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: auto;
+  touch-action: none;
+}
+.corner-sheet[data-shown] .corner-sheet__shade {
+  opacity: var(--corner-shade, 1);
+  transition-duration: 380ms;
+}
+.corner-sheet.is-dragging .corner-sheet__shade {
+  transition: none;
+}
+
+.corner-sheet__panel {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100dvh - env(safe-area-inset-top) - 12px);
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  background: var(--theme-paper, #fff9fd);
+  color: var(--theme-ink);
+  box-shadow: 0 -10px 40px rgb(73 54 83 / 0.2);
+  outline: none;
+  pointer-events: auto;
+  transform: translate3d(0, 105%, 0);
+  transition: transform 300ms var(--corner-ease);
+  will-change: transform;
+}
+.corner-sheet[data-shown] .corner-sheet__panel {
+  transform: none;
+  transition-duration: 460ms;
+}
+.corner-sheet.is-dragging .corner-sheet__panel {
+  transition: none;
+}
+
+/* ---------- the grabber and header: always draggable ---------- */
+.corner-sheet__grab {
+  flex: none;
+  display: grid;
+  justify-items: center;
+  padding: 7px 0 0;
+  border-bottom: 1px dashed color-mix(in srgb, var(--theme-line) 80%, transparent);
+  background: var(--theme-paper, #fff9fd);
+  touch-action: none;
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.corner-sheet__grabber {
+  width: 38px;
+  height: 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--theme-muted, #7a6583) 38%, transparent);
+}
+.corner-sheet__head {
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 8px max(10px, env(safe-area-inset-right)) 10px max(20px, env(safe-area-inset-left));
+}
+.corner-sheet__titles {
+  min-width: 0;
+  padding-top: 4px;
+}
+.corner-sheet__label {
+  display: block;
+  color: var(--theme-muted);
+  font: 9px/1.3 var(--font-pixel);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.corner-sheet__titles h2 {
+  margin: 4px 0 0;
+  color: var(--theme-ink);
+  font: 700 28px/1.05 var(--font-hand);
+  overflow-wrap: anywhere;
+}
+.corner-sheet__close {
+  position: relative;
+  isolation: isolate;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--theme-muted);
+  cursor: pointer;
+}
+.corner-sheet__close::before {
+  content: "";
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--theme-soft) 80%, transparent);
+  z-index: -1;
+}
+.corner-sheet__close:active {
+  opacity: 0.55;
+}
+
+/* ---------- the scrolling check-in ---------- */
+.corner-sheet__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.corner-sheet__scroll::-webkit-scrollbar {
+  display: none;
+}
+.corner-sheet__wait {
+  margin: 0;
+  padding: 24px 20px calc(28px + env(safe-area-inset-bottom));
+  color: var(--theme-muted);
+  font-size: 14px;
+}
+.corner-sheet .daily-style-panel__error {
+  padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
+}
+.corner-sheet .mood-checkin__hint {
+  padding-top: 12px;
+}
+/* The bottom part: solid paper from its hairline to the very bottom of the screen. */
+.corner-sheet .mood-save {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 10px max(20px, env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  border-top: 1px solid color-mix(in srgb, var(--theme-line) 85%, transparent);
+  background: var(--theme-paper, #fff9fd);
+  box-shadow: 0 -12px 22px -18px rgb(73 54 83 / 0.35);
+}
+
+/* The page under the sheet holds still. */
+html.corner-sheet-open,
+html.corner-sheet-open body {
+  overflow: hidden;
+}
+
+/* Reduce Motion: a soft fade in place of the slide. */
+@media (prefers-reduced-motion: reduce) {
+  .corner-sheet__panel {
+    transform: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .corner-sheet[data-shown] .corner-sheet__panel {
+    opacity: 1;
+    transition-duration: 200ms;
+  }
+}
