@@ -633,6 +633,25 @@ html.app-shell .home-glance .app-row__icon[data-kind="heart"] { background: #f6e
 .home-song__flip button:active {
   background: var(--app-press);
 }
+.home-song__waiting {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  min-height: 86px;
+  opacity: 0.6;
+}
+.home-song__bar {
+  display: block;
+  height: 14px;
+  width: 70%;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--theme-line) 60%, transparent);
+}
+.home-song__bar--short {
+  width: 45%;
+  margin-top: 8px;
+}
 .home-song__empty {
   padding-block: 18px 10px;
 }

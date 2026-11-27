@@ -15,7 +15,8 @@ import "./home.css";
 // a song and the pinboard, then events & merch. A companion walks over all of it, so the blocks
 // leave it room to breathe.
 export default function HomeSection() {
-  const home = useHome().data;
+  const query = useHome();
+  const home = query.data;
   const today = useToday().data;
   const profile = usePublicProfile().data;
   const birthday = Boolean(today?.birthday?.isBirthday);
@@ -38,7 +39,7 @@ export default function HomeSection() {
         <CornerWidget />
         <GlanceCard home={home} />
         <CentreStage home={home} name={profile?.name ?? "kiriya"} birthday={birthday} avatarUrl={profile?.avatarUrl} />
-        <SongCard home={home} />
+        <SongCard home={home} fresh={query.isFetchedAfterMount} />
         <Pinboard home={home} signature={today?.signature ?? "Josh"} todayNote={todayNote} />
         <EventsBlock />
       </div>

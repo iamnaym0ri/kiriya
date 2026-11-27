@@ -20,7 +20,7 @@ export function featuredSong(songs) {
  * (and keeps going with the phone locked); a YouTube link opens YouTube's own player in the card.
  * Each visit features one she hasn't heard yet; she can flip through the rest.
  */
-export default function SongCard({ home }) {
+export default function SongCard({ home, fresh = true }) {
   const admin = useIsAdmin();
   const songs = home?.songs ?? [];
   const audio = useAudioEngine();
@@ -32,13 +32,14 @@ export default function SongCard({ home }) {
   // Which song this visit features is decided once, when the songs first arrive (or a song that is
   // already playing, when she comes back to home).
   useEffect(() => {
-    if (pick || !songs.length) return;
+    // Wait for this visit's own answer, not the copy kept from last time.
+    if (pick || !songs.length || !fresh) return;
     const playing = audio.song && songs.find((song) => song.id === audio.song.id);
     setPick((playing ?? featuredSong(songs)).id);
-  }, [songs, pick, audio.song]);
+  }, [songs, pick, audio.song, fresh]);
 
   const index = Math.max(0, songs.findIndex((song) => song.id === pick));
-  const song = songs[index] ?? null;
+  const song = pick ? (songs[index] ?? null) : null;
   const flip = (step) => {
     if (songs.length < 2) return;
     setOpen(false);
@@ -93,13 +94,18 @@ export default function SongCard({ home }) {
             }
           }} />
         )
+      ) : songs.length ? (
+        <div className="home-song__waiting" aria-hidden="true">
+          <span className="home-song__sleeve"><span className="home-song__blank">♫</span></span>
+          <span className="home-song__info"><span className="home-song__bar" /><span className="home-song__bar home-song__bar--short" /></span>
+        </div>
       ) : (
         <div className="app-empty home-song__empty">
           <strong>a song is on its way ♫</strong>
           <span>{admin ? "add the first one with the pencil above." : "one will be waiting here soon."}</span>
         </div>
       )}
-      {songs.length > 1 && (
+      {songs.length > 1 && song && (
         <div className="home-song__flip">
           <button type="button" aria-label="Previous song" onClick={() => flip(-1)}>
             <HomeIcon name="prev" />

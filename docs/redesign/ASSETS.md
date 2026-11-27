@@ -77,3 +77,11 @@ The screenshots in `strawpage-references/` document four live Strawpages for res
 ## Unified doodle tools
 
 The new brush previews and shape/stamp paths are original code-native SVG/canvas work in `src/world/play/MiniSketchbook.jsx` and `src/world/studio/drawingTools.js`. The drawing surface generates its own dotted/lined paper and deterministic crayon texture. No additional downloaded artwork or image generator was used. Existing Mixbox pigment mixing retains its CC BY-NC 4.0 attribution in the folded paint box. Saved drawings and uploaded artwork continue to use private media storage.
+
+## App home: songs for her (2026-11-26)
+
+| Piece | Source and licence | Use |
+| --- | --- | --- |
+| [music-metadata](https://github.com/Borewit/music-metadata) 12.4.0 | Borewit, MIT | Reads a song file's title, artist, album, length and cover in Josh's browser before upload (`src/shared/music/songTags.js`); loaded only when he picks a file. |
+| [MusicBrainz](https://musicbrainz.org) + [Cover Art Archive](https://coverartarchive.org) | MusicBrainz core data CC0; cover images belong to their rights holders | Finds an album cover for a song file that carries none (`server/lib/songs.js`, one request a second, a generic User-Agent). The chosen picture is copied to the private Blob store for the song card only. |
+| YouTube IFrame Player | YouTube's own embedded player, under YouTube's terms | YouTube songs play in YouTube's visible player inside the card (≥ 200 pt tall, never in the background), framed from the site's own address (`/api/embed/youtube`). |

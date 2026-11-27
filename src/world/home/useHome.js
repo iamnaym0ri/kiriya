@@ -10,7 +10,8 @@ export function useHome() {
   return useQuery({
     queryKey: homeKey,
     queryFn: ({ signal }) => api("/me/home", { signal }),
-    staleTime: 30_000,
+    // The copy kept on the phone shows at once; a fresh one is asked for every time home opens.
+    staleTime: 0,
     refetchOnWindowFocus: true,
   });
 }
