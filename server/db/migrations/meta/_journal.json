@@ -78,6 +78,13 @@
       "when": 1795748479191,
       "tag": "0010_events_engine",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795814746805,
+      "tag": "0011_chat_enc",
+      "breakpoints": true
     }
   ]
 }

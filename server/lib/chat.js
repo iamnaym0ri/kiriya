@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gt, gte, inArray, isNull, lt, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { schema } from "../db/client.js";
 import { kiriya } from "../content/kiriya.js";
@@ -35,43 +35,112 @@ export async function names(db) {
 
 // ---------- validation ----------
 
+// Round 3: photos and videos travel as albums (1–10 per message, laid out like Discord's grid), and
+// end-to-end encryption (src/lib/chatCrypto.js, owned by chat-room) seals bodies and media. The
+// server never inspects sealed data: `enc` (on the message) and `sealed` (on each media entry) are
+// opaque, size-capped JSON that is stored and handed back as is.
+export const ALBUM_MAX = 10;
+export const VIDEO_MAX_SECONDS = 180;
+const ENC_MAX = 4096;
+const SEALED_MAX = 2048;
+const SEALED_BODY_MAX = 16000;
+const CAPTION_MAX = 500;
+const opaque = (max) => z.custom((value) => value !== undefined && value !== null && JSON.stringify(value).length <= max, "too big");
+const sealed = { sealed: opaque(SEALED_MAX).optional() };
+
 const giphyUrl = z.string().url().max(600).refine((url) => /^https:\/\/(media\d?|i)\.giphy\.com\//.test(url), "giphy only");
 const BUILT_IN = new Set(STICKER_PACKS.flatMap((pack) => pack.stickers.map((sticker) => sticker.url)));
 const builtInSticker = z.string().refine((url) => BUILT_IN.has(url), "unknown sticker");
+const chatUpload = z.string().refine((u) => isUploadUrl(u, ["chat"]), "not one of ours");
 const dims = { width: z.number().int().min(1).max(10000).optional(), height: z.number().int().min(1).max(10000).optional() };
+const alt = { alt: z.string().max(200).optional() };
+const mime = { mime: z.string().max(60).optional() };
+const poster = z.object({ url: chatUpload, ...dims, ...mime, ...sealed }).strict();
+const albumItem = z
+  .object({
+    type: z.enum(["image", "video"]),
+    url: chatUpload,
+    ...dims,
+    ...alt,
+    ...mime,
+    ...sealed,
+    duration: z.number().min(0).max(VIDEO_MAX_SECONDS + 5).optional(),
+    poster: poster.optional(),
+  })
+  .strict()
+  .refine((item) => (item.type === "video" ? item.duration !== undefined : item.duration === undefined && item.poster === undefined), "a video needs its length; a photo has none");
+const legacyImage = z.object({ url: chatUpload, ...dims, ...alt, ...mime, ...sealed }).strict();
+// While a message is sealed, a GIF's or sticker's link travels inside `sealed` (chat-room's choice).
+const sealedOnly = z.object({ ...dims, sealed: opaque(SEALED_MAX) }).strict();
 const MEDIA = {
-  image: z.object({ url: z.string().refine((u) => isUploadUrl(u, ["chat"])), ...dims, alt: z.string().max(200).optional() }).strict(),
-  gif: z.object({ url: giphyUrl, still: giphyUrl.optional(), giphyId: z.string().max(80).optional(), ...dims, alt: z.string().max(200).optional() }).strict(),
-  sticker: z.object({ url: z.union([builtInSticker, z.string().refine((u) => isUploadUrl(u, ["stickers"]))]), ...dims, alt: z.string().max(200).optional() }).strict(),
+  image: z.union([z.object({ items: z.array(albumItem).min(1).max(ALBUM_MAX) }).strict(), legacyImage]),
+  gif: z.object({ url: giphyUrl, mp4: giphyUrl.optional(), webp: giphyUrl.optional(), still: giphyUrl.optional(), giphyId: z.string().max(80).optional(), ...dims, ...alt, ...sealed }).strict(),
+  sticker: z.object({ url: z.union([builtInSticker, z.string().refine((u) => isUploadUrl(u, ["stickers"]))]), ...dims, ...alt, ...sealed }).strict(),
   voice: z
     .object({
-      url: z.string().refine((u) => isUploadUrl(u, ["chat"])),
+      url: chatUpload,
       duration: z.number().min(0.3).max(300),
       peaks: z.array(z.number().min(0).max(1)).max(64).optional(),
-      mime: z.string().max(40).optional(),
+      ...mime,
+      ...sealed,
     })
     .strict(),
 };
+/** Whether `media` is valid for a message of `kind` (sealed messages may carry gif/sticker links sealed). */
+const mediaOk = (kind, media, isSealed) => MEDIA[kind].safeParse(media).success || (isSealed && (kind === "gif" || kind === "sticker") && sealedOnly.safeParse(media).success);
+
 export const sendSchema = z
   .object({
     clientId: z.string().min(8).max(80).regex(/^[\w-]+$/),
     kind: z.enum(["text", "image", "gif", "sticker", "voice", "tap"]),
-    body: z.string().max(TEXT_MAX).default(""),
+    body: z.string().max(SEALED_BODY_MAX).default(""),
     media: z.unknown().optional(),
     replyTo: z.string().uuid().nullable().optional(),
+    enc: opaque(ENC_MAX).optional(),
   })
   .strict()
   .superRefine((input, ctx) => {
+    const isSealed = input.enc !== undefined;
     if (input.kind === "text" && !input.body.trim()) ctx.addIssue({ code: "custom", message: "empty" });
-    if (input.kind === "tap" && !tapByKey[input.body]) ctx.addIssue({ code: "custom", message: "unknown tap" });
-    if (MEDIA[input.kind] && !MEDIA[input.kind].safeParse(input.media).success) ctx.addIssue({ code: "custom", message: "bad media" });
-    if (["image", "gif", "sticker", "voice"].includes(input.kind) && input.body.length > 500) ctx.addIssue({ code: "custom", message: "caption too long" });
+    if (input.kind === "tap" && (isSealed || !tapByKey[input.body])) ctx.addIssue({ code: "custom", message: "unknown tap" });
+    if (!isSealed && input.body.length > TEXT_MAX) ctx.addIssue({ code: "custom", message: "too long" });
+    if (MEDIA[input.kind] && !mediaOk(input.kind, input.media, isSealed)) ctx.addIssue({ code: "custom", message: "bad media" });
+    if (!isSealed && ["image", "gif", "sticker", "voice"].includes(input.kind) && input.body.length > CAPTION_MAX) ctx.addIssue({ code: "custom", message: "caption too long" });
   });
+
+/** An edit: new text for a text message, or a new caption for photos and videos (sealed again when the chat is sealed). */
+export const editSchema = z
+  .object({
+    body: z.string().max(SEALED_BODY_MAX),
+    enc: opaque(ENC_MAX).optional(),
+    media: z.unknown().optional(),
+  })
+  .strict();
+export const EDITABLE = ["text", "image"];
+
+/** Every file a message's media points at (photos, videos, their posters, voice notes). */
+export function mediaUrls(media) {
+  if (!media || typeof media !== "object") return [];
+  const entries = Array.isArray(media.items) ? media.items : [media];
+  return entries.flatMap((entry) => [entry?.url, entry?.poster?.url]).filter((url) => typeof url === "string");
+}
 
 // ---------- reading ----------
 
+/** What a quoted message shows above a reply: a line of text and, for media, its first picture. */
+function replyPreviewMedia(row) {
+  if (!row.media) return null;
+  if (row.kind === "image") {
+    const items = Array.isArray(row.media.items) ? row.media.items : [{ type: "image", ...row.media }];
+    return { items: items.slice(0, 1), count: items.length };
+  }
+  if (row.kind === "voice") return { duration: row.media.duration };
+  return row.media;
+}
+
 function shape(row, reactions, replies) {
   const reply = row.replyTo ? replies.get(row.replyTo) : null;
+  const replyGone = reply?.deletedAt;
   return {
     id: row.id,
     clientId: row.clientId,
@@ -79,12 +148,24 @@ function shape(row, reactions, replies) {
     kind: row.deletedAt ? "deleted" : row.kind,
     body: row.deletedAt ? "" : row.body,
     media: row.deletedAt ? null : row.media,
+    enc: row.deletedAt ? null : (row.enc ?? null),
     replyTo: reply
-      ? { id: reply.id, sender: reply.sender, kind: reply.deletedAt ? "deleted" : reply.kind, body: reply.deletedAt ? "" : reply.body.slice(0, 140) }
-      : null,
+      ? {
+          id: reply.id,
+          clientId: reply.clientId,
+          sender: reply.sender,
+          kind: replyGone ? "deleted" : reply.kind,
+          // A sealed body can't be cut short without breaking it, so it travels whole.
+          body: replyGone ? "" : reply.enc ? reply.body : reply.body.slice(0, 140),
+          media: replyGone ? null : replyPreviewMedia(reply),
+          enc: replyGone ? null : (reply.enc ?? null),
+        }
+      : row.replyTo
+        ? { id: row.replyTo, sender: null, kind: "deleted", body: "", media: null, enc: null }
+        : null,
     reactions: Object.fromEntries(reactions.filter((r) => r.messageId === row.id).map((r) => [r.role, r.emoji])),
     createdAt: row.createdAt.toISOString(),
-    editedAt: row.editedAt?.toISOString() ?? null,
+    editedAt: row.deletedAt ? null : (row.editedAt?.toISOString() ?? null),
   };
 }
 
@@ -111,10 +192,13 @@ export async function readState(db) {
  */
 export async function listMessages(db, { before = null, after = null, limit = PAGE } = {}) {
   if (after) {
+    // New messages, plus any edited or deleted since (a live "edited"/"deleted" event, or a phone
+    // catching up after a dropped connection, picks those changes up here too).
+    const since = new Date(after);
     const rows = await db
       .select()
       .from(schema.chatMessages)
-      .where(gt(schema.chatMessages.createdAt, new Date(after)))
+      .where(or(gt(schema.chatMessages.createdAt, since), gt(schema.chatMessages.editedAt, since), gt(schema.chatMessages.deletedAt, since)))
       .orderBy(asc(schema.chatMessages.createdAt))
       .limit(200);
     return { messages: await decorate(db, rows), next: null };
@@ -143,13 +227,19 @@ export async function unreadMessages(db, role) {
 /** For the letters hub's Messages door and the app badge: unread count and the latest message. */
 export async function chatSummary(db, role) {
   const [[last], unread] = await Promise.all([
-    db.select().from(schema.chatMessages).orderBy(desc(schema.chatMessages.createdAt)).limit(1),
+    db.select().from(schema.chatMessages).where(isNull(schema.chatMessages.deletedAt)).orderBy(desc(schema.chatMessages.createdAt)).limit(1),
     unreadMessages(db, role),
   ]);
   return {
     unread,
     last: last
-      ? { sender: last.sender, kind: last.deletedAt ? "deleted" : last.kind, body: last.deletedAt ? "" : last.body.slice(0, 120), createdAt: last.createdAt.toISOString() }
+      ? {
+          sender: last.sender,
+          kind: last.deletedAt ? "deleted" : last.kind,
+          body: last.deletedAt ? "" : last.enc ? last.body : last.body.slice(0, 120),
+          enc: last.deletedAt ? null : (last.enc ?? null),
+          createdAt: last.createdAt.toISOString(),
+        }
       : null,
   };
 }
@@ -194,7 +284,16 @@ export async function sendMessage(db, role, input, { after = (task) => task(), n
   if (test) return test;
   const [inserted] = await db
     .insert(schema.chatMessages)
-    .values({ clientId: data.clientId, sender: role, kind: data.kind, body: data.kind === "text" ? data.body.trim() : data.body, media: data.media ?? null, replyTo: data.replyTo ?? null, createdAt: now })
+    .values({
+      clientId: data.clientId,
+      sender: role,
+      kind: data.kind,
+      body: data.kind === "text" && !data.enc ? data.body.trim() : data.body,
+      media: data.media ?? null,
+      enc: data.enc ?? null,
+      replyTo: data.replyTo ?? null,
+      createdAt: now,
+    })
     .onConflictDoNothing({ target: schema.chatMessages.clientId })
     .returning();
   let row = inserted;
@@ -216,14 +315,79 @@ export async function sendMessage(db, role, input, { after = (task) => task(), n
   return message;
 }
 
-export async function deleteMessage(db, role, id) {
-  const [row] = await db
+/**
+ * Edits one of your own messages: a text's words, or the caption under photos and videos. The other
+ * phone hears "edited" and catches up. Returns the message, or null when it isn't yours to edit.
+ */
+export async function editMessage(db, role, id, input, { now = new Date() } = {}) {
+  const data = editSchema.parse(input);
+  const [row] = await db.select().from(schema.chatMessages).where(eq(schema.chatMessages.id, id));
+  if (!row || row.sender !== role || row.deletedAt || !EDITABLE.includes(row.kind)) return null;
+  const isSealed = data.enc !== undefined;
+  const body = row.kind === "text" && !isSealed ? data.body.trim() : data.body;
+  if (row.kind === "text" && !body.trim()) throw Object.assign(new Error("A message can’t be empty. Delete it instead?"), { status: 400 });
+  if (!isSealed && body.length > (row.kind === "text" ? TEXT_MAX : CAPTION_MAX)) throw Object.assign(new Error("That’s a little too long."), { status: 400 });
+  if (data.media !== undefined && !mediaOk(row.kind, data.media, isSealed)) throw Object.assign(new Error("bad media"), { status: 400 });
+  const [updated] = await db
     .update(schema.chatMessages)
-    .set({ deletedAt: new Date() })
-    .where(and(eq(schema.chatMessages.id, id), eq(schema.chatMessages.sender, role), isNull(schema.chatMessages.deletedAt)))
+    .set({ body, editedAt: now, ...(isSealed ? { enc: data.enc } : row.enc ? { enc: null } : {}), ...(data.media !== undefined ? { media: data.media } : {}) })
+    .where(and(eq(schema.chatMessages.id, id), isNull(schema.chatMessages.deletedAt)))
+    .returning();
+  if (!updated) return null;
+  await publish("edited", { id, sender: role, at: now.toISOString() });
+  return (await decorate(db, [updated]))[0];
+}
+
+/**
+ * Deletes one of your own messages for both of them: its words and files are wiped (a row stays
+ * behind only so replies can say "original message was deleted" and phones can catch up), its
+ * reactions go, and its files are removed from storage unless it was saved to your memories.
+ */
+export async function deleteMessage(db, role, id, { after = (task) => task() } = {}) {
+  const [row] = await db
+    .select()
+    .from(schema.chatMessages)
+    .where(and(eq(schema.chatMessages.id, id), eq(schema.chatMessages.sender, role), isNull(schema.chatMessages.deletedAt)));
+  if (!row) return false;
+  const [gone] = await db
+    .update(schema.chatMessages)
+    .set({ deletedAt: new Date(), body: "", media: null, enc: null })
+    .where(and(eq(schema.chatMessages.id, id), isNull(schema.chatMessages.deletedAt)))
     .returning({ id: schema.chatMessages.id });
-  if (row) await publish("deleted", { id });
-  return Boolean(row);
+  if (!gone) return false;
+  await db.delete(schema.chatReactions).where(eq(schema.chatReactions.messageId, id));
+  await publish("deleted", { id });
+  const files = mediaUrls(row.media);
+  if (files.length)
+    await after(async () => {
+      const [kept] = await db
+        .select({ id: schema.memories.id })
+        .from(schema.memories)
+        .where(and(eq(schema.memories.kind, "message"), eq(schema.memories.sourceId, id)));
+      if (!kept) await forgetFiles(files);
+    });
+  return true;
+}
+
+/** Removes chat files from storage (Blob in production, the dev folder locally). Never throws. */
+async function forgetFiles(urls) {
+  const { blobReadConfigured, blobOptions } = await import("./blob.js");
+  for (const url of urls) {
+    try {
+      if (url.startsWith("/api/uploads/media?path=")) {
+        const pathname = new URL(url, "http://local").searchParams.get("path");
+        if (!pathname?.startsWith("chat/") || !blobReadConfigured()) continue;
+        const { del } = await import("@vercel/blob");
+        await del(pathname, blobOptions());
+      } else if (/^\/api\/uploads\/file\/chat-[a-f0-9]{16}\.[a-z0-9]+$/.test(url)) {
+        const { unlink } = await import("node:fs/promises");
+        const path = await import("node:path");
+        await unlink(path.resolve(".data/uploads", url.split("/").pop()));
+      }
+    } catch {
+      // A file that can't be removed now just stays; nothing links to it any more.
+    }
+  }
 }
 
 export async function react(db, role, messageId, emoji) {
