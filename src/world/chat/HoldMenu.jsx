@@ -51,14 +51,9 @@ export function HoldMenu({ held, me, preview, onClose, onReact, onReply, onEdit,
     if (y - aboveH - 10 < top) y = top + aboveH + 10;
     if (y + height + belowH + 10 > bottom) y = bottom - belowH - 10 - height;
     setPlace({ left: rect.left, width: rect.width, from: rect.top, top: y, height, clipped: height < rect.height });
-    // The original steps out while its copy is lifted (like iMessage), and the chat comes forward.
+    // The original steps out while its copy is lifted (like iMessage).
     row?.setAttribute("data-held", "");
-    const chat = element.closest(".chat");
-    chat?.setAttribute("data-holding", "");
-    return () => {
-      row?.removeAttribute("data-held");
-      chat?.removeAttribute("data-holding");
-    };
+    return () => row?.removeAttribute("data-held");
   }, [element]);
 
   useEffect(() => {

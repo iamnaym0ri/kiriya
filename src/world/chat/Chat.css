@@ -380,6 +380,7 @@
   color: var(--chat-meta);
 }
 .msg__status button {
+  position: relative;
   min-height: 32px;
   padding: 0 2px;
   border: 0;
@@ -685,11 +686,12 @@
   min-width: min(210px, 60vw);
 }
 .voice button {
+  position: relative;
   flex: none;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border: 0;
   border-radius: 50%;
   background: color-mix(in srgb, currentColor 16%, transparent);
@@ -1220,10 +1222,15 @@
 }
 
 .sheet--gif {
-  height: min(400px, 48vh);
+  height: min(400px, 48vh, calc(var(--chat-vv-h, 100dvh) - 330px));
+}
+/* While the keyboard is up (searching), the sheet makes room so it never runs under the header. */
+.chat:is([data-kb="up"], [data-kb="moving"]) .sheet--gif {
+  height: min(300px, 34vh);
 }
 .gif-search {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1237,6 +1244,7 @@
 }
 .gif-search input {
   flex: 1;
+  width: 100%;
   min-width: 0;
   height: 38px;
   border: 0;
@@ -1275,8 +1283,9 @@
   scrollbar-width: none;
 }
 .gif-ideas button {
+  position: relative;
   flex: none;
-  min-height: 32px;
+  min-height: 34px;
   padding: 0 12px;
   border: 1px solid var(--chat-line);
   border-radius: 999px;
@@ -1284,6 +1293,13 @@
   color: var(--chat-theirs-ink);
   font-size: 13px;
   cursor: pointer;
+}
+.gif-ideas button::after,
+.voice button::after,
+.msg__status button::after {
+  content: "";
+  position: absolute;
+  inset: -6px -2px;
 }
 .gif-grid {
   flex: 1;
@@ -1329,9 +1345,25 @@
 }
 
 /* ---------- holding a message: blur, lift, react, menu ---------- */
-/* While a message is held the chat sits above the tab bar, so the veil covers everything. */
-html.app-shell .chat[data-holding]:not(.chat--swatch) {
-  z-index: 160;
+/* The held message's layer lives on <body> (above the tab bar) and carries the chat's look. */
+.chat.chat--layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482000;
+  display: block;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  translate: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+  pointer-events: none;
+}
+.chat--layer > * {
+  pointer-events: auto;
 }
 .msg[data-held] .msg__swipe {
   visibility: hidden;
@@ -1362,7 +1394,7 @@ html.app-shell .chat[data-holding]:not(.chat--swatch) {
 }
 .hold__message {
   top: var(--hold-top);
-  left: calc(var(--hold-left) - 2px);
+  left: var(--hold-left);
   width: calc(var(--hold-width) + 4px);
   margin: 0;
   padding: 0;
@@ -1371,6 +1403,7 @@ html.app-shell .chat[data-holding]:not(.chat--swatch) {
 }
 .hold__message[data-mine] {
   align-items: flex-end;
+  left: calc(var(--hold-left) - 4px);
 }
 .hold__message > .msg__swipe {
   max-width: 100%;
@@ -1705,7 +1738,7 @@ body[data-page="chat"] .world-footer {
    rides the keyboard: keyboard.js sets --chat-lift (a transform, gliding with the keyboard) and,
    once the keyboard has settled, --chat-settled (taken out of the layout). In Safari, ChatPage keeps
    --chat-vv-h/--chat-vv-top in step with the visible viewport instead. */
-html.app-shell .chat:not(.chat--swatch) {
+html.app-shell .chat:not(.chat--swatch):not(.chat--layer) {
   position: fixed;
   z-index: 100;
   top: var(--chat-vv-top, 0px);
