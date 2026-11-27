@@ -7,7 +7,7 @@ import { devices, webkit } from "playwright";
 
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:5316";
 const OUT = process.env.VERIFY_OUT ?? new URL("../.lab/dexterity/", import.meta.url).pathname;
-const ALL = ["petal-catch", "boop-the-cats", "miku-rhythm", "mochi-tower", "crane-flight"];
+const ALL = ["petal-catch", "boop-the-cats", "rhythm-tap", "mochi-tower", "crane-flight"];
 const only = process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
 const narrow = process.argv.includes("--narrow");
 const calm = process.argv.includes("--calm");
@@ -30,7 +30,7 @@ async function open(id, phone) {
     if (message.type() === "info" && message.text().startsWith("reward")) report[id].rewards.push(message.text());
   });
   await page.goto(`${BASE}/world/game-lab?g=${id}&app=1`);
-  await page.locator(".dex__play").waitFor();
+  await page.locator(".dex__play:not([disabled])").waitFor();
   await page.evaluate(() => document.fonts.ready);
   return { context, page };
 }
@@ -82,6 +82,23 @@ const BOTS = {
       const target = next ? next.gapY + 18 : s.height * 0.45;
       if (s.crane.y > target && s.crane.vy > -40) await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
       else await page.waitForTimeout(10);
+    }
+  },
+  async "rhythm-tap"(page, box, seconds) {
+    const until = Date.now() + seconds * 1000;
+    const tapped = new Set();
+    while (Date.now() < until && (await phase(page)) === "playing") {
+      const s = await state(page);
+      const lanes = [];
+      s.times.forEach((t, i) => {
+        const key = `${t}:${s.lanes[i]}`;
+        if (!tapped.has(key) && t - s.now < 0.035 && t - s.now > -0.1) {
+          tapped.add(key);
+          lanes.push(s.lanes[i]);
+        }
+      });
+      for (const lane of lanes) await page.touchscreen.tap(box.x + (lane + 0.5) * (box.width / 3), box.y + s.hitY + 70);
+      if (!lanes.length) await page.waitForTimeout(4);
     }
   },
   async "boop-the-cats"(page, box, seconds) {

@@ -42,6 +42,8 @@ export default function GameShell({
   onExit,
   beforeStart,
   canStart = true,
+  board = "best", // which best score to keep (the rhythm game keeps one per song and difficulty)
+  overlay = null, // extra pictures over the canvas, under the cards (Miku)
 }) {
   const stageRef = useRef(null);
   const canvasRef = useRef(null);
@@ -49,10 +51,13 @@ export default function GameShell({
   const hudRefs = useRef({});
   const phaseRef = useRef("loading");
   const settingsRef = useRef(settings);
+  const boardRef = useRef(board);
+  boardRef.current = board;
   const [phase, setPhaseState] = useState("loading");
   const [calm, setCalm] = useState(calmByDefault);
   const [sound, setSound] = useState(soundIsOn);
-  const [best, setBest] = useState(() => bestScore(id));
+  const [best, setBest] = useState(() => bestScore(id, board));
+  useEffect(() => setBest(bestScore(id, board)), [id, board]);
   const [result, setResult] = useState(null);
   const calmRef = useRef(calm);
   calmRef.current = calm;
@@ -131,7 +136,7 @@ export default function GameShell({
     (outcome) => {
       if (phaseRef.current !== "playing") return;
       stopLoop();
-      const saved = saveBest(id, outcome.score);
+      const saved = saveBest(id, outcome.score, boardRef.current);
       setBest(saved.best);
       const earned = [];
       for (const reward of rewardsFor(outcome)) {
@@ -325,6 +330,7 @@ export default function GameShell({
   return (
     <div className="dex" data-phase={phase} ref={stageRef}>
       <canvas ref={canvasRef} className="dex__canvas" aria-hidden="true" />
+      {overlay}
 
       <div className="dex__hud" data-visible={playing || phase === "paused"}>
         <div className="dex__chips" aria-live="off">

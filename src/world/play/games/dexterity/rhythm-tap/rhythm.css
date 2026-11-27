@@ -1,0 +1,115 @@
+/* rhythm tap: the cheering buddy in the top-right corner, the song picker and the timing tuner. */
+.buddy {
+  position: absolute;
+  right: 6px;
+  top: 52px;
+  width: 92px;
+  height: 114px;
+  pointer-events: none;
+  z-index: 1;
+}
+.buddy__svg { width: 100%; height: 100%; overflow: visible; }
+.buddy__bop, .buddy__arm, .buddy__tail, .buddy__head { transform-box: view-box; }
+.buddy__bop { transform-origin: 50px 118px; }
+.buddy__arm--l { transform-origin: 25px 72px; transition: rotate 0.22s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.buddy__arm--r { transform-origin: 75px 72px; transition: rotate 0.22s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.buddy__tail--l { transform-origin: 45px 32px; }
+.buddy__tail--r { transform-origin: 55px 32px; }
+.buddy__head { transform-origin: 50px 106px; }
+.buddy__happy, .buddy__sparkles { opacity: 0; transition: opacity 0.15s; }
+.buddy__glow { transition: opacity 0.2s; }
+
+/* the beat: two identical bops, so switching between them restarts the animation */
+.buddy[data-beat="a"] .buddy__bop { animation: buddy-bop-a 0.32s ease-out; }
+.buddy[data-beat="b"] .buddy__bop { animation: buddy-bop-b 0.32s ease-out; }
+.buddy[data-beat="a"] .buddy__tail--l, .buddy[data-beat="b"] .buddy__tail--r { rotate: 7deg; transition: rotate 0.3s; }
+.buddy[data-beat="b"] .buddy__tail--l, .buddy[data-beat="a"] .buddy__tail--r { rotate: -7deg; transition: rotate 0.3s; }
+.buddy[data-beat="a"] .buddy__arm--r { rotate: -12deg; }
+.buddy[data-beat="b"] .buddy__arm--r { rotate: 8deg; }
+@keyframes buddy-bop-a { 30% { translate: 0 -3px; scale: 1.02 0.98; } }
+@keyframes buddy-bop-b { 30% { translate: 0 -3px; scale: 1.02 0.98; } }
+
+.buddy[data-pose="cheer"] .buddy__arm--l { rotate: 128deg; }
+.buddy[data-pose="cheer"] .buddy__arm--r { rotate: -136deg; }
+.buddy[data-pose="cheer"] .buddy__eyes { opacity: 0; }
+.buddy[data-pose="cheer"] .buddy__happy,
+.buddy[data-pose="wow"] .buddy__happy { opacity: 1; }
+.buddy[data-pose="wow"] .buddy__eyes { opacity: 0; }
+.buddy[data-pose="wow"] .buddy__sparkles { opacity: 1; }
+.buddy[data-pose="wow"] .buddy__arm--l { rotate: 150deg; }
+.buddy[data-pose="wow"] .buddy__arm--r { rotate: -150deg; }
+.buddy[data-pose="wow"] .buddy__bop { animation: buddy-jump 0.5s ease-out 2; }
+.buddy[data-pose="encourage"] .buddy__arm--r { rotate: -70deg; }
+.buddy[data-pose="encourage"] .buddy__head { rotate: -6deg; }
+@keyframes buddy-jump { 40% { translate: 0 -10px; } }
+
+.buddy[data-calm="true"] .buddy__bop { animation: none !important; }
+.buddy[data-calm="true"] .buddy__tail { rotate: 0deg !important; }
+
+.buddy__bubble {
+  position: absolute;
+  right: 84px;
+  top: 8px;
+  max-width: 150px;
+  padding: 5px 11px 6px;
+  border: 1px solid #c9b2dc;
+  border-radius: 14px 14px 4px 14px;
+  background: #fff9fd;
+  box-shadow: 0 2px 0 #dccbe8;
+  font: 700 18px/1.1 var(--font-hand);
+  color: #6a43a8;
+  white-space: nowrap;
+  opacity: 0;
+  translate: 0 4px;
+  transition: opacity 0.18s, translate 0.18s;
+}
+.buddy__bubble[data-show="true"] { opacity: 1; translate: 0 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .buddy__bop { animation: none !important; }
+  .buddy__arm--l, .buddy__arm--r { transition: none; }
+}
+
+/* ---------- start card extras ---------- */
+.rhythm__songs .dex__choice { grid-template-columns: 1fr auto; align-items: center; }
+.rhythm__songs .dex__choice small { grid-column: 1; }
+.rhythm__best { grid-row: 1 / span 2; grid-column: 2; font: 700 16px var(--font-hand); color: #956ba3; }
+.rhythm__status { font: 18px var(--font-hand); color: #956ba3; margin: 0; min-height: 22px; }
+
+/* ---------- the timing tuner ---------- */
+.tuner { display: grid; justify-items: center; gap: 10px; width: 100%; }
+.tuner__pad {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 2px solid #2a9d96;
+  background: radial-gradient(circle, #dff7f4 0 55%, #c2eee9 56%);
+  color: #1f6f6a;
+  font: 700 22px var(--font-hand);
+  touch-action: manipulation;
+}
+.tuner__pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 4px solid #5fd3c8;
+  opacity: 0;
+  pointer-events: none;
+}
+.tuner__pad:active { scale: 0.97; }
+.tuner__dots { display: flex; gap: 5px; min-height: 12px; }
+.tuner__dots span { width: 10px; height: 10px; border-radius: 50%; background: #e3d4ee; }
+.tuner__dots span[data-on="true"] { background: #5fd3c8; }
+.tuner__nudge { display: flex; align-items: center; gap: 8px; font: 18px var(--font-hand); color: #6b5578; }
+.tuner__nudge button {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid #d4bfdc;
+  border-radius: 12px;
+  background: #fbf5fc;
+  font: 700 18px var(--font-hand);
+  color: #755180;
+}

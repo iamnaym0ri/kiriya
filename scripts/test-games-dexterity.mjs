@@ -7,6 +7,9 @@ import * as petals from "../src/world/play/games/dexterity/petal-catch/logic.js"
 import * as boop from "../src/world/play/games/dexterity/boop-the-cats/logic.js";
 import * as tower from "../src/world/play/games/dexterity/mochi-tower/logic.js";
 import * as crane from "../src/world/play/games/dexterity/crane-flight/logic.js";
+import * as songs from "../src/world/play/games/dexterity/rhythm-tap/songs.js";
+import * as chart from "../src/world/play/games/dexterity/rhythm-tap/chart.js";
+import * as rhythm from "../src/world/play/games/dexterity/rhythm-tap/play.js";
 
 const run = (step, state, seconds, dt = 1 / 60, each) => {
   for (let t = 0; t < seconds; t += dt) {
@@ -333,5 +336,78 @@ describe("paper-crane flight", () => {
   test("calm mode is slower with wider gaps", () => {
     assert.ok(crane.tuning(30, true).speed < crane.tuning(30).speed);
     assert.ok(crane.tuning(30, true).gap > crane.tuning(30).gap);
+  });
+});
+
+describe("rhythm tap", () => {
+  test("every song is well formed: 8 melody steps per bar, about a minute long", () => {
+    for (const song of songs.SONGS) {
+      const bars = songs.arrange(song);
+      assert.ok(bars.length >= 20);
+      const length = songs.songLength(song);
+      assert.ok(length > 40 && length < 75, `${song.id} ${length}`);
+      for (const bar of bars) songs.chord(bar.chord);
+      assert.equal(song.drums.kick.length, 16);
+      assert.equal(song.bass.length, 8);
+    }
+    assert.equal(songs.midi("C4"), 60);
+    assert.equal(songs.midi("C#6"), 85);
+    assert.deepEqual(songs.chord("Bb"), { root: 10, minor: false });
+  });
+
+  test("charts follow the tune, use every lane and stay playable", () => {
+    for (const song of songs.SONGS) {
+      const gentle = chart.buildChart(song, "gentle");
+      const lively = chart.buildChart(song, "lively");
+      assert.ok(gentle.length >= 50 && lively.length > gentle.length, `${song.id}: ${gentle.length}/${lively.length}`);
+      for (const [notes, gap] of [[gentle, 0.4], [lively, 0.18]]) {
+        for (let lane = 0; lane < chart.LANES; lane++) assert.ok(notes.filter((n) => n.lane === lane).length >= notes.length * 0.15, `${song.id} lane ${lane}`);
+        for (let i = 1; i < notes.length; i++) {
+          assert.ok(notes[i].t >= notes[i - 1].t);
+          if (notes[i].lane === notes[i - 1].lane) assert.ok(notes[i].t - notes[i - 1].t >= gap, `${song.id} same-lane gap at ${notes[i].t}`);
+        }
+        assert.ok(notes[0].t >= songs.barSeconds(song) * 0.99, "nothing in the first bar");
+        assert.ok(notes.at(-1).t < songs.songLength(song));
+      }
+      const doubles = lively.filter((n, i) => i && n.t === lively[i - 1].t).length;
+      assert.ok(doubles >= 3 && doubles <= 8, `${song.id} doubles ${doubles}`);
+      assert.equal(gentle.filter((n, i) => i && n.t === gentle[i - 1].t).length, 0, "gentle has no two-lane taps");
+    }
+  });
+
+  test("judging: windows, nearest note in the lane, combo and misses", () => {
+    assert.equal(chart.judge(0.02), "perfect");
+    assert.equal(chart.judge(-0.08), "great");
+    assert.equal(chart.judge(0.14), "good");
+    assert.equal(chart.judge(0.2), null);
+    const run = rhythm.createRun([{ t: 1, lane: 0 }, { t: 1, lane: 2 }, { t: 1.5, lane: 0 }, { t: 2, lane: 1 }]);
+    assert.equal(rhythm.tap(run, 1, 1), "", "nothing in that lane");
+    assert.equal(rhythm.tap(run, 0, 1.03), "perfect");
+    assert.equal(rhythm.tap(run, 2, 0.92), "great");
+    assert.equal(rhythm.tap(run, 0, 1.2), "", "too early for the next one");
+    assert.equal(run.combo, 2);
+    assert.equal(rhythm.sweep(run, 1.8), 1, "the 1.5 note slipped by");
+    assert.equal(run.combo, 0);
+    assert.equal(rhythm.tap(run, 1, 2.13), "good");
+    rhythm.sweep(run, 5);
+    assert.equal(rhythm.finished(run), true);
+    assert.deepEqual([run.perfect, run.great, run.good, run.miss], [1, 1, 1, 1]);
+    assert.deepEqual(chart.grade(run), { accuracy: 50, word: "warming up" });
+  });
+
+  test("a steady player full-combos every chart; rewards", () => {
+    for (const song of songs.SONGS) {
+      const notes = chart.buildChart(song, "lively");
+      const run = rhythm.createRun(notes);
+      for (const n of notes) {
+        rhythm.sweep(run, n.t - 0.01);
+        assert.ok(rhythm.tap(run, n.lane, n.t + 0.012), `${song.id} at ${n.t}`);
+      }
+      rhythm.sweep(run, 999);
+      assert.equal(run.miss, 0);
+      assert.equal(run.perfect, notes.length);
+    }
+    assert.deepEqual(chart.rewardsFor({ accuracy: 90, fullCombo: true, cleared: ["a", "b", "c"] }).map((r) => r.sticker), ["st-leek", "st-penlight", "st-mirror"]);
+    assert.deepEqual(chart.rewardsFor({ accuracy: 60, fullCombo: false, cleared: ["a"] }), []);
   });
 });
