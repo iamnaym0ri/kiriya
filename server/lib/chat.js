@@ -253,6 +253,10 @@ export async function setTyping(db, role, now = new Date()) {
   const value = { at: now.toISOString() };
   await db.insert(schema.kv).values({ key: `chat:typing:${role}`, value }).onConflictDoUpdate({ target: schema.kv.key, set: { value, updatedAt: now } });
 }
+/** A message sent ends "typing…" at once, instead of a few seconds after it arrived. */
+export async function clearTyping(db, role) {
+  await db.delete(schema.kv).where(eq(schema.kv.key, `chat:typing:${role}`));
+}
 export async function typingOf(db, role, now = new Date()) {
   const [row] = await db.select().from(schema.kv).where(eq(schema.kv.key, `chat:typing:${role}`));
   return Boolean(row && now.getTime() - Date.parse(row.value.at) < 6000);
