@@ -27,7 +27,7 @@ export default function ArtThumb({ art, eager = false }) {
   useEffect(() => {
     if (!near || src || full) return undefined;
     let live = true;
-    thumbFor(art).then((url) => {
+    thumbFor(art, box.current).then((url) => {
       if (!live) return;
       if (url) setSrc(url);
       else setFull(true);

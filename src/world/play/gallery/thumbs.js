@@ -12,7 +12,7 @@ const AT_ONCE = 2;
 const ready = new Map(); // art id → object URL (this visit)
 const waiting = new Map(); // art id → Promise<string>
 const failed = new Set(); // art ids whose copy couldn't be made (the tile shows the full picture)
-const queue = []; // jobs, newest first: what she scrolled to most recently is made first
+const queue = []; // { run, where }: the job whose tile is nearest the middle of the screen goes first
 let running = 0;
 
 // ---------- the cache on the phone ----------
@@ -79,9 +79,22 @@ async function makeCopy(url) {
   }
 }
 
+/** The waiting job nearest the screen (a tile scrolled to just now beats ones that went by). */
+function nextJob() {
+  let best = 0, bestDistance = Infinity;
+  queue.forEach((job, i) => {
+    const distance = job.where?.() ?? Infinity;
+    if (distance < bestDistance) {
+      best = i;
+      bestDistance = distance;
+    }
+  });
+  return queue.splice(best, 1)[0];
+}
+
 function pump() {
   while (running < AT_ONCE && queue.length) {
-    const job = queue.shift();
+    const job = nextJob().run;
     running += 1;
     job()
       .catch(() => {})
@@ -94,16 +107,24 @@ function pump() {
 
 /**
  * The tile-sized copy of `art` as an object URL. Resolves to null when one can't be made (an odd
- * picture, no network): the tile then shows the picture itself, as before.
+ * picture, no network): the tile then shows the picture itself, as before. `element` (the tile)
+ * lets the copies on screen be made before the ones above and below it.
  */
-export function thumbFor(art) {
+export function thumbFor(art, element = null) {
   const id = art?.id;
   if (!id || !art.url) return Promise.resolve(null);
   if (ready.has(id)) return Promise.resolve(ready.get(id));
   if (failed.has(id)) return Promise.resolve(null);
   if (waiting.has(id)) return waiting.get(id);
+  const where = element
+    ? () => {
+        if (!element.isConnected) return Infinity;
+        const box = element.getBoundingClientRect();
+        return Math.abs(box.top + box.height / 2 - innerHeight / 2) + Math.abs(box.left + box.width / 2 - innerWidth / 2);
+      }
+    : null;
   const promise = new Promise((resolve) => {
-    queue.unshift(async () => {
+    queue.push({ where, run: async () => {
       try {
         let blob = await inStore("readonly", (store) => store.get(id));
         if (!(blob instanceof Blob)) {
@@ -119,7 +140,7 @@ export function thumbFor(art) {
       } finally {
         waiting.delete(id);
       }
-    });
+    } });
     pump();
   });
   waiting.set(id, promise);
