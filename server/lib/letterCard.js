@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, inArray, isNull, lte } from "drizzle-orm";
 import { schema } from "../db/client.js";
 import { kiriya } from "../content/kiriya.js";
 
@@ -52,6 +52,29 @@ export async function openLetterInPlace(db, person, id, { now = new Date() } = {
   if (person === "kiriya") {
     const [row] = await db.select({ openedAt: schema.letters.openedAt }).from(schema.letters).where(eq(schema.letters.id, id));
     if (!row.openedAt) await db.update(schema.letters).set({ openedAt: now }).where(eq(schema.letters.id, id));
+    await openLetterAnnouncements(db, id, now);
   }
   return { status: 200, letter };
+}
+
+/**
+ * A letter's announcement is a little note that links to it (letterLink). Opening the letter itself
+ * opens its announcement too, so the "new" mark and the icon badge don't linger after she read it.
+ */
+export async function openLetterAnnouncements(db, letterId, now = new Date()) {
+  if (!letterId || !UUID.test(letterId)) return 0;
+  const opened = await db
+    .update(schema.loveNotes)
+    .set({ openedAt: now })
+    .where(
+      and(
+        eq(schema.loveNotes.recipient, "kiriya"),
+        eq(schema.loveNotes.link, letterLink(letterId)),
+        lte(schema.loveNotes.sendAt, now),
+        inArray(schema.loveNotes.status, ["scheduled", "sending", "sent"]),
+        isNull(schema.loveNotes.openedAt),
+      ),
+    )
+    .returning({ id: schema.loveNotes.id });
+  return opened.length;
 }
