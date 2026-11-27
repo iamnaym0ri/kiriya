@@ -807,7 +807,7 @@ button.quiz-choice:active:not(:disabled) {
 
 /* ---------- writing a quiz ---------- */
 .quiz-clear {
-  min-height: 40px;
+  min-height: 44px;
   font-size: 14px;
 }
 .quiz-modes {
@@ -1062,8 +1062,9 @@ button.quiz-choice:active:not(:disabled) {
 }
 .quiz-write-choice__remove {
   flex: none;
-  width: 30px;
+  width: 40px;
   height: 44px;
+  margin-inline-start: -4px;
   padding: 0;
   border: 0;
   background: none;

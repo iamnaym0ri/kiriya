@@ -177,9 +177,11 @@ export function resultWords(quiz, me, names) {
 export function ResultBanner({ quiz, me, names, stats, fresh = false }) {
   const words = resultWords(quiz, me, names);
   if (!words) return null;
-  const happy = quiz.result === "right" || quiz.result === "match";
   const mine = stats?.[me];
-  const scored = fresh && happy && mine;
+  // Who earned the point: about me, whoever guessed right; about us, both of them when in sync.
+  const iScored = quiz.result === "match" || (quiz.result === "right" && answererOf(quiz) === me);
+  const theyScored = quiz.result === "right" && answererOf(quiz) !== me && !quiz.test;
+  const scored = fresh && iScored && mine;
   return (
     <div className={`quiz-result quiz-result--${quiz.result}${fresh ? " is-fresh" : ""}`} role="status">
       <span className="quiz-result__stamp" aria-hidden="true">
@@ -194,6 +196,7 @@ export function ResultBanner({ quiz, me, names, stats, fresh = false }) {
             {mine.streak > 0 ? ` · 🔥 ${mine.streak} ${mine.streak === 1 ? "day" : "days"}` : ""}
           </span>
         )}
+        {fresh && theyScored && <span className="quiz-result__score">+1 ✦ for {nameOf(names, answererOf(quiz))}</span>}
       </div>
     </div>
   );
