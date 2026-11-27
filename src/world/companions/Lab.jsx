@@ -205,12 +205,14 @@ export default function CompanionLab() {
     let timer = 0;
     const tick = () => {
       const h = sim.current?.host;
-      if (!h || h.level == null || h.mode !== "rest" || h.opacity < 0.95) {
+      if (!h || h.level == null || h.mode !== "rest" || h.opacity < 0.95 || (demo === "menu" && h.menu)) {
         timer = setTimeout(tick, 300);
         return;
       }
       h.tap();
+      // menu: tapped again every 4 s, so a screenshot taken any time later shows it open.
       if (demo !== "menu") timer = setTimeout(() => h.choose(demo), 700);
+      else timer = setTimeout(tick, 4000);
     };
     timer = setTimeout(tick, 1800);
     return () => clearTimeout(timer);
