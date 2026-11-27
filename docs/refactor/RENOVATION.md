@@ -418,3 +418,55 @@ Still to see on Josh's iPhone 11: charm smoothness by eye and frame times agains
 Rotten Girl's repaint cost; the bouquet's pinch and drag; the kaleidoscope at 12 slices; the gallery's
 memory with many full-size pieces; whether the hand font's missing glyphs (é, ×, ♡ in Gaegu) fall
 back cleanly on a real device (the Simulator draws boxes).
+
+## Round 3 (Josh's second review, 2026-11-27)
+
+Josh's asks, by agent. Five run at a time (Josh's choice): wave 1 is chat-core, chat-room, notes,
+shell and chars; wave 2 (motion and three game checkers) starts as wave-1 agents finish. Same
+ground rules, testing and git rules as rounds 1–2. Worktrees `~/kiriya-wt/r3-<role>`, branches
+`r3/<role>`.
+
+| Agent | Port | Does | Owns |
+| --- | --- | --- | --- |
+| r3-chat-core | 5321 | The chat itself: composer, message list, reply / edit / delete, hold menu, swipe-to-reply, up to 10 photos per message (Discord-style grid), videos, the photo viewer, GIF quality, typing indicator, how messages arrive, the keyboard, signals, the header. | `src/world/chat/**` except chat-room's files; `src/lib/chat.js`; messages, edits, typing and media in `server/lib/chat.js`, `server/routes/chat.js`; video limits in `server/routes/uploads.js`, `src/lib/uploads.js`. |
+| r3-chat-room | 5322 | Memories by kind, the design sheet (whole-chat themes, bubble designs, background photo), chat lock with Face ID, end-to-end encryption. | `src/lib/chatCrypto.js` (+ `src/lib/chatCrypto/**`), `src/world/chat/ChatLook.jsx`, `MemoriesPage.jsx`, `SaveMemory.*`, `wallpapers.js`, new `src/world/chat/{theme,lock,memories}/**`; prefs and memories in `server/lib/chat.js`; new `server/lib/chatKeys.js` + its route; the chat parts of `ios/App/KiriyaNotificationService/**`, `ios/App/KiriyaWidgets/**`, `ios/App/KiriyaShared/**`. |
+| r3-notes | 5323 | Pulling a note from the jar and opening a letter: the note appears in the middle of the screen, with react and save under it; the jar's own details on its island; a bigger jar. | `src/world/mail/**`, `src/world/notes/**`, `src/world/letters/**`, `server/lib/noteJar.js`, `server/routes/noteJar*.js`, `server/lib/loveNotes.js`, `server/routes/loveNotes.js`. |
+| r3-shell | 5324 | Her little corner's sheet (opening, closing, scrolling, swipe down), the greeting centred with her name, the photo display's frame and decorations, the falling charms above everything, ten opening animations, Face ID first. | `src/world/home/**` except `EventsBlock.jsx`, `src/shared/DailyStyle.*`, `src/shared/play/PlayfulWorld.*`, `src/world/WorldShell.*`, `src/main.jsx`, `src/shared/NativeApp.*`, `src/lib/native.js`, `src/lib/session.js`, the sign-in screen, new `src/shared/opening/**`, splash settings in `capacitor.config.json`. |
+| r3-chars | 5325 | Bamby (face, what he does and says most), Rotten Girl, Maomao's frank side. | `src/world/companions/characters/{bambi,miku-rotten}/**`, `characters/maomao/lines.js`. |
+| r3-motion (wave 2) | 5326 | Seamless transitions from one pose or behaviour to the next, for every character. | `src/world/companions/engine/**`, `CompanionHost.jsx`, the smallest pose plumbing in each character's Body. |
+| r3-games-a/b/c (wave 2) | 5327–5329 | Quality check of every game, fixing what isn't up to par. a: brain + quizzes + the play hub; b: pastime + luck; c: artsy + dexterity + the sketchbook, studio and gallery. | Their shelves' folders. |
+
+### Chat contract, round 3 (chat-core ↔ chat-room)
+
+- **Encryption hooks** (`src/lib/chatCrypto.js`, a pass-through stub until chat-room lands it):
+  chat-core sends every outgoing message and edit through `sealOutgoing`, opens every incoming
+  message (pages, realtime, edits, reply previews, the summary) with `openIncoming` before
+  rendering, seals every photo, video and voice note with `sealFile` before `uploadFile`, and
+  shows media only through `useMediaUrl(media)`. A message with `locked: true` renders as a quiet
+  "this one is still unlocking ♡" bubble. Nothing else in the chat may read `body` or `media.url`
+  from the server directly.
+- **Theme**: the `.chat` root carries `data-theme` (whole-chat theme), `data-bubble` (bubble
+  design) and `data-background` (preset or `photo`), from `useChatPrefs()`. chat-core styles
+  layout only and takes every colour from these variables, which chat-room defines for each theme:
+  `--chat-bg --chat-ink --chat-meta --chat-line --chat-accent --chat-accent-ink --chat-mine
+  --chat-mine-ink --chat-theirs --chat-theirs-ink --chat-bar --chat-bar-ink --chat-field
+  --chat-field-ink --chat-menu --chat-menu-ink --chat-reply --chat-radius --chat-wallpaper
+  --chat-photo`. Bubble designs style `.chat[data-bubble="…"] .bubble` (and `.msg[data-mine]
+  .bubble`): chat-core keeps the class names `.chat`, `.msg` (`data-mine`, `data-kind`), `.bubble`.
+  New variables are added by telling the coordinator, who tells the other agent.
+- **Header**: name and activity dot on the left; on the right a memories button
+  (`/world/chat/memories`) and a design button (opens chat-room's design sheet). chat-room wires
+  its sheet and the Face ID lock gate into `ChatPage.jsx` with one-line changes.
+- **Server**: both edit `server/lib/chat.js`; keep your changes in your own functions so the
+  merge stays easy. Encryption-specific server code goes in `server/lib/chatKeys.js`.
+
+### Character writing, round 3
+
+Josh: "don't be afraid to make her nsfw, same as Bambi and maomao if it matches her character".
+Rotten Girl can be much bolder: thirsty shipping commentary about fictional adult men, R-18
+doujinshi and fanfic jokes, seme/uke debates, flustered yelling, nosebleeds, the SINNER paddle.
+It stays innuendo and comedy about the pairings she ships, never explicit sexual description, and
+never sexualises Miku herself (canonically 16). Maomao can be her frank, clinical self about
+aphrodisiacs, poisons and the pleasure quarter she grew up in, without being sexualised. Bamby is
+a real performer's avatar: nothing sexual. Nothing may name real people other than the
+characters themselves.
