@@ -1,6 +1,6 @@
 /* Odd jar: Maomao's wooden shelf of glass jars. */
 .oj {
-  --shelf-w: min(calc(100cqw - 32px), 440px, calc((100cqh - 200px) / var(--rows, 3) * 0.86 * var(--cols, 3)));
+  --shelf-w: min(calc(100cqw - 32px), 440px, calc((100cqh - 270px) / var(--rows, 3) * 0.86 * var(--cols, 3)));
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -66,6 +66,7 @@
 .oj-cell[data-found] .oj-jar { animation: oj-found 0.6s ease-in-out; }
 @keyframes oj-found { 40% { transform: translateY(-8%) rotate(-6deg) scale(1.06); } 70% { transform: rotate(4deg); } }
 .oj-cell__mark--found { background: #e48bb3; border-color: #b9487c; color: #fff; font-size: 14px; }
-.oj-foot { flex: none; align-items: center; }
+/* The foot and the result card share one fixed-height slot, so the shelf doesn't jump. */
+.oj-foot { flex: none; align-items: flex-start; min-height: 148px; }
 .oj-best { font: 500 12.5px/1 var(--font-ui); color: var(--b-ink-soft); padding-inline: 8px; }
-.oj-done { flex: none; width: 100%; max-width: 440px; animation: brain-rise 0.35s 0.25s ease-out both; }
+.oj-done { flex: none; width: 100%; max-width: 440px; min-height: 148px; box-sizing: border-box; align-content: center; animation: brain-rise 0.35s 0.25s ease-out both; }

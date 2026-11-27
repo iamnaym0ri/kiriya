@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 
-// Herb sequence (src/world/play/MoreMaomaoGames.jsx), on the brain shelf.
+// Herb sequence, on the brain shelf: Maomao's notes, one herb longer each time, three hearts. The
+// website keeps its own three-note version (src/world/play/MoreMaomaoGames.jsx).
 function HerbSequenceIcon() {
   return h(
     "svg",
@@ -22,7 +23,7 @@ export default {
   shelf: "brain",
   order: 12,
   title: "herb sequence",
-  blurb: "remember maomao’s note, in order",
+  blurb: "remember maomao’s note, one herb longer each time",
   Icon: HerbSequenceIcon,
   load: () => import("./Game.jsx"),
   credit: "Herb sequence: our own game",

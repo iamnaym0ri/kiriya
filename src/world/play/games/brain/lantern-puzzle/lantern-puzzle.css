@@ -1,7 +1,7 @@
 /* Lantern corridor: a dusk-lilac corridor of paper lanterns. A lit lantern glows honey; the glow
    fades in on opacity only, so a tap that flips five lanterns costs no layout. */
 .lc {
-  --board: min(calc(100cqw - 32px), calc(100cqh - 250px), 430px);
+  --board: min(calc(100cqw - 32px), calc(100cqh - 290px), 430px);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -76,12 +76,14 @@
 .lc[data-lit] .lc-cell .lc-lantern { animation: lc-sway 1.6s ease-in-out both; animation-delay: calc(var(--d, 0) * 1ms); }
 @keyframes lc-sway { 30% { transform: rotate(-4deg); } 65% { transform: rotate(3deg); } }
 
-.lc-foot { flex: none; width: 100%; max-width: 430px; display: grid; gap: 2px; }
+/* The foot and the result card share one fixed-height slot, so the board doesn't jump when the
+   corridor lights up. */
+.lc-foot { flex: none; width: 100%; max-width: 430px; display: grid; align-content: start; gap: 2px; min-height: 178px; box-sizing: border-box; }
 .lc-count { text-align: center; font: 700 20px/1.2 var(--font-hand); color: var(--b-ink); }
 .lc-count b { font-variant-numeric: tabular-nums; }
 .lc-count span { color: var(--b-ink-soft); }
 
-.lc-done { flex: none; width: 100%; max-width: 430px; animation: brain-rise 0.35s 0.25s ease-out both; }
+.lc-done { flex: none; width: 100%; max-width: 430px; min-height: 178px; box-sizing: border-box; align-content: center; animation: brain-rise 0.35s 0.25s ease-out both; }
 .lc-stars { display: inline-flex; gap: 4px; }
 .lc-stars svg { fill: #efe3f5; stroke: #c9aed8; }
 .lc-stars svg[data-on] { fill: #ffd77a; stroke: #c18a1f; animation: brain-pop 0.35s ease-out both; }
