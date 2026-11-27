@@ -1,0 +1,97 @@
+/* Maomao's memory drawer: a lilac apothecary cabinet. Drawers turn over in 3D (transform only);
+   with Reduce Motion they simply swap. */
+.md {
+  --gap: 8px;
+  /* the cabinet's width: the screen's, or what the height allows for its rows of 5:6 drawers */
+  --cab: min(calc(100cqw - 32px), 440px, calc((100cqh - 262px - (var(--rows) - 1) * var(--gap)) / var(--rows) * 0.833 * 4 + 3 * var(--gap) + 24px));
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  gap: 10px;
+  padding: 10px 16px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.md-sizes { flex: none; width: 100%; max-width: 440px; }
+.md-board {
+  flex: none;
+  width: var(--cab);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+  padding: 12px;
+  box-sizing: border-box;
+  border-radius: 22px 20px 24px 20px;
+  background: linear-gradient(180deg, #c9aedb, #b597cb);
+  border: 2px solid #8e6aa3;
+  box-shadow: 0 6px 0 #dccbe6, inset 0 2px 0 rgb(255 255 255 / 0.35);
+  touch-action: manipulation;
+}
+.md-card {
+  position: relative;
+  aspect-ratio: 5 / 6;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.md-card:disabled { cursor: default; }
+.md-card:focus-visible { outline: 2.5px solid #51375f; outline-offset: 2px; border-radius: 12px; }
+.md-card__inner { position: absolute; inset: 0; }
+/* The turn-over: the closed face narrows to nothing, then the open face widens (scaleX only, so it
+   stays a compositor-only animation; no 3D, no backface tricks). Closing runs the other way. */
+.md-card__front,
+.md-card__back {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 12px 11px 13px 11px;
+  transition: transform 0.15s ease-out 0.15s;
+}
+.md-card__back { transform: scaleX(0); transition: transform 0.15s ease-in; }
+.md-card[data-open] .md-card__front { transform: scaleX(0); transition: transform 0.15s ease-in; }
+.md-card[data-open] .md-card__back { transform: scaleX(1); transition: transform 0.15s ease-out 0.15s; }
+.md-card__front {
+  align-content: center;
+  gap: 10%;
+  background:
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.18) 0 7px, transparent 7px 14px),
+    #ead9f3;
+  border: 1.5px solid #9a76b0;
+  box-shadow: inset 0 -4px 0 #d3bde2;
+}
+.md-card__front small { font: 600 11px/1 var(--font-ui); color: #8a6a9a; letter-spacing: 0.04em; }
+.md-card__handle {
+  width: 38%;
+  height: 12%;
+  min-height: 7px;
+  border-radius: 99px;
+  background: #b48a5c;
+  border: 1.5px solid #86603d;
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12);
+}
+.md-card__back {
+  background: #fffaf3;
+  border: 1.5px solid #c9aed8;
+  box-shadow: inset 0 -3px 0 #efe2d4;
+}
+.md-card__back .game-symbol { width: 70%; height: 70%; }
+.md-card[data-found] .md-card__back { background: #f4fbef; border-color: #9cbf8f; box-shadow: inset 0 -3px 0 #dbeccf; }
+.md-card[data-found] .md-card__back .game-symbol { animation: brain-pop 0.35s ease-out; }
+.md-card[data-miss] .md-card__back { background: #fff0f5; border-color: #e0a3bd; }
+.md[data-done] .md-card .md-card__inner { animation: md-hop 0.5s ease-in-out both; }
+.md[data-done] .md-card:nth-child(4n + 2) .md-card__inner { animation-delay: 0.06s; }
+.md[data-done] .md-card:nth-child(4n + 3) .md-card__inner { animation-delay: 0.12s; }
+.md[data-done] .md-card:nth-child(4n + 4) .md-card__inner { animation-delay: 0.18s; }
+@keyframes md-hop { 45% { transform: translateY(-8%); } }
+.md-foot { flex: none; }
+.md-done { flex: none; width: 100%; max-width: 440px; animation: brain-rise 0.35s 0.3s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .md-card__front,
+  .md-card__back { transition: none !important; }
+}

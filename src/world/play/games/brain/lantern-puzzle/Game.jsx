@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import BrainGame from "../common/BrainGame.jsx";
 import MaomaoSays from "../common/MaomaoSays.jsx";
 import { feel } from "../common/feel.js";
-import { readStore, writeStore } from "../common/hooks.js";
+import { readStore, useShowWhen, writeStore } from "../common/hooks.js";
 import { rewardOnce } from "../common/rewards.js";
 import { bestTaps, isLit, neighbours, newCorridor, press, starsFor } from "./logic.js";
 import "./lantern-puzzle.css";
@@ -69,6 +69,8 @@ export default function LanternCorridor({ onReward }) {
   const lit = isLit(board);
   const earned = lit ? starsFor(taps, par) : 0;
   const totalStars = Object.values(stars).reduce((sum, n) => sum + n, 0);
+  const doneCard = useRef(null);
+  useShowWhen(doneCard, lit);
 
   useEffect(() => writeStore(SAVE, state), [state]);
 
@@ -185,7 +187,7 @@ export default function LanternCorridor({ onReward }) {
           </div>
         </div>
         {lit ? (
-          <div className="brain-done lc-done">
+          <div className="brain-done lc-done" ref={doneCard}>
             <Stars count={earned} />
             <h3>{earned === 3 ? "lit at par ✧" : "corridor lit ♡"}</h3>
             <p>
