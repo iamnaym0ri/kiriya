@@ -255,7 +255,7 @@ function Play({ puzzle, onReward, offline }) {
         {message?.text ?? (status === "playing" && guesses.length === 0 ? (puzzle.by === "josh" ? "josh picked this one for you ♡" : "a word from the little tin") : "")}
       </p>
       {done ? (
-        <div className="brain-done sw-done" data-status={status}>
+        <div className="brain-done sw-done" data-status={status} data-just-finished={revealRow !== null || undefined}>
           {status === "won" ? (
             <>
               <h3>{PRAISE[guesses.length - 1]}</h3>
