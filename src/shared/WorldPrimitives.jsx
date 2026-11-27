@@ -201,6 +201,7 @@ export function Credits({ onClose }) {
         © Microsoft, MIT licence. GIF search powered by GIPHY.
       </p>
       <p>Bamby (PLAVE) © VLAST — fan art, drawn for this app.</p>
+      <p>Hatsune Miku © Crypton Future Media, INC. <a href="https://piapro.net" target="_blank" rel="noreferrer">www.piapro.net</a> — fan art drawn for this app under the <a href="https://piapro.jp/license/pcl/summary" target="_blank" rel="noreferrer">Piapro Character License</a>.</p>
       <h3>Reference collection</h3>
       <p>
         Maomao portraits and botanical images are from the supplied reference
