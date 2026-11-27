@@ -63,6 +63,17 @@ const BOTS = {
     }
     await page.mouse.up();
   },
+  async "boop-the-cats"(page, box, seconds) {
+    const until = Date.now() + seconds * 1000;
+    while (Date.now() < until && (await phase(page)) === "playing") {
+      const s = await state(page);
+      const target = s.cells.findIndex((cell) => (cell.mode === "up" || cell.mode === "rising") && cell.lift > 0.5 && cell.kind !== "sleepy");
+      if (target >= 0) {
+        const b = s.boxes[target];
+        await page.touchscreen.tap(box.x + b.x, box.y + b.rim - 30);
+      } else await page.waitForTimeout(25);
+    }
+  },
 };
 
 async function playOne(id, phone, label) {
