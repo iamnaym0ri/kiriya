@@ -1040,8 +1040,8 @@ html.app-shell .chat__head {
   touch-action: none;
 }
 html.app-shell .chat__head .chat__icon-button {
-  min-width: 42px;
-  min-height: 42px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
 }
 .chat__avatar {
@@ -1117,9 +1117,10 @@ html.app-shell .composer__row .chat__icon-button {
   border-radius: 50%;
 }
 html.app-shell .composer__field {
-  min-height: 40px;
-  padding: 9px 14px;
-  border-radius: 20px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 11px 14px;
+  border-radius: 22px;
 }
 html.app-shell .composer__send {
   min-width: 40px;

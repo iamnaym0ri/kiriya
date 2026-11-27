@@ -296,7 +296,9 @@ html.app-shell .app-card__action {
   font: 600 14px/1 var(--font-ui);
 }
 html.app-shell .app-card__action :is(a, button):not(.admin-edit) {
-  min-height: 36px;
+  /* A full 44 pt to tap, without making the title row any taller. */
+  min-height: 44px;
+  margin-block: -4px;
   display: inline-flex;
   align-items: center;
   padding: 0 2px;
