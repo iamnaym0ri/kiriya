@@ -87,7 +87,9 @@ export default function AppSketchbook() {
     }),
     [ink, custom, size, tool, paper, opacity, mirror, fill, title, aspect, kept, savedId, history],
   );
-  useAutosave(SAVE_KEY, onPhone, 600);
+  // Written when she pauses (every new stroke pushes it back, so a big page is never written while
+  // she's mid-drawing), and at once when the app goes to the background.
+  useAutosave(SAVE_KEY, onPhone, 2500);
 
   function dirty() {
     revision.current += 1;
