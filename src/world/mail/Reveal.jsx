@@ -54,6 +54,9 @@ export function RevealLayer({ open, onClose, label, kind = "note", children }) {
       setMounted(true);
       setExit(null);
       swiped.current = false;
+      // Opened again before the last one had gone: no leftover drag.
+      if (stage.current) stage.current.style.transform = "";
+      if (veil.current) veil.current.style.opacity = "";
       return undefined;
     }
     if (!mounted) return undefined;

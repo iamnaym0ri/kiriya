@@ -61,7 +61,7 @@ export function useJar({ admin }) {
             ready.current = record.jar.next ?? null;
             queryClient.setQueryData(jarKey, (old) => (old ? { ...old, fresh: record.jar.fresh, total: record.jar.total, pulled: record.jar.pulled, next: record.jar.next } : old));
           }
-          if (record.preview) shown.current = [...shown.current.filter((id) => id !== record.note.id), record.note.id].slice(-60);
+          if (record.preview && !record.sample) shown.current = [...shown.current.filter((id) => id !== record.note.id), record.note.id].slice(-60);
           patch(key, (current) => ({
             record,
             note: record.note,

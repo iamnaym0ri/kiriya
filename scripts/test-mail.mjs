@@ -156,6 +156,8 @@ try {
     const desk = await json(await request("admin/note-jar", { cookie: admin }));
     assert.equal(desk.notes.find((n) => n.id === pull.note.id).her.reaction, "🥰");
     const his = await json(await request("me/note-jar", { cookie: admin }));
+    assert.equal(his.her.reacted, 1, "his island counts the notes she reacted to");
+    assert.equal((await json(await request("me/note-jar", { cookie: kiriya }))).her, undefined, "hers doesn't carry that");
     const peek = await json(await request("me/note-jar/pull", { method: "POST", cookie: admin, body: { requestId: crypto.randomUUID(), prefer: his.next.note.id } }));
     assert.equal(peek.preview, true);
     assert.equal(peek.note.id, his.next.note.id);

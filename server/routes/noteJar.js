@@ -32,8 +32,11 @@ async function withHerMarks(db, record) {
 noteJarRoutes.use("*", async (c, next) => { c.header("Cache-Control", "private, no-store"); await next(); });
 noteJarRoutes.get("/", async c => {
   const db = await getDb();
-  const [jar, next] = await Promise.all([readNoteJar(db), peekNote(db, { preview: isPreview(c) })]);
-  return c.json({ ...jar, next });
+  const preview = isPreview(c);
+  const [jar, next, marks] = await Promise.all([readNoteJar(db), peekNote(db, { preview }), preview ? herJarMarks(db) : null]);
+  // Josh's island also says how many of his notes she has reacted to.
+  const her = marks ? { reacted: [...marks.values()].filter((mark) => mark.reaction).length } : undefined;
+  return c.json({ ...jar, next, her });
 });
 noteJarRoutes.post("/pull", async c => {
   const parsed = pullBody.safeParse(await c.req.json().catch(() => null));

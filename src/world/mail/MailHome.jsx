@@ -84,6 +84,7 @@ function FactIcon({ name }) {
   const paths = {
     notes: <path d="M3 5.5h10v7H3zM3 5.5l5 3.6 5-3.6" />,
     heart: <path d="M8 13s-5-3.1-5-6.6A2.6 2.6 0 0 1 8 5a2.6 2.6 0 0 1 5 1.4C13 9.9 8 13 8 13Z" />,
+    pulled: <path d="M8 13V5.5M5 8l3-3 3 3M4 13h8" />,
     always: <path d="M8 8c-1.4-1.9-2.4-2.6-3.6-2.6a2.6 2.6 0 0 0 0 5.2C5.6 10.6 6.6 9.9 8 8Zm0 0c1.4 1.9 2.4 2.6 3.6 2.6a2.6 2.6 0 0 0 0-5.2C10.4 5.4 9.4 6.1 8 8Z" />,
     mood: (
       <>
@@ -183,13 +184,18 @@ function JarIsland({ jar, fresh, admin, from, greet, onPull, onWrite }) {
         {admin ? (
           <>
             <li>
-              <FactIcon name="notes" /> {total} in her jar
-            </li>
-            <li>
-              <FactIcon name="heart" /> she’s pulled {pulled}
+              <FactIcon name="notes" /> {total} little {total === 1 ? "note" : "notes"} inside
             </li>
             <li>
               <FactIcon name="always" /> no daily limit
+            </li>
+            <li>
+              <FactIcon name="pulled" /> she’s pulled {pulled}
+            </li>
+            <li>
+              <button type="button" className="mail-jar__mood" onClick={() => onWrite({ kind: "jar" })}>
+                <FactIcon name="heart" /> {data?.her?.reacted ? `she reacted to ${data.her.reacted}` : "her reactions"}
+              </button>
             </li>
           </>
         ) : (
