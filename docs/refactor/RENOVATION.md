@@ -397,3 +397,24 @@ shipping, seme/uke talk, fanfic and doujin jokes, nosebleeds, flustered yelling 
 in character. Keep it to innuendo and comedy, never explicit sexual description. **Bamby** (official romanisation; the id stays `bambi`) is the
 avatar of a real performer: playful and flirty-cute is fine, nothing sexual. Nothing may name
 real people other than the characters themselves.
+
+### Round 2 status (2026-11-27, all merged into `connection-refactor`)
+
+| Branch | What landed | Coordinator QC on top |
+| --- | --- | --- |
+| `r2/events` | Events never vanish (stable ids, aliases, strict dedupe, two-pass "past"); event page: what, when, where, tickets, weather first, then a short gist with icons, the rest folded; merch has its own list and detail page (gallery, price, where, which event); pictures from Instagram posts and official pages stored through `POST /api/jobs/events/images` (CRON_SECRET), no new keys. | Ticket line shows the real on-sale moment (FF XIV: SISTIC, 2 Dec 12:00 SGT); freebies say "free", not "price tbc". |
+| `r2/stage` | Engine: two-chip tap menu (own action + stay/wander), stay mode with drops, props, steps; Maomao, Hatsune Miku, KAITO refined after research. | Maomao's bandaged left forearm; subtler freckles (Josh: "look like a mustache"); a speech bubble takes the clearest side; `data-companion-never` keeps characters and bubbles off home's greeting and her name (0 of 12 fresh loads covered it). |
+| `r2/chars` | Rotten Girl Miku from SAWTOWNE's own concept art (green tails, cross ties, round glasses, crossed red ribbon, navy plaid, the SINNER paddle, the Yaoi Note) and Bamby (PLBBUU look; short, dry, deadpan voice from the Korean wiki; peaches, pigeons). | Bamby is never a shipping target; nothing about him reads as suggestive; every reply in every file is in the speaker's own voice (scan: 0 mismatches). |
+| `r2/play` | A real chibi paper doll (95 garments, 17 hairstyles, 8 themed sets with scenes); a bouquet maker in place of the sticker scenes; the kaleidoscope's coach, labelled controls and "kept" moment; her own gallery (card on play, full screen, Josh's hearts and notes). | — |
+| `r2/home` | Centre stage first, what's new under it; her little corner as a chip at the right of a 68 pt header; 17 pt under her name; background charms fall evenly (no stop-and-go, no restarts after the background, behind the page); the note jar as notes & letters' centrepiece; new notes badge the tab and lead what's new; spacing pass. | — |
+| coordinator | Chat/memories/quizzes (Vercel's `route=` echo); "see it as kiriya" (read-only preview of her side). | — |
+
+Checks on the merged code: `npm test` 505/509 (the 4 cancelled are the shop-feed environment quirk),
+production build + leak check pass, a 44-screen WebKit tour (11 screens × 414/375 pt × her/Josh: no
+sideways scroll, no clipped text, every tap area ≥ 44 pt, no page errors), and an iOS Simulator pass.
+
+Still to see on Josh's iPhone 11: charm smoothness by eye and frame times against the baseline
+(production bundle `index-BXI6zpQS`, home at rest and scrolling: 60 fps, 0 frames over 20 ms);
+Rotten Girl's repaint cost; the bouquet's pinch and drag; the kaleidoscope at 12 slices; the gallery's
+memory with many full-size pieces; whether the hand font's missing glyphs (é, ×, ♡ in Gaegu) fall
+back cleanly on a real device (the Simulator draws boxes).
