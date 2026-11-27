@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import DrawingCanvas from "../studio/DrawingCanvas.jsx";
 import { BRUSHES, SHAPES, PAPERS, drawingHistory, downloadBlob } from "../studio/drawingTools.js";
@@ -10,6 +10,8 @@ import { Bow, usePlayful } from "../../shared/play/PlayfulWorld.jsx";
 import { celebrate } from "../../shared/effects.js";
 import { Discovery } from "../collection/Collections.jsx";
 import DoodleGallery from "./DoodleGallery.jsx";
+import { isAppShell } from "../../lib/native.js";
+import { useArtworks } from "./gallery/useArtworks.js";
 import "./PlayDesk.css";
 import "./DoodleStudio.css";
 const PaintMixer = lazy(() => import("../studio/PaintMixer.jsx"));
@@ -39,6 +41,7 @@ export default function MiniSketchbook() {
   const [gallery, setGallery] = useState(search.get("gallery") === "1"), [mixing, setMixing] = useState(false);
   const [status, setStatus] = useState(""), [kept, setKept] = useState(initial.kept ?? false), [more, setMore] = useState(false);
   const [paletteMessage, setPaletteMessage] = useState(false);
+  const [savedId, setSavedId] = useState(null);
   const client = useQueryClient(), { moving } = usePlayful();
   // A previous full-page draft keeps its original proportions when first brought here.
   const aspect = useRef(initial.aspect ?? (initial === pages.current.full ? 1.25 : 1)).current;
@@ -63,10 +66,11 @@ export default function MiniSketchbook() {
       const version = revision.current;
       const { file, width, height } = await canvas.current.export(1600);
       const stored = await uploadFile(file, { folder: "art" });
-      await api("/me/artworks", { method: "POST", body: { ...stored, width, height, prompt: title.trim() || "A little birthday doodle" } });
-      return version;
+      const art = await api("/me/artworks", { method: "POST", body: { ...stored, width, height, prompt: title.trim() || "A little birthday doodle" } });
+      return { version, id: art?.id ?? null };
     },
-    onSuccess: version => {
+    onSuccess: ({ version, id }) => {
+      setSavedId(id);
       savedRevision.current = version;
       const unchanged = revision.current === version;
       setKept(unchanged); setGallery(true);
@@ -145,6 +149,21 @@ export default function MiniSketchbook() {
     </fieldset>
     <p className="doodle-status" role="status">{status}</p>
     {save.error && <p className="doodle-error" role="alert">{save.error.message} You can try keeping it again.</p>}
-    <DoodleGallery open={gallery} onToggle={setGallery} />
+    {isAppShell() ? <AppGalleryLink savedId={kept ? savedId : null} /> : <DoodleGallery open={gallery} onToggle={setGallery} />}
   </section>;
+}
+
+/**
+ * In the app, her gallery is a screen of its own (gallery/GalleryScreen.jsx): the sketchbook just
+ * points there, straight at the doodle she has just kept. Replacing the sketchbook's history entry
+ * means back from the gallery returns to play.
+ */
+function AppGalleryLink({ savedId }) {
+  const navigate = useNavigate();
+  const { artworks } = useArtworks();
+  const go = id => navigate(`/world/play?gallery=1${id ? `&doodle=${encodeURIComponent(id)}` : ""}`, { replace: true });
+  return <div className="doodle-app-gallery">
+    {savedId && <button type="button" className="button-plum" onClick={() => go(savedId)}>See it in your gallery ♡</button>}
+    <button type="button" className="doodle-link" onClick={() => go(null)}>♡ Your gallery{artworks.length ? ` · ${artworks.length}` : ""} <span aria-hidden="true">›</span></button>
+  </div>;
 }
