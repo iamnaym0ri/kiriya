@@ -133,7 +133,7 @@ export default function ThreeInARow({ onReward }) {
       setGame({ ...game, board: next, last: i, turn: null, tally: ended.tally, comment: ended.comment, talk: game.talk + 1 });
       if (outcome(next) === "you") {
         feel("win");
-        if (level === "thoughtful") rewardOnce(onReward, { sticker: "st-teacup", game: GAME, reason: "first win against thoughtful maomao" });
+        if (level === "thoughtful") rewardOnce(onReward, { sticker: "st-apothecary-tea", game: GAME, reason: "first win against thoughtful maomao" });
       } else feel("good");
       if (outcome(next) === "draw" && level === "focused") rewardOnce(onReward, { sticker: "st-sprig", game: GAME, reason: "a draw against focused maomao" });
       return;
