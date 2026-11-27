@@ -20,6 +20,8 @@ export function useQuizzes() {
     queryKey: quizzesKey,
     queryFn: () => api("/me/quizzes"),
     staleTime: 10_000,
+    // Opening the screen always checks for something new (the cached copy shows meanwhile).
+    refetchOnMount: "always",
     refetchOnWindowFocus: true,
     // While the screen is open, a quiz or an answer from the other one shows up by itself.
     refetchInterval: () => (visible() ? 30_000 : false),
@@ -31,6 +33,7 @@ export function useQuizSummary() {
     queryKey: summaryKey,
     queryFn: () => api("/me/quizzes/summary"),
     staleTime: 20_000,
+    refetchOnMount: "always",
     refetchOnWindowFocus: true,
   });
 }

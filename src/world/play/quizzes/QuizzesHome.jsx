@@ -20,9 +20,7 @@ export function ScoreStrip({ stats, me, names }) {
           {s.points}
           <small>✦</small>
         </span>
-        <span className={`quiz-scores__streak${s.streak ? "" : " is-cold"}`}>
-          🔥 {s.streak} {s.streak === 1 ? "day" : "days"}
-        </span>
+        <span className={`quiz-scores__streak${s.streak ? "" : " is-cold"}`}>{s.streak ? `🔥 ${s.streak} ${s.streak === 1 ? "day" : "days"}` : "no streak yet"}</span>
       </span>
     );
   };
@@ -120,6 +118,8 @@ export default function QuizzesHome() {
   const names = data?.names;
   const them = me ? nameOf(names, otherOf(me)) : "";
   const nudge = streakNudge(data?.stats, me);
+  // A new answer shows under "new answers" until it's been looked at, not twice.
+  const past = (data?.history ?? []).filter((quiz) => !data.results.some((r) => r.id === quiz.id));
 
   return (
     <div className="app-screen quiz-page">
@@ -218,13 +218,13 @@ export default function QuizzesHome() {
               </section>
             )}
 
-            {data.history.length > 0 && (
+            {past.length > 0 && (
               <section className="quiz-group" aria-labelledby="quiz-history-title">
                 <h2 className="app-group-title" id="quiz-history-title">
                   past quizzes
                 </h2>
                 <ul className="app-list">
-                  {data.history.slice(0, 5).map((quiz) => (
+                  {past.slice(0, 5).map((quiz) => (
                     <QuizRow key={quiz.id} quiz={quiz} line={historyLine(quiz, me, names)} detail={resultMark(quiz)} />
                   ))}
                   <li className="app-row app-row--more">

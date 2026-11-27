@@ -6,13 +6,13 @@ import { nameOf, otherOf, timeAgo } from "./api.js";
 
 export const MODE_LABEL = { me: "about me", us: "about us" };
 
-// Where the sticker emoji sit on a card without a photo (percent of the strip, tilt in degrees).
-const STICKER_SPOTS = [
-  { x: 14, y: 52, r: -12, s: 1.05 },
-  { x: 38, y: 34, r: 8, s: 0.9 },
-  { x: 62, y: 58, r: -6, s: 1.15 },
-  { x: 86, y: 38, r: 12, s: 0.95 },
-];
+// Where the sticker emoji sit on a card without a photo: spread evenly, alternating high and low.
+const stickerSpot = (index, count) => ({
+  x: count === 1 ? 50 : 14 + (index * 72) / (count - 1),
+  y: index % 2 ? 36 : 58,
+  r: [-12, 8, -6, 12][index % 4],
+  s: [1.05, 0.92, 1.12, 0.96][index % 4],
+});
 
 /** The photo at the top of a card (4:3 to 16:9), or, without one, the answers' emoji as stickers. */
 export function QuizPicture({ image, choices = [], compact = false, credit = true }) {
@@ -20,8 +20,8 @@ export function QuizPicture({ image, choices = [], compact = false, credit = tru
   if (!image?.url) {
     return (
       <div className={`quiz-picture quiz-picture--stickers${compact ? " quiz-picture--compact" : ""}`} aria-hidden="true">
-        {choices.slice(0, 4).map((choice, index) => {
-          const spot = STICKER_SPOTS[index];
+        {choices.slice(0, 4).map((choice, index, shown) => {
+          const spot = stickerSpot(index, shown.length);
           return (
             <span key={choice.id ?? index} className="quiz-sticker" style={{ left: `${spot.x}%`, top: `${spot.y}%`, "--r": `${spot.r}deg`, "--s": spot.s, "--i": index }}>
               {choice.emoji}

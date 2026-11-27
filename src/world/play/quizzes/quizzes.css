@@ -5,7 +5,10 @@
   Fallbacks for the shared classes on the website sit at the end, under html:not(.app-shell).
 */
 
-.quiz-page {
+/* The sheets (emoji, photos) live outside the page, so they carry the same variables. */
+.quiz-page,
+.quiz-stock,
+.quiz-emoji {
   --quiz-white: color-mix(in srgb, #fff 82%, var(--theme-paper, #fff9fd));
   --quiz-line: color-mix(in srgb, var(--theme-line, #d5bedf) 85%, transparent);
   --quiz-shadow: 0 1px 2px rgb(84 56 95 / 0.05), 0 14px 30px -18px rgb(84 56 95 / 0.45);
@@ -386,7 +389,7 @@ button.quiz-choice:active:not(:disabled) {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin: 0 0 14px;
+  margin: 16px 0 0;
   padding: 12px 14px;
   border: 1.5px dashed var(--quiz-line);
   border-radius: 20px;
@@ -1095,7 +1098,9 @@ button.quiz-choice:active:not(:disabled) {
 /* ---------- emoji and photo sheets ---------- */
 .quiz-emoji {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
+  min-width: 0;
 }
 .quiz-emoji section {
   display: grid;
@@ -1195,7 +1200,9 @@ button.quiz-choice:active:not(:disabled) {
 }
 .quiz-stock {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
+  min-width: 0;
 }
 .quiz-stock__search {
   display: flex;
@@ -1626,4 +1633,10 @@ html:not(.app-shell) .quiz-page .app-empty {
 html:not(.app-shell) .quiz-page .app-empty strong {
   color: var(--theme-ink, #54385f);
   font: 700 22px/1.2 var(--font-hand);
+}
+
+/* Room under the last button, so it can sit comfortably above the tab bar (and anything floating there). */
+.quiz-page--write,
+.quiz-page--one {
+  padding-bottom: 64px;
 }

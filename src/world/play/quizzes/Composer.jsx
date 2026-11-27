@@ -218,7 +218,7 @@ export default function Composer() {
         <div className="quiz-modes" role="radiogroup" aria-label="what kind of quiz">
           {[
             { id: "me", label: "about me", line: `you mark the right answer, ${them} guesses` },
-            { id: "us", label: "about us", line: "you both answer. the same answer means you’re in sync ♡" },
+            { id: "us", label: "about us", line: "you both answer. same answer = in sync ♡" },
           ].map((mode) => (
             <button
               key={mode.id}

@@ -39,6 +39,8 @@ const forms = (word) => [word, ...(word.length > 3 && word.endsWith("s") ? [word
 /** Up to `limit` emoji whose words match what's typed ("bubble tea" → 🧋 first). */
 export function suggestEmoji(text, limit = 6) {
   const words = String(text ?? "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
     .toLowerCase()
     .split(/[^\p{L}\p{N}]+/u)
     .filter((word) => word.length >= 2 && !STOP.has(word));

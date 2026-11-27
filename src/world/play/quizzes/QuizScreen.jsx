@@ -105,10 +105,9 @@ export default function QuizScreen() {
             <h2 className="quiz-card__question">{quiz.question}</h2>
             {answering && (
               <p className="quiz-card__hint">
-                {quiz.mode === "me" ? `what do you think ${quiz.test ? "she’d" : nameOf(names, quiz.from)} pick?` : "pick yours. same answer = in sync ♡"}
+                {quiz.mode === "me" ? `which one is ${quiz.test ? "hers" : `${nameOf(names, quiz.from)}’s`}? take a guess ♡` : "pick yours. same answer = in sync ♡"}
               </p>
             )}
-            {quiz.reply && <ResultBanner quiz={quiz} me={me} names={names} stats={stats} fresh={fresh} />}
             <Choices
               quiz={quiz}
               me={me}
@@ -124,6 +123,7 @@ export default function QuizScreen() {
                   : null
               }
             />
+            {quiz.reply && <ResultBanner quiz={quiz} me={me} names={names} stats={stats} fresh={fresh} />}
             {answering && (
               <button type="button" className="quiz-button quiz-button--primary quiz-lock" disabled={!picked || checking} onClick={lockIn}>
                 {checking ? "checking…" : picked ? "lock it in ♡" : "pick an answer"}
