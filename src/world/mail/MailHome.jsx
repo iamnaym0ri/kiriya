@@ -79,6 +79,26 @@ function LetterTile({ letter, admin, isNew, onOpen }) {
   );
 }
 
+/** The jar's little facts wear tiny drawn icons (no font has to carry the symbols). */
+function FactIcon({ name }) {
+  const paths = {
+    notes: <path d="M3 5.5h10v7H3zM3 5.5l5 3.6 5-3.6" />,
+    heart: <path d="M8 13s-5-3.1-5-6.6A2.6 2.6 0 0 1 8 5a2.6 2.6 0 0 1 5 1.4C13 9.9 8 13 8 13Z" />,
+    always: <path d="M8 8c-1.4-1.9-2.4-2.6-3.6-2.6a2.6 2.6 0 0 0 0 5.2C5.6 10.6 6.6 9.9 8 8Zm0 0c1.4 1.9 2.4 2.6 3.6 2.6a2.6 2.6 0 0 0 0-5.2C10.4 5.4 9.4 6.1 8 8Z" />,
+    mood: (
+      <>
+        <circle cx="8" cy="8" r="5.2" />
+        <path d="M6 6.8v.4M10 6.8v.4M5.9 9.4q2.1 1.9 4.2 0" />
+      </>
+    ),
+  };
+  return (
+    <svg className="mail-jar__icon" viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+      {paths[name]}
+    </svg>
+  );
+}
+
 /**
  * The note jar's island: the jar itself (bigger, and a button: a tap pulls a note out, straight
  * into the middle of the screen), what's in it, and the little facts that used to sit under the
@@ -163,26 +183,27 @@ function JarIsland({ jar, fresh, admin, from, greet, onPull, onWrite }) {
         {admin ? (
           <>
             <li>
-              <span aria-hidden="true">✿</span> {total} in her jar
+              <FactIcon name="notes" /> {total} in her jar
             </li>
             <li>
-              <span aria-hidden="true">♡</span> she’s pulled {pulled}
+              <FactIcon name="heart" /> she’s pulled {pulled}
             </li>
             <li>
-              <span aria-hidden="true">∞</span> no daily limit
+              <FactIcon name="always" /> no daily limit
             </li>
           </>
         ) : (
           <>
             <li>
-              <span aria-hidden="true">✿</span> {empty ? "filling up" : `${total} little ${total === 1 ? "note" : "notes"} inside`}
+              <FactIcon name="notes" /> {empty ? "filling up" : `${total} little ${total === 1 ? "note" : "notes"} inside`}
             </li>
             <li>
-              <span aria-hidden="true">∞</span> no daily limit
+              <FactIcon name="always" /> no daily limit
             </li>
             <li>
               <button type="button" className="mail-jar__mood" onClick={openFeeling}>
-                <span aria-hidden="true" className="mail-jar__emoji">{feeling?.feeling?.emoji ?? "☁"}</span> {feeling?.feeling ? "picked for ur mood" : "a note for ur mood"}
+                {feeling?.feeling?.emoji ? <span aria-hidden="true" className="mail-jar__emoji">{feeling.feeling.emoji}</span> : <FactIcon name="mood" />}
+                {feeling?.feeling ? "picked for ur mood" : "a note for ur mood"}
               </button>
             </li>
           </>

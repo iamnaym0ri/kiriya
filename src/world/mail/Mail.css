@@ -398,9 +398,13 @@ html.app-shell .mail-jar.app-card {
   border: 0;
   background: none;
 }
-.mail-jar__facts li > span[aria-hidden] {
-  color: var(--mail-hand);
-  font-size: 14px;
+.mail-jar__icon {
+  flex: none;
+  fill: none;
+  stroke: var(--mail-hand);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .mail-jar__mood {
   position: relative;

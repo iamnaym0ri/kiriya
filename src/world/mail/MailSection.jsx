@@ -21,6 +21,7 @@ import "./Reveal.css";
 //   /world/mail?letter=<id>        opens that letter (maomao: her birthday note)
 //   /world/mail?note=<id>          opens that little note (a letter's announcement opens the letter)
 //   /world/mail?jar=1, #note-jar   the section, with the jar saying hello at the top
+//   /world/mail?jar=pull           a note pulled straight away (for a "pull a note" shortcut)
 //   /world/mail?notes=all          every little note (a pushed screen)
 //   /world/mail?compose=note|letter|jar   Josh's composer, opened on arrival (his admin tab links here)
 
@@ -80,8 +81,9 @@ export default function MailSection() {
   // A notification, a widget or an old link: open what it points at in the middle of the screen,
   // then tidy the address so the section underneath is just the section.
   const linked = LINK_PARAMS.some((key) => params.has(key)) || location.hash === "#note-jar";
+  const pullNow = params.get("jar") === "pull";
   useLayoutEffect(() => {
-    if (!linked || mail.pending) return;
+    if (!linked || mail.pending || (pullNow && jar.summary.isPending)) return;
     const letterId = params.get("letter");
     const noteId = params.get("note");
     if (letterId) {
@@ -101,12 +103,15 @@ export default function MailSection() {
               ? { kind: "note", id: test.id, test: true, origin: null }
               : { kind: "message", title: "this note isn’t here any more", text: "it may be an old one. all your little notes are right here ♡" },
       );
+    } else if (pullNow) {
+      jar.pull(null);
+      setReveal({ kind: "jar" });
     } else setGreetJar((n) => n + 1);
     const next = new URLSearchParams(params);
     for (const key of LINK_PARAMS) next.delete(key);
     const search = next.toString();
     navigate({ pathname: "/world/mail", search: search ? `?${search}` : "" }, { replace: true });
-  }, [linked, mail.pending]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [linked, mail.pending, pullNow && jar.summary.isPending]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // What was new when she came in stays in "new for you" until she leaves the section, so the
   // list doesn't jump about under her thumb as she reads.

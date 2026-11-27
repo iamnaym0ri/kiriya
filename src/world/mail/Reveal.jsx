@@ -75,7 +75,8 @@ export function RevealLayer({ open, onClose, label, kind = "note", children }) {
     const previous = document.activeElement;
     root.current?.focus({ preventScroll: true });
     const onKey = (event) => {
-      if (event.key === "Escape") close.current?.();
+      // Josh's edit sheet (over the reveal) takes its own Escape first.
+      if (event.key === "Escape" && !document.querySelector(".edit-sheet")) close.current?.();
     };
     const onReselect = () => close.current?.();
     document.addEventListener("keydown", onKey);
