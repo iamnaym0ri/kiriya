@@ -9,6 +9,7 @@ import { buildLevels } from "../src/world/companions/engine/levels.js";
 import { MENU_MS } from "../src/world/companions/engine/actor.js";
 import { StageSim } from "../src/world/companions/engine/stage.js";
 import { STAY_KEY, clearStay, placeSpot, readStay, spotAt, writeStay } from "../src/world/companions/engine/stay.js";
+import { BLEND_MS, blendMs, settleKick } from "../src/world/companions/engine/blend.js";
 
 // A phone's localStorage, enough of it.
 const memoryStorage = () => {
@@ -411,4 +412,128 @@ test("Characters without an action still get stay", () => {
   tapHost(sim);
   assert.ok(sim.host.menu);
   assert.equal(sim.host.runAction(), false);
+});
+
+// --- Round 3: transitions (README.md, "Transitions") ------------------------------------------------
+
+test("Each change of pose blends for a time that suits the move", () => {
+  const how = { restPose: "idle", walkPose: "walk", lively: true };
+  assert.equal(blendMs("idle", "react", how), BLEND_MS.quick, "a reaction is quick");
+  assert.equal(blendMs("walk", "crouch", how), BLEND_MS.quick, "so is a jump");
+  assert.equal(blendMs("idle", "walk", how), BLEND_MS.walk);
+  assert.equal(blendMs("walk", "idle", how), BLEND_MS.stop, "coming to a stop");
+  assert.equal(blendMs("dance", "idle", how), BLEND_MS.settle, "settling is the softest");
+  assert.equal(blendMs("idle", "sit", how), BLEND_MS.settle);
+  assert.equal(blendMs("land", "dance", how), BLEND_MS.settle, "after landing it settles first");
+  assert.equal(blendMs("idle", "dance", how), BLEND_MS.step);
+  assert.equal(blendMs("idle", "dance", { ...how, lively: false }), BLEND_MS.quiet, "quiet: one short plain fade");
+  for (const ms of Object.values(BLEND_MS)) assert.ok(ms >= 80 && ms <= 240, `${ms} ms: never a snap, never sluggish`);
+});
+
+test("Weight shifts with the pose: sitting sinks, getting up stretches, travel has its own", () => {
+  const how = { restPose: "idle", walkPose: "walk", squash: 1 };
+  const [sx, sy] = settleKick("idle", "sit", how);
+  assert.ok(sx > 0 && sy < 0, "sits down: wider and lower");
+  const [ux, uy] = settleKick("sit", "idle", how);
+  assert.ok(ux < 0 && uy > 0, "gets up: a little stretch");
+  assert.equal(settleKick("idle", "walk", how), null, "walking has its own motion");
+  assert.equal(settleKick("idle", "crouch", how), null, "so do jumps");
+  assert.equal(settleKick("idle", "idle", how), null);
+  assert.equal(settleKick("idle", "dance", { ...how, squash: 0 }), null, "squash 0: none");
+});
+
+test("setPose hands the blend time to the view, and only on a real change", () => {
+  localStorage.clear();
+  const sim = makeStage();
+  sim.setHost(character());
+  const host = sim.host;
+  run(sim, 1);
+  host.interrupt([{ type: "wait", pose: "idle", seconds: [9, 9] }]);
+  run(sim, 1);
+  host.setPose("sit");
+  assert.equal(host.view.get().pose, "sit");
+  assert.equal(host.view.get().blend, BLEND_MS.settle);
+  assert.ok(host.svy < 0, "sitting down pushes the squash spring down");
+  host.setPose("react");
+  assert.equal(host.view.get().blend, BLEND_MS.quick);
+  const before = host.view.get();
+  host.setPose("react");
+  assert.equal(host.view.get(), before, "same pose: nothing re-renders");
+});
+
+test("The tap's little hop is one startled jump: no crouch or take-off poses flicking past", () => {
+  localStorage.clear();
+  const sim = makeStage();
+  sim.setHost(character({ poses: ["idle", "walk", "crouch", "jump", "fall", "land", "sit", "wave", "react", "sleep", "held", "dance", "hum", "spin", "show"] }));
+  const host = sim.host;
+  run(sim, 2);
+  tapHost(sim);
+  const seen = new Set();
+  for (let i = 0; i < 60; i++) {
+    sim.tick(1 / 60);
+    seen.add(host.view.get().pose);
+  }
+  assert.ok(seen.has("react"));
+  for (const pose of ["crouch", "jump", "fall", "land"]) assert.ok(!seen.has(pose), `no ${pose} during the tap's hop`);
+  // A real jump still crouches, takes off and lands in its own poses.
+  host.closeMenu("away");
+  host.interrupt([{ type: "jump", level: host.level + 1 < sim.levels.length ? host.level + 1 : host.level - 1, to: host.x + 30 }, { type: "rest" }]);
+  const jumped = new Set();
+  for (let i = 0; i < 120; i++) {
+    sim.tick(1 / 60);
+    jumped.add(host.view.get().pose);
+  }
+  for (const pose of ["crouch", "jump", "land"]) assert.ok(jumped.has(pose), `a real jump has ${pose}`);
+});
+
+test("After travelling it takes a breath in its rest pose before starting something new", () => {
+  localStorage.clear();
+  const sim = makeStage();
+  sim.setHost(character());
+  const host = sim.host;
+  run(sim, 1);
+  const dance = host.c.behaviours.find((b) => b.id === "dance");
+  const level = sim.levels[host.level];
+  host.interrupt([{ type: "walk", to: Math.min(level.x1, host.x + 40) > host.x + 10 ? Math.min(level.x1, host.x + 40) : Math.max(level.x0, host.x - 40) }, { type: "behave", b: dance }]);
+  const poses = [];
+  for (let i = 0; i < 600 && host.step?.type !== "behave"; i++) {
+    sim.tick(1 / 60);
+    if (poses.at(-1) !== host.view.get().pose) poses.push(host.view.get().pose);
+  }
+  assert.deepEqual(poses.slice(-3), ["walk", "idle", "dance"], `walk, a breath, then the dance (saw ${poses.join(" → ")})`);
+  // Quiet mode doesn't walk, so there is nothing to settle from.
+  const quiet = makeStage({ lively: false });
+  quiet.setHost(character());
+  run(quiet, 1);
+  quiet.host.settleNext = true;
+  quiet.host.interrupt([{ type: "behave", b: dance }]);
+  quiet.tick(1 / 60);
+  assert.equal(quiet.host.view.get().pose, "dance");
+});
+
+test("Setting off and stopping lean the body a little, and it comes back upright", () => {
+  localStorage.clear();
+  const sim = makeStage();
+  sim.setHost(character());
+  const host = sim.host;
+  run(sim, 1);
+  const level = sim.levels[host.level];
+  const to = host.x - level.x0 > level.x1 - host.x ? level.x0 + 10 : level.x1 - 10;
+  host.interrupt([{ type: "walk", to }, { type: "rest", seconds: [30, 30] }]);
+  let most = 0;
+  let forward = 0;
+  for (let i = 0; i < 60 * 12; i++) {
+    sim.tick(1 / 60);
+    most = Math.max(most, Math.abs(host.lean));
+    if (host.step?.type === "rest") break;
+  }
+  for (let i = 0; i < 20; i++) {
+    sim.tick(1 / 60);
+    forward = Math.max(forward, host.lean);
+  }
+  assert.ok(most > 0.3, "it leans");
+  assert.ok(most <= 4, "never more than a few degrees");
+  assert.ok(forward > 0, "stopping, it carries on forward a touch");
+  run(sim, 2);
+  assert.equal(host.lean, 0, "and settles upright");
 });

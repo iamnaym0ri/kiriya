@@ -6,6 +6,7 @@
 // second at most, never per frame. All timing runs on the stage's clock, which stops when the
 // stage is paused, so a hidden home costs nothing and picks up where it left off.
 import { motionValue } from "motion/react";
+import { blendMs, settleKick } from "./blend.js";
 import { staysPut } from "./character.js";
 import { busyScore } from "./levels.js";
 import { placeMenu } from "./menu.js";
@@ -15,6 +16,12 @@ import { createLinePicker, fillName, greetTopics, readMs } from "./talk.js";
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const between = ([lo, hi]) => lo + Math.random() * (hi - lo);
 const near = (a, b, eps = 0.01) => Math.abs(a - b) < eps;
+/** The pose a behaviour or a behaviour's step opens with (null for anything else). */
+const firstPose = (step) => {
+  if (step?.type === "behave" && !step.resumed) return step.b.steps?.[0]?.pose ?? step.b.pose;
+  if (step?.type === "act" && !step.solid) return step.s.pose;
+  return null;
+};
 
 /** A small external store for the parts of an actor React renders. */
 function createStore(initial) {
@@ -72,6 +79,11 @@ export class Actor {
     this.svx = 0;
     this.svy = 0;
     this.squashTarget = [1, 1];
+    // Lean (degrees, + toward where it faces): the top of the body carrying on a beat when it sets
+    // off or stops, a spring driven by how hard it speeds up or slows down (README.md, "Transitions").
+    this.lean = 0;
+    this.leanV = 0;
+    this.lastVx = 0;
     // Swing while carried: a spring toward a target angle (degrees).
     this.rot = 0;
     this.rotV = 0;
@@ -115,6 +127,7 @@ export class Actor {
     };
     this.view = createStore({
       pose: character.resolvePose(this.m.restPose),
+      blend: 0, // ms the last change of pose blends over (blend.js)
       expression: undefined,
       facing: 1,
       tiles: [],
@@ -155,8 +168,22 @@ export class Actor {
   get levelObj() {
     return this.level == null ? null : this.stage.levels[this.level];
   }
+  /**
+   * Changes pose. The body cross-fades to it (ActorView, ghost.js) over a time that suits the move
+   * (blend.js), and in place it shifts its weight a little as it does (a push on the squash spring).
+   */
   setPose(pose) {
-    this.view.set({ pose: this.c.resolvePose(pose) });
+    const next = this.c.resolvePose(pose);
+    const prev = this.view.get().pose;
+    if (next === prev) return;
+    const how = { restPose: this.c.resolvePose(this.m.restPose), walkPose: this.c.resolvePose(this.m.walkPose), lively: this.lively, squash: this.m.squash };
+    this.view.set({ pose: next, blend: blendMs(prev, next, how) });
+    if (!this.lively || (this.mode !== "rest" && this.mode !== "turn")) return;
+    const kick = settleKick(prev, next, how);
+    if (kick) {
+      this.svx += kick[0];
+      this.svy += kick[1];
+    }
   }
   baseExpression() {
     if (this.moment && this.moment.until > this.time) return this.moment.expression;
@@ -453,6 +480,13 @@ export class Actor {
   next() {
     let guard = 0;
     while (!this.plan.length && guard++ < 3) this.decide();
+    // Just arrived (a walk, a hop, a float): a breath in its rest pose before starting something
+    // new, so it never goes from mid-stride straight into a dance.
+    if (this.settleNext) {
+      this.settleNext = false;
+      const pose = this.lively ? firstPose(this.plan[0]) : null;
+      if (pose && this.c.resolvePose(pose) !== this.c.resolvePose(this.m.restPose)) this.plan.unshift({ type: "wait", seconds: [0.32, 0.48], pose: this.m.restPose, settle: true });
+    }
     const step = this.plan.shift() ?? { type: "rest" };
     this.step = step;
     const slow = this.lively ? 1 : 1.6;
@@ -600,7 +634,9 @@ export class Actor {
     this.until = this.time + (step.anticipation ?? this.m.anticipation) / 1000;
     const k = this.m.squash * (step.small ? 0.5 : 1);
     this.squashTarget = [1 + 0.1 * k, 1 - 0.14 * k];
-    this.setPose(this.c.poses.includes("crouch") ? "crouch" : "jump");
+    // The tap's little hop is one startled jump in its `react` pose (the squash does the crouch);
+    // a real jump crouches, stretches, falls and lands in poses of their own.
+    this.setPose(step.small ? "react" : this.c.poses.includes("crouch") ? "crouch" : "jump");
     this.refreshExpression();
   }
 
@@ -614,7 +650,7 @@ export class Actor {
     this.fall = { level: this.jump.level, x: this.jump.x };
     this.level = null;
     this.mode = "air";
-    this.setPose("jump");
+    this.setPose(this.jump.small ? "react" : "jump");
     if (!this.jump.small) this.fadeTiles(0.08);
     else this.fadeTiles(0.25, true);
   }
@@ -654,6 +690,7 @@ export class Actor {
     this.mode = "rest";
     this.setPose(this.jump?.small ? "react" : "land");
     this.until = this.time + (this.jump?.small ? 0.15 : this.m.landing / 1000);
+    if (!this.jump?.small) this.settleNext = true;
     const dropped = this.fall.dropped;
     this.fall = null;
     this.jump = null;
@@ -806,8 +843,9 @@ export class Actor {
     if (this.lively && this.m.hop && this.level != null) {
       this.interrupt([{ type: "jump", level: this.level, to: this.x, small: true, height: 14, anticipation: 70 }, { type: "wait", seconds: [0.9, 0.9], pose: "react" }, hold, ...rest]);
     } else {
-      this.sx = 1.08;
-      this.sy = 0.92;
+      // A little flinch: pushed on the spring, so it eases in rather than jumping.
+      this.svx += 2.2 * this.m.squash;
+      this.svy -= 2.6 * this.m.squash;
       this.interrupt([{ type: "wait", seconds: [1.1, 1.1], pose: "react" }, hold, ...rest]);
     }
   }
@@ -1035,6 +1073,7 @@ export class Actor {
           this.speed = 0;
           this.mode = "rest";
           this.setPose(this.m.restPose);
+          if (!step.off) this.settleNext = true;
           if (this.staying && !step.off) this.saveSpot();
           // At the end of a level it turns back to face the room.
           const level = this.levelObj;
@@ -1081,10 +1120,12 @@ export class Actor {
           this.y = f.y1;
           this.floating = null;
           if (this.staying) this.saveSpot();
-          this.sx = 1.05;
-          this.sy = 0.95;
+          // Settles onto the new level: a soft push on the spring, not a jump in scale.
+          this.svx += 1.4 * this.m.squash;
+          this.svy -= 1.6 * this.m.squash;
           this.mode = "rest";
           this.until = 0;
+          this.settleNext = true;
           this.next();
         }
         break;
@@ -1124,11 +1165,23 @@ export class Actor {
       }
       const turnRate = 2 / Math.max(0.05, this.m.turnMs / 1000);
       if (this.turn !== this.facing) this.turn = this.facing > this.turn ? Math.min(this.facing, this.turn + turnRate * dt) : Math.max(this.facing, this.turn - turnRate * dt);
+      // Lean: setting off, the top of the body lags a touch; stopping, it carries on forward and
+      // settles back (a damped spring pushed by the walk's acceleration, at most a couple of degrees).
+      const vx = this.mode === "walk" ? this.speed : 0;
+      const ax = (vx - this.lastVx) / Math.max(dt, 0.001);
+      this.lastVx = vx;
+      const nominal = Math.max(1, (this.m.walkSpeed * this.scale) / 0.28);
+      const push = clamp(-ax / nominal, -1.5, 1.5) * 240 * Math.min(1, this.m.squash + 0.3);
+      if (push || Math.abs(this.lean) > 0.02 || Math.abs(this.leanV) > 0.05) {
+        this.leanV += (push - this.lean * 110 - this.leanV * 12) * dt;
+        this.lean = clamp(this.lean + this.leanV * dt, -4, 4);
+      } else this.lean = this.leanV = 0;
     } else {
       this.sx = this.sy = 1;
       this.svx = this.svy = 0;
       this.rot = 0;
       this.turn = this.facing;
+      this.lean = this.leanV = this.lastVx = 0;
     }
     // Hops on the spot: a lift written with the frame, a little squash each time the feet touch.
     let hop = 0;
@@ -1188,9 +1241,12 @@ export class Actor {
       const flip = this.m.flip ? this.turn : 1;
       // Mid-turn it never goes fully edge-on: a sliver of the body stays, like a paper doll.
       const fx = Math.sign(flip || 1) * Math.max(0.12, Math.abs(flip));
-      const key = `${(this.sx * fx).toFixed(3)},${this.sy.toFixed(3)}`;
+      // The lean is a skew about the feet, drawn facing right (forward is +x), mirrored with the body.
+      const lean = Math.round(this.lean * 20) / 20;
+      const key = `${(this.sx * fx).toFixed(3)},${this.sy.toFixed(3)},${lean}`;
       if (force || key !== this.lastSquash) {
-        squash.style.transform = near(this.sx * fx, 1, 0.001) && near(this.sy, 1, 0.001) ? "" : `scale(${(this.sx * fx).toFixed(3)}, ${this.sy.toFixed(3)})`;
+        const scale = near(this.sx * fx, 1, 0.001) && near(this.sy, 1, 0.001) ? "" : `scale(${(this.sx * fx).toFixed(3)}, ${this.sy.toFixed(3)})`;
+        squash.style.transform = lean ? `${scale || `scale(${Math.sign(fx)}, 1)`} skewX(${-lean}deg)` : scale;
         this.lastSquash = key;
       }
     }

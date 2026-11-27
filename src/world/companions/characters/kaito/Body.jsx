@@ -404,7 +404,11 @@ function Hands({ pose, prop }) {
         {pose === "icecream" && <IceCone x={122} y={170} flavour="soda" />}
         {pose === "brainfreeze" && <IceCone x={142} y={203} flavour="soda" />}
         {pose === "treat" && <Spoon x={118} y={159} angle={-24} />}
-        {carried && <IceCone x={carried[0]} y={carried[1] - 1} flavour="soda" />}
+        {carried && (
+          <g data-cs-pop="">
+            <IceCone x={carried[0]} y={carried[1] - 1} flavour="soda" />
+          </g>
+        )}
       </ArmHand>
     </g>
   );

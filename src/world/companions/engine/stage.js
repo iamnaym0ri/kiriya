@@ -21,6 +21,7 @@ export const STAGE_DEFAULTS = {
     cooldown: 20, // minutes between visits
   },
   chatGap: 14, // seconds between unprompted remarks (longer in quiet mode)
+  blend: true, // cross-fade the body between poses, expressions and props (false: the lab's before/after)
   debug: false, // draws the levels
 };
 

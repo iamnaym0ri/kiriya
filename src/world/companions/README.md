@@ -42,6 +42,7 @@ keeps `src/world/mascot/MaomaoCompanion.jsx`). This file is the contract between
 - **Quiet mode / reduced motion**: no walking, jumping or squash; poses still change and it still
   talks, about 1.5× slower. A visitor fades in and out instead of walking. Bodies get
   `playing={false}` and must stop their own CSS animations.
+- **Transitions** (round 3): nothing snaps from one pose to the next. See "Transitions" below.
 - **Performance**: one `requestAnimationFrame` loop for the whole stage; positions, squash, sway and
   turns are written as transforms straight to the DOM; React re-renders an actor only when its pose,
   expression, clouds or words change. The loop stops when home is not showing, when the app is in
@@ -105,6 +106,13 @@ export default {
   (the engine memoises on these props).
 - The engine owns a wrapper around the body (taps, dragging, focus): don't add your own click
   handlers.
+- Changes of pose, expression and prop are cross-faded by the engine (see "Transitions"): draw
+  each pose as it should look and let the engine blend. Give parts that stay on screen but move
+  between poses (the upper body lowering to sit, an arm's resting angle) a CSS `transition` on
+  their `translate` / `rotate` / `scale` so they glide; switch it off with your animations
+  (`transition-duration: 0s` when not `playing` and under reduced motion). Mark a prop or a mark
+  that should pop into the hand with `data-cs-pop` on a plain wrapper `<g>` (optionally
+  `--cs-pop-origin`). `Body.blend = false` opts out (a Body that blends its own poses).
 
 ### Platform
 
@@ -252,6 +260,42 @@ A pair lives in the file of whoever speaks first. When B visits A, the engine pi
 among A's `with.B` pairs and B's `with.A` pairs (longer exchanges alternate the same way). The
 first line comes with a `wave`. With none written, it uses `any`, then each one's `visit` lines.
 
+## Transitions
+
+Josh, round 3: "more seamless instead of abrupt". Every switch flows; the engine does it once for
+every character, whatever way its Body draws poses.
+
+- **The cross-fade** (`engine/ghost.js`, `PoseBlend` in `ActorView.jsx`). Just before React draws a
+  new pose, expression or prop, the body's DOM is copied as it looks that instant (the "ghost") and
+  a MutationObserver notes what React changes. The copy is laid over the live body with its CSS
+  clocks set to where the old ones were (a walk keeps stepping as it fades) and fades out; what
+  React removed or redrew (an arm group, a path, a prop) fades out of it, and the new parts fade in
+  on the live body. Parts that now glide by their own CSS transition are left out of the copy, so
+  they move without a double. When only the expression or the prop changed, the copy holds only
+  what React removed or redrew, so the faces that ease between expressions by themselves (Maomao,
+  both Mikus, KAITO) show their own easing with nothing over them, and a face drawn per
+  expression (Bamby) cross-fades. The live body is never made see-through. Cost: one `cloneNode`,
+  one observer and a few short opacity animations per change, nothing per frame; at most two
+  ghosts at once.
+- **Timing** (`engine/blend.js`, `BLEND_MS`): quick (90 ms) for a reaction, a crouch, take-off, the
+  top of a jump, landing and being picked up; 120 ms setting off, 160 ms stopping, 150 ms a
+  behaviour or a step starting, 200 ms easing into the rest pose, sitting or lying down; 150 ms a
+  new expression or prop. Quiet mode and reduced motion: one plain 130 ms fade, no squash.
+- **Weight**: a change of pose in place gives the squash spring a small push (`settleKick`):
+  sitting sinks a little, getting up stretches, anything else is a breath. Pushes are velocities,
+  so they ease in; nothing jumps in scale except a landing's impact.
+- **Lean**: setting off, the top of the body lags a touch; stopping, it carries on forward and
+  settles back (a damped spring driven by the walk's acceleration, a skew about the feet, at most
+  a few degrees).
+- **A breath after travelling**: after a walk, a hop or a float it rests in `restPose` for about
+  0.4 s before starting a behaviour in another pose, so it never goes from mid-stride into a
+  dance.
+- **The tap's hop** is one startled jump in the `react` pose (the squash does the crouch); real
+  jumps keep their crouch, take-off, fall and land poses.
+- **Bubbles** fade out when a line ends instead of vanishing.
+- **Props** wrapped in `<g data-cs-pop>` pop into the hand (scale and fade, 300 ms).
+- The lab's "blend poses" box (`blend=0`) turns the cross-fade off to compare.
+
 ## The tap menu and stay
 
 A tap on her character (the host; a visitor only answers) opens a small frosted menu beside it with
@@ -305,6 +349,7 @@ uses the defaults; the lab sets the rest.
 | `insets` | measured | `{ top, bottom }` px to override the band |
 | `visits` | `{ enabled: true, chance: 0.35, delay: [25, 80], cooldown: 20 }` | seconds; minutes |
 | `chatGap` | 14 | seconds between unprompted lines |
+| `blend` | true | cross-fade the body between poses, expressions and props ("Transitions") |
 | `debug` | false | draw the levels |
 
 Her pick comes from `prefs.companion` (`usePrefs`); `"none"` shows nobody and no visits. Changing

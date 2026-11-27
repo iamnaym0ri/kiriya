@@ -421,7 +421,9 @@ function AppraiseArms() {
         <path d="M158 170l5-30" stroke={SKIN} strokeWidth="8" strokeLinecap="round" />
         <path d="M158 170l5-30" stroke={SKIN_EDGE} strokeWidth="8" strokeLinecap="round" opacity=".22" />
         <MaomaoBandage from={[162.6, 142.4]} to={[159.6, 160.6]} />
-        <SmallVial transform="translate(164 132) rotate(6)" />
+        <g data-cs-pop="">
+          <SmallVial transform="translate(164 132) rotate(6)" />
+        </g>
         <path d="M157 134q1-6 7-6t7 6q-1 5-7 5t-7-5Z" {...hand} />
         <path d="M159 131q5-2 9 0" stroke={SKIN_EDGE} strokeWidth=".9" fill="none" />
         <path className="mm-vial-glint" d="M182 96l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" fill="#fff6c9" stroke="#d8c36a" strokeWidth=".8" />
@@ -436,7 +438,9 @@ function CoinArms() {
   return (
     <g className="mm-arms mm-arms--coins">
       <path d="M70 152c-12 6-18 20-16 33 2 9 12 14 24 13l10-2-2-16c-10 0-14-6-16-28Z" {...robe} />
-      <Pouch transform="translate(84 201)" />
+      <g data-cs-pop="">
+        <Pouch transform="translate(84 201)" />
+      </g>
       <ellipse cx="80" cy="194" rx="6.5" ry="5.5" {...hand} />
       <path d="M130 152c14 6 20 24 12 34-4 4-10 4-16 0l-8-10c6-2 10-10 12-24Z" {...robe} />
       <path d="m120 178 9 9" stroke={CUFF} strokeWidth="5" strokeLinecap="round" />
@@ -466,7 +470,9 @@ function BundleArms() {
       <path d="M157 170l4-17" stroke={SKIN} strokeWidth="7.5" strokeLinecap="round" />
       <MaomaoBandage from={[160.4, 156]} to={[157.8, 167]} width={7.8} />
       <g className="mm-bundle-hand">
-        <HerbBundle transform="translate(161 152)" />
+        <g data-cs-pop="">
+          <HerbBundle transform="translate(161 152)" />
+        </g>
         <ellipse cx="161" cy="152" rx="6.5" ry="6" {...hand} />
       </g>
       <path d="M150 170q7 5 12 3" stroke={CUFF} strokeWidth="5" strokeLinecap="round" fill="none" />
@@ -481,7 +487,9 @@ function PropArms({ pose, prop }) {
       return (
         <g className="mm-arms mm-arms--grind">
           <path d="M70 152c-12 6-18 20-16 33 2 9 12 14 24 13l10-2-2-16c-10 0-14-6-16-28Z" {...robe} />
-          <HeldMortar />
+          <g data-cs-pop="">
+            <HeldMortar />
+          </g>
           <path d="M130 152c14 6 20 24 12 34-4 4-10 4-16 0l-8-10c6-2 10-10 12-24Z" {...robe} />
           <path d="m120 178 9 9" stroke={CUFF} strokeWidth="5" strokeLinecap="round" />
           <g className="mm-pestle">
@@ -512,7 +520,9 @@ function PropArms({ pose, prop }) {
       return (
         <g className="mm-arms mm-arms--notes">
           <path d="M67 169q-5 21 18 22m48-22q10 12-2 21" fill="none" stroke={ROBE} strokeWidth="16" />
-          <Notebook />
+          <g data-cs-pop="">
+            <Notebook />
+          </g>
           <ellipse cx="78" cy="189" rx="7" ry="6" {...hand} />
           <g className="mm-writing-hand">
             <path d="m116 183 15-25" stroke="#796e73" strokeWidth="3.5" strokeLinecap="round" />
@@ -567,7 +577,9 @@ function PropArms({ pose, prop }) {
       return (
         <ClaspedArms wrap={{ a: [112.6, 177], b: [112.6, 191], hand: [109, 184], k: 0 }}>
           <g className="mm-cup">
-            <Teacup />
+            <g data-cs-pop="">
+              <Teacup />
+            </g>
             <ellipse cx="91" cy="184" rx="6.5" ry="6" {...hand} />
             <ellipse cx="109" cy="184" rx="6.5" ry="6" {...hand} />
           </g>

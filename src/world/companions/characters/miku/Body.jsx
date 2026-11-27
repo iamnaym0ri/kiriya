@@ -477,8 +477,10 @@ export default function MikuBody({ pose = "idle", expression, facing = 1, playin
                 <g className="hmiku__arm hmiku__arm--r">
                   <Arm facing={facing} finger={finger}>
                     {leek && (
-                      <g className="hmiku__leek">
-                        <Leek />
+                      <g data-cs-pop="">
+                        <g className="hmiku__leek">
+                          <Leek />
+                        </g>
                       </g>
                     )}
                     {vee && !leek && <Vee />}
@@ -488,7 +490,11 @@ export default function MikuBody({ pose = "idle", expression, facing = 1, playin
               <g transform="translate(134 167)">
                 <g className="hmiku__arm hmiku__arm--l">
                   <Arm mark panel facing={facing}>
-                    {glowstick && <Glowstick />}
+                    {glowstick && (
+                      <g data-cs-pop="">
+                        <Glowstick />
+                      </g>
+                    )}
                   </Arm>
                 </g>
               </g>
