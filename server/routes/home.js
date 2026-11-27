@@ -16,7 +16,7 @@ import {
   setGreeting,
   setPhotos,
 } from "../lib/homeContent.js";
-import { coverImage, lookupCovers } from "../lib/songs.js";
+import { coverImage, fetchSongMeta, lookupCovers, parseSongUrl } from "../lib/songs.js";
 import { present } from "./songs.js";
 
 // The app's home section: GET for both of them, writes for Josh only (docs/refactor/RENOVATION.md,
@@ -98,6 +98,21 @@ homeRoutes.delete("/pins/:id", adminOnly, async (c) => {
   const removed = await removePin(await getDb(), c.req.param("id"));
   if (!removed) return c.json({ error: "not_found", message: "That note isn’t on the board any more." }, 404);
   return c.json({ ok: true, home: await homeFor(await getDb(), "admin", present) });
+});
+
+// What a pasted YouTube link is, before Josh adds it: its title, channel and picture (oEmbed).
+homeRoutes.get("/youtube", adminOnly, async (c) => {
+  const parsed = parseSongUrl(c.req.query("url") ?? "");
+  if (parsed.error || parsed.provider !== "youtube")
+    return c.json({ error: "bad_link", message: parsed.error && !/Spotify|SoundCloud|niconico/.test(parsed.error) ? parsed.error : "Paste a YouTube link (youtube.com or youtu.be)." }, 400);
+  const meta = await fetchSongMeta(parsed);
+  return c.json({
+    embedId: parsed.embedId,
+    url: parsed.url,
+    title: meta.title ?? null,
+    artist: meta.artist ?? null,
+    thumbnail: meta.thumbnail ?? `https://i.ytimg.com/vi/${parsed.embedId}/hqdefault.jpg`,
+  });
 });
 
 // Cover art for an uploaded song with none in its tags: candidates from MusicBrainz, and each
