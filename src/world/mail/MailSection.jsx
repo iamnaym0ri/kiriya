@@ -2,25 +2,31 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router";
 import { haptic } from "../../lib/native.js";
 import MailHome from "./MailHome.jsx";
-import { AllNotesScreen, JarScreen, LetterScreen, NoteScreen, ScreenMessage } from "./MailScreens.jsx";
+import { AllNotesScreen } from "./MailScreens.jsx";
 import { JarEditor, LetterEditor, NoteComposer } from "./MailAdmin.jsx";
-import { letterIdOf, useCancelNote, useJarSummary, useMail } from "./useMail.js";
+import { RevealLayer } from "./Reveal.jsx";
+import { JarReveal, LetterReveal, MessageReveal, NoteReveal } from "./Reveals.jsx";
+import { useJar } from "./useJar.js";
+import { letterIdOf, useCancelNote, useMail } from "./useMail.js";
 import { onItsWay, opensIn } from "./format.js";
 import "./Mail.css";
+import "./Reveal.css";
 
 // The app's "notes & letters" section (docs/refactor/RENOVATION.md, owner: the mail agent): her
 // letters and little notes, what's new on top, their whole history, her reactions, and the note jar.
 // Josh sees exactly the same, plus the pencils to write, send and fill the jar from his phone.
 //
-// Screens are addresses, so notifications, widgets and the edge swipe all work:
-//   /world/mail                    the section
-//   /world/mail?letter=<id>        a letter (maomao: her birthday note)
-//   /world/mail?note=<id>          a little note (a letter's announcement opens the letter)
-//   /world/mail?jar=1              the note jar (/world/mail#note-jar lands here)
-//   /world/mail?notes=all          every little note
+// A jar note, a little note or a letter opens in the middle of the screen, over the section
+// (Reveal.jsx, Reveals.jsx), not on a page of its own. Old addresses still land right:
+//   /world/mail?letter=<id>        opens that letter (maomao: her birthday note)
+//   /world/mail?note=<id>          opens that little note (a letter's announcement opens the letter)
+//   /world/mail?jar=1, #note-jar   the section, with the jar saying hello at the top
+//   /world/mail?jar=pull           a note pulled straight away (for a "pull a note" shortcut)
+//   /world/mail?notes=all          every little note (a pushed screen)
 //   /world/mail?compose=note|letter|jar   Josh's composer, opened on arrival (his admin tab links here)
 
 const COMPOSERS = new Set(["note", "letter", "jar"]);
+const LINK_PARAMS = ["letter", "note", "jar"];
 
 function Toast({ message }) {
   if (!message) return null;
@@ -39,8 +45,8 @@ function RootSkeleton() {
         <p className="app-section__subtitle">opening your mailbox…</p>
       </header>
       <div className="app-section__body">
-        <div className="app-card mail-skeleton" />
         <div className="app-card mail-skeleton mail-skeleton--tall" />
+        <div className="app-card mail-skeleton" />
       </div>
     </div>
   );
@@ -48,19 +54,16 @@ function RootSkeleton() {
 
 export default function MailSection() {
   const mail = useMail();
-  const jar = useJarSummary();
+  const jar = useJar({ admin: mail.admin });
   const cancel = useCancelNote();
   const navigate = useNavigate();
   const location = useLocation();
   const [params, setParams] = useSearchParams();
   const [sheet, setSheet] = useState(null); // { kind: "note" | "letter" | "jar", letterId? }
+  const [reveal, setReveal] = useState(null); // { kind: "jar" | "letter" | "note" | "message", … }
+  const [greetJar, setGreetJar] = useState(0);
   const [toast, setToast] = useState("");
   const sticky = useRef(new Set());
-
-  // /world/mail#note-jar (the jar's notification, its widget, the "pull a note" shortcut) is the jar.
-  useLayoutEffect(() => {
-    if (location.hash === "#note-jar") navigate("/world/mail?jar=1", { replace: true });
-  }, [location.hash, navigate]);
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -68,16 +71,59 @@ export default function MailSection() {
     return () => clearTimeout(timer);
   }, [toast]);
 
-  const letterParam = params.get("letter");
-  const noteParam = params.get("note");
-  const jarParam = params.has("jar");
   const allParam = params.get("notes") === "all";
   const compose = mail.admin && COMPOSERS.has(params.get("compose")) ? params.get("compose") : null;
-  const atRoot = !letterParam && !noteParam && !jarParam && !allParam;
 
   useEffect(() => {
-    if (atRoot) document.title = "notes & letters ♡";
-  }, [atRoot]);
+    if (!allParam) document.title = "notes & letters ♡";
+  }, [allParam]);
+
+  // A notification, a widget or an old link: open what it points at in the middle of the screen,
+  // then tidy the address so the section underneath is just the section.
+  const linked = LINK_PARAMS.some((key) => params.has(key)) || location.hash === "#note-jar";
+  const pullNow = params.get("jar") === "pull";
+  const recheck = useRef(false);
+  useLayoutEffect(() => {
+    if (!linked || mail.pending || (pullNow && jar.summary.isPending)) return;
+    const letterId = params.get("letter");
+    const noteId = params.get("note");
+    if (letterId || noteId) {
+      let found = null;
+      if (letterId) {
+        const letter = letterId === "maomao" ? (mail.maomao && { id: "maomao" }) : mail.letters.find((item) => item.id === letterId);
+        if (letter) found = { kind: "letter", id: letter.id, origin: null };
+      } else {
+        const note = mail.notes.find((item) => item.id === noteId);
+        const announcement = !note && mail.announcements.find((item) => item.id === noteId);
+        const announced = announcement && mail.letters.find((item) => item.id === letterIdOf(announcement));
+        const test = !note && !announced && mail.test.find((item) => item.id === noteId);
+        if (note) found = { kind: "note", id: note.id, origin: null };
+        else if (announced) found = { kind: "letter", id: announced.id, origin: null };
+        else if (test) found = { kind: "note", id: test.id, test: true, origin: null };
+      }
+      if (!found) {
+        // A brand-new note may not be in what the phone kept from last time: ask once more first.
+        if (mail.fetching) return;
+        if (!recheck.current) {
+          recheck.current = true;
+          mail.refetch();
+          return;
+        }
+        found = letterId
+          ? { kind: "message", title: "this letter isn’t here any more", text: "it may have been tucked away. everything else is right where you left it ♡" }
+          : { kind: "message", title: "this note isn’t here any more", text: "it may be an old one. all your little notes are right here ♡" };
+      }
+      recheck.current = false;
+      setReveal(found);
+    } else if (pullNow) {
+      jar.pull(null);
+      setReveal({ kind: "jar" });
+    } else setGreetJar((n) => n + 1);
+    const next = new URLSearchParams(params);
+    for (const key of LINK_PARAMS) next.delete(key);
+    const search = next.toString();
+    navigate({ pathname: "/world/mail", search: search ? `?${search}` : "" }, { replace: true });
+  }, [linked, mail.pending, mail.fetching, pullNow && jar.summary.isPending]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // What was new when she came in stays in "new for you" until she leaves the section, so the
   // list doesn't jump about under her thumb as she reads.
@@ -86,7 +132,6 @@ export default function MailSection() {
     for (const note of mail.notes) if (!note.openedAt) sticky.current.add(note.id);
   }
 
-  const open = (search) => navigate(`/world/mail?${search}`);
   const openSheet = (next) => {
     haptic("light");
     setSheet(next);
@@ -101,51 +146,62 @@ export default function MailSection() {
     }
   };
 
-  const fresh = jar.data?.fresh ?? 0;
-  let screen = null;
-  if (letterParam) {
+  const openLetter = (letter, origin = null) => {
+    haptic("light");
+    setReveal({ kind: "letter", id: letter.id, origin });
+  };
+  const openNote = (note, origin = null, { test = false } = {}) => {
+    haptic("light");
+    setReveal({ kind: "note", id: note.id, test, origin });
+  };
+  const pull = (origin) => {
+    jar.pull(origin);
+    setReveal({ kind: "jar" });
+  };
+  const closeReveal = () => setReveal(null);
+  useEffect(() => {
+    if (!reveal && jar.entry) {
+      const timer = setTimeout(jar.close, 300);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [reveal, jar.entry, jar.close]);
+
+  // ---------- what's open in the middle of the screen ----------
+  let revealed = null;
+  let label = "";
+  if (reveal?.kind === "jar" && jar.entry) {
+    label = "a note from the jar";
+    revealed = <JarReveal entry={jar.entry} admin={mail.admin} onAnother={(origin) => jar.pull(origin)} onReact={jar.react} />;
+  } else if (reveal?.kind === "letter") {
     const letter =
-      letterParam === "maomao" && mail.maomao
+      reveal.id === "maomao" && mail.maomao
         ? { id: "maomao", author: "maomao", kind: "note", title: mail.maomao.title, maomao: mail.maomao }
-        : mail.letters.find((item) => item.id === letterParam);
-    screen = letter ? (
-      <LetterScreen key={letter.id} letter={letter} admin={mail.admin} signature={mail.signature} onEdit={(item) => openSheet({ kind: "letter", letterId: item.id })} />
-    ) : mail.pending ? (
-      <ScreenMessage title="a letter">
-        <p>opening it…</p>
-      </ScreenMessage>
+        : mail.letters.find((item) => item.id === reveal.id);
+    label = letter ? letter.title : "a letter";
+    revealed = letter ? (
+      <LetterReveal key={letter.id} letter={letter} admin={mail.admin} signature={mail.signature} origin={reveal.origin} onEdit={(item) => openSheet({ kind: "letter", letterId: item.id })} />
     ) : (
-      <ScreenMessage title="a letter">
-        <strong>this letter isn’t here any more</strong>
-        <p>it may have been tucked away. everything else is right where you left it ♡</p>
-      </ScreenMessage>
+      <MessageReveal key="gone" title="this letter isn’t here any more" text="it may have been tucked away. everything else is right where you left it ♡" />
     );
-  } else if (noteParam) {
-    const note = mail.notes.find((item) => item.id === noteParam);
-    const announcement = mail.announcements.find((item) => item.id === noteParam);
-    const announced = announcement && mail.letters.find((item) => item.id === letterIdOf(announcement));
-    const test = !note && mail.test.find((item) => item.id === noteParam);
-    screen = note ? (
-      <NoteScreen key={note.id} note={note} admin={mail.admin} signature={mail.signature} />
-    ) : announced ? (
-      <LetterScreen key={announced.id} letter={announced} admin={mail.admin} signature={mail.signature} onEdit={(item) => openSheet({ kind: "letter", letterId: item.id })} />
-    ) : test ? (
-      <NoteScreen key={test.id} note={test} admin test signature={mail.signature} />
-    ) : mail.pending ? (
-      <ScreenMessage title="a little note">
-        <p>opening it…</p>
-      </ScreenMessage>
+  } else if (reveal?.kind === "note") {
+    const note = (reveal.test ? mail.test : mail.notes).find((item) => item.id === reveal.id);
+    label = note ? note.title : "a little note";
+    revealed = note ? (
+      <NoteReveal key={note.id} note={note} admin={mail.admin} test={reveal.test} signature={mail.signature} origin={reveal.origin} onClose={closeReveal} />
     ) : (
-      <ScreenMessage title="a little note">
-        <strong>this note isn’t here any more</strong>
-        <p>it may be an old one. all your little notes are in notes &amp; letters ♡</p>
-      </ScreenMessage>
+      <MessageReveal key="gone" title="this note isn’t here any more" text="it may be an old one. all your little notes are right here ♡" />
     );
-  } else if (jarParam) {
-    screen = <JarScreen admin={mail.admin} onEdit={() => openSheet({ kind: "jar" })} />;
-  } else if (allParam) {
-    screen = <AllNotesScreen notes={mail.notes} admin={mail.admin} signature={mail.signature} onOpen={(note) => open(`note=${note.id}`)} />;
+  } else if (reveal?.kind === "message") {
+    label = reveal.title;
+    revealed = <MessageReveal key={reveal.title} title={reveal.title} text={reveal.text} origin={reveal.origin} />;
   }
+
+  const layer = (
+    <RevealLayer open={Boolean(revealed)} onClose={closeReveal} label={label} kind={reveal?.kind}>
+      {revealed}
+    </RevealLayer>
+  );
 
   const sheets = mail.admin && (
     <>
@@ -182,18 +238,19 @@ export default function MailSection() {
         }}
         onDeleted={() => {
           setToast("the letter is gone");
-          if (letterParam) navigate("/world/mail", { replace: true });
+          setReveal(null);
         }}
       />
       <JarEditor open={activeSheet?.kind === "jar"} onClose={closeSheet} />
     </>
   );
 
-  if (screen)
+  if (allParam)
     return (
       <>
-        {screen}
+        <AllNotesScreen notes={mail.notes} admin={mail.admin} signature={mail.signature} onOpen={openNote} />
         {sheets}
+        {layer}
         <Toast message={toast} />
       </>
     );
@@ -221,18 +278,20 @@ export default function MailSection() {
     <div className="app-section app-section--mail mail">
       <MailHome
         mail={mail}
-        jar={jar}
-        fresh={fresh}
+        jar={jar.summary}
+        fresh={jar.summary.data?.fresh ?? 0}
         newIds={sticky.current}
-        onOpenLetter={(letter) => open(`letter=${letter.id}`)}
-        onOpenNote={(note) => open(`note=${note.id}`)}
-        onOpenJar={() => open("jar=1")}
-        onAllNotes={() => open("notes=all")}
+        greetJar={greetJar}
+        onOpenLetter={openLetter}
+        onOpenNote={openNote}
+        onPull={pull}
+        onAllNotes={() => navigate("/world/mail?notes=all")}
         onWrite={openSheet}
         onCancelNote={(id) => cancel.mutate(id, { onSuccess: () => setToast("cancelled. it won’t reach her.") })}
         cancelling={cancel.isPending}
       />
       {sheets}
+      {layer}
       <Toast message={toast} />
     </div>
   );

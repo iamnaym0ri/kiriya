@@ -79,8 +79,11 @@ export function jarNote(row, signature = kiriya.signature) {
  * Picks the next note. Notes she hasn't drawn yet (`fresh`, oldest first) always come first; after
  * that, the mood-aware rotation: notes for her current feeling (or any day), unseen before seen,
  * never the same note twice in a row. Returns null only when the pool is empty.
+ *
+ * `prefer` is the note the app already showed her (peekNote, fetched before she tapped, so the pull
+ * is instant): it wins whenever the rules above would allow it, so what she saw is what she keeps.
  */
-export function chooseNote(state, { pool, fresh = [], feeling = null, energy = 2, random = Math.random } = {}) {
+export function chooseNote(state, { pool, fresh = [], feeling = null, energy = 2, random = Math.random, prefer = null } = {}) {
   if (!pool?.length) return null;
   const byId = new Map(pool.map((note) => [note.id, note]));
   const first = fresh.map((id) => byId.get(id)).find((note) => note && !state.seen.includes(note.id));
@@ -94,6 +97,8 @@ export function chooseNote(state, { pool, fresh = [], feeling = null, energy = 2
   const reset = candidates.length === 0;
   if (reset) candidates = eligible.filter((note) => note.id !== state.lastNote);
   if (!candidates.length) candidates = eligible;
+  const preferred = prefer && candidates.find((note) => note.id === prefer);
+  if (preferred) return { note: preferred, reset, resetIds: reset ? eligible.map((note) => note.id) : [], fresh: false };
   const recent = state.recent ?? [];
   const scored = candidates.map((note) => {
     let score = random() * 4;
@@ -154,15 +159,25 @@ const sampleNote = {
   voice: "josh",
 };
 
-export async function pullNote(db, requestId, { day = localDay(), now = new Date(), preview = false, random = Math.random } = {}) {
-  const key = PREFIX + requestId;
+/**
+ * Josh's previews follow a state of their own: nothing she has pulled, minus the notes he has just
+ * looked at (`exclude`, newest last), so "another one" on his phone goes round the whole jar.
+ */
+const previewState = (exclude = []) => ({ ...empty(), seen: exclude, recent: [], lastNote: exclude.at(-1) ?? null });
+
+async function jarContext(db, day, preview, random) {
   // A preview follows the admin's own test check-in; real pulls follow Kiriya's.
   const { current } = await readCheckin(db, day, preview ? "admin" : "kiriya");
-  const context = { feeling: current?.feeling?.key, energy: current?.energy ?? 2, random };
+  return { feeling: current?.feeling?.key, energy: current?.energy ?? 2, random };
+}
+
+export async function pullNote(db, requestId, { day = localDay(), now = new Date(), preview = false, random = Math.random, prefer = null, exclude = [] } = {}) {
+  const key = PREFIX + requestId;
+  const context = { ...(await jarContext(db, day, preview, random)), prefer };
   if (preview) {
     // Josh sees what she'll get next, including notes still waiting for the morning.
     const { pool, fresh } = await jarPool(db, { now, includeWaiting: true });
-    const chosen = chooseNote(empty(), { ...context, pool, fresh });
+    const chosen = chooseNote(previewState(exclude), { ...context, pool, fresh });
     // An empty jar still gives Josh something to look at (the site's jar and the notification's
     // "Pull one" on his phone), marked as a sample; Kiriya never sees it, and nothing is saved.
     const note = chosen?.note ?? { ...sampleNote, byline: `— ${await signatureOf(db)}` };
@@ -176,7 +191,7 @@ export async function pullNote(db, requestId, { day = localDay(), now = new Date
     const chosen = chooseNote(state, { ...context, pool, fresh });
     if (!chosen) throw Object.assign(new Error("The jar is empty."), { status: 404, code: "jar_empty" });
     const { note, resetIds } = chosen;
-    const record = { id: requestId, note, day, at: now.toISOString(), ordinal: state.revision + 1, saved: false, revisited: state.ever.includes(note.id), fresh: chosen.fresh };
+    const record = { id: requestId, note, day, at: now.toISOString(), ordinal: state.revision + 1, saved: false, revisited: state.ever.includes(note.id), fresh: chosen.fresh, reaction: null };
     const next = {
       revision: state.revision + 1,
       // Only refresh the exhausted mood-compatible set. Switching moods must not
@@ -209,6 +224,46 @@ export async function pullNote(db, requestId, { day = localDay(), now = new Date
   throw Object.assign(new Error("The jar is busy. Try the same pull again."), { status: 409 });
 }
 
+/**
+ * The note the next pull will bring, without taking it out of the jar: the app fetches it ahead, so
+ * a tap shows it at once, and the pull then keeps that very note (`prefer`). Also the jar's counts,
+ * from the same reads. Null `next` only when the jar is empty (Josh gets the marked sample).
+ */
+export async function peekNote(db, { day = localDay(), now = new Date(), preview = false, random = Math.random, exclude = [] } = {}) {
+  const context = await jarContext(db, day, preview, random);
+  const [state, { pool, fresh }] = await Promise.all([
+    preview ? previewState(exclude) : valueAt(db, STATE).then((value) => value ?? empty()),
+    jarPool(db, { now, includeWaiting: preview }),
+  ]);
+  const chosen = chooseNote(state, { ...context, pool, fresh });
+  if (!chosen) return preview ? { note: { ...sampleNote, byline: `— ${await signatureOf(db)}` }, fresh: false, revisited: false, sample: true } : null;
+  return { note: chosen.note, fresh: chosen.fresh, revisited: !preview && state.ever.includes(chosen.note.id) };
+}
+
+/** Her heart or emoji on a note she pulled (null takes it back). Josh sees it on his jar notes. */
+export async function reactToPull(db, id, reaction, { now = new Date() } = {}) {
+  const result = rows(await db.execute(sql`
+    UPDATE kv SET value=value || ${json({ reaction, reactedAt: reaction ? now.toISOString() : null })}, updated_at=now()
+    WHERE key=${PREFIX + id} RETURNING value
+  `));
+  return result[0]?.value ?? null;
+}
+
+/**
+ * For Josh: how each jar note has fared with her, by note id: how many times she pulled it, when
+ * last, and her latest reaction to it.
+ */
+export async function herJarMarks(db, noteIds = null) {
+  const found = rows(await db.execute(sql`
+    SELECT value->'note'->>'id' AS id, count(*)::int AS pulls, max(value->>'at') AS last_at,
+      (array_agg(value->>'reaction' ORDER BY (value->>'ordinal')::integer DESC) FILTER (WHERE value->>'reaction' IS NOT NULL))[1] AS reaction
+    FROM kv WHERE key LIKE ${PREFIX + "%"}
+    ${noteIds ? sql`AND value->'note'->>'id' IN (${sql.join(noteIds.map((id) => sql`${id}`), sql`, `)})` : sql``}
+    GROUP BY 1
+  `));
+  return new Map(found.map((row) => [row.id, { pulls: Number(row.pulls), lastAt: row.last_at, reaction: row.reaction ?? null }]));
+}
+
 export async function noteHistory(db, { before = null, saved = false } = {}) {
   const found = rows(await db.execute(sql`
     SELECT value FROM kv WHERE key LIKE ${PREFIX + "%"}
@@ -238,7 +293,7 @@ export function jarNoteStatus(row, now = new Date()) {
 }
 
 export async function listJarNotes(db, { now = new Date() } = {}) {
-  const list = await db.select().from(schema.jarNotes).orderBy(desc(schema.jarNotes.createdAt));
+  const [list, marks] = await Promise.all([db.select().from(schema.jarNotes).orderBy(desc(schema.jarNotes.createdAt)), herJarMarks(db)]);
   const notes = list.map((row) => ({
     id: row.id,
     text: row.text,
@@ -249,6 +304,8 @@ export async function listJarNotes(db, { now = new Date() } = {}) {
     announcedAt: row.announcedAt?.toISOString() ?? null,
     firstPulledAt: row.firstPulledAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
+    // How it went with her: pulls, and her latest heart or emoji on it.
+    her: marks.get(row.id) ?? { pulls: 0, lastAt: null, reaction: null },
   }));
   const settings = await notificationSettings(db);
   const release = nextRelease(now);
