@@ -6,8 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api.js";
 import { useAppBack } from "../../shared/AppFrame.jsx";
 import { phaseOf } from "./eventFormat.js";
-import { useSavedItems } from "./eventsData.js";
-import { EventRow, KindDoodle, useNow } from "./EventPieces.jsx";
+import { useSavedList } from "./eventsData.js";
+import { EventRow, KindDoodle, MerchRow, Toaster, useNow } from "./EventPieces.jsx";
 import "./events.css";
 
 function ShelfKeeps() {
@@ -38,12 +38,12 @@ function ShelfKeeps() {
 
 export default function EventSaves() {
   const back = useAppBack("/world");
-  const { items, isPending } = useSavedItems();
+  const { events: items, merch, isPending, isError, refetch } = useSavedList();
   const now = useNow(60_000);
   useEffect(() => {
     document.title = "saved ♡";
   }, []);
-  const coming = items.filter((item) => !["ended", "sold_out", "cancelled"].includes(phaseOf(item, now).phase) && !item.gone);
+  const coming = items.filter((item) => !["ended", "sold_out", "cancelled"].includes(phaseOf(item, now).phase));
   const earlier = items.filter((item) => !coming.includes(item));
   return (
     <div className="app-screen ev-saves">
@@ -57,7 +57,15 @@ export default function EventSaves() {
         <p className="app-section__subtitle">only you can see these ♡</p>
       </header>
       <div className="app-section__body">
-        {!items.length && !isPending && (
+        {isError && !items.length && (
+          <div className="app-card ev-trouble">
+            <p>your saves couldn’t load just now.</p>
+            <button type="button" className="ev-pill-link" onClick={() => refetch()}>
+              try again
+            </button>
+          </div>
+        )}
+        {!items.length && !merch.length && !isPending && !isError && (
           <div className="app-card ev-empty">
             <svg className="ev-empty__heart" width="44" height="44" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 20.3s-7.6-4.7-8.6-9.6C2.7 7.4 4.6 4.8 7.4 4.6c2-.2 3.6 1 4.6 2.6 1-1.6 2.6-2.8 4.6-2.6 2.8.2 4.7 2.8 4 6.1-1 4.9-8.6 9.6-8.6 9.6z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
@@ -86,8 +94,19 @@ export default function EventSaves() {
             </ul>
           </section>
         )}
+        {merch.length > 0 && (
+          <section className="ev-group" aria-label="Merch">
+            <h2 className="app-group-title">merch</h2>
+            <ul className="app-list">
+              {merch.map((item) => (
+                <MerchRow key={item.id} item={item} />
+              ))}
+            </ul>
+          </section>
+        )}
         <ShelfKeeps />
       </div>
+      <Toaster />
     </div>
   );
 }
