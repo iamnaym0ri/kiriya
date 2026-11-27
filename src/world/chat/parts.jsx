@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { tapByKey } from "../../../shared/taps.js";
 import { Modal } from "../../shared/WorldPrimitives.jsx";
 import { tapFeedback } from "../../lib/native.js";
+import { useMediaUrl } from "../../lib/chatCrypto.js";
 
 export function ChatIcon({ name, size = 22 }) {
   const paths = {
@@ -64,14 +65,16 @@ const isBigEmoji = (text) => ONLY_EMOJI.test(text) && [...text.replace(/\s/g, ""
 const minutes = (seconds) => `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, "0")}`;
 
 export function VoiceNote({ media }) {
+  const src = useMediaUrl(media);
   const audio = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const peaks = media.peaks?.length ? media.peaks : Array.from({ length: 28 }, (_, i) => 0.3 + 0.5 * Math.abs(Math.sin(i * 1.7)));
   useEffect(() => () => audio.current?.pause(), []);
   function toggle() {
+    if (!src) return;
     if (!audio.current) {
-      audio.current = new Audio(media.url);
+      audio.current = new Audio(src);
       audio.current.addEventListener("timeupdate", () => setProgress(audio.current.currentTime / (audio.current.duration || media.duration)));
       audio.current.addEventListener("ended", () => {
         setPlaying(false);
@@ -115,20 +118,26 @@ function TapCard({ message, mine, names, onTapBack }) {
   );
 }
 
+/** One picture through the encryption hooks (src/lib/chatCrypto.js): never media.url directly. */
+function MediaImage({ media, alt, onOpen, ...props }) {
+  const src = useMediaUrl(media);
+  if (!src) return <span className="msg__opening" style={props.style} aria-label="opening…" />;
+  return <img src={src} alt={alt} loading="lazy" decoding="async" onClick={onOpen ? () => onOpen(src) : undefined} {...props} />;
+}
+
 function Content({ message, onOpenImage }) {
+  if (message.locked) return <div className="bubble msg__locked">this one is still unlocking ♡</div>;
   switch (message.kind) {
     case "deleted":
       return <div className="bubble msg__deleted">message unsent</div>;
     case "image":
       return (
         <div className="bubble bubble--media">
-          <img
-            src={message.media.url}
+          <MediaImage
+            media={message.media}
             alt={message.media.alt ?? "a photo"}
-            loading="lazy"
-            decoding="async"
             style={message.media.width ? { aspectRatio: `${message.media.width} / ${message.media.height}` } : undefined}
-            onClick={() => onOpenImage(message.media.url)}
+            onOpen={onOpenImage}
           />
           {message.body && <div className="bubble__caption">{message.body}</div>}
         </div>
@@ -136,13 +145,13 @@ function Content({ message, onOpenImage }) {
     case "gif":
       return (
         <div className="bubble bubble--media">
-          <img src={message.media.url} alt={message.media.alt ?? "a GIF"} loading="lazy" decoding="async" style={message.media.width ? { aspectRatio: `${message.media.width} / ${message.media.height}` } : undefined} />
+          <MediaImage media={message.media} alt={message.media.alt ?? "a GIF"} style={message.media.width ? { aspectRatio: `${message.media.width} / ${message.media.height}` } : undefined} />
         </div>
       );
     case "sticker":
       return (
         <div className="msg__sticker">
-          <img src={message.media.url} alt={message.media.alt ?? "a sticker"} loading="lazy" decoding="async" />
+          <MediaImage media={message.media} alt={message.media.alt ?? "a sticker"} />
         </div>
       );
     case "voice":

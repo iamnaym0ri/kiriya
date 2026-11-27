@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api.js";
 import { newClientId } from "../../lib/chat.js";
+import { sealFile } from "../../lib/chatCrypto.js";
 import { shrinkImage, uploadFile } from "../../lib/uploads.js";
 import { tapFeedback } from "../../lib/native.js";
 import { TAPS } from "../../../shared/taps.js";
@@ -158,8 +159,9 @@ export default function Composer({ onSend, replyTo, replyLabel, onCancelReply, n
     setBusy("sending your photo…");
     try {
       const ready = file.type === "image/gif" ? file : await shrinkImage(file, 1800);
-      const [size, stored] = await Promise.all([imageSize(ready), uploadFile(ready, { folder: "chat" })]);
-      onSend({ clientId: newClientId(), kind: "image", body: text.trim(), media: { url: stored.url, ...size }, replyTo });
+      const { blob, sealed } = await sealFile(ready);
+      const [size, stored] = await Promise.all([imageSize(ready), uploadFile(blob, { folder: "chat" })]);
+      onSend({ clientId: newClientId(), kind: "image", body: text.trim(), media: { url: stored.url, ...size, ...(sealed ? { sealed } : {}) }, replyTo });
       setText("");
     } catch (error) {
       setHint(error?.message ?? "That photo couldn’t be sent.");
@@ -200,8 +202,9 @@ export default function Composer({ onSend, replyTo, replyLabel, onCancelReply, n
       setBusy("sending your voice note…");
       try {
         const file = new File([blob], `voice.${mime.includes("webm") ? "webm" : "m4a"}`, { type: mime });
-        const [stored, peaks] = await Promise.all([uploadFile(file, { folder: "chat" }), peaksOf(blob)]);
-        onSend({ clientId: newClientId(), kind: "voice", body: "", media: { url: stored.url, duration: Math.min(MAX_VOICE_SECONDS, Math.max(0.8, seconds)), mime, ...(peaks ? { peaks } : {}) }, replyTo });
+        const sealedFile = await sealFile(file);
+        const [stored, peaks] = await Promise.all([uploadFile(sealedFile.blob, { folder: "chat" }), peaksOf(blob)]);
+        onSend({ clientId: newClientId(), kind: "voice", body: "", media: { url: stored.url, duration: Math.min(MAX_VOICE_SECONDS, Math.max(0.8, seconds)), mime, ...(peaks ? { peaks } : {}), ...(sealedFile.sealed ? { sealed: sealedFile.sealed } : {}) }, replyTo });
       } catch (error) {
         setHint(error?.message ?? "That voice note couldn’t be sent.");
       } finally {
