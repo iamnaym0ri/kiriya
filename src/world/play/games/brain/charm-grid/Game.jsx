@@ -206,6 +206,8 @@ export default function CharmGrid({ onReward }) {
                   data-same={selValue && v === selValue ? true : undefined}
                   data-clash={clash.has(i) || undefined}
                   data-flash={flash?.cell === i ? flash.kind : undefined}
+                  data-last-col={c === n - 1 || undefined}
+                  data-last-row={r === n - 1 || undefined}
                   data-box-right={(c + 1) % bc === 0 && c < n - 1 ? true : undefined}
                   data-box-bottom={(r + 1) % br === 0 && r < n - 1 ? true : undefined}
                   aria-label={`row ${r + 1}, column ${c + 1}: ${v ? charmName(v) : "empty"}${puzzle[i] ? ", given" : ""}${clash.has(i) ? ", repeats" : ""}`}
@@ -257,7 +259,7 @@ export default function CharmGrid({ onReward }) {
                   <path d="M15.5 4.5l4 4L9 19H5v-4z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
                   <path d="M13 7l4 4" stroke="currentColor" strokeWidth="1.8" />
                 </svg>
-                notes {noting ? "on" : "off"}
+                notes
               </button>
               <button type="button" className="cg-action" onClick={erase}>
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
