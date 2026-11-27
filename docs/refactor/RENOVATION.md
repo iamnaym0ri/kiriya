@@ -62,7 +62,8 @@ message the coordinator (`SendMessage` to `main`).
 | maomao, miku-rotten, bambi, miku, kaito | `reno/c-<id>` | `src/world/companions/characters/<id>/**` only (Maomao may also refine `src/world/mascot/MaomaoMascot.*`, `MaomaoFace.jsx`, `src/shared/play/maomaoDialogue.js`) |
 | quizzes | `reno/quizzes` | `src/world/play/quizzes/**`, `server/routes/quizzes.js`, `server/lib/quizzes.js` |
 | games-<shelf> | `reno/games-<shelf>` | `src/world/play/games/<shelf>/**` |
-| events | `reno/events` | phase 6: `worker/**` (the Railway worker), `server/routes/events*.js`, `server/lib/events/**`, `src/world/events/**`, the home events & merch block component |
+| events | `reno/events` | phase 6 engine: `worker/**` (the Railway worker), `server/routes/events*.js`, `server/lib/events/**`, the events tables, the admin paste-a-link box's API |
+| events-ui | `reno/events-ui` | phase 6 screens: `src/world/events/**` (event pages, timeline, update log, saves, merch), the home events & merch block (`src/world/events/HomeEvents.jsx`), the admin paste-a-link box |
 
 Shared files everyone may touch with a one-line change (expect a trivial merge): `server/app.js`
 (mounting your route file), `docs/redesign/ASSETS.md` (credits), `src/shared/WorldPrimitives.jsx`
