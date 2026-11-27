@@ -193,6 +193,41 @@ export function RevealLayer({ open, onClose, label, kind = "note", children }) {
 const FLY = 560;
 const SWING = 430;
 const SECOND = 250; // the bottom panel starts this long after the middle one
+const SWING_EASE = "cubic-bezier(0.42, 0, 0.3, 1)";
+const FOLD2 = 178; // the middle panel starts folded up over the top one…
+const FOLD3 = 172; // …with the bottom one folded inside it
+
+/** A CSS cubic-bezier as a function of progress (to know when a swinging panel is edge-on). */
+function cubicBezier(x1, y1, x2, y2) {
+  const at = (a, b, t) => 3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3;
+  return (x) => {
+    let t = x;
+    for (let i = 0; i < 10; i++) {
+      const dx = 3 * x1 * (1 - t) ** 2 + 6 * (x2 - x1) * t * (1 - t) + 3 * (1 - x2) * t * t;
+      if (Math.abs(dx) < 1e-6) break;
+      t = Math.min(1, Math.max(0, t - (at(x1, x2, t) - x) / dx));
+    }
+    return at(y1, y2, t);
+  };
+}
+const swingEase = cubicBezier(0.42, 0, 0.3, 1);
+
+/** When the middle panel, then the bottom one (riding on it), turn to face her, in ms. */
+function foldTurns(start2, start3) {
+  const angle = (from, start, t) => from * (1 - swingEase(Math.min(1, Math.max(0, (t - start) / SWING))));
+  const end = start3 + SWING;
+  let middle = end;
+  let bottom = end;
+  for (let t = start2; t <= end; t += 2) {
+    const a2 = angle(FOLD2, start2, t);
+    if (middle === end && a2 <= 90) middle = t;
+    if (a2 + angle(FOLD3, start3, t) <= 90) {
+      bottom = t;
+      break;
+    }
+  }
+  return { middle, bottom, end };
+}
 
 /**
  * One paper on the stage. `paper()` draws it (called once more per panel while it unfolds, so it
@@ -248,14 +283,25 @@ export function RevealCard({ paper, origin = null, mode = "unfold", hold = false
     );
     let finish = flight.finished;
     if (mode === "unfold") {
-      const swing = { duration: SWING, easing: "cubic-bezier(0.42, 0, 0.3, 1)" };
-      run(h2.current, [{ transform: "rotateX(178deg)" }, { transform: "rotateX(0deg)" }], { ...swing, delay: FLY - 40 });
-      run(shade2.current, [{ opacity: 0.4 }, { opacity: 0.4, offset: 0.4 }, { opacity: 0 }], { ...swing, delay: FLY - 40 });
-      // The bottom panel lies folded over the middle one; it shows from the moment the middle one
-      // is edge-on (before that it's hidden behind it), then swings down too.
-      run(h3.current, [{ opacity: 0 }, { opacity: 1 }], { duration: 1, delay: FLY - 40 + SWING * 0.45 });
-      run(h3.current, [{ transform: "rotateX(172deg)" }, { transform: "rotateX(0deg)" }], { ...swing, delay: FLY - 40 + SECOND });
-      run(shade3.current, [{ opacity: 0.4 }, { opacity: 0.4, offset: 0.4 }, { opacity: 0 }], { ...swing, delay: FLY - 40 + SECOND });
+      const start2 = FLY - 40;
+      const start3 = start2 + SECOND;
+      const swing = { duration: SWING, easing: SWING_EASE };
+      run(h2.current, [{ transform: `rotateX(${FOLD2}deg)` }, { transform: "rotateX(0deg)" }], { ...swing, delay: start2 });
+      run(shade2.current, [{ opacity: 0.4 }, { opacity: 0.4, offset: 0.4 }, { opacity: 0 }], { ...swing, delay: start2 });
+      run(h3.current, [{ transform: `rotateX(${FOLD3}deg)` }, { transform: "rotateX(0deg)" }], { ...swing, delay: start3 });
+      run(shade3.current, [{ opacity: 0.4 }, { opacity: 0.4, offset: 0.4 }, { opacity: 0 }], { ...swing, delay: start3 });
+      // Which side of each panel shows is switched exactly when it turns edge-on, instead of
+      // trusting backface-visibility (WebKit doesn't always honour it inside a moving 3D fold).
+      const { middle, bottom, end } = foldTurns(start2, start3);
+      const flip = (element, from, to, at) =>
+        run(element, [{ opacity: from }, { opacity: from, offset: at / end }, { opacity: to, offset: Math.min(1, at / end + 0.0005) }, { opacity: to }], { duration: end, easing: "linear" });
+      const fold = box.current.querySelector(".reveal-fold");
+      flip(fold?.querySelector(".reveal-fold__p2"), 0, 1, middle);
+      flip(fold?.querySelector(".reveal-fold__b2"), 1, 0, middle);
+      // The bottom panel lies folded over the middle one, out of sight until that one is edge-on.
+      flip(h3.current, 0, 1, middle);
+      flip(fold?.querySelector(".reveal-fold__p3"), 0, 1, bottom);
+      flip(fold?.querySelector(".reveal-fold__b3"), 1, 0, bottom);
       finish = Promise.all(animations.map((a) => a.finished));
     }
     let alive = true;
@@ -268,7 +314,7 @@ export function RevealCard({ paper, origin = null, mode = "unfold", hold = false
     };
     finish.then(settle).catch(() => {});
     // Never stuck folded: if the animations don't report back (a background tab), open anyway.
-    const safety = setTimeout(settle, FLY + SWING + SECOND + 900);
+    const safety = setTimeout(settle, FLY + SWING + SECOND + 2400);
     return () => {
       alive = false;
       clearTimeout(safety);

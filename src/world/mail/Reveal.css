@@ -211,9 +211,11 @@ html.mail-reveal-open body {
 }
 .reveal-fold__p2 {
   clip-path: inset(33.3333% -40px 33.3333% -40px);
+  opacity: 0;
 }
 .reveal-fold__p3 {
   clip-path: inset(66.6667% -40px -40px -40px);
+  opacity: 0;
 }
 .reveal-fold__shade {
   position: absolute;
