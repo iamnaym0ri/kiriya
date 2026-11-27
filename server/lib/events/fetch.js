@@ -105,5 +105,24 @@ export function politeFetcher({ db, send, lookup, deadline = Date.now() + 10 * 6
     };
   }
 
-  return { get, robots, stats };
+  /** A picture (JPEG, PNG or WebP, at most 4 MB), under the same rules as a page. */
+  async function image(url) {
+    const blocked = blockedHost(url);
+    if (blocked) {
+      stats.blocked++;
+      throw new PoliteError("blocked_host", blocked.reason);
+    }
+    const verdict = await robots(url);
+    if (!verdict.allowed) {
+      stats.robotsDenied++;
+      throw new PoliteError("robots_denied", verdict.reason);
+    }
+    const host = new URL(url).hostname.toLowerCase();
+    await pace(host);
+    stats.requests++;
+    const r = await client(host).request(url, { as: "image", headers: { "user-agent": USER_AGENT } });
+    return { url: r.url ?? url, contentType: r.contentType, buffer: r.buffer };
+  }
+
+  return { get, image, robots, stats };
 }

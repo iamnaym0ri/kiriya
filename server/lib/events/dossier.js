@@ -63,7 +63,11 @@ export const MerchSchema = z
     limited: z.boolean().default(false),
     status: z.enum(MERCH_STATUSES).default("revealed"),
     note: z.string().trim().max(400).nullable().default(null),
+    // A picture link: our stored copy, or (from the research) a page's picture still to be copied.
     image: z.string().max(800).nullable().default(null),
+    // Our stored copies (lib/events/images.js); filled by the worker, never by the research.
+    images: z.array(z.string().max(800)).max(6).default([]),
+    imageCredit: z.string().trim().max(120).nullable().default(null),
     sourceIds,
   })
   .strict();
@@ -371,8 +375,11 @@ export function timelineFor({ timeline = [], startsOn, endsOn, status, dossier =
   };
   const steps = STAGES.map((stage) => {
     const step = recorded.get(stage);
-    let state = step?.at || step?.text || implied[stage] ? "done" : "unknown";
-    if (stage === "announced") state = "done";
+    // A milestone dated in the future (tickets go on sale on 2 Dec) is coming, not done.
+    const atDay = step?.at ? String(step.at).slice(0, 10) : null;
+    const ahead = Boolean(atDay && /^\d{4}-\d{2}-\d{2}$/.test(atDay) && atDay > today);
+    let state = ahead ? "next" : step?.at || step?.text || implied[stage] ? "done" : "unknown";
+    if (stage === "announced" && !ahead) state = "done";
     if (stage === "day") state = after ? "done" : on ? "now" : startsOn ? "next" : "unknown";
     if (stage === "after") state = after ? (step?.text ? "done" : "now") : "unknown";
     if (status === "cancelled" && (stage === "day" || stage === "after")) state = "unknown";
