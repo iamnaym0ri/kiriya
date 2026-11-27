@@ -309,3 +309,39 @@ are researched through web search, never fetched.
 
 `POST /api/jobs/events/deliver { digest?: true }` with `Authorization: Bearer $CRON_SECRET`: the
 Railway worker asks Vercel to send due pushes, so push keys stay in Vercel only.
+
+## Running the engine (for the coordinator and Josh)
+
+**Pieces.** The Railway worker (`node worker/index.js`, config `worker/railway.json`: point the
+service's config-as-code path at it) ticks every minute: queue first-research for events with no
+dossier, check sources that are due (≤6 a tick, each at its own cadence, robots.txt first, blocked
+sites never), Apify Instagram (every 8 h), the newsletter inbox (every 30 min), the signal queue
+(≤3 a tick: Haiku triage → Opus investigation), weather (every 3 h; 30 min on event days) and
+trains, then asks Vercel to deliver pushes (`/api/jobs/events/deliver`). It writes a heartbeat to
+`settings.events_worker` (admin status) and answers `GET /health`. The OpenAI weekly events stage is
+retired (no import, no cron).
+
+**Railway variables** (none are needed for a dry run):
+
+| Variable | What |
+| --- | --- |
+| `DATABASE_URL` | the same Neon database as Vercel |
+| `ANTHROPIC_API_KEY` | Claude; without it everything runs as a dry run (a stand-in answers, nothing billed) |
+| `CRON_SECRET` | the same value as in Vercel; lets the worker ask Vercel to send pushes |
+| `APIFY_TOKEN` | Apify Instagram trigger (optional `APIFY_INSTAGRAM_ACTOR`, default `apify~instagram-scraper`; `EVENTS_INSTAGRAM_EVERY_HOURS`, default 8) |
+| `BLOB_READ_WRITE_TOKEN` (or `BLOB_STORE_ID`) | to copy Instagram images into the private Blob store (`events/` folder) |
+| `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN` | the newsletter inbox (read-only scope `gmail.readonly`); optional `EVENTS_GMAIL_QUERY` |
+| `LTA_DATAMALL_KEY` | train alerts on event days (optional) |
+| `DATA_GOV_SG_API_KEY` | higher NEA rate limit (optional; works without) |
+| `EVENTS_DRY_RUN=1` | force a dry run even with a key |
+| `EVENTS_CLAUDE_CEILING_USD` | lower the monthly ceiling (never above 20; admin can lower it too) |
+
+**Vercel variables:** `EVENTS_PUSH_AUDIENCE` = `admin` (default: Josh's phones only while the app
+is a surprise) → `kiriya` or `both` when Josh says. App test mode always routes event pushes to
+Josh only, marked "test". Nothing else new (push keys, `CRON_SECRET` and Blob already exist).
+
+**Cost guard.** Every Claude call checks the month's ledger first (`event_spend`): it needs the
+call's worst case (triage US$0.02, investigation US$1.50, refresh US$1.00) to fit under the ceiling
+and under the month's pace (ceiling × day/days-in-month + US$4). An investigation also stops at
+US$1.20 itself. When paused, signals wait as `paused` and resume the next day or month. Web search
+is capped at 5 uses (3 on refresh), web fetch at 6 (4), 8k tokens each; prompts are cached.
