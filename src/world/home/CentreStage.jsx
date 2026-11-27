@@ -44,7 +44,7 @@ export default function CentreStage({ home, name = "kiriya", birthday = false, a
   return (
     <section className="home-stage" aria-labelledby="home-title" data-motion-region>
       {/* The first thing she sees on home: companions keep off it (the dateline above is their perch). */}
-      <div className="home-stage__hello" data-companion-avoid>
+      <div className="home-stage__hello" data-companion-avoid data-companion-never>
         <p className="handwritten world-welcome__greeting home-stage__greeting">
           <span>{greeting}</span>
           <AdminEdit compact label="the greeting" className="home-stage__pencil" onClick={() => setEditing("greeting")} />

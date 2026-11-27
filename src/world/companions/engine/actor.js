@@ -364,6 +364,9 @@ export class Actor {
     const pool = better != null ? candidates.filter((c) => c.busy <= better) : candidates;
     if (!pool.length) return [];
     pool.sort((a, c) => a.cost - c.cost);
+    // A behaviour that wants the top (or bottom) level does it where it stands instead when that
+    // whole level is over the page's centrepiece (data-companion-never: home's greeting and name).
+    if (b?.level && pool[0].busy >= 1.5) return [];
     const { target, x: tx } = pool[0];
     if (target === this.level) {
       if (!force && Math.abs(tx - this.x) < 24 * this.scale) return [];

@@ -27,7 +27,10 @@ keeps `src/world/mascot/MaomaoCompanion.jsx`). This file is the contract between
 - **Choosing where to go**: before settling, it looks at what is under a few candidate spots and
   prefers ones that don't cover text, pictures or buttons. When home stops scrolling and it is
   standing over something she might want to read or tap, it moves somewhere clearer. Pages can mark
-  things with `data-companion-avoid` (never stand here) or `data-companion-ok` (fine to cover).
+  things with `data-companion-avoid` (never stand here) or `data-companion-ok` (fine to cover), and
+  the one thing a page is about with `data-companion-never` (home's greeting and her name): weighed
+  four times heavier than ordinary text, for standing, for speech bubbles and for the behaviours that
+  head for the top level (they happen in place instead).
 - **Touch**: a tap → `react` pose and a `tapped` line (three quick taps → `pester` if it has one),
   and the **tap menu** (see "The tap menu and stay"). Hold still ~0.4 s or start dragging →
   picked up by the scruff (`held` pose, a `picked` line), swinging as it is carried. Let go → it
