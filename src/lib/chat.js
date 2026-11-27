@@ -111,7 +111,14 @@ export function useChatLive({ live, me, enabled = true }) {
           });
           const ch = client.channels.get(CHANNEL);
           channel.current = ch;
-          ch.subscribe("message", () => catchUp());
+          ch.subscribe("message", (event) => {
+            // Their message arriving ends their "typing…".
+            if (event.data?.sender && event.data.sender !== me) {
+              clearTimeout(typingTimer.current);
+              setTyping(false);
+            }
+            catchUp();
+          });
           ch.subscribe("reaction", ({ data }) =>
             updateMessage(queryClient, data.messageId, (m) => {
               const reactions = { ...m.reactions };
