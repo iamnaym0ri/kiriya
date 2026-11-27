@@ -4,6 +4,7 @@
 // and the rest of the conversation glides up to make room; a deleted message folds away and the
 // ones around it close the gap.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { MessageScroller, useMessageScroller } from "@shadcn/react/message-scroller";
@@ -445,8 +446,11 @@ export default function ChatPage() {
           {toast}
         </p>
       )}
-      {held && (
-        <HoldMenu
+      {held &&
+        // On <body>, above the tab bar, in a layer that carries the chat's look (theme, bubbles).
+        createPortal(
+          <div className="chat chat--layer" data-theme={prefs.theme ?? "lilac"} data-bubble={prefs.bubble} data-background={background} style={style}>
+            <HoldMenu
           held={held}
           me={me}
           preview={preview}
@@ -479,8 +483,10 @@ export default function ChatPage() {
             if (editing?.id === message.id) setEditing(null);
             remove.mutate(message, { onError: () => say("that couldn’t be deleted just now") });
           }}
-        />
-      )}
+            />
+          </div>,
+          document.body,
+        )}
       {designOpen && <ChatLook prefs={prefs} name={names[other]} onClose={() => setDesignOpen(false)} />}
     </div>
   );
