@@ -21,6 +21,8 @@ export default {
     restPose: "ponder",
     restSeconds: [2, 4],
     heldAt: 0.86,
+    // Her old rig already crouches and squashes in its own poses; the engine adds only a little.
+    squash: 0.45,
     expressions: { tapped: "startled", picked: "alarmed", putDown: "deadpan", walk: "deadpan" },
   },
   behaviours: [

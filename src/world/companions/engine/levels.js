@@ -30,7 +30,7 @@ export function safeInsets() {
 const TOP_FIXED = ['[data-companion-edge="top"]', ".app-topbar", ".app-topbar-strip"];
 const TOP_FLOW = [".world-mast", ".birthday-ribbon"];
 const BOTTOM_FIXED = ['[data-companion-edge="bottom"]', ".app-tabs"];
-const BOTTOM_FLOATING = [".listening-room", "[data-companion-float]"];
+const BOTTOM_FLOATING = [".listening-room", ".daily-style-corner", "[data-companion-float]"];
 
 function rects(selectors) {
   const out = [];

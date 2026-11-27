@@ -835,6 +835,7 @@ export class Actor {
           this.x = target;
           this.speed = 0;
           this.mode = "rest";
+          this.setPose(this.m.restPose);
           // At the end of a level it turns back to face the room.
           const level = this.levelObj;
           if (level && !step.off && (this.x <= level.x0 + 2 || this.x >= level.x1 - 2) && !this.plan.some((s) => s.type === "walk")) {
