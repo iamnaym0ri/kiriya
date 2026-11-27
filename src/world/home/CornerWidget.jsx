@@ -16,6 +16,7 @@ export default function CornerWidget() {
     <button
       type="button"
       className="home-corner"
+      data-companion-avoid
       onClick={open}
       aria-haspopup="dialog"
       aria-expanded={editing}

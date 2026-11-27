@@ -131,7 +131,7 @@ export default function GlanceCard({ home }) {
   };
 
   return (
-    <section className="app-card app-card--flush home-glance" aria-labelledby="home-glance-title">
+    <section className="app-card app-card--flush home-glance" aria-labelledby="home-glance-title" data-companion-avoid>
       <header className="app-card__head">
         <h2 id="home-glance-title" className="app-card__title">
           what’s new <span aria-hidden="true">♡</span>

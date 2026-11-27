@@ -48,7 +48,7 @@ export default function CentreStage({ home, name = "kiriya", birthday = false, a
           <span>{greeting}</span>
           <AdminEdit compact label="the greeting" className="home-stage__pencil" onClick={() => setEditing("greeting")} />
         </p>
-        <h1 id="home-title" className="world-welcome__name home-stage__name">
+        <h1 id="home-title" className="world-welcome__name home-stage__name" data-companion-ok>
           <BirthdayName>{name}</BirthdayName>
         </h1>
       </div>
@@ -56,7 +56,7 @@ export default function CentreStage({ home, name = "kiriya", birthday = false, a
       <figure className="home-stage__frame">
         <PhotoCarousel photos={photos} index={current} onIndex={setIndex} />
         <AdminEdit compact label="the photos" className="home-stage__pencil home-stage__pencil--photos" onClick={() => setEditing("photos")} />
-        <figcaption className="home-stage__caption">
+        <figcaption className="home-stage__caption" data-companion-avoid>
           <span key={`${photo?.id}:${caption?.id}`} className="handwritten home-stage__praise" aria-live="polite">
             {caption?.text}
           </span>
@@ -122,7 +122,7 @@ function PhotoCarousel({ photos, index, onIndex }) {
   };
 
   return (
-    <div className="home-stage__photos" aria-roledescription={many ? "carousel" : undefined} aria-label={many ? "Photos of you" : undefined}>
+    <div className="home-stage__photos" data-companion-avoid aria-roledescription={many ? "carousel" : undefined} aria-label={many ? "Photos of you" : undefined}>
       <div
         ref={strip}
         className="home-stage__strip"

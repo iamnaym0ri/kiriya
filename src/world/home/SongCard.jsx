@@ -71,7 +71,7 @@ export default function SongCard({ home }) {
   };
 
   return (
-    <section className="app-card home-song" id="home-song" aria-labelledby="home-song-title">
+    <section className="app-card home-song" id="home-song" aria-labelledby="home-song-title" data-companion-avoid>
       <header className="app-card__head">
         <h2 id="home-song-title" className="app-card__title">
           a song for you <span aria-hidden="true">♫</span>
@@ -118,15 +118,19 @@ export default function SongCard({ home }) {
   );
 }
 
+// YouTube's large thumbnail carries letterbox bars; its medium one is a clean 16:9 frame.
+const coverOf = (song) => song.thumbnail?.replace(/^(https:\/\/i\.ytimg\.com\/vi\/[\w-]{11}\/)hqdefault\.jpg$/, "$1mqdefault.jpg") ?? null;
+
 function Sleeve({ song, spinning }) {
   const [failed, setFailed] = useState(false);
+  const src = coverOf(song);
   return (
     <span className="home-song__sleeve" data-spinning={spinning || undefined}>
       <span className="home-song__disc" aria-hidden="true">
         <span />
       </span>
-      {song.thumbnail && !failed ? (
-        <img src={song.thumbnail} alt="" decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
+      {src && !failed ? (
+        <img src={src} alt="" decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
       ) : (
         <span className="home-song__blank" aria-hidden="true">
           ♫
