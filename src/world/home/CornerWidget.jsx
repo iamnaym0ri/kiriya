@@ -13,8 +13,10 @@ export default function CornerWidget() {
   if (!allowed) return null;
   const level = current ? mood.data?.energyLevels?.[current.energy] : null;
   const feeling = current?.feeling;
-  const headline = current ? [feeling ? feeling.label.toLowerCase() : current.label.toLowerCase(), current.address.label].join(" · ") : "check in ♡";
-  const detail = current ? [feeling ? current.label.toLowerCase() : null, since].filter(Boolean).join(" · ") || level?.label?.toLowerCase() || "" : "your little corner";
+  // Two short lines that fit the header at any width: how she feels on top, then her battery, how
+  // she's presenting and her pronouns (and since when, if it's from another day).
+  const headline = current ? (feeling ? feeling.label : current.label).toLowerCase() : "check in ♡";
+  const detail = current ? [feeling ? current.label.toLowerCase() : null, current.address.label, since].filter(Boolean).join(" · ") : "your little corner";
   const spoken = current
     ? `your little corner: ${[feeling?.label, current.label, current.address.label, level?.label, since].filter(Boolean).join(", ")}. tap to change it`
     : "your little corner: how’s the world feeling? tap to check in";
