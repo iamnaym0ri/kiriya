@@ -75,6 +75,8 @@ function useInkCentre(target, text, source = target) {
     if (!node || !textNode || typeof ResizeObserver === "undefined") return undefined;
     let live = true;
     let frame = 0;
+    let retry = 0;
+    let tries = 0;
     const measure = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
@@ -83,10 +85,19 @@ function useInkCentre(target, text, source = target) {
         const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
         const words = textNode.textContent.trim();
         if (!words) return;
+        const range = document.createRange();
+        range.selectNodeContents(textNode);
+        const laidOut = range.getBoundingClientRect().width;
         const draw = () => {
           if (!live) return;
           const ink = inkExtent(words, font);
           if (!ink) return;
+          // The canvas must have drawn the same font as the page (same advance): if the web font
+          // wasn't ready for it yet, look again shortly rather than shift by a fallback's shape.
+          if (laidOut > 0 && Math.abs(ink.advance - laidOut) / laidOut > 0.02) {
+            if (tries++ < 8) retry = setTimeout(measure, 250);
+            return;
+          }
           const shift = ink.advance / 2 - (ink.left + ink.right) / 2;
           // A broken measurement must never throw the line across the screen.
           if (Number.isFinite(shift) && Math.abs(shift) < 24) node.style.setProperty("--ink-shift", `${shift.toFixed(1)}px`);
@@ -103,6 +114,7 @@ function useInkCentre(target, text, source = target) {
     return () => {
       live = false;
       cancelAnimationFrame(frame);
+      clearTimeout(retry);
       observer.disconnect();
     };
   }, [target, source, text]);

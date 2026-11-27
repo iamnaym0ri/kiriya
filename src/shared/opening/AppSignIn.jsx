@@ -44,6 +44,12 @@ export default function AppSignIn({ faceId = null, onUnlocked, title, line }) {
     return () => clearTimeout(timer);
   }, [typingFirst]);
 
+  // Development only (the iOS Simulator can't type): `?dev-pass=<dev passphrase>` signs in.
+  const devPass = import.meta.env.DEV ? new URLSearchParams(window.location.search).get("dev-pass") : null;
+  useEffect(() => {
+    if (devPass) unlock.mutate(devPass, { onSuccess: (data) => onUnlocked?.(data) });
+  }, [devPass]); // eslint-disable-line react-hooks/exhaustive-deps
+
   function submit(event) {
     event.preventDefault();
     const typed = passphrase;
