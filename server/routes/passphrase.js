@@ -1,13 +1,29 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { getDb } from "../db/client.js";
+import { getDb, schema } from "../db/client.js";
 import { hashPassphrase, normalizePassphrase, verifyPassphrase } from "../auth/passphrase.js";
 import { clientIpHash, recordAttempt, slowDown, tooManyFailures } from "../auth/attempts.js";
-import { configuredKeyVersion, issueSession, passphraseHashes } from "../auth/session.js";
+import { configuredKeyVersion, issueSession, keyVersion, passphraseHashes } from "../auth/session.js";
 import { newSessionKey, readCredential, writeCredential } from "../auth/credentials.js";
 import { revokeAllDeviceKeys } from "../lib/deviceKeys.js";
+import { renewWidgetKey } from "../lib/appDevices.js";
+import { and, eq, isNull } from "drizzle-orm";
 
 export const MIN_PASSPHRASE_LENGTH = 8;
+
+/**
+ * The phone that changed the passphrase (or signed the others out) stays set up: its Face ID
+ * enrolment moves to the new session key, and it gets a fresh widget key in place of the one that
+ * was just turned off. Returns null for an unknown, revoked or someone else's install.
+ */
+async function keepAppDevice(db, id, role) {
+  const [row] = await db
+    .update(schema.appDevices)
+    .set({ keyVersion: await keyVersion(role) })
+    .where(and(eq(schema.appDevices.id, id), eq(schema.appDevices.role, role), isNull(schema.appDevices.revokedAt)))
+    .returning({ id: schema.appDevices.id });
+  return row ? renewWidgetKey(db, id, role) : null;
+}
 const otherRole = (role) => (role === "kiriya" ? "admin" : "kiriya");
 
 export const passphraseRoutes = new Hono();
@@ -17,16 +33,21 @@ passphraseRoutes.get("/", async (c) => {
   return c.json({ custom: Boolean(credential?.hash), changedAt: credential?.hash ? credential.changedAt : null, minLength: MIN_PASSPHRASE_LENGTH });
 });
 
+// `keepDevice`: the app install making the change (its Face ID enrolment). Signing out elsewhere
+// would otherwise sign this phone out too: its Face ID secret and widget key belong to the old key.
+const keepDevice = z.string().uuid().nullable().optional();
+
 const changeBody = z.object({
   current: z.string().max(200),
   next: z.string().max(200),
   signOutOthers: z.boolean().default(true),
+  keepDevice,
 });
 
 passphraseRoutes.put("/", async (c) => {
   const parsed = changeBody.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: "bad_passphrase", message: "Fill in both passphrases and try again." }, 400);
-  const { current, next, signOutOthers } = parsed.data;
+  const { current, next, signOutOthers, keepDevice: deviceId } = parsed.data;
   const role = c.get("session").role;
   const db = await getDb();
   const ipHash = clientIpHash(c);
@@ -56,16 +77,20 @@ passphraseRoutes.put("/", async (c) => {
   });
   // A lost phone may also hold a widget key; signing out elsewhere turns those off too.
   if (signOutOthers) await revokeAllDeviceKeys(db, role);
-  await issueSession(c, role);
-  return c.json({ ok: true, signedOutOthers: signOutOthers });
+  const kept = signOutOthers && deviceId ? await keepAppDevice(db, deviceId, role) : null;
+  // The fresh session goes back as a cookie, and as a token for the app (which has no cookie).
+  const session = await issueSession(c, role);
+  return c.json({ ...session, ok: true, signedOutOthers: signOutOthers, widgetKey: kept?.widgetKey ?? null });
 });
 
 // For a lost or borrowed device: every other session for this role stops working.
 passphraseRoutes.post("/sign-out-others", async (c) => {
   const role = c.get("session").role;
+  const parsed = z.object({ keepDevice }).safeParse(await c.req.json().catch(() => ({})));
   const db = await getDb();
   await writeCredential(db, role, { sessionKey: newSessionKey() });
   await revokeAllDeviceKeys(db, role);
-  await issueSession(c, role);
-  return c.json({ ok: true });
+  const kept = parsed.success && parsed.data.keepDevice ? await keepAppDevice(db, parsed.data.keepDevice, role) : null;
+  const session = await issueSession(c, role);
+  return c.json({ ...session, ok: true, widgetKey: kept?.widgetKey ?? null });
 });

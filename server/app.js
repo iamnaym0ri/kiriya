@@ -17,6 +17,7 @@ import { adminNoteJarRoutes } from "./routes/noteJarAdmin.js";
 import { widgetRoutes } from "./routes/widget.js";
 import { appRoutes, appSessionRoutes } from "./routes/app.js";
 import { homeEmbedRoutes, homeRoutes } from "./routes/home.js";
+import { glanceRoutes, hubRoutes } from "./routes/meSection.js";
 
 const app = new Hono().basePath("/api");
 
@@ -78,6 +79,7 @@ app.route("/public", publicRoutes);
 
 app.use("/me/*", requireRole("kiriya", "admin"));
 app.route("/me/home", homeRoutes);
+app.route("/me/glance", glanceRoutes);
 app.route("/me", feedRoutes);
 app.route("/me", meRoutes);
 app.route("/me", playRoutes);
@@ -92,6 +94,7 @@ app.use("/admin/*", requireRole("admin"));
 app.route("/admin/feeds", feedAdminRoutes);
 app.route("/admin/love-notes", adminLoveNoteRoutes);
 app.route("/admin/note-jar", adminNoteJarRoutes);
+app.route("/admin/hub", hubRoutes);
 app.route("/admin", adminRoutes);
 
 app.route("/jobs/feeds", feedJobRoutes);
