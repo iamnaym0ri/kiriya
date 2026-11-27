@@ -1,11 +1,13 @@
 import { useId } from "react";
 import {
   MaomaoBackHair,
+  MaomaoBandage,
   MaomaoBraids,
   MaomaoBun,
   MaomaoCatEars,
   MaomaoDefs,
   MaomaoHead,
+  MaomaoWrap,
 } from "../../../mascot/MaomaoMascot.jsx";
 import {
   CUFF,
@@ -48,6 +50,9 @@ import "./Body.css";
  * Drawn facing the viewer (turned a touch to her right when walking) in a 200 x 236 box that fills
  * the engine's body box, feet on the bottom edge. The engine mirrors the whole body to face left;
  * marks such as "?" and "z" flip themselves back so they still read.
+ *
+ * Her left forearm (the viewer's right) is bandaged in every pose (MaomaoWrap at the wrist,
+ * MaomaoBandage where the sleeve slides back): it hides the scars from testing poisons on herself.
  */
 
 /** Her face for each pose when the engine doesn't ask for one. */
@@ -246,13 +251,14 @@ function RestArms({ spread = 0 }) {
         <path d="M134 158q14 10 18 32l-20 8-11-31Z" {...robe} />
         <path d="m149 188-17 6" {...cuff} />
         <ellipse cx="140" cy="196" rx="7.5" ry="6" {...hand} />
+        <MaomaoWrap a={[149, 188]} b={[132, 194]} hand={[140, 196]} k={0.5} />
       </g>
     </g>
   );
 }
 
 /** Hands tucked together in front of her waist, as in her official standing portrait. */
-function ClaspedArms({ children }) {
+function ClaspedArms({ children, wrap = { a: [110, 178], b: [110, 196], hand: [104, 188], k: 0.45 } }) {
   return (
     <g className="mm-arms mm-arms--clasped">
       <path d="M70 152c-12 6-18 20-16 33 2 9 12 14 24 13l13-1 1-22c-10 1-18-5-22-23Z" {...robe} />
@@ -266,6 +272,7 @@ function ClaspedArms({ children }) {
           <path d="M101 184q3 2 2 6" stroke={SKIN_EDGE} strokeWidth="1" fill="none" />
         </g>
       )}
+      <MaomaoWrap {...wrap} />
     </g>
   );
 }
@@ -278,6 +285,7 @@ function PonderArms() {
       <path d="M131 154c10 8 14 22 8 32-8 10-40 10-60 6l-1-14c16 3 34 3 42-4 4-5 2-12-1-18Z" {...robe} />
       <path d="M80 179l-1 13" stroke={CUFF} strokeWidth="5" strokeLinecap="round" />
       <ellipse cx="73" cy="186" rx="6.5" ry="5.5" {...hand} />
+      <MaomaoWrap a={[80, 179]} b={[79, 192]} hand={[73, 186]} k={0.4} half={4.4} />
       {/* The thinking arm: elbow resting on that wrist, forearm up to the chin. */}
       <g className="mm-ponder-hand">
         <path d="M69 152c-10 8-12 22-6 32 4 6 12 6 16 0l14-22c-4-4-10-6-14-2-4 3-8 0-10-8Z" {...robe} />
@@ -302,6 +310,7 @@ function WaveArms() {
       <g className="mm-wave-hand">
         <path d="M158 170l8-30" stroke={SKIN} strokeWidth="8" strokeLinecap="round" />
         <path d="M158 170l8-30" stroke={SKIN_EDGE} strokeWidth="8" strokeLinecap="round" opacity=".25" />
+        <MaomaoBandage from={[165.4, 142.4]} to={[160.6, 160.4]} />
         <path d="M159 136q-2-10 3-12l1 6 2-9q4-2 4 3l1-5q4-1 4 4l1 4q4-2 4 3l-2 10q-4 7-11 6-5-1-7-10Z" {...hand} />
       </g>
       <path d="M150 168q8 6 14 4" stroke={CUFF} strokeWidth="5" strokeLinecap="round" fill="none" />
@@ -322,6 +331,7 @@ function FlungArms() {
         <path d="M130 154c10-4 22-8 32-16l6 8c-4 10-10 22-20 26-8-2-14-8-18-12Z" {...robe} />
         <path d="m167 141-8 9" {...cuff} />
         <ellipse cx="168" cy="139" rx="6.5" ry="6" {...hand} />
+        <MaomaoWrap a={[159, 150]} b={[167, 141]} hand={[168, 139]} k={0.15} half={4.2} />
       </g>
     </g>
   );
@@ -340,6 +350,7 @@ function RaisedArms() {
         <path d="M128 156c10-8 20-24 26-40l9 4c-2 16-10 32-21 44-6 2-12-2-14-8Z" {...robe} />
         <path d="m162 120-8-4" {...cuff} />
         <ellipse cx="159" cy="111" rx="6.5" ry="6.5" {...hand} />
+        <MaomaoWrap a={[162, 120]} b={[154, 116]} hand={[159, 111]} k={0.4} half={4.4} />
       </g>
     </g>
   );
@@ -354,6 +365,7 @@ function StartleArms() {
       <path d="m80 168 4-9m36 9-4-9" stroke={CUFF} strokeWidth="5" strokeLinecap="round" />
       <path d="M80 158q-2-10 3-12l1 5 2-7q4-1 4 3v-4q4-1 4 3l1 6q1 6-6 9-7 1-9-3Z" {...hand} />
       <path d="M120 158q2-10-3-12l-1 5-2-7q-4-1-4 3v-4q-4-1-4 3l-1 6q-1 6 6 9 7 1 9-3Z" {...hand} />
+      <MaomaoWrap a={[111.5, 161.5]} b={[121.5, 159.5]} hand={[115.5, 152]} k={0.08} half={4.6} />
     </g>
   );
 }
@@ -368,6 +380,7 @@ function PawArms() {
       <g className="mm-paws">
         <path d="M84 168q2-8 8-6t4 8q-2 6-7 6-6-2-5-8Z" {...hand} />
         <path d="M116 168q-2-8-8-6t-4 8q2 6 7 6 6-2 5-8Z" {...hand} />
+        <MaomaoWrap a={[118, 166]} b={[116, 176]} hand={[110, 169]} k={0.35} half={4.2} />
         <path d="M89 170v3m3-4v3m19-2v3m-3-4v3" stroke={SKIN_EDGE} strokeWidth=".9" />
       </g>
     </g>
@@ -388,6 +401,7 @@ function YawnArms() {
         <path d="m106 151 11-5" stroke={CUFF} strokeWidth="5" strokeLinecap="round" />
         <path d="M95 139q0-8 8-8 8 1 8 8t-8 7q-8 0-8-7Z" {...hand} />
         <path d="M99 133q4-2 8 0" stroke={SKIN_EDGE} strokeWidth=".9" fill="none" />
+        <MaomaoWrap a={[106, 151]} b={[117, 146]} hand={[103, 138.5]} k={0.3} half={4.4} />
       </g>
     </g>
   );
@@ -406,6 +420,7 @@ function AppraiseArms() {
       <g className="mm-appraise-hand">
         <path d="M158 170l5-30" stroke={SKIN} strokeWidth="8" strokeLinecap="round" />
         <path d="M158 170l5-30" stroke={SKIN_EDGE} strokeWidth="8" strokeLinecap="round" opacity=".22" />
+        <MaomaoBandage from={[162.6, 142.4]} to={[159.6, 160.6]} />
         <SmallVial transform="translate(164 132) rotate(6)" />
         <path d="M157 134q1-6 7-6t7 6q-1 5-7 5t-7-5Z" {...hand} />
         <path d="M159 131q5-2 9 0" stroke={SKIN_EDGE} strokeWidth=".9" fill="none" />
@@ -427,6 +442,7 @@ function CoinArms() {
       <path d="m120 178 9 9" stroke={CUFF} strokeWidth="5" strokeLinecap="round" />
       <g className="mm-coin-hand">
         <path d="M104 184q4-6 13-5t12 6q-2 6-12 6t-13-7Z" {...hand} />
+        <MaomaoWrap a={[120, 178]} b={[129, 187]} hand={[116, 184]} k={0.3} half={4.4} />
         <Coin cx={112} cy={181} r={3.4} />
         <Coin cx={119} cy={180.5} r={3.4} />
       </g>
@@ -447,6 +463,8 @@ function BundleArms() {
         <ellipse cx="60" cy="196" rx="7.5" ry="6" {...hand} />
       </g>
       <path d="M128 154c12 0 22 6 28 14l4 8c-6 5-14 4-20 0l-10-10c-4-4-5-8-2-12Z" {...robe} />
+      <path d="M157 170l4-17" stroke={SKIN} strokeWidth="7.5" strokeLinecap="round" />
+      <MaomaoBandage from={[160.4, 156]} to={[157.8, 167]} width={7.8} />
       <g className="mm-bundle-hand">
         <HerbBundle transform="translate(161 152)" />
         <ellipse cx="161" cy="152" rx="6.5" ry="6" {...hand} />
@@ -470,6 +488,7 @@ function PropArms({ pose, prop }) {
             <path d="M104 180l14-24" stroke="#d9d0bd" strokeWidth="5" strokeLinecap="round" />
             <path d="M104 180l14-24" stroke="#8e9b8b" strokeWidth="5" strokeLinecap="round" opacity=".25" />
             <ellipse cx="117" cy="170" rx="6.5" ry="5.5" {...hand} />
+            <MaomaoWrap a={[120, 178]} b={[129, 187]} hand={[117, 170]} k={0.4} half={4.4} />
           </g>
           <ellipse cx="82" cy="196" rx="6.5" ry="5.5" {...hand} />
         </g>
@@ -485,6 +504,7 @@ function PropArms({ pose, prop }) {
           <g className="mm-sniff-hand">
             {prop === "vial" ? <SmallVial transform="translate(113 170) rotate(-18) scale(.78)" /> : <Sprig transform="translate(112 170) rotate(-24) scale(.62)" />}
             <ellipse cx="112" cy="171" rx="6.5" ry="6" {...hand} />
+            <MaomaoWrap a={[116, 176]} b={[122, 186]} hand={[112, 171]} k={0.35} half={4.4} />
           </g>
         </g>
       );
@@ -498,6 +518,7 @@ function PropArms({ pose, prop }) {
             <path d="m116 183 15-25" stroke="#796e73" strokeWidth="3.5" strokeLinecap="round" />
             <path d="m116 183-2 6 5-4" fill="#544656" />
             <ellipse cx="129" cy="174" rx="8" ry="6" {...hand} />
+            <MaomaoWrap a={[132, 182]} b={[140, 174]} hand={[129, 174]} k={0.3} half={4.4} />
           </g>
         </g>
       );
@@ -509,6 +530,7 @@ function PropArms({ pose, prop }) {
           <path d="M67 169q-3 27 25 21m41-21q3 27-25 21" fill="none" stroke={ROBE_DARK} strokeWidth="1" opacity=".4" />
           <ellipse cx="89" cy="187" rx="8" ry="6" {...hand} />
           <ellipse cx="111" cy="187" rx="8" ry="6" {...hand} />
+          <MaomaoWrap a={[120, 182]} b={[122, 192]} hand={[111, 187]} k={0.1} />
         </g>
       );
     case "herb":
@@ -517,6 +539,7 @@ function PropArms({ pose, prop }) {
           <path d="M68 169q-21 17-23-22l14-6 23 24m50 4q21 17 23-22l-14-6-23 24" {...robe} />
           <path d="m45 146 16-7m78 0 16 7" stroke={CUFF} strokeWidth="5" />
           <path d="M48 145q-5-10-1-15l5 5-1-14q5-5 7 4l3 9 4-7q7-1 4 6l-7 11m90 1q5-10 1-15l-5 5 1-14q-5-5-7 4l-3 9-4-7q-7-1-4 6l7 11" {...hand} />
+          <MaomaoWrap a={[139, 139]} b={[155, 146]} hand={[144, 134]} k={0.4} />
           <Sprig transform="translate(150 150) rotate(18) scale(.62)" />
         </g>
       );
@@ -535,13 +558,14 @@ function PropArms({ pose, prop }) {
             <ellipse cx="148" cy="214" rx="5.5" ry="5" {...hand} />
             <path d="M153 217l5 4" stroke={SKIN_EDGE} strokeWidth="3.2" strokeLinecap="round" />
             <path d="M153 217l5 4" stroke={SKIN} strokeWidth="2" strokeLinecap="round" />
+            <MaomaoWrap a={[139, 213]} b={[149, 208]} hand={[148, 214]} k={0.35} half={4} />
           </g>
           <Mushroom />
         </g>
       );
     case "tea":
       return (
-        <ClaspedArms>
+        <ClaspedArms wrap={{ a: [112.6, 177], b: [112.6, 191], hand: [109, 184], k: 0 }}>
           <g className="mm-cup">
             <Teacup />
             <ellipse cx="91" cy="184" rx="6.5" ry="6" {...hand} />

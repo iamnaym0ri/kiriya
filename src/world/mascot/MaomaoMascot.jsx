@@ -176,6 +176,64 @@ export function MaomaoBun({ id }) {
   );
 }
 
+/*
+ * The bandage on her LEFT forearm (the viewer's right while she faces us): it hides the scars from
+ * testing poisons and herbs on herself. Shown in every pose: as wraps at the wrist below the sleeve,
+ * and as a bandaged forearm where the sleeve slides back (a raised arm).
+ */
+const WRAP_EDGE = "#cfc6b8";
+const WRAP = "#f7f3ea";
+const pt = (x, y) => `${x.toFixed(1)} ${y.toFixed(1)}`;
+
+/**
+ * Two wraps across the wrist: parallel to the cuff line a→b, centred a share `k` of the way from the
+ * cuff's middle toward the hand, the second one a little nearer the hand.
+ */
+export function MaomaoWrap({ a, b, hand, k = 0.45, half = 4.8 }) {
+  const mx = (a[0] + b[0]) / 2;
+  const my = (a[1] + b[1]) / 2;
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+  const dx = (b[0] - a[0]) / len;
+  const dy = (b[1] - a[1]) / len;
+  const reach = Math.hypot(hand[0] - mx, hand[1] - my) || 1;
+  const tx = (hand[0] - mx) / reach;
+  const ty = (hand[1] - my) / reach;
+  const cx = mx + (hand[0] - mx) * k;
+  const cy = my + (hand[1] - my) * k;
+  const band = (ox, oy, h) => `M${pt(cx + ox - dx * h, cy + oy - dy * h)}L${pt(cx + ox + dx * h, cy + oy + dy * h)}`;
+  const d = band(0, 0, half) + band(tx * 2.9, ty * 2.9, half * 0.86);
+  return (
+    <g className="mascot__wrap" strokeLinecap="round" fill="none">
+      <path d={d} stroke={WRAP_EDGE} strokeWidth="4.4" />
+      <path d={d} stroke={WRAP} strokeWidth="2.9" />
+    </g>
+  );
+}
+
+/** A bare forearm wrapped in bandage from `from` (by the wrist) to `to` (toward the elbow). */
+export function MaomaoBandage({ from, to, width = 8.4 }) {
+  const [x0, y0] = from;
+  const [x1, y1] = to;
+  const len = Math.hypot(x1 - x0, y1 - y0) || 1;
+  const dx = (x1 - x0) / len;
+  const dy = (y1 - y0) / len;
+  const h = width / 2;
+  const turns = [0.18, 0.45, 0.72]
+    .map((t) => {
+      const cx = x0 + (x1 - x0) * t;
+      const cy = y0 + (y1 - y0) * t;
+      return `M${pt(cx + dy * h - dx * 1.3, cy - dx * h - dy * 1.3)}L${pt(cx - dy * h + dx * 1.3, cy + dx * h + dy * 1.3)}`;
+    })
+    .join("");
+  return (
+    <g className="mascot__wrap" fill="none">
+      <path d={`M${pt(x0, y0)}L${pt(x1, y1)}`} stroke={WRAP_EDGE} strokeWidth={width + 1.3} />
+      <path d={`M${pt(x0, y0)}L${pt(x1, y1)}`} stroke={WRAP} strokeWidth={width} />
+      <path d={turns} stroke="#d9d0c2" strokeWidth=".9" strokeLinecap="round" />
+    </g>
+  );
+}
+
 /** The comic cat ears from her annoyed and delighted reactions. */
 export function MaomaoCatEars() {
   return (
@@ -201,20 +259,19 @@ export function MaomaoHead({ id, expression, moving }) {
         d="M45 92q0-42 55-43 55 1 55 43v24q-4 39-55 40-51-1-55-40Z"
         fill={`url(#${id}-skin)`}
       />
-      {/* The freckles she paints on so nobody looks twice: a band across the bridge of her nose
-          and under the inner corners of her eyes. */}
-      <g fill="#b47a62" opacity=".85">
+      {/* The freckles she paints on so nobody looks twice: a light dusting on her upper cheeks,
+          just under each eye. Kept small, warm and see-through, and clear of the middle of her
+          face (above the mouth, around the nose), so they never read as a moustache. */}
+      <g fill="#c48a6e" opacity=".55">
         {[
-          [84, 128.5, 1.35],
-          [89, 126.8, 1.3],
-          [87.5, 131.5, 1.1],
-          [93, 129.6, 1.1],
-          [96.5, 126.4, 1],
-          [103.5, 126.4, 1],
-          [107, 129.6, 1.1],
-          [111, 126.8, 1.3],
-          [112.5, 131.5, 1.1],
-          [116, 128.5, 1.35],
+          [70.5, 128.4, 0.95],
+          [76, 130, 0.85],
+          [81.5, 128.6, 0.9],
+          [74, 133, 0.7],
+          [129.5, 128.4, 0.95],
+          [124, 130, 0.85],
+          [118.5, 128.6, 0.9],
+          [126, 133, 0.7],
         ].map(([x, y, r]) => (
           <circle key={`${x}-${y}`} cx={x} cy={y} r={r} />
         ))}
@@ -443,6 +500,7 @@ export default function MaomaoMascot({
               />
               <ellipse cx="62" cy="195" rx="8" ry="6" fill={SKIN} />
               <ellipse cx="132" cy="192" rx="9" ry="6" fill={SKIN} />
+              <MaomaoWrap a={[150, 187]} b={[131, 194]} hand={[132, 192]} k={0.2} />
             </g>
             <MaomaoBun id={id} />
             {cat && <MaomaoCatEars />}
@@ -467,6 +525,7 @@ export default function MaomaoMascot({
                   stroke="#ddb49e"
                   strokeWidth="1"
                 />
+                <MaomaoWrap a={[139, 139]} b={[155, 146]} hand={[144, 134]} k={0.4} />
                 <Herb transform="translate(39 194) rotate(-22) scale(.7)" />
               </g>
             ) : fascinated ? (
@@ -502,6 +561,7 @@ export default function MaomaoMascot({
                 />
                 <ellipse cx="89" cy="187" rx="8" ry="6" fill={SKIN} />
                 <ellipse cx="111" cy="187" rx="8" ry="6" fill={SKIN} />
+                <MaomaoWrap a={[120, 182]} b={[122, 192]} hand={[111, 187]} k={0.1} />
               </g>
             ) : writing ? (
               <g className="mascot__notebook mascot__gesture">
@@ -540,6 +600,7 @@ export default function MaomaoMascot({
                   />
                   <path d="m116 183-2 6 5-4" fill="#544656" />
                   <ellipse cx="129" cy="174" rx="8" ry="6" fill={SKIN} />
+                  <MaomaoWrap a={[132, 182]} b={[140, 174]} hand={[129, 174]} k={0.3} />
                 </g>
               </g>
             ) : sniffing ? (
@@ -554,6 +615,7 @@ export default function MaomaoMascot({
                 <path d="m115 179 12-3" stroke="#c5d491" strokeWidth="6" />
                 <Herb transform="translate(113 177) rotate(-14) scale(.76)" />
                 <ellipse cx="114" cy="177" rx="7" ry="6" fill={SKIN} />
+                <MaomaoWrap a={[120, 172]} b={[122, 182]} hand={[114, 177]} k={0.15} />
                 <Mortar />
                 <ellipse cx="77" cy="190" rx="7" ry="5" fill={SKIN} />
                 <path
@@ -578,6 +640,7 @@ export default function MaomaoMascot({
                     />
                     <path d="m131 193 16-7" stroke="#c5d491" strokeWidth="5" />
                     <ellipse cx="130" cy="191" rx="8" ry="6" fill={SKIN} />
+                    <MaomaoWrap a={[147, 186]} b={[131, 193]} hand={[130, 191]} k={0.25} />
                     <path
                       d="M69 169q17 20 30-11l-11-8"
                       fill={ROBE}
