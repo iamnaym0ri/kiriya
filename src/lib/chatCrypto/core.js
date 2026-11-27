@@ -245,7 +245,7 @@ export async function openBytes(bytes, fileKey) {
 //          `sealed`, itself a sealed value. Width, height, duration and the upload link stay plain.
 
 const LINKED = new Set(["gif", "sticker"]);
-const LINK_FIELDS = ["url", "still", "giphyId"];
+const PLAIN_LINKED = new Set(["width", "height"]);
 const PRIVATE_FIELDS = ["alt", "peaks", "name"];
 
 export const isSealedMessage = (message) => Boolean(message?.enc && message.enc.v === 1 && typeof message.enc.k === "string");
@@ -269,7 +269,8 @@ async function sealEntry(entry, { key, aad, clientId, kind, top }) {
   }
   delete out.sealed;
   for (const field of PRIVATE_FIELDS) if (out[field] !== undefined) (hidden[field] = out[field]), delete out[field];
-  if (top && LINKED.has(kind)) for (const field of LINK_FIELDS) if (out[field] !== undefined) (hidden[field] = out[field]), delete out[field];
+  // A GIF's or sticker's every link (url, mp4, webp, still, its id) says what was sent: all sealed.
+  if (top && LINKED.has(kind)) for (const field of Object.keys(out)) if (!PLAIN_LINKED.has(field)) (hidden[field] = out[field]), delete out[field];
   if (out.poster && typeof out.poster === "object") out.poster = await sealEntry(out.poster, { key, aad, clientId, kind, top: false });
   if (Object.keys(hidden).length) out.sealed = await sealValue(key, { c: clientId, ...hidden }, aad);
   return out;

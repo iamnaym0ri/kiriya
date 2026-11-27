@@ -9,6 +9,7 @@ import { notificationPreview } from "./loveNotes.js";
 import { publish } from "./realtime.js";
 import { sendToSubscribers } from "../push/webpush.js";
 import { interceptTestSend } from "./appTestMode.js";
+import { forgetUploads, sealedNotification } from "./chatKeys.js";
 
 // The private chat between Kiriya ("kiriya") and Josh ("admin"), docs/refactor/PLAN.md phase 4.
 
@@ -254,6 +255,8 @@ export function chatNotification(message, from) {
     sticker: "sent you a sticker",
     voice: "🎙️ sent you a voice note",
   };
+  // Sealed (end-to-end): the words are only on the phones; the notification carries them sealed.
+  if (message.enc && message.kind !== "tap") return sealedNotification(message, from);
   if (message.kind === "tap") {
     const tap = tapByKey[message.body];
     return { title: tap.push.replace("{from}", from), body: `${tap.kaomoji}  ${tap.note}`, navigate: "/world/chat", kind: "tap", tap: tap.key, threadId: "chat", messageId: message.id };
@@ -469,7 +472,8 @@ export async function removeSticker(db, id) {
 async function snapshotOf(db, role, kind, sourceId) {
   if (kind === "message") {
     const [row] = await db.select().from(schema.chatMessages).where(and(eq(schema.chatMessages.id, sourceId), isNull(schema.chatMessages.deletedAt)));
-    return row && { sender: row.sender, kind: row.kind, body: row.body, media: row.media, at: row.createdAt.toISOString() };
+    // Sealed messages stay sealed in the copy (with what the phones need to open it again).
+    return row && { sender: row.sender, kind: row.kind, clientId: row.clientId, body: row.body, media: row.media, enc: row.enc ?? null, at: row.createdAt.toISOString() };
   }
   if (kind === "note") {
     // Little notes: only ones delivered to whoever is saving it (or sent by Josh, when he saves).
@@ -503,17 +507,37 @@ export async function addMemory(db, role, { kind, sourceId, caption = "" }) {
   const [existing] = await db.select().from(schema.memories).where(and(eq(schema.memories.kind, kind), eq(schema.memories.sourceId, sourceId)));
   return existing;
 }
-export async function listMemories(db, { before = null, limit = 30 } = {}) {
+// The memories page's shelves (src/world/chat/memories): what a saved message is, by its kind.
+export const MEMORY_SHELVES = {
+  messages: sql`${schema.memories.kind} = 'message' AND ${schema.memories.snapshot}->>'kind' IN ('text', 'tap')`,
+  pictures: sql`${schema.memories.kind} = 'message' AND ${schema.memories.snapshot}->>'kind' IN ('image', 'gif', 'sticker')`,
+  voice: sql`${schema.memories.kind} = 'message' AND ${schema.memories.snapshot}->>'kind' = 'voice'`,
+  letters: sql`${schema.memories.kind} IN ('note', 'letter', 'jar')`,
+};
+export async function listMemories(db, { before = null, shelf = null, limit = 30 } = {}) {
+  const filters = [before ? lt(schema.memories.createdAt, new Date(before)) : undefined, shelf ? MEMORY_SHELVES[shelf] : undefined].filter(Boolean);
   const rows = await db
     .select()
     .from(schema.memories)
-    .where(before ? lt(schema.memories.createdAt, new Date(before)) : undefined)
+    .where(filters.length ? and(...filters) : undefined)
     .orderBy(desc(schema.memories.createdAt))
     .limit(limit + 1);
   return { items: rows.slice(0, limit), next: rows.length > limit ? rows[limit - 1].createdAt.toISOString() : null };
 }
-export async function removeMemory(db, id) {
-  const [row] = await db.delete(schema.memories).where(eq(schema.memories.id, id)).returning({ id: schema.memories.id });
+/** How many memories sit on each shelf, for the page's tabs. */
+export async function memoryCounts(db) {
+  const entries = await Promise.all(
+    Object.entries(MEMORY_SHELVES).map(async ([shelf, where]) => [shelf, (await db.select({ n: count() }).from(schema.memories).where(where))[0].n]),
+  );
+  return Object.fromEntries(entries);
+}
+export async function removeMemory(db, id, { after = (task) => task() } = {}) {
+  const [row] = await db.delete(schema.memories).where(eq(schema.memories.id, id)).returning();
+  // A photo kept only for this memory (its message was deleted) goes with it.
+  if (row?.kind === "message") {
+    const links = mediaUrls(row.snapshot?.media);
+    if (links.length) await after(() => forgetUploads(db, links));
+  }
   return Boolean(row);
 }
 

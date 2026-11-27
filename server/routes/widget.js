@@ -7,6 +7,7 @@ import { TAPS, tapByKey } from "../../shared/taps.js";
 import { unreadTotals } from "../lib/appBadge.js";
 import { background } from "../lib/background.js";
 import { chatSummary, names, sendMessage } from "../lib/chat.js";
+import { encSchema, isSealed, sealedPreview } from "../lib/chatKeys.js";
 import { env } from "../env.js";
 import { ADDRESS_OPTIONS, ENERGY_LEVELS, FEELINGS, MOODS } from "../content/moods.js";
 import { readCheckin, saveCheckin } from "../lib/checkin.js";
@@ -178,6 +179,8 @@ function widgetEvent(event, day) {
 
 function chatPreview(last, who, person) {
   if (!last) return null;
+  // End-to-end sealed: the phone opens it (ios/App/KiriyaShared/KiriyaChatCrypto.swift).
+  if (isSealed(last)) return { from: who[last.sender], mine: last.sender === person, kind: last.kind, at: last.createdAt, ...sealedPreview(last) };
   const tap = last.kind === "tap" ? tapByKey[last.body] : null;
   const preview = last.kind === "text" ? notificationPreview(last.body, 120) : tap ? `${tap.emoji} ${tap.label}` : KIND_PREVIEW[last.kind] ?? "a message";
   return { from: who[last.sender], mine: last.sender === person, preview, at: last.createdAt };
@@ -252,7 +255,11 @@ widgetRoutes.get("/app", async (c) => c.json(await appSnapshot(await getDb(), c.
 
 const clientId = z.string().regex(/^[\w-]{8,80}$/);
 const tapBody = z.object({ kind: z.enum(TAPS.map((tap) => tap.key)), clientId: clientId.optional() }).strict();
-const replyBody = z.object({ text: z.string().trim().min(1).max(2000), replyTo: z.string().uuid().nullable().optional(), clientId: clientId.optional() }).strict();
+// A reply sealed on the phone (KiriyaShared/KiriyaChatCrypto.swift) carries `enc` and a longer, opaque `text`.
+const replyBody = z
+  .object({ text: z.string().trim().min(1).max(16000), enc: encSchema.optional(), replyTo: z.string().uuid().nullable().optional(), clientId: clientId.optional() })
+  .strict()
+  .refine((data) => data.enc || data.text.length <= 2000, "too long");
 
 async function sendFromPhone(c, schemaFor, toMessage) {
   const parsed = schemaFor.safeParse(await c.req.json().catch(() => null));
@@ -269,7 +276,7 @@ async function sendFromPhone(c, schemaFor, toMessage) {
 widgetRoutes.post("/tap", (c) => sendFromPhone(c, tapBody, (data) => ({ kind: "tap", body: data.kind })));
 
 /** Reply typed straight into a chat notification. */
-widgetRoutes.post("/reply", (c) => sendFromPhone(c, replyBody, (data) => ({ kind: "text", body: data.text, replyTo: data.replyTo ?? null })));
+widgetRoutes.post("/reply", (c) => sendFromPhone(c, replyBody, (data) => ({ kind: "text", body: data.text, replyTo: data.replyTo ?? null, ...(data.enc ? { enc: data.enc } : {}) })));
 
 // ---------- Inside a notification (ios/App/KiriyaNotificationContent) ----------
 

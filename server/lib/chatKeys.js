@@ -199,22 +199,37 @@ export async function claimMigration(db, role, device, now = new Date()) {
   return { ok: true };
 }
 
-const stale = (key) => or(isNull(sql`${schema.chatMessages.enc}`), ne(sql`${schema.chatMessages.enc}->>'k'`, key));
+/** The device is done: another may start at once. */
+export async function releaseMigration(db, device) {
+  const current = await readKv(db, MIGRATION_KEY);
+  if (current?.device === device) await db.delete(schema.kv).where(eq(schema.kv.key, MIGRATION_KEY));
+  return { ok: true };
+}
+
+const stale = (key) => or(isNull(schema.chatMessages.enc), sql`coalesce(${schema.chatMessages.enc}->>'k', '') <> ${key}`);
 
 /** What still needs sealing with the current key, oldest first. */
-export async function pendingWork(db, { limit = 20 } = {}) {
+export async function pendingWork(db, { limit = 20, after = null, memoriesAfter = null } = {}) {
   const key = await currentKeyId(db);
   if (!key) return { current: null, messages: [], memories: [] };
+  // `after`: a device skips what it couldn't open (a key it never had) and moves on.
   const rows = await db
     .select()
     .from(schema.chatMessages)
-    .where(and(isNull(schema.chatMessages.deletedAt), ne(schema.chatMessages.kind, "tap"), stale(key)))
+    .where(and(isNull(schema.chatMessages.deletedAt), ne(schema.chatMessages.kind, "tap"), stale(key), after ? gt(schema.chatMessages.createdAt, new Date(after)) : undefined))
     .orderBy(asc(schema.chatMessages.createdAt))
     .limit(limit);
   const memories = await db
     .select()
     .from(schema.memories)
-    .where(and(eq(schema.memories.kind, "message"), or(sql`${schema.memories.snapshot}->'enc' IS NULL`, sql`${schema.memories.snapshot}->'enc'->>'k' <> ${key}`), ne(sql`${schema.memories.snapshot}->>'kind'`, "tap")))
+    .where(
+      and(
+        eq(schema.memories.kind, "message"),
+        or(sql`coalesce(${schema.memories.snapshot}->'enc', 'null'::jsonb) = 'null'::jsonb`, sql`${schema.memories.snapshot}->'enc'->>'k' <> ${key}`),
+        sql`${schema.memories.snapshot}->>'kind' <> 'tap'`,
+        memoriesAfter ? gt(schema.memories.createdAt, new Date(memoriesAfter)) : undefined,
+      ),
+    )
     .orderBy(asc(schema.memories.createdAt))
     .limit(limit);
   return {
@@ -230,7 +245,7 @@ export async function pendingWork(db, { limit = 20 } = {}) {
       createdAt: row.createdAt.toISOString(),
       was: fingerprint(row.body, row.enc),
     })),
-    memories: memories.map((row) => ({ id: row.id, sourceId: row.sourceId, snapshot: row.snapshot, was: fingerprint(row.snapshot.body, row.snapshot.enc) })),
+    memories: memories.map((row) => ({ id: row.id, sourceId: row.sourceId, snapshot: row.snapshot, createdAt: row.createdAt.toISOString(), was: fingerprint(row.snapshot.body, row.snapshot.enc) })),
   };
 }
 

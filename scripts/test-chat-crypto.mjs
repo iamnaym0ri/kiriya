@@ -9,6 +9,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import * as schema from "../server/db/schema.js";
+import { eq as sqlEq } from "drizzle-orm";
 import { hashPassphrase } from "../server/auth/passphrase.js";
 
 register("./test-support/chat-crypto-hooks.mjs", import.meta.url);
@@ -82,6 +83,35 @@ async function device(name, role, { cookie } = {}) {
 }
 
 const ITER = core.KDF_ITERATIONS;
+const newId = () => `${Date.now().toString(36)}-${randomUUID().slice(0, 13)}`;
+const sendRaw = (cookie, body, status = 201) => request("me/chat/messages", { method: "POST", cookie, body }).then((r) => json(r, status));
+const plainHistory = {};
+// Stand-ins for Blob storage: what each upload link holds.
+const PLAIN_PHOTO = "/api/uploads/media?path=chat%2F171-plainphoto.webp";
+const PLAIN_VOICE = "/api/uploads/media?path=chat%2F172-plainvoice.m4a";
+const files = new Map([
+  [PLAIN_PHOTO, { bytes: new TextEncoder().encode("PLAINPHOTOBYTES-beach-day"), type: "image/webp" }],
+  [PLAIN_VOICE, { bytes: new TextEncoder().encode("PLAINVOICEBYTES-hello"), type: "audio/mp4" }],
+]);
+let uploads = 0;
+const fakeUpload = async (file) => {
+  const url = `/api/uploads/media?path=chat%2Fsealed-${++uploads}.bin`;
+  files.set(url, { bytes: new Uint8Array(await file.arrayBuffer()), type: file.type });
+  return { url };
+};
+const fakeFetch = async (url) => {
+  const file = files.get(url);
+  if (!file) throw new Error(`no file ${url}`);
+  return { bytes: file.bytes.slice().buffer, type: file.type };
+};
+// The client's media fetches (mediaBlob) go to the same stand-in.
+globalThis.fetch = async (url) => {
+  const path = String(url).replace(/^https:\/\/kiriya\.love/, "");
+  const file = files.get(path);
+  if (!file) throw new Error("External network is disabled in these tests");
+  return new Response(file.bytes, { headers: { "content-type": file.type } });
+};
+const dump = async () => JSON.stringify([await db.select().from(schema.chatMessages), await db.select().from(schema.memories), await db.select().from(schema.kv)]);
 
 try {
   await test("Passphrases stretch the same way the server normalises them, and only the right one opens a key", async () => {
@@ -194,6 +224,16 @@ try {
     const plain = { clientId: "p-1", kind: "text", body: "hi" };
     assert.deepEqual(await joshPhone.sealOutgoing(plain), plain);
     assert.equal((await joshPhone.sealFile(new File(["x"], "x.png", { type: "image/png" }))).sealed, null);
+    // Plain history from before her first sign-in: a text, a photo with a caption, a GIF and a voice note.
+    const joshCookie = joshPhone.session.cookie;
+    const herCookie = await unlock("kiriya");
+    plainHistory.text = await sendRaw(joshCookie, await joshPhone.sealOutgoing({ clientId: newId(), kind: "text", body: "first plain words before the lock" }));
+    plainHistory.photo = await sendRaw(herCookie, { clientId: newId(), kind: "image", body: "old beach caption", media: { url: PLAIN_PHOTO, width: 800, height: 600 } });
+    plainHistory.gif = await sendRaw(joshCookie, { clientId: newId(), kind: "gif", media: { url: "https://media2.giphy.com/media/oldcat/giphy.gif", giphyId: "oldcat", width: 200, height: 200 } });
+    plainHistory.voice = await sendRaw(herCookie, { clientId: newId(), kind: "voice", media: { url: PLAIN_VOICE, duration: 3.5, peaks: [0.2, 0.7], mime: "audio/mp4" } });
+    assert.equal(plainHistory.text.enc, null, "stored plain while she has no key");
+    // She keeps the photo in her memories while it's still plain.
+    plainHistory.memory = await json(await request("me/memories", { method: "POST", cookie: herCookie, body: { kind: "message", sourceId: plainHistory.photo.id } }), 201);
 
     herPhone = await device("her-phone", "kiriya");
     await herPhone.rememberPassphrase(phrases.kiriya);
@@ -272,6 +312,155 @@ try {
     assert.equal(tablet.chatKeyState().current, herPhone.chatKeyState().current);
   });
 
+  let pancakes;
+  await test("Sealed messages go through the real API both ways: replies, edits, the summary", async () => {
+    const joshCookie = joshPhone.session.cookie;
+    const herCookie = herPhone.session.cookie;
+    pancakes = await sendRaw(joshCookie, await joshPhone.sealOutgoing({ clientId: newId(), kind: "text", body: "secret pancakes at 9 ♡", replyTo: null }));
+    assert.equal(pancakes.enc.k, joshPhone.chatKeyState().current);
+    assert(!JSON.stringify(pancakes).includes("pancakes"));
+    const echo = await joshPhone.openIncoming(pancakes);
+    assert.deepEqual([echo.body, echo.locked, echo.enc], ["secret pancakes at 9 ♡", undefined, undefined]);
+
+    const reply = await sendRaw(herCookie, await herPhone.sealOutgoing({ clientId: newId(), kind: "text", body: "yesss", replyTo: pancakes.id }));
+    const page = await json(await request("me/chat/messages", { cookie: joshCookie }), 200);
+    const opened = await joshPhone.openIncoming(page.messages.find((m) => m.id === reply.id));
+    assert.equal(opened.body, "yesss");
+    assert.equal(opened.replyTo.body, "secret pancakes at 9 ♡", "the quote opens too");
+
+    // An edit is sealed under the original message's identity.
+    const edit = await joshPhone.sealOutgoing({ clientId: pancakes.clientId, kind: "text", body: "secret waffles at 9 ♡" });
+    const edited = await json(await request(`me/chat/messages/${pancakes.id}`, { method: "PATCH", cookie: joshCookie, body: { body: edit.body, enc: edit.enc } }));
+    assert.equal((await herPhone.openIncoming(edited)).body, "secret waffles at 9 ♡");
+    assert(edited.editedAt);
+
+    const summary = await json(await request("me/chat/summary", { cookie: joshCookie }));
+    assert.equal((await joshPhone.openIncoming(summary.last)).body, "yesss");
+    // A device without the key shows a quiet locked bubble instead of failing.
+    const stranger = await device("stranger-browser", "kiriya", { cookie: herPhone.session.cookie });
+    const locked = await stranger.openIncoming(page.messages.find((m) => m.id === reply.id));
+    assert.deepEqual([locked.locked, locked.body, locked.media], [true, "", null]);
+  });
+
+  await test("Photos, videos, voice notes and GIFs: sealed files open on the other phone, byte for byte", async () => {
+    const photoBytes = new TextEncoder().encode("JPEG-our-first-date".repeat(50));
+    const videoBytes = new TextEncoder().encode("MP4-fireworks".repeat(80));
+    const voiceBytes = new TextEncoder().encode("M4A-goodnight".repeat(40));
+    const seal = async (bytes, type) => {
+      const { blob, sealed } = await joshPhone.sealFile(new File([bytes], "f", { type }));
+      assert.equal(blob.type, "application/octet-stream");
+      assert(!Buffer.from(await blob.arrayBuffer()).includes(Buffer.from(bytes.subarray(0, 12))));
+      return { url: (await fakeUpload(blob)).url, sealed };
+    };
+    const photo = await seal(photoBytes, "image/jpeg");
+    const video = await seal(videoBytes, "video/mp4");
+    const poster = await seal(photoBytes.subarray(0, 64), "image/jpeg");
+    const album = await sendRaw(
+      joshPhone.session.cookie,
+      await joshPhone.sealOutgoing({
+        clientId: newId(),
+        kind: "image",
+        body: "our first date",
+        media: { items: [{ type: "image", ...photo, width: 900, height: 1200, mime: "image/jpeg" }, { type: "video", ...video, width: 720, height: 1280, duration: 6, mime: "video/mp4", poster: { ...poster, width: 720, height: 1280 } }] },
+      }),
+    );
+    for (const secret of [photo.sealed.key, video.sealed.key, "first date"]) assert(!JSON.stringify(album).includes(secret));
+    const opened = await herPhone.openIncoming(album);
+    assert.equal(opened.body, "our first date");
+    assert.deepEqual(new Uint8Array(await (await herPhone.mediaBlob(opened.media.items[0])).arrayBuffer()), photoBytes);
+    const videoBlob = await herPhone.mediaBlob(opened.media.items[1]);
+    assert.equal(videoBlob.type, "video/mp4");
+    assert.deepEqual(new Uint8Array(await videoBlob.arrayBuffer()), videoBytes);
+    assert.equal(opened.media.items[1].poster.sealed.mime, "image/jpeg");
+
+    const voice = await seal(voiceBytes, "audio/mp4");
+    const note = await sendRaw(herPhone.session.cookie, await herPhone.sealOutgoing({ clientId: newId(), kind: "voice", media: { ...voice, duration: 2.5, mime: "audio/mp4", peaks: [0.3, 0.9, 0.5] } }));
+    assert.equal(note.media.peaks, undefined, "the waveform travels sealed");
+    const heard = await joshPhone.openIncoming(note);
+    assert.deepEqual(heard.media.peaks, [0.3, 0.9, 0.5]);
+    assert.deepEqual(new Uint8Array(await (await joshPhone.mediaBlob(heard.media)).arrayBuffer()), voiceBytes);
+
+    const gif = await sendRaw(herPhone.session.cookie, await herPhone.sealOutgoing({ clientId: newId(), kind: "gif", media: { url: "https://media1.giphy.com/media/xyz/giphy.gif", mp4: "https://media1.giphy.com/media/xyz/giphy.mp4", giphyId: "xyz", width: 480, height: 270 } }));
+    assert.deepEqual(Object.keys(gif.media).sort(), ["height", "sealed", "width"], "the server can't tell which GIF");
+    assert.equal((await joshPhone.openIncoming(gif)).media.mp4, "https://media1.giphy.com/media/xyz/giphy.mp4");
+  });
+
+  await test("Notifications carry only a sealed preview that the phone opens; web push says just \"a new message\"", async () => {
+    const { chatNotification } = await import("../server/lib/chat.js");
+    const { apnsNotification } = await import("../server/push/apns.js");
+    const { buildPayload } = await import("../server/push/webpush.js");
+    const message = await sendRaw(joshPhone.session.cookie, await joshPhone.sealOutgoing({ clientId: newId(), kind: "image", body: "look at this sunset", media: { url: "/api/uploads/media?path=chat%2Fx.bin", width: 10, height: 10, sealed: { key: core.toBase64Url(randomBytes(32)), mime: "image/jpeg" } } }));
+    const push = chatNotification(message, "Josh");
+    assert.equal(push.body, "a new message ♡");
+    const apns = apnsNotification(push, { badge: 2 });
+    const payload = JSON.parse(apns.compile());
+    assert.equal(payload.aps["mutable-content"], 1);
+    assert.equal(payload.aps.alert.body, "a new message ♡");
+    assert(Buffer.byteLength(apns.compile()) < 4096, "fits in a push");
+    assert(!apns.compile().includes("sunset"));
+    const preview = await herPhone.openNotificationPreview({ enc: { v: 1, k: payload.sealed.k, n: payload.sealed.n }, sender: payload.sealed.s, kind: payload.sealed.t, clientId: payload.sealed.c });
+    assert.equal(preview, "📷 sent you a photo: look at this sunset");
+    assert(!buildPayload(push).includes("sunset"));
+    // Signals stay what they were: a known key, no words.
+    const tap = chatNotification({ kind: "tap", body: "hug", id: randomUUID() }, "Josh");
+    assert.match(tap.title, /Josh/);
+  });
+
+  await test("The widget, her memories and a reply from a notification all stay sealed", async () => {
+    const { appSnapshot } = await import("../server/routes/widget.js");
+    const snapshot = await appSnapshot(db, "kiriya");
+    assert.equal(snapshot.chat.last.preview, null);
+    assert(snapshot.chat.last.sealed.b);
+    const opened = await herPhone.openIncoming({ enc: { v: 1, k: snapshot.chat.last.sealed.k }, body: snapshot.chat.last.sealed.b, sender: snapshot.chat.last.sealed.s, kind: snapshot.chat.last.sealed.t });
+    assert.equal(opened.body, "look at this sunset");
+
+    const saved = await json(await request("me/memories", { method: "POST", cookie: herPhone.session.cookie, body: { kind: "message", sourceId: pancakes.id } }), 201);
+    assert(!JSON.stringify(saved).includes("waffles"));
+    const shelf = await json(await request("me/memories?shelf=messages", { cookie: herPhone.session.cookie }));
+    const memory = shelf.items.find((item) => item.id === saved.id);
+    assert.equal((await herPhone.openMemorySnapshot(memory.snapshot)).body, "secret waffles at 9 ♡");
+    assert(shelf.counts.messages >= 1);
+
+    // "Reply" typed into a notification: the phone seals it natively, the way the Swift code does.
+    const { createDeviceKey } = await import("../server/lib/deviceKeys.js");
+    const widgetKey = (await createDeviceKey(db, "kiriya", "iPhone app")).key;
+    const keyNow = herPhone.chatKeyState().current;
+    const raw = (await core.deriveChatKey(await core.unwrapIdentity((await serverKeys.readIdentity(db, "kiriya")).wrapped, newPhrase, "kiriya"), { kiriya: (await serverKeys.readIdentity(db, "kiriya")).publicKey, admin: (await serverKeys.readIdentity(db, "admin")).publicKey }, "kiriya")).raw;
+    const sealed = await core.sealMessage({ key: await core.importChatKey(raw), keyId: keyNow }, { clientId: "n-push-1234-reply", sender: "kiriya", kind: "text", body: "on my way!!", preview: "on my way!!" });
+    const response = await request("widget/reply", { method: "POST", headers: { authorization: `Bearer ${widgetKey}` }, body: { text: sealed.body, enc: sealed.enc, replyTo: pancakes.id, clientId: "n-push-1234-reply" } });
+    assert.equal(response.status, 200, await response.clone().text());
+    const [row] = await db.select().from(schema.chatMessages).where(sqlEq(schema.chatMessages.clientId, "n-push-1234-reply"));
+    assert(row.enc);
+    assert.equal((await joshPhone.openIncoming({ ...row, createdAt: row.createdAt.toISOString() })).body, "on my way!!");
+  });
+
+  await test("Plain history is sealed in place, files included, and her memory of it too", async () => {
+    const result = await herPhone.sealHistory({ upload: fakeUpload, fetchFile: fakeFetch });
+    assert.equal(result.skipped, 0);
+    assert(result.sealed >= 5, `sealed ${result.sealed}`);
+    const pending = await json(await request("me/chat/keys/pending", { cookie: herPhone.session.cookie }));
+    assert.deepEqual([pending.messages.length, pending.memories.length], [0, 0]);
+    const page = await json(await request("me/chat/messages", { cookie: joshPhone.session.cookie }));
+    const find = (id) => page.messages.find((m) => m.id === id);
+    assert.equal((await joshPhone.openIncoming(find(plainHistory.text.id))).body, "first plain words before the lock");
+    const photo = await joshPhone.openIncoming(find(plainHistory.photo.id));
+    assert.equal(photo.body, "old beach caption");
+    assert.notEqual(photo.media.url, PLAIN_PHOTO, "uploaded again, sealed");
+    assert.equal(new TextDecoder().decode(await (await joshPhone.mediaBlob(photo.media)).arrayBuffer()), "PLAINPHOTOBYTES-beach-day");
+    assert.equal((await joshPhone.openIncoming(find(plainHistory.gif.id))).media.giphyId, "oldcat");
+    const voice = await joshPhone.openIncoming(find(plainHistory.voice.id));
+    assert.deepEqual(voice.media.peaks, [0.2, 0.7]);
+    assert.equal(voice.media.sealed.mime, "audio/mp4");
+    const memories = await json(await request("me/memories?shelf=pictures", { cookie: joshPhone.session.cookie }));
+    const memory = await joshPhone.openMemorySnapshot(memories.items.find((item) => item.id === plainHistory.memory.id).snapshot);
+    assert.equal(memory.body, "old beach caption");
+    assert.equal(memory.media.url, photo.media.url, "the memory and the message share the one sealed copy");
+    const everything = await dump();
+    for (const old of [PLAIN_PHOTO, PLAIN_VOICE]) assert(!everything.includes(old), `${old} is no longer referenced`);
+    // A second run finds nothing to do.
+    assert.equal((await joshPhone.sealHistory({ upload: fakeUpload, fetchFile: fakeFetch })).sealed, 0);
+  });
+
   await test("After an admin reset of her passphrase, her next device starts a new key pair and the old one is kept for history", async () => {
     // She forgot the phrase she chose; Josh resets her to the one configured in Vercel.
     await json(await request("admin/credentials/kiriya/reset", { method: "POST", cookie: await unlock("admin"), body: {} }));
@@ -287,6 +476,26 @@ try {
     assert(joshPhone.chatKeyState().partnerChangedAt, "and notices her key changed");
     const keys = await json(await request("me/chat/keys", { cookie: joshPhone.session.cookie }));
     assert.equal(keys.history.kiriya.length, 1);
+
+    // Her new phone never had the old key: older messages wait, quietly locked…
+    const page = await json(await request("me/chat/messages", { cookie: fresh.session.cookie }));
+    const old = page.messages.find((m) => m.id === pancakes.id);
+    assert.equal((await fresh.openIncoming(old)).locked, true);
+    // …until Josh's phone, which has both keys, seals them again with the new one.
+    const result = await joshPhone.sealHistory({ upload: fakeUpload, fetchFile: fakeFetch });
+    assert(result.sealed > 5, JSON.stringify(result));
+    const again = await json(await request("me/chat/messages", { cookie: fresh.session.cookie }));
+    assert.equal((await fresh.openIncoming(again.messages.find((m) => m.id === pancakes.id))).body, "secret waffles at 9 ♡");
+    const opened = await Promise.all(again.messages.map((m) => fresh.openIncoming(m)));
+    assert.equal(opened.filter((m) => m.locked).length, 0, "every message opens on her new phone");
+  });
+
+  await test("A dump of the database holds no readable words, file keys or GIF links", async () => {
+    const everything = await dump();
+    for (const words of ["pancakes", "waffles", "yesss", "first date", "sunset", "on my way", "first plain words", "beach", "oldcat", "giphy.com", "goodnight", "fireworks"])
+      assert(!everything.includes(words), `"${words}" must not be readable in the database`);
+    // The wrapped private keys are there, and useless without a passphrase.
+    assert(everything.includes('"kdf":"PBKDF2-SHA256"'));
   });
 } finally {
   await client.close();

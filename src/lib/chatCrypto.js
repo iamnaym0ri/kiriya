@@ -14,6 +14,7 @@ import { CryptoError, isSealedMessage, openBytes, openMessage, openPreview, seal
 import { chatKeyState, currentKey, ensureChatKeys, hasChatKey, keyFor, subscribeChatKeys } from "./chatCrypto/keyring.js";
 
 export { rememberPassphrase, unlockChatKeys, rewrapForPassphraseChange, ensureChatKeys, chatKeyState } from "./chatCrypto/keyring.js";
+export { sealHistory } from "./chatCrypto/history.js";
 
 const locked = () => new CryptoError("chat_locked", "Open your messages on this device first ♡");
 

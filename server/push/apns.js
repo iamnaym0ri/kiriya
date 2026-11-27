@@ -69,7 +69,7 @@ export function letterPayload(letter) {
   return letter.lockedUntil || !letter.text ? out : fitText({ ...out, text: String(letter.text) });
 }
 
-export function apnsNotification({ title, body, navigate = "/world", kind = null, tap = null, threadId = null, messageId = null, note: fullNote = null, letter = null }, { ttlSeconds = 6 * 60 * 60, now = Date.now(), badge = null } = {}) {
+export function apnsNotification({ title, body, navigate = "/world", kind = null, tap = null, threadId = null, messageId = null, note: fullNote = null, letter = null, sealed = null }, { ttlSeconds = 6 * 60 * 60, now = Date.now(), badge = null } = {}) {
   const style = KINDS[kind] ?? {};
   // A "thinking of you" signal: which one (hug, kiss…), when the message says.
   const signal = kind === "tap" && tapByKey[tap] ? tap : null;
@@ -90,6 +90,9 @@ export function apnsNotification({ title, body, navigate = "/world", kind = null
   // Letters, little notes and the jar get dressed up on the phone (an envelope or jar picture) by
   // the app's notification service extension, which needs permission to edit the notification.
   if (style.special) note.mutableContent = 1;
+  // An end-to-end sealed chat message: the extension opens its preview with the chat key in the
+  // Keychain (ios/App/KiriyaNotificationService, server/lib/chatKeys.js sealedNotification).
+  if (sealed) note.mutableContent = 1;
   // messageId lets the "Reply" button on a chat notification quote the message it answers.
   // Little notes and letters open right inside the notification (ios/App/KiriyaNotificationContent),
   // so they carry their words.
@@ -102,6 +105,7 @@ export function apnsNotification({ title, body, navigate = "/world", kind = null
     ...(messageId ? { messageId } : {}),
     ...(inPlace ? { note: inPlace } : {}),
     ...(letterInPlace ? { letter: letterInPlace } : {}),
+    ...(sealed ? { sealed } : {}),
   };
   return note;
 }
