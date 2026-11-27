@@ -9,14 +9,26 @@ import { DailyStyleButton } from "../shared/DailyStyle.jsx";
 import CompanionHost from "./companions/CompanionHost.jsx";
 import AppTabBar from "../shared/AppTabBar.jsx";
 import PullToRefresh from "../shared/PullToRefresh.jsx";
+import { AppTopBar, useAppNavigation, useKeyboardClass } from "../shared/AppFrame.jsx";
+import { tabOf } from "../lib/appLinks.js";
 import { isAppShell } from "../lib/native.js";
 import "./WorldShell.css";
+import "../styles/app-shell.css";
 const TABS = [
   { to: "/world#letters-hub", label: "letters & notes" },
   { to: "/world#play-desk", label: "doodle & play" },
   { to: "/world#events", label: "events & merch" },
 ];
+// Tabs where pulling down at the top refreshes what's on screen (the chat scrolls on its own; games
+// and settings have nothing to fetch).
+const PULL_TO_REFRESH = new Set(["home", "mail"]);
+
 export default function WorldShell() {
+  return isAppShell() ? <AppShell /> : <WebsiteShell />;
+}
+
+/** The website: exactly as it was. */
+function WebsiteShell() {
   const location = useLocation();
   const [menu, setMenu] = useState(false);
   const [credits, setCredits] = useState(false);
@@ -141,12 +153,56 @@ export default function WorldShell() {
         {/* She lives here rather than on one page: mounted by the shell so she keeps her place,
             her mood and her train of thought while the route underneath her changes. */}
         <CompanionHost />
-        {isAppShell() && (
+      </div>
+    </SketchbookProvider>
+  );
+}
+
+/**
+ * The iPhone app (docs/refactor/RENOVATION.md, "App layout"): five tabs under a tab bar. The
+ * website's top bar shows on home only, as a compact wordmark with nothing else on it: the letters
+ * button and the menu moved into their tabs, the little corner into a widget on home, and the
+ * animations switch into her settings. Every other tab starts with its own large title, and a small
+ * frosted bar takes over once that scrolls away. No footer: Art & credits and the public profile
+ * live in the last tab.
+ */
+function AppShell() {
+  const location = useLocation();
+  const redirecting = useAppNavigation();
+  useKeyboardClass();
+  const tab = tabOf(location.pathname);
+  const home = tab === "home" && /^\/world\/?$/.test(location.pathname);
+  useEffect(() => {
+    registerServiceWorker()
+      .then(() => resyncSurprises())
+      .catch(() => {});
+  }, []);
+  useEffect(() => {
+    document.body.dataset.tab = tab;
+    return () => {
+      delete document.body.dataset.tab;
+    };
+  }, [tab]);
+  return (
+    <SketchbookProvider>
+      <div className="world lilac-scene" data-tab={tab}>
+        {home && (
           <>
-            <AppTabBar />
-            <PullToRefresh />
+            <header className="world-mast">
+              <Link to="/world" className="tiny-wordmark" aria-label="Kiriya’s home">
+                kiriya<span>✦</span>
+              </Link>
+            </header>
+            <BirthdayRibbon />
           </>
         )}
+        <main className="world-content" id="world-main">
+          {!redirecting && <Outlet />}
+        </main>
+        <CompanionHost />
+        <AppTopBar />
+        <AppTabBar />
+        <PullToRefresh enabled={PULL_TO_REFRESH.has(tab)} />
       </div>
     </SketchbookProvider>
   );
