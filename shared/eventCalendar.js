@@ -2,10 +2,11 @@
 // website builds the file in the browser and the server can serve the same file to the iPhone app
 // (inside the app a downloaded blob can't reach Calendar; Safari opening a real .ics link can).
 //
-// toIcs(item) takes the events-ui item shape (src/world/events/eventsData.js): times are ISO
-// strings with their Singapore offset, `days` lists each open day with its hours, `drop` describes a
-// merch drop. One calendar entry per open day, so each day keeps its own hours; a reminder the day
-// before the first one.
+// toIcs(event) takes either the API's public event (docs/refactor/EVENTS-API.md, "calendar.ics":
+// startsOn/endsOn, startsAt/endsAt, url, venueName, dossier.days, dossier.venue) or the events-ui
+// item shape (src/world/events/eventsData.js: days, venue, links). Times are ISO strings with their
+// Singapore offset; days are "YYYY-MM-DD" with "HH:MM" hours. One calendar entry per open day, so
+// each day keeps its own hours, and a reminder the day before the first one.
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -50,6 +51,23 @@ export function foldLine(line) {
 
 const sgAt = (day, time) => `${day}T${time.length === 5 ? `${time}:00` : time}+08:00`;
 
+/** Either shape → { days, venue, links, startsAt, endsAt, ... }. */
+function normalize(item) {
+  const days = item.days?.length ? item.days : item.dossier?.days ?? [];
+  const venue = item.dossier?.venue ?? item.venue ?? (item.venueName ? { name: item.venueName, area: item.venueArea ?? null } : null);
+  const links = item.links?.length ? item.links : item.url ? [{ kind: "official", label: "official page", url: item.url }] : [];
+  // Without day-by-day hours, a run of plain days is clearer than one entry spanning nights.
+  const plain = !days.length && item.startsOn;
+  return {
+    ...item,
+    days,
+    venue,
+    links,
+    startsAt: plain ? item.startsOn : item.startsAt ?? item.startsOn ?? null,
+    endsAt: plain ? item.endsOn ?? item.startsOn : item.endsAt ?? item.endsOn ?? null,
+  };
+}
+
 function locationOf(item) {
   const v = item.venue;
   if (!v) return null;
@@ -64,10 +82,11 @@ function describe(item, extra) {
 }
 
 /** The calendar entries for an item: [{ uid, summary, start, end, allDay, description }]. */
-export function calendarEntries(item) {
-  if (!item || item.datesTbc) return [];
+export function calendarEntries(input) {
+  if (!input || input.datesTbc) return [];
+  const item = normalize(input);
   const entries = [];
-  if (item.kind === "merch" && item.drop) {
+  if (item.kind === "merch" && item.drop && !item.days.length) {
     const { dropAt, until } = item.drop;
     if (dropAt) {
       const start = new Date(dropAt);
@@ -114,8 +133,9 @@ export function calendarEntries(item) {
 }
 
 /** The whole .ics file (CRLF line endings), or null when the dates aren't known yet. */
-export function toIcs(item, { now = new Date() } = {}) {
-  const entries = calendarEntries(item);
+export function toIcs(input, { now = new Date() } = {}) {
+  const entries = calendarEntries(input);
+  const item = entries.length ? normalize(input) : input;
   if (!entries.length) return null;
   const location = locationOf(item);
   const official = (item.links ?? []).find((l) => l.kind === "official");

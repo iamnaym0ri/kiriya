@@ -71,24 +71,13 @@ export function openings(item) {
       if (end <= start) end = new Date(end.getTime() + 86_400_000);
       return { date: d.date, start, end, note: d.note ?? null };
     });
-  // A pop-up or café open every day between two dates, with the same hours each day.
-  if (item?.hours && item.startsAt && !item.datesTbc) {
-    const first = sgDay(asDate(item.startsAt));
-    const last = sgDay(asDate(item.endsAt ?? item.startsAt));
-    const out = [];
-    for (let d = first, i = 0; d <= last && i < 400; i++) {
-      const start = new Date(`${d}T${item.hours.opens ?? "00:00"}:00+08:00`);
-      let end = new Date(`${d}T${item.hours.closes ?? "23:59"}:00+08:00`);
-      if (end <= start) end = new Date(end.getTime() + 86_400_000);
-      out.push({ date: d, start, end, note: null });
-      d = sgDay(new Date(Date.parse(`${d}T12:00:00+08:00`) + 86_400_000));
-    }
-    return out;
-  }
   if (item?.startsAt && !item.datesTbc) {
-    const start = asDate(item.startsAt);
-    const end = item.endsAt ? asDate(item.endsAt) : new Date(start.getTime() + 3 * 3600_000);
-    return [{ date: sgDay(start), start, end, note: null }];
+    // Plain days with no times (a pop-up "open daily during mall hours"): the whole of each day.
+    const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(item.startsAt);
+    const start = dateOnly ? new Date(`${item.startsAt}T00:00:00+08:00`) : asDate(item.startsAt);
+    const lastDay = item.endsAt && /^\d{4}-\d{2}-\d{2}$/.test(item.endsAt) ? item.endsAt : null;
+    const end = lastDay ? new Date(`${lastDay}T23:59:59+08:00`) : item.endsAt ? asDate(item.endsAt) : new Date(start.getTime() + (dateOnly ? 86_399_000 : 3 * 3600_000));
+    return [{ date: sgDay(start), start, end, note: null, allDay: dateOnly }];
   }
   return [];
 }
@@ -101,14 +90,14 @@ export function openings(item) {
 export function phaseOf(item, now = new Date()) {
   if (!item) return { phase: "tbc" };
   if (item.state === "cancelled") return { phase: "cancelled" };
-  if (item.kind === "merch") return merchPhase(item, now);
+  if (item.kind === "merch" && !item.days?.length && item.drop) return merchPhase(item, now);
   const open = openings(item);
   if (!open.length) return { phase: "tbc" };
   const t = now.getTime();
   const last = open[open.length - 1];
   if (t >= last.end.getTime()) return { phase: "ended", endedAt: last.end };
   // A pop-up or café that runs for weeks is simply "on" from its first morning to its last night.
-  if (item.hours && open.length > 1) {
+  if (open.length === 1 && open[0].allDay && open[0].end - open[0].start > 86_400_000) {
     const first = open[0].start;
     if (t < first.getTime()) return { phase: sgDay(first) === sgDay(now) ? "today" : "soon", next: first };
     return { phase: "open", run: true, until: last.end };
@@ -199,54 +188,60 @@ export function price(p) {
   return MONEY.format(p.amount).replace(/^SGD\s?/, "S$").replace(/^\$/, "S$");
 }
 
-// Status chips: tone picks the colour (mint = go, rose = hurry, plum = waiting, mute = done).
-const TICKET_CHIPS = {
-  on_sale: { tone: "mint", label: "tickets on sale" },
-  selling_fast: { tone: "rose", label: "selling fast" },
-  sold_out: { tone: "mute", label: "sold out" },
-  soon: { tone: "plum", label: "tickets soon" },
-  free: { tone: "mint", label: "free entry" },
-  at_door: { tone: "plum", label: "pay at the door" },
-  tbc: { tone: "plum", label: "tickets tbc" },
-};
+// Status chips: tone picks the colour (mint = go, rose = hurry or special, plum = waiting, mute = done).
 const TIER_CHIPS = {
   on_sale: { tone: "mint", label: "on sale" },
   selling_fast: { tone: "rose", label: "selling fast" },
   sold_out: { tone: "mute", label: "sold out" },
   soon: { tone: "plum", label: "soon" },
   free: { tone: "mint", label: "free" },
-  at_door: { tone: "plum", label: "at the door" },
   tbc: { tone: "plum", label: "tbc" },
+  closed: { tone: "mute", label: "closed" },
 };
-const DROP_CHIPS = {
-  preorder: { tone: "mint", label: "preorder open" },
-  in_stores: { tone: "mint", label: "in stores" },
-  online: { tone: "mint", label: "online now" },
-  soon: { tone: "plum", label: "dropping soon" },
-  restock: { tone: "rose", label: "restocked" },
-  selling_fast: { tone: "rose", label: "selling fast" },
-  sold_out: { tone: "mute", label: "sold out" },
-};
-
 export const tierChip = (status) => TIER_CHIPS[status] ?? null;
 
-/** The one or two chips a row shows. */
-export function chipsFor(item, now = new Date()) {
+function ticketChip(tickets) {
+  switch (tickets?.status) {
+    case "on_sale":
+      return { tone: "mint", label: tickets.label ? `tickets ${tickets.label}` : "tickets on sale" };
+    case "selling_fast":
+      return { tone: "rose", label: "selling fast" };
+    case "sold_out":
+      return { tone: "mute", label: "sold out" };
+    case "free":
+      return { tone: "mint", label: "free entry" };
+    case "soon":
+      return { tone: "plum", label: "tickets soon" };
+    case "closed":
+      return { tone: "mute", label: "sales closed" };
+    default:
+      return null;
+  }
+}
+
+/** The chips a merch piece shows: what it is, and whether you can get it. */
+export function merchChips(m) {
   const chips = [];
+  if (m.kind === "exclusive") chips.push({ tone: "rose", label: "exclusive" });
+  else if (m.kind === "limited" || m.limited) chips.push({ tone: "rose", label: "limited" });
+  else if (m.kind === "collab") chips.push({ tone: "plum", label: "collab" });
+  else if (m.kind === "freebie") chips.push({ tone: "mint", label: "freebie" });
+  if (m.status === "preorder") chips.push({ tone: "mint", label: "preorder" });
+  else if (m.status === "on_sale") chips.push({ tone: "mint", label: "on sale" });
+  else if (m.status === "sold_out") chips.push({ tone: "mute", label: "sold out" });
+  return chips;
+}
+
+/** The one or two chips a row shows. `live: false` leaves out "on now" where the words say it. */
+export function chipsFor(item, now = new Date(), { live = true } = {}) {
   const p = phaseOf(item, now);
   if (p.phase === "cancelled") return [{ tone: "mute", label: "cancelled" }];
-  if (item.kind === "merch") {
-    const drop = item.drop ?? {};
-    if (p.phase === "soon") chips.push({ tone: "plum", label: `drops ${dayNumber(p.next)} ${monthShort(p.next)}` });
-    else if (p.phase === "ended") chips.push({ tone: "mute", label: "closed" });
-    else if (DROP_CHIPS[drop.status]) chips.push(DROP_CHIPS[drop.status]);
-    if (p.phase === "open" && p.closesAt && daysAway(p.closesAt, now) <= 3) chips.push({ tone: "rose", label: whenLabel(item, now) });
-    return chips;
-  }
-  if (p.phase === "open") chips.push({ tone: "rose", label: "on now" });
   if (p.phase === "ended") return [{ tone: "mute", label: "ended" }];
-  const ticket = TICKET_CHIPS[item.tickets?.status];
-  if (ticket) chips.push(ticket);
+  const chips = [];
+  if (live && p.phase === "open") chips.push({ tone: "rose", label: "on now" });
+  const ticket = ticketChip(item.tickets);
+  if (ticket && item.kind !== "merch") chips.push(ticket);
+  if (item.merchInfo?.label) chips.push({ tone: item.merchInfo.exclusives ? "rose" : "plum", label: item.merchInfo.label });
   return chips;
 }
 
