@@ -145,13 +145,14 @@
   opacity: var(--photo-dim, 0.35);
 }
 
-/* Words that sit straight on the background (the day, "seen ♡") get a soft pill on busy ones. */
+/* "sent <3" / "read ♡" sit straight on the background as words only (Josh: no pill); on busy
+   backgrounds a soft halo in the bar's colour keeps them readable without drawing a box. */
 .chat[data-theme]:is([data-background="photo"], [data-background="miku"], [data-background="maomao"], [data-background="night"], [data-background="petals"]) .msg__status:not(.chat-preview *) {
-  justify-self: end;
-  width: fit-content;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--chat-bar) 82%, transparent);
+  font-weight: 650;
+  text-shadow:
+    0 0 2px var(--chat-bar),
+    0 0 6px var(--chat-bar),
+    0 0 10px var(--chat-bar);
 }
 
 @keyframes backdrop-twinkle {

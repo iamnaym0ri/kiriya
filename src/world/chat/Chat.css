@@ -415,9 +415,15 @@
   box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--chat-ink) 30%, transparent);
   animation: chat-pop 300ms var(--chat-spring) both;
 }
+/* "sent <3" / "read ♡": just the words, no pill or box. */
 .msg__status {
   margin: 4px 6px 0;
-  font-size: 11px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--chat-meta);
 }
 .msg__status button {
@@ -783,13 +789,13 @@
   align-items: center;
   gap: 10px 12px;
   padding: 12px 16px 12px 14px;
-  border: 1px solid color-mix(in srgb, var(--chat-accent) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sig, var(--chat-accent)) 26%, transparent);
   border-radius: 22px;
   background:
-    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--chat-accent) 16%, transparent), transparent 60%),
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--sig, var(--chat-accent)) 16%, transparent), transparent 60%),
     var(--chat-theirs);
   color: var(--chat-theirs-ink);
-  box-shadow: 0 10px 26px -18px color-mix(in srgb, var(--chat-accent) 80%, transparent);
+  box-shadow: 0 10px 26px -18px color-mix(in srgb, var(--sig, var(--chat-accent)) 80%, transparent);
 }
 .signal__emoji {
   display: grid;
@@ -797,7 +803,7 @@
   width: 46px;
   height: 46px;
   border-radius: 16px;
-  background: color-mix(in srgb, var(--chat-accent) 12%, var(--chat-theirs));
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--sig, var(--chat-accent)) 26%, var(--chat-theirs)), color-mix(in srgb, var(--sig, var(--chat-accent)) 10%, var(--chat-theirs)) 75%);
   font-size: 28px;
   line-height: 1;
   animation: chat-pop 520ms var(--chat-spring) both;
@@ -1270,43 +1276,185 @@
   text-align: center;
 }
 
+/* Seven signals in one row (375 pt included), each in its own colour (--sig), with its own motion
+   when it's sent. Colours mix with the theme's own so they sit right on light and dark themes. */
 .signals {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 12px 14px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  padding: 6px 8px 12px;
 }
-.signals__tile {
+.signal-tile {
+  position: relative;
   display: grid;
   justify-items: center;
-  align-content: center;
-  gap: 6px;
-  width: calc((100% - 24px) / 4);
-  min-height: 84px;
-  padding: 10px 4px 8px;
-  border: 1px solid color-mix(in srgb, var(--chat-accent) 20%, transparent);
-  border-radius: 18px;
-  background:
-    radial-gradient(90% 80% at 50% 0%, color-mix(in srgb, var(--chat-accent) 14%, transparent), transparent 70%),
-    var(--chat-theirs);
-  color: var(--chat-theirs-ink);
+  gap: 4px;
+  min-width: 44px;
+  min-height: 62px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--chat-menu-ink);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   animation: chat-pop 340ms var(--chat-spring) both;
-  animation-delay: calc(var(--i, 0) * 28ms);
+  animation-delay: calc(var(--i, 0) * 26ms);
+}
+.signal-tile__face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at 50% 28%, color-mix(in srgb, var(--sig) 30%, var(--chat-theirs)), color-mix(in srgb, var(--sig) 12%, var(--chat-theirs)) 75%);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--sig) 42%, transparent),
+    0 6px 14px -10px var(--sig);
   transition: transform 160ms var(--chat-ease);
 }
-.signals__tile:active {
-  transform: scale(0.92);
+.signal-tile:active .signal-tile__face {
+  transform: scale(0.9);
 }
-.signals__emoji {
-  font-size: 28px;
+.signal-tile__emoji {
+  display: grid;
+  place-items: center;
+  font-size: 22px;
   line-height: 1;
 }
-.signals__label {
-  font-size: 11.5px;
-  line-height: 1.2;
-  text-align: center;
+.signal-tile .signal-heart,
+.signal .signal-heart {
+  color: var(--sig);
+}
+.signal-tile__word {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 10.5px;
+  font-weight: 650;
+  line-height: 1.1;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--sig) 55%, var(--chat-menu-ink));
+}
+/* the motions, played once when that signal is sent */
+.signal-tile[data-fired] .signal-tile__face {
+  transform: none;
+}
+.signal-tile[data-signal="thinking"][data-fired] .signal-tile__emoji {
+  animation: sig-beat 520ms ease-out both;
+}
+.signal-tile[data-signal="hug"][data-fired] .signal-tile__emoji {
+  animation: sig-squeeze 520ms var(--chat-spring) both;
+}
+.signal-tile[data-signal="kiss"][data-fired] .signal-tile__emoji {
+  animation: sig-pucker 520ms ease-out both;
+}
+.signal-tile[data-signal="kiss"][data-fired] .signal-tile__face::after {
+  content: "♥";
+  position: absolute;
+  top: -2px;
+  right: 2px;
+  color: var(--sig);
+  font-size: 13px;
+  animation: sig-float 520ms ease-out both;
+}
+.signal-tile[data-signal="morning"][data-fired] .signal-tile__emoji {
+  animation: sig-rise 520ms var(--chat-spring) both;
+}
+.signal-tile[data-signal="night"] .signal-tile__face::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #10142e;
+  opacity: 0;
+}
+.signal-tile[data-signal="night"][data-fired] .signal-tile__face::before {
+  animation: sig-dim 520ms ease both;
+}
+.signal-tile[data-signal="night"][data-fired] .signal-tile__emoji {
+  position: relative;
+  animation: sig-tilt 520ms ease both;
+}
+.signal-tile[data-signal="miss"][data-fired] .signal-tile__emoji {
+  animation: sig-tremble 520ms ease both;
+}
+.signal-tile[data-signal="water"] .signal-tile__face::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 2px solid var(--sig);
+  opacity: 0;
+}
+.signal-tile[data-signal="water"][data-fired] .signal-tile__face::after {
+  animation: sig-ripple 520ms ease-out both;
+}
+.signal-tile[data-signal="water"][data-fired] .signal-tile__emoji {
+  animation: sig-drop 520ms var(--chat-spring) both;
+}
+@keyframes sig-beat {
+  20% { transform: scale(1.3); }
+  40% { transform: scale(0.95); }
+  60% { transform: scale(1.18); }
+}
+@keyframes sig-squeeze {
+  30% { transform: scale(0.78, 1.1); }
+  65% { transform: scale(1.1, 0.94); }
+}
+@keyframes sig-pucker {
+  30% { transform: scale(0.82) rotate(-8deg); }
+  65% { transform: scale(1.18) rotate(6deg); }
+}
+@keyframes sig-float {
+  from { opacity: 1; transform: translateY(4px) scale(0.6); }
+  to { opacity: 0; transform: translateY(-16px) scale(1.1); }
+}
+@keyframes sig-rise {
+  0% { transform: translateY(7px) rotate(-30deg); }
+  60% { transform: translateY(-4px) rotate(18deg); }
+}
+@keyframes sig-dim {
+  40% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+@keyframes sig-tilt {
+  40% { transform: rotate(-22deg) scale(1.08); }
+}
+@keyframes sig-tremble {
+  15% { transform: rotate(-8deg); }
+  35% { transform: rotate(8deg); }
+  55% { transform: rotate(-5deg); }
+  75% { transform: rotate(4deg); }
+}
+@keyframes sig-ripple {
+  from { opacity: 0.85; transform: scale(0.4); }
+  to { opacity: 0; transform: scale(1.5); }
+}
+@keyframes sig-drop {
+  0% { transform: translateY(-6px); }
+  45% { transform: translateY(3px) scale(1.1, 0.9); }
+}
+
+/* the composer's signal button: a red heart that beats softly every few seconds (still while
+   she types, and with Reduce Motion) */
+.composer__signal,
+.composer__tool.composer__signal[aria-pressed="true"] {
+  color: #f23a5e;
+}
+.composer__heart {
+  filter: drop-shadow(0 2px 4px color-mix(in srgb, #f23a5e 40%, transparent));
+  animation: heart-beat 3.6s ease-in-out 1.2s infinite;
+}
+.composer[data-typing] .composer__heart,
+.composer__signal[aria-pressed="true"] .composer__heart {
+  animation-play-state: paused;
+}
+@keyframes heart-beat {
+  0%, 18%, 100% { transform: scale(1); }
+  4% { transform: scale(1.2); }
+  8% { transform: scale(0.96); }
+  12% { transform: scale(1.12); }
 }
 
 .sheet--gif {
@@ -1799,9 +1947,15 @@
   animation-play-state: paused;
 }
 
-/* The chat uses the whole screen: no floating corner widget or wandering companion over it. */
+/* The chat uses the whole screen: no floating corner widget or wandering companion over it, and
+   none of the frame's top bar either (the chat has its own header; the frame's compact bar would
+   fade in over it whenever the page scrolled, e.g. when iOS moved it for the keyboard). */
 body[data-page="chat"] {
   overflow: hidden;
+}
+body[data-page="chat"] .app-topbar,
+body[data-page="chat"] .app-topbar-strip {
+  display: none;
 }
 body[data-page="chat"] .daily-style-corner,
 body[data-page="chat"] .birthday-ribbon,
