@@ -400,7 +400,8 @@ await test("Private Blob delivery checks sessions, explicit public selection, ra
   try {
     const image = await request(route, { cookie });
     assert.equal(image.status, 200);
-    assert.equal(image.headers.get("cache-control"), "private, no-store");
+    // Signed in: unique, never-reused names, so their phones keep it for good.
+    assert.equal(image.headers.get("cache-control"), "private, max-age=31536000, immutable");
     assert.equal(image.headers.get("x-content-type-options"), "nosniff");
     assert.equal(image.headers.get("content-type"), "image/png");
     assert.equal(await image.text(), bytes.toString());
@@ -429,7 +430,9 @@ await test("Private Blob delivery checks sessions, explicit public selection, ra
     await db
       .insert(schema.settings)
       .values({ key: "public_profile", value: { avatarUrl: `/api/${route}` } });
-    assert.equal((await request(route)).status, 200);
+    const shown = await request(route);
+    assert.equal(shown.status, 200);
+    assert.equal(shown.headers.get("cache-control"), "private, no-store", "seen without signing in: never kept");
     await db
       .delete(schema.settings)
       .where(eq(schema.settings.key, "public_profile"));

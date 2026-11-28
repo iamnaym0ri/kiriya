@@ -39,8 +39,13 @@ const VIDEO_TYPES = ["video/mp4", "video/quicktime"];
 // shared 1 GB store healthy: about a minute of iPhone video in its "most compatible" form.
 const MAX_VIDEO_BYTES = 60 * 1024 * 1024;
 const FOLDER_PATH = new RegExp(`^(${UPLOAD_FOLDERS.join("|")})\\/[a-zA-Z0-9][a-zA-Z0-9._-]*$`);
-const cacheFor = (pathname) =>
-  IMMUTABLE_FOLDERS.some((folder) => pathname.startsWith(`${folder}/`) || pathname.startsWith(`${folder}-`))
+// Every upload's name is unique and never reused, so the two of them (a session, or the app's signed
+// link) may keep any upload on their phone for good: photos on home, doodles, songs, avatars as well
+// as the chat's files. The public profile's few pictures, seen without signing in, stay uncached.
+const cacheFor = (pathname, theirs = false) =>
+  !pathname.startsWith("saves/") &&
+  (IMMUTABLE_FOLDERS.some((folder) => pathname.startsWith(`${folder}/`) || pathname.startsWith(`${folder}-`)) ||
+    (theirs && UPLOAD_FOLDERS.some((folder) => pathname.startsWith(`${folder}/`) || pathname.startsWith(`${folder}-`))))
     ? "private, max-age=31536000, immutable"
     : "private, no-store";
 const MAX_BYTES = 15 * 1024 * 1024;
@@ -250,7 +255,8 @@ uploadRoutes.get("/file/:name", async (c) => {
     );
   const name = c.req.param("name");
   if (!/^[a-z]+-[0-9a-f]{16}\.[a-z0-9]+$/.test(name) || !UPLOAD_FOLDERS.includes(name.split("-")[0])) return c.notFound();
-  if (!mediaSignatureOk.file(name, c.req.query("s")) && !(await readSession(c)) && !(await isPublicMedia(`/api/uploads/file/${name}`)))
+  const theirs = mediaSignatureOk.file(name, c.req.query("s")) || Boolean(await readSession(c));
+  if (!theirs && !(await isPublicMedia(`/api/uploads/file/${name}`)))
     return c.json({ error: "locked" }, 401);
   try {
     const data = await readFile(path.join(LOCAL_DIR, name));
@@ -260,7 +266,7 @@ uploadRoutes.get("/file/:name", async (c) => {
       "application/octet-stream";
     const headers = {
       "Content-Type": type,
-      "Cache-Control": cacheFor(name),
+      "Cache-Control": cacheFor(name, theirs),
       "X-Content-Type-Options": "nosniff",
       "Accept-Ranges": "bytes",
     };
@@ -310,7 +316,8 @@ uploadRoutes.get("/media", async (c) => {
   const canonical = `/api/uploads/media?path=${encodeURIComponent(pathname)}`;
   // A signed link (the iPhone app's <img> tags can't send its token) or a session; otherwise only
   // media the public profile shows.
-  if (!mediaSignatureOk.media(pathname, c.req.query("s")) && !(await readSession(c)) && (pathname.startsWith("saves/") || !(await isPublicMedia(canonical))))
+  const theirs = mediaSignatureOk.media(pathname, c.req.query("s")) || Boolean(await readSession(c));
+  if (!theirs && (pathname.startsWith("saves/") || !(await isPublicMedia(canonical))))
     return c.json({ error: "locked" }, 401);
   if (!blobReadConfigured()) return c.json({ error: "not_configured" }, 503);
   const range = c.req.header("range");
@@ -332,12 +339,12 @@ uploadRoutes.get("/media", async (c) => {
     const body = await fitImage(original, contentType);
     return new Response(body, {
       status: 200,
-      headers: { "Content-Type": contentType, "Cache-Control": cacheFor(pathname), "X-Content-Type-Options": "nosniff", "Content-Length": String(body.length) },
+      headers: { "Content-Type": contentType, "Cache-Control": cacheFor(pathname, theirs), "X-Content-Type-Options": "nosniff", "Content-Length": String(body.length) },
     });
   }
   const headers = new Headers({
     "Content-Type": contentType,
-    "Cache-Control": cacheFor(pathname),
+    "Cache-Control": cacheFor(pathname, theirs),
     "X-Content-Type-Options": "nosniff",
     "Accept-Ranges": "bytes",
   });

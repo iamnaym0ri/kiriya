@@ -104,9 +104,18 @@ export function useKeyboardLift({ shell, viewport, enabled }) {
         await Keyboard.setResizeMode({ mode: "none" }).catch(() => {});
         const shown = await Keyboard.addListener("keyboardWillShow", ({ keyboardHeight }) => move(keyboardHeight));
         const hidden = await Keyboard.addListener("keyboardWillHide", () => move(0));
+        // The page itself never scrolls while the chat is open (the chat moves for the keyboard on
+        // its own). If iOS nudges it anyway to show the field, put it straight back.
+        const settle = () => (window.scrollY || document.documentElement.scrollTop) && window.scrollTo(0, 0);
+        const shownDone = await Keyboard.addListener("keyboardDidShow", settle);
+        const hiddenDone = await Keyboard.addListener("keyboardDidHide", settle);
+        window.addEventListener("scroll", settle, { passive: true });
         cleanup = () => {
           shown.remove();
           hidden.remove();
+          shownDone.remove();
+          hiddenDone.remove();
+          window.removeEventListener("scroll", settle);
           Keyboard.setResizeMode({ mode: "native" }).catch(() => {});
         };
         if (done) cleanup();

@@ -164,20 +164,25 @@ function Thread({ list, me, names, reads, typing, typingStyle, designs, hasOlder
   }, [lastKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const myLast = [...visible].reverse().find((m) => m.sender === me && m.kind !== "tap" && !m.leaving)?.id;
+  // Older pages come as she nears the top (not while the list is still settling at the bottom on open).
+  const openedAt = useRef(performance.now());
   const onScroll = (event) => {
+    if (performance.now() - openedAt.current < 900) return;
     if (hasOlder && !loadingOlder && event.currentTarget.scrollTop < 400) onOlder();
   };
   return (
     <MessageScroller.Root className="chat__scroller">
       <MessageScroller.Viewport ref={viewport} className="chat__viewport" preserveScrollOnPrepend aria-label="Messages" onScroll={onScroll}>
+        {/* Outside the message list itself: the scroller keeps her place when older pages arrive by
+            watching the list's first message, so nothing else may sit first in it. */}
+        {hasOlder ? (
+          <p className="chat__older" role="status">
+            {loadingOlder ? "finding older messages…" : ""}
+          </p>
+        ) : (
+          visible.length > 0 && <p className="chat__beginning">the very beginning of your chat ♡</p>
+        )}
         <MessageScroller.Content ref={content} className="chat__content">
-          {hasOlder ? (
-            <p className="chat__older" role="status">
-              {loadingOlder ? "finding older messages…" : ""}
-            </p>
-          ) : (
-            visible.length > 0 && <p className="chat__beginning">the very beginning of your chat ♡</p>
-          )}
           {visible.length === 0 && <p className="chat__empty">say hi ♡ everything you two send stays right here.</p>}
           {visible.map((message, i) => {
             const previous = visible[i - 1];

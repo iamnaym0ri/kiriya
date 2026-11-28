@@ -470,110 +470,113 @@ export default function BambyBody({
       <ellipse className="bamby__ground" cx="100" cy="231" rx="40" ry="6" fill={`url(#${ids.ground})`} />
       <g className="bamby__body">
         <g className="bamby__bob">
-          {back ? (
-            <>
-              <Leg side="l" />
-              <Leg side="r" />
-              <BackView ids={ids} />
-              <Arm side="l" />
-              <Arm side="r" />
-            </>
-          ) : (
-            <>
-              <Leg side="l" />
-              <Leg side="r" />
-              <g className="bamby__torso">
-                <path d="M94 147h12v13H94Z" fill="#f3cdb9" />
-                <path
-                  d="M80 156c10-4 30-4 40 0l11 10c3 8 4 16 3 25-22 6-46 6-68 0-1-9 0-17 3-25Z"
-                  fill={JACKET}
-                  stroke={JACKET_LINE}
-                  strokeWidth="1.6"
-                />
-                <path d="M131 166c3 8 4 16 3 25-6 2-11 3-17 3 6-10 9-19 14-28Z" fill={KNIT} opacity=".8" />
-                {/* Knit texture, the white turtleneck, his pastel bead necklace, the big pink star. */}
-                <path d="M71 171c-2 7-2 13-1 19m59-19c2 7 2 13 1 19" stroke={JACKET_LINE} strokeWidth="1.1" fill="none" strokeLinecap="round" opacity=".6" />
-                <path d="M88 151q12-5 24 0l1 8q-13 5-26 0Z" fill={TURTLE} stroke={TURTLE_LINE} strokeWidth="1" strokeLinejoin="round" />
-                <path d="M88.6 155q11.4 4 22.8 0" stroke={TURTLE_LINE} strokeWidth=".9" fill="none" />
-                <g className="bamby__beads">
-                  {Array.from({ length: 11 }, (_, i) => {
-                    const t = i / 10;
-                    const bx = 86 + 28 * t;
-                    const by = 160 + 22 * t * (1 - t) * 1.6;
-                    return <circle key={i} cx={bx} cy={by} r="1.7" fill={BEADS[i % 4]} stroke="#b9a7c8" strokeWidth=".5" />;
-                  })}
+          {/* The seat carries the sitting drop and nothing else, so it can glide (README.md, "Transitions"). */}
+          <g className="bamby__seat">
+            {back ? (
+              <>
+                <Leg side="l" />
+                <Leg side="r" />
+                <BackView ids={ids} />
+                <Arm side="l" />
+                <Arm side="r" />
+              </>
+            ) : (
+              <>
+                <Leg side="l" />
+                <Leg side="r" />
+                <g className="bamby__torso">
+                  <path d="M94 147h12v13H94Z" fill="#f3cdb9" />
+                  <path
+                    d="M80 156c10-4 30-4 40 0l11 10c3 8 4 16 3 25-22 6-46 6-68 0-1-9 0-17 3-25Z"
+                    fill={JACKET}
+                    stroke={JACKET_LINE}
+                    strokeWidth="1.6"
+                  />
+                  <path d="M131 166c3 8 4 16 3 25-6 2-11 3-17 3 6-10 9-19 14-28Z" fill={KNIT} opacity=".8" />
+                  {/* Knit texture, the white turtleneck, his pastel bead necklace, the big pink star. */}
+                  <path d="M71 171c-2 7-2 13-1 19m59-19c2 7 2 13 1 19" stroke={JACKET_LINE} strokeWidth="1.1" fill="none" strokeLinecap="round" opacity=".6" />
+                  <path d="M88 151q12-5 24 0l1 8q-13 5-26 0Z" fill={TURTLE} stroke={TURTLE_LINE} strokeWidth="1" strokeLinejoin="round" />
+                  <path d="M88.6 155q11.4 4 22.8 0" stroke={TURTLE_LINE} strokeWidth=".9" fill="none" />
+                  <g className="bamby__beads">
+                    {Array.from({ length: 11 }, (_, i) => {
+                      const t = i / 10;
+                      const bx = 86 + 28 * t;
+                      const by = 160 + 22 * t * (1 - t) * 1.6;
+                      return <circle key={i} cx={bx} cy={by} r="1.7" fill={BEADS[i % 4]} stroke="#b9a7c8" strokeWidth=".5" />;
+                    })}
+                  </g>
+                  <path d={starPath(113, 178, 8.5)} fill={PINK} stroke="#d2659b" strokeWidth=".9" strokeLinejoin="round" opacity=".92" />
+                  <path d="M66 189c22 6 46 6 68 0v5c-22 6-46 6-68 0Z" fill={KNIT} stroke={JACKET_LINE} strokeWidth=".8" />
+                  <path d="M72 191.4v4m8-3v4m8-2.4v4m8-2v4m8 0v-4m8 2.4v-4m8 3v-4m8 0v-4" stroke={JACKET_LINE} strokeWidth=".7" opacity=".55" />
                 </g>
-                <path d={starPath(113, 178, 8.5)} fill={PINK} stroke="#d2659b" strokeWidth=".9" strokeLinejoin="round" opacity=".92" />
-                <path d="M66 189c22 6 46 6 68 0v5c-22 6-46 6-68 0Z" fill={KNIT} stroke={JACKET_LINE} strokeWidth=".8" />
-                <path d="M72 191.4v4m8-3v4m8-2.4v4m8-2v4m8 0v-4m8 2.4v-4m8 3v-4m8 0v-4" stroke={JACKET_LINE} strokeWidth=".7" opacity=".55" />
-              </g>
-              <g className="bamby__head">
-                <Hair ids={ids} />
-                <ellipse cx="46" cy="113" rx="6.5" ry="9.5" fill="#f2c6b2" />
-                <ellipse cx="154" cy="113" rx="6.5" ry="9.5" fill="#f2c6b2" />
-                <path d="M45 92q0-42 55-43 55 1 55 43v24q-4 39-55 40-51-1-55-40Z" fill={`url(#${ids.skin})`} />
-                <path d="M45 92q0-42 55-43 55 1 55 43v24q-4 39-55 40-51-1-55-40Z" fill={`url(#${ids.rim})`} />
-                <BambyFace expression={face} ids={ids} />
-                <Fringe ids={ids} />
-                <BambyBrows expression={face} />
-                <HeartShades down={shadesDown} />
-                {carried.has("headset") && (
-                  <g data-cs-pop="" style={{ "--cs-pop-origin": "50% 50%" }}>
-                    <Headset />
-                  </g>
-                )}
-                {known === "count" && (
-                  <g data-cs-pop="" style={{ "--cs-pop-origin": "50% 50%" }}>
-                    <Earbuds />
-                  </g>
-                )}
-                {known === "bloom" && (
-                  <g className="bamby__bloom">
-                    <g className="bamby__bloom-squeeze">
-                      <rect x="56" y="99" width="88" height="28" rx="14" fill={`url(#${ids.skin})`} />
-                      <path d="M68 106l14 6.5-14 6.5M132 106l-14 6.5 14 6.5" fill="none" stroke="#3b2440" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                <g className="bamby__head">
+                  <Hair ids={ids} />
+                  <ellipse cx="46" cy="113" rx="6.5" ry="9.5" fill="#f2c6b2" />
+                  <ellipse cx="154" cy="113" rx="6.5" ry="9.5" fill="#f2c6b2" />
+                  <path d="M45 92q0-42 55-43 55 1 55 43v24q-4 39-55 40-51-1-55-40Z" fill={`url(#${ids.skin})`} />
+                  <path d="M45 92q0-42 55-43 55 1 55 43v24q-4 39-55 40-51-1-55-40Z" fill={`url(#${ids.rim})`} />
+                  <BambyFace expression={face} ids={ids} />
+                  <Fringe ids={ids} />
+                  <BambyBrows expression={face} />
+                  <HeartShades down={shadesDown} />
+                  {carried.has("headset") && (
+                    <g data-cs-pop="" style={{ "--cs-pop-origin": "50% 50%" }}>
+                      <Headset />
                     </g>
-                    <Flower x={32} y={84} r={1.6} className="bamby__flower--1" />
-                    <Flower x={168} y={78} r={1.5} tone="#fff0f7" className="bamby__flower--2" />
-                    <Flower x={26} y={124} r={1.2} tone="#fff0f7" className="bamby__flower--3" />
-                    <Flower x={174} y={120} r={1.3} className="bamby__flower--4" />
-                    <Flower x={54} y={32} r={1.15} tone="#ffd0e6" className="bamby__flower--5" />
-                    <Flower x={148} y={28} r={1.25} tone="#ffd0e6" className="bamby__flower--6" />
-                    {/* In the PLBBUU era his flowers came with star candies and little clouds. */}
-                    <Candy x={18} y={104} tone="#ffe58a" className="bamby__flower--2" />
-                    <Candy x={184} y={98} tone="#c9dcff" className="bamby__flower--5" />
-                    <Candy x={100} y={18} tone="#ffc6dc" className="bamby__flower--3" />
-                    <Puff x={30} y={56} className="bamby__flower--4" />
-                    <Puff x={172} y={52} className="bamby__flower--1" />
+                  )}
+                  {known === "count" && (
+                    <g data-cs-pop="" style={{ "--cs-pop-origin": "50% 50%" }}>
+                      <Earbuds />
+                    </g>
+                  )}
+                  {known === "bloom" && (
+                    <g className="bamby__bloom">
+                      <g className="bamby__bloom-squeeze">
+                        <rect x="56" y="99" width="88" height="28" rx="14" fill={`url(#${ids.skin})`} />
+                        <path d="M68 106l14 6.5-14 6.5M132 106l-14 6.5 14 6.5" fill="none" stroke="#3b2440" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                      </g>
+                      <Flower x={32} y={84} r={1.6} className="bamby__flower--1" />
+                      <Flower x={168} y={78} r={1.5} tone="#fff0f7" className="bamby__flower--2" />
+                      <Flower x={26} y={124} r={1.2} tone="#fff0f7" className="bamby__flower--3" />
+                      <Flower x={174} y={120} r={1.3} className="bamby__flower--4" />
+                      <Flower x={54} y={32} r={1.15} tone="#ffd0e6" className="bamby__flower--5" />
+                      <Flower x={148} y={28} r={1.25} tone="#ffd0e6" className="bamby__flower--6" />
+                      {/* In the PLBBUU era his flowers came with star candies and little clouds. */}
+                      <Candy x={18} y={104} tone="#ffe58a" className="bamby__flower--2" />
+                      <Candy x={184} y={98} tone="#c9dcff" className="bamby__flower--5" />
+                      <Candy x={100} y={18} tone="#ffc6dc" className="bamby__flower--3" />
+                      <Puff x={30} y={56} className="bamby__flower--4" />
+                      <Puff x={172} y={52} className="bamby__flower--1" />
+                    </g>
+                  )}
+                </g>
+                {known === "snack" && (
+                  <g data-cs-pop="">
+                    <Peach />
                   </g>
                 )}
+                <Arm side="l" />
+                {rightArm}
+              </>
+            )}
+            {carried.has("heart") && !back && <HeartBurst />}
+            {carried.has("mic") && !back && <Notes />}
+            {known === "heart" && (
+              <g className="bamby__love">
+                <path
+                  d="M100 190c-10-6-11-14-5.5-15 2.6-.4 4.4 1.3 5.5 3.3 1.1-2 2.9-3.7 5.5-3.3 5.5 1 4.5 9-5.5 15Z"
+                  fill="#ff7fb6"
+                  stroke="#d2417f"
+                  strokeWidth="1.2"
+                />
+                <path
+                  className="bamby__love-float"
+                  d="M150 70c-8-5-9-11-4.5-12 2-.3 3.5 1 4.5 2.6 1-1.6 2.5-2.9 4.5-2.6 4.5.8 3.5 7-4.5 12Z"
+                  fill="#ff9cc6"
+                />
               </g>
-              {known === "snack" && (
-                <g data-cs-pop="">
-                  <Peach />
-                </g>
-              )}
-              <Arm side="l" />
-              {rightArm}
-            </>
-          )}
-          {carried.has("heart") && !back && <HeartBurst />}
-          {carried.has("mic") && !back && <Notes />}
-          {known === "heart" && (
-            <g className="bamby__love">
-              <path
-                d="M100 190c-10-6-11-14-5.5-15 2.6-.4 4.4 1.3 5.5 3.3 1.1-2 2.9-3.7 5.5-3.3 5.5 1 4.5 9-5.5 15Z"
-                fill="#ff7fb6"
-                stroke="#d2417f"
-                strokeWidth="1.2"
-              />
-              <path
-                className="bamby__love-float"
-                d="M150 70c-8-5-9-11-4.5-12 2-.3 3.5 1 4.5 2.6 1-1.6 2.5-2.9 4.5-2.6 4.5.8 3.5 7-4.5 12Z"
-                fill="#ff9cc6"
-              />
-            </g>
-          )}
+            )}
+          </g>
         </g>
       </g>
       {known === "vroom" && (

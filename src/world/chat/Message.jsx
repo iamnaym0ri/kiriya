@@ -8,6 +8,7 @@ import { haptic } from "../../lib/native.js";
 import { mediaItems } from "../../lib/chat.js";
 import { Album, GifMedia, QuoteThumb, StickerMedia } from "./media.jsx";
 import { ChatIcon, VoiceNote } from "./parts.jsx";
+import { SIGNAL_LOOK, SignalGlyph } from "./signals.jsx";
 
 const HOLD_MS = 420;
 const SWIPE_MAX = 96;
@@ -71,9 +72,9 @@ function Signal({ message, mine, names, onTapBack, preview }) {
   const tap = tapByKey[message.body];
   if (!tap) return null;
   return (
-    <div className="signal" data-signal={tap.key}>
+    <div className="signal" data-signal={tap.key} style={{ "--sig": SIGNAL_LOOK[tap.key]?.color }}>
       <span className="signal__emoji" aria-hidden="true">
-        {tap.emoji}
+        <SignalGlyph tap={tap} size={26} />
       </span>
       <span className="signal__words">
         <strong>{mine ? `you sent ${tap.label}` : `${names[message.sender]} sent ${tap.label}`}</strong>
@@ -161,7 +162,7 @@ function Status({ message, readByThem, actions, canRetry }) {
     );
   }
   const uploading = mediaItems(message).some((item) => typeof item.progress === "number" && item.progress < 100);
-  return <div className="msg__status">{message.pending ? (uploading ? "sending your photos…" : "sending…") : readByThem ? "seen ♡" : "sent"}</div>;
+  return <div className="msg__status">{message.pending ? (uploading ? "sending your photos…" : "sending…") : readByThem ? "read ♡" : "sent <3"}</div>;
 }
 
 /**

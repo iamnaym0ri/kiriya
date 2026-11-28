@@ -6,7 +6,13 @@ import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persi
 import { createStore, del, get, set } from "idb-keyval";
 
 // Bump when a cached response's shape changes in a way old pages can't read.
-const CACHE_VERSION = "2026-11-24";
+// 2026-11-28: drops copies made before the chat's opened words were kept out (below).
+const CACHE_VERSION = "2026-11-28";
+
+// The chat's messages, its summary and saved memories hold opened (end-to-end decrypted) words, so
+// they are never written here; the chat keeps its own sealed copy (src/lib/chatCache.js).
+const OPENED_WORDS = new Set(["messages", "summary", "memories"]);
+const holdsOpenedWords = (key) => key[0] === "me" && (key[1] === "memories" || (key[1] === "chat" && OPENED_WORDS.has(key[2])));
 export const PERSIST_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 const store = typeof indexedDB !== "undefined" ? createStore("kiriya-cache", "queries") : null;
@@ -22,7 +28,7 @@ export const persistOptions = {
   maxAge: PERSIST_MAX_AGE,
   buster: CACHE_VERSION,
   dehydrateOptions: {
-    shouldDehydrateQuery: (query) => query.state.status === "success" && query.queryKey[0] !== "session" && query.meta?.persist !== false,
+    shouldDehydrateQuery: (query) => query.state.status === "success" && query.queryKey[0] !== "session" && query.meta?.persist !== false && !holdsOpenedWords(query.queryKey),
   },
 };
 

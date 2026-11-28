@@ -51,7 +51,7 @@ export function LivePreview({ prefs, name, onMovePhoto }) {
         </span>
         <span className="msg" data-mine data-first data-last data-design={mine}>
           <span className="bubble">come over later? 🍓</span>
-          <span className="msg__status">seen ♡</span>
+          <span className="msg__status">read ♡</span>
         </span>
       </span>
       <span className="chat-preview__composer" aria-hidden="true">
