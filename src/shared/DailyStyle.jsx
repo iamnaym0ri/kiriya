@@ -65,7 +65,9 @@ function CornerView({ data }) {
           </dd>
         </div>
         <div>
-          <dt>pronouns</dt>
+          {/* The label comes from the server (the word itself must never ship in the public build:
+              scripts/check-leaks.mjs). */}
+          <dt>{(data.labels?.address ?? "").toLowerCase()}</dt>
           <dd>{current.address.label}</dd>
         </div>
         <div>
