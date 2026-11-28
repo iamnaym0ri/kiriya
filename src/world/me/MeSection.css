@@ -633,3 +633,46 @@ html.app-shell .me-meet .app-card__head { margin-bottom: 2px; }
   .me-meet__dot .me-meet__halo { animation: none; }
   .me-meet__heart, .me-meet__fill, .me-meet__unit { transition: none; }
 }
+
+/* ---------- her settings on Josh's phone: read-only (parts.jsx HersOnly) ---------- */
+.me-hers {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--theme-soft) 70%, var(--theme-paper, #fff9fd));
+  color: var(--theme-ink);
+  font: 14px/1.45 var(--font-ui);
+}
+.me-hers span {
+  color: var(--theme-accent);
+}
+.me-readonly {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 16px;
+}
+/* Nothing to save or change: those buttons go; the fields keep their values, quietly greyed. */
+.me-readonly :is(button[type="submit"], .settings-card__row > button, .me-button, .character-pick__save) {
+  display: none;
+}
+.me-readonly :is(input, select, textarea):disabled {
+  opacity: 0.85;
+  -webkit-text-fill-color: currentColor;
+  color: var(--theme-ink);
+}
+.me-readonly :is(input[type="checkbox"], input[type="radio"]):disabled {
+  opacity: 0.7;
+}
+/* Her companion on his phone: hers stands out, the others rest quietly. */
+.me-readonly .me-cast__choice:disabled {
+  cursor: default;
+}
+.me-readonly .me-cast__choice:disabled:not([aria-checked="true"]) {
+  opacity: 0.55;
+}

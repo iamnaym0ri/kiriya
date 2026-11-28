@@ -126,7 +126,8 @@ export function PlayfulProvider({ children }) {
       value={{ moving, paused, reduced, day: ribbonTime.day, ribbonSlot: ribbonTime.slot, toggle: () => {
         const next = !paused;
         setPaused(next);
-        if (prefs.data) setPrefs.mutate({ motion: next ? "quiet" : "lively" });
+        // Her choice follows her everywhere; Josh's phone follows hers and never writes it.
+        if (prefs.data && !prefs.data.readOnly) setPrefs.mutate({ motion: next ? "quiet" : "lively" });
       } }}
     >
       {children}

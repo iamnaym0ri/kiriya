@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { isUploadUrl } from "../lib/media.js";
 import { Hono } from "hono";
 import { and, desc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
@@ -57,6 +58,17 @@ async function getSetting(db, key, fallback) {
 
 meRoutes.get("/", (c) => c.json({ role: c.get("session").role }));
 
+// The app is hers (Josh, round 3b: "she's the main stage and I'm the secondary"). On his phone it
+// shows her world: her check-in, her preferences, her public page, read as hers. Only she changes
+// them; his writes are turned away with a 403. What belongs to his own phone (one-time hints, the
+// website corner's size) stays in his own row. "See it as kiriya" was already read-only.
+const HER = "kiriya";
+const isHer = (c) => c.get("session").role === HER;
+const HERS_ONLY = { error: "hers", message: "only kiriya can change this ♡ you’re seeing hers." };
+const refuseUnlessHer = (c) => (isHer(c) ? null : c.json(HERS_ONLY, 403));
+// Prefs that are about a person's own device rather than her world.
+const OWN_PREFS = ["hints", "cornerSmall"];
+
 // Development only: forget today's check-in, drawer and bundle so the fresh-morning flow can be tested.
 meRoutes.post("/dev/reset-today", async (c) => {
   if (env.isProd)
@@ -66,7 +78,7 @@ meRoutes.post("/dev/reset-today", async (c) => {
     );
   const db = await getDb();
   const day = localDay();
-  await updatePersonState(db, c.get("session").role, () => ({ status: null }));
+  await updatePersonState(db, HER, () => ({ status: null }));
   await db.delete(schema.moods).where(eq(schema.moods.day, day));
   await db.delete(schema.settings).where(eq(schema.settings.key, `daily_feeling:${day}`));
   await db.delete(schema.drawers).where(eq(schema.drawers.day, day));
@@ -116,7 +128,8 @@ meRoutes.get("/today", async (c) => {
   });
 });
 
-meRoutes.get("/mood", async (c) => c.json(await readCheckin(await getDb(), localDay(), c.get("session").role)));
+// Her check-in, on both phones (Josh's corner shows hers, read-only).
+meRoutes.get("/mood", async (c) => c.json({ ...(await readCheckin(await getDb(), localDay(), HER)), readOnly: !isHer(c) }));
 
 const checkinBody = z.object({
   mood: z.enum(Object.keys(moodByKey)),
@@ -125,13 +138,15 @@ const checkinBody = z.object({
   feeling: z.enum(Object.keys(feelingByKey)).nullable().optional(),
 });
 meRoutes.put("/mood", async (c) => {
+  const refused = refuseUnlessHer(c);
+  if (refused) return refused;
   const parsed = checkinBody.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: "bad_choice", message: "Choose one of today’s options and try again." }, 400);
-  return c.json(await saveCheckin(await getDb(), localDay(), parsed.data, c.get("session").role));
+  return c.json(await saveCheckin(await getDb(), localDay(), parsed.data, HER));
 });
 
 meRoutes.get("/address", async (c) => {
-  const { choices, addressOptions } = await readCheckin(await getDb(), localDay(), c.get("session").role);
+  const { choices, addressOptions } = await readCheckin(await getDb(), localDay(), HER);
   return c.json({
     options: addressOptions,
     moods: choices.map((m) => ({ key: m.key, label: m.label, current: m.address.label })),
@@ -139,13 +154,15 @@ meRoutes.get("/address", async (c) => {
 });
 
 meRoutes.put("/address", async (c) => {
+  const refused = refuseUnlessHer(c);
+  if (refused) return refused;
   const body = await c.req.json().catch(() => ({}));
   if (!Object.hasOwn(moodByKey, body.mood) || !Object.hasOwn(ADDRESS_OPTIONS, body.address))
     return c.json(
       { error: "bad_choice", message: "Pick one of the options on the list." },
       400,
     );
-  await saveAddressPreference(await getDb(), body.mood, body.address, c.get("session").role);
+  await saveAddressPreference(await getDb(), body.mood, body.address, HER);
   return c.json({ ok: true, mood: body.mood, address: body.address });
 });
 
@@ -160,9 +177,19 @@ const SHARING_LABELS = [
   { key: "energy", label: "Your social battery", hint: "from “kindly fuck off” to full yap" },
 ];
 
-async function prefsResponse(db, person) {
-  const state = await readPersonState(db, person);
-  return { ...resolvePrefs(state.prefs), revision: state.revision, maxPins: MAX_PINS, sharingLabels: SHARING_LABELS };
+/** Her preferences, as either phone sees them; Josh's own device bits come from his own row. */
+async function prefsResponse(db, viewer) {
+  const [state, own] = await Promise.all([readPersonState(db, HER), viewer === HER ? null : readPersonState(db, viewer)]);
+  const prefs = resolvePrefs(state.prefs);
+  const mine = own ? resolvePrefs(own.prefs) : null;
+  return {
+    ...prefs,
+    ...(mine ? Object.fromEntries(OWN_PREFS.map((key) => [key, mine[key]])) : {}),
+    revision: state.revision,
+    maxPins: MAX_PINS,
+    sharingLabels: SHARING_LABELS,
+    readOnly: viewer !== HER,
+  };
 }
 
 meRoutes.get("/prefs", async (c) => c.json(await prefsResponse(await getDb(), c.get("session").role)));
@@ -183,8 +210,11 @@ meRoutes.patch("/prefs", async (c) => {
   const parsed = prefsPatch.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: "bad_prefs", message: "That setting couldn’t be saved." }, 400);
   const { sharing, hints, ...rest } = parsed.data;
+  const viewer = c.get("session").role;
+  // Josh may tidy his own device bits; everything else here is hers.
+  if (viewer !== HER && Object.keys(parsed.data).some((key) => !OWN_PREFS.includes(key))) return c.json(HERS_ONLY, 403);
   const db = await getDb();
-  const person = c.get("session").role;
+  const person = viewer;
   await updatePersonState(db, person, (state) => ({
     prefs: {
       ...state.prefs,
@@ -193,10 +223,12 @@ meRoutes.patch("/prefs", async (c) => {
       ...(hints ? { hints: { ...state.prefs.hints, ...hints } } : {}),
     },
   }));
-  return c.json(await prefsResponse(db, person));
+  return c.json(await prefsResponse(db, viewer));
 });
 
 meRoutes.put("/pins/:id", async (c) => {
+  const refused = refuseUnlessHer(c);
+  if (refused) return refused;
   const id = c.req.param("id");
   const body = z.object({ pinned: z.boolean() }).strict().safeParse(await c.req.json().catch(() => null));
   if (!body.success || !z.string().uuid().safeParse(id).success)
@@ -204,7 +236,7 @@ meRoutes.put("/pins/:id", async (c) => {
   const db = await getDb();
   const [art] = await db.select({ id: schema.artworks.id }).from(schema.artworks).where(eq(schema.artworks.id, id));
   if (!art && body.data.pinned) return c.json({ error: "not_found", message: "That artwork isn’t in your gallery anymore." }, 404);
-  const person = c.get("session").role;
+  const person = HER;
   let full = false;
   await updatePersonState(db, person, async (state) => {
     const pins = state.prefs.pins ?? [];
@@ -220,12 +252,11 @@ meRoutes.put("/pins/:id", async (c) => {
   });
   if (full)
     return c.json({ error: "board_full", message: `Your board holds ${MAX_PINS} pieces. Unpin one to make room.` }, 409);
-  return c.json(await prefsResponse(db, person));
+  return c.json(await prefsResponse(db, HER));
 });
 
-// Exactly what a visitor would see, fresh rather than from the public cache. The admin sees the
-// public page built from their own test choices.
-meRoutes.get("/public-preview", async (c) => c.json(await buildPublicProfile(await getDb(), c.get("session").role)));
+// Exactly what a visitor would see, fresh rather than from the public cache: her page, on both phones.
+meRoutes.get("/public-preview", async (c) => c.json(await buildPublicProfile(await getDb(), HER)));
 
 // ---------- her public page: bio, socials, things she loves, intro song, view counter ----------
 
@@ -235,8 +266,8 @@ async function ownProfile(db, person) {
 }
 
 meRoutes.get("/profile", async (c) => {
-  const { profile, state } = await ownProfile(await getDb(), c.get("session").role);
-  return c.json({ ...profile, introSong: state.prefs.profile?.introSongId ?? "featured", limits: PROFILE_LIMITS });
+  const { profile, state } = await ownProfile(await getDb(), HER);
+  return c.json({ ...profile, introSong: state.prefs.profile?.introSongId ?? "featured", limits: PROFILE_LIMITS, readOnly: !isHer(c) });
 });
 
 const profileBody = z
@@ -250,6 +281,8 @@ const profileBody = z
   .strict();
 
 meRoutes.put("/profile", async (c) => {
+  const refused = refuseUnlessHer(c);
+  if (refused) return refused;
   const parsed = profileBody.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: "bad_profile", message: "Something in your profile couldn’t be saved. Try again." }, 400);
   const { bioLines, socials, loves, introSong, showViews } = parsed.data;
@@ -268,7 +301,7 @@ meRoutes.put("/profile", async (c) => {
     const [song] = await db.select({ id: schema.songs.id }).from(schema.songs).where(eq(schema.songs.id, introSong));
     if (!song) return c.json({ error: "bad_song", message: "That song isn’t on your music shelf anymore. Pick another one." }, 400);
   }
-  const person = c.get("session").role;
+  const person = HER;
   await updatePersonState(db, person, (state) => ({
     prefs: {
       ...state.prefs,
@@ -348,6 +381,8 @@ meRoutes.post("/artworks", async (c) => {
       },
       400,
     );
+  // Josh trying the sketchbook or a game's "keep": it works, but her gallery stays hers.
+  if (!isHer(c)) return c.json({ id: randomUUID(), ...parsed.data, reaction: null, reactedAt: null, createdAt: new Date().toISOString(), preview: true });
   const db = await getDb();
   const [row] = await db
     .insert(schema.artworks)
@@ -357,6 +392,8 @@ meRoutes.post("/artworks", async (c) => {
 });
 
 meRoutes.delete("/artworks/:id", async (c) => {
+  const refused = refuseUnlessHer(c);
+  if (refused) return refused;
   const db = await getDb();
   const [row] = await db
     .delete(schema.artworks)
@@ -417,6 +454,8 @@ meRoutes.post("/drawer", async (c) => {
   const day = localDay();
   const bundle = await getOrCreateDay(db, day);
   const reward = bundle.drawer;
+  // Josh peeking: he sees today's reward, but the drawer stays closed for her and no sticker moves.
+  if (!isHer(c)) return c.json({ opened: true, reward, firstTime: false, preview: true });
   const inserted = await db
     .insert(schema.drawers)
     .values({ day, reward })

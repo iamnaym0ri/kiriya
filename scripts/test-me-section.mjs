@@ -75,7 +75,8 @@ await test("Her companion pick is saved, survives a fresh read, and can be nobod
   assert.equal((await json(await request("me/prefs", { cookie: kiriya }))).companion, "miku", "A fresh read keeps it");
   assert.equal((await json(await request("me/prefs", { method: "PATCH", cookie: kiriya, body: { companion: "none" } }))).companion, "none");
   assert.equal((await request("me/prefs", { method: "PATCH", cookie: kiriya, body: { companion: "rin" } })).status, 400);
-  assert.equal((await json(await request("me/prefs", { cookie: admin }))).companion, "maomao", "Josh's test copy is his own");
+  assert.equal((await json(await request("me/prefs", { cookie: admin }))).companion, "none", "Josh's phone walks with her pick");
+  assert.equal((await request("me/prefs", { method: "PATCH", cookie: admin, body: { companion: "kaito" } })).status, 403, "and only she picks");
   // Another setting saved later doesn't drop the pick.
   await json(await request("me/prefs", { method: "PATCH", cookie: kiriya, body: { motion: "quiet" } }));
   assert.equal((await json(await request("me/prefs", { cookie: kiriya }))).companion, "none");

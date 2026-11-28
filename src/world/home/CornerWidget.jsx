@@ -7,7 +7,8 @@ import { useDailyStyle } from "../../shared/DailyStyle.jsx";
 // feels, her pronouns, her social battery and since when) and opens the same check-in sheet, where
 // everything else lives. Styled in WorldShell.css, because the header is the shell's.
 export default function CornerWidget() {
-  const { current, since, open, editing, allowed } = useDailyStyle();
+  // On Josh's phone (readOnly) it's her corner: he can look, never change it.
+  const { current, since, open, editing, allowed, readOnly } = useDailyStyle();
   // The same cached check-in DailyStyle loads, for the battery's words.
   const mood = useQuery({ queryKey: ["me", "mood"], queryFn: () => api("/me/mood"), enabled: allowed, staleTime: 60_000 });
   if (!allowed) return null;
@@ -15,11 +16,13 @@ export default function CornerWidget() {
   const feeling = current?.feeling;
   // Two short lines that fit the header at any width: how she feels on top, then her battery, how
   // she's presenting and her pronouns (and since when, if it's from another day).
-  const headline = current ? (feeling ? feeling.label : current.label).toLowerCase() : "check in ♡";
-  const detail = current ? [feeling ? current.label.toLowerCase() : null, current.address.label, since].filter(Boolean).join(" · ") : "your little corner";
+  const headline = current ? (feeling ? feeling.label : current.label).toLowerCase() : readOnly ? "not yet ♡" : "check in ♡";
+  const detail = current ? [feeling ? current.label.toLowerCase() : null, current.address.label, since].filter(Boolean).join(" · ") : readOnly ? "her little corner" : "your little corner";
   const spoken = current
-    ? `your little corner: ${[feeling?.label, current.label, current.address.label, level?.label, since].filter(Boolean).join(", ")}. tap to change it`
-    : "your little corner: how’s the world feeling? tap to check in";
+    ? `${readOnly ? "kiriya’s" : "your"} little corner: ${[feeling?.label, current.label, current.address.label, level?.label, since].filter(Boolean).join(", ")}. ${readOnly ? "tap to look" : "tap to change it"}`
+    : readOnly
+      ? "kiriya’s little corner: she hasn’t checked in yet. tap to look"
+      : "your little corner: how’s the world feeling? tap to check in";
   return (
     <button
       type="button"

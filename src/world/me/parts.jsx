@@ -179,3 +179,23 @@ export function Note({ children, tone = "soft", role = "status" }) {
     </p>
   );
 }
+
+/**
+ * Her settings as Josh's phone shows them (round 3b: "I also can't change settings meant for
+ * her"): her values, every control inside switched off (a disabled fieldset), and a line saying
+ * so. On her phone it's just the children. The server refuses his writes too.
+ */
+export function HersOnly({ children, line = "these are hers: only she changes them. you’re seeing what she’s chosen ♡" }) {
+  const admin = useIsAdmin();
+  if (!admin) return children;
+  return (
+    <>
+      <p className="me-hers" role="note">
+        <span aria-hidden="true">♡</span> {line}
+      </p>
+      <fieldset className="me-readonly" disabled>
+        {children}
+      </fieldset>
+    </>
+  );
+}

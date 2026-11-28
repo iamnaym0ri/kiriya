@@ -83,34 +83,63 @@ let kiriya = await unlock(phrases.kiriya, "kiriya");
 let admin = await unlock(phrases.admin, "admin");
 
 try {
-  await test("Choices are remembered per person: Kiriya's are hers, the admin's are a separate test copy", async () => {
+  await test("Her check-in and choices are hers: Josh's phone reads hers and can't change them", async () => {
     const saved = await json(await request("me/mood", { method: "PUT", cookie: kiriya, body: { mood: "rose", energy: 3, feeling: "happy", address: "she/they" } }));
     assert.equal(saved.current.key, "rose");
-    await json(await request("me/mood", { method: "PUT", cookie: admin, body: { mood: "night", energy: 0, feeling: "angry", address: "he/him" } }));
+    const refused = await json(await request("me/mood", { method: "PUT", cookie: admin, body: { mood: "night", energy: 0, feeling: "angry", address: "he/him" } }), 403);
+    assert.equal(refused.error, "hers");
     const mine = await json(await request("me/mood", { cookie: kiriya }));
     assert.equal(mine.current.feeling.key, "happy");
     assert.equal(mine.current.address.label, "she/they");
-    assert.equal((await json(await request("me/address", { cookie: kiriya }))).moods.find((m) => m.key === "night").current, "he/him", "The admin's address test didn't reach her");
+    assert.equal(mine.readOnly, false);
+    const his = await json(await request("me/mood", { cookie: admin }));
+    assert.equal(his.current.key, "rose", "Josh's corner shows her check-in");
+    assert.equal(his.current.feeling.key, "happy");
+    assert.equal(his.readOnly, true);
+    const nightBefore = (await json(await request("me/address", { cookie: kiriya }))).moods.find((m) => m.key === "night").current;
+    const other = (await json(await request("me/address", { cookie: admin }))).options.find((label) => label !== nightBefore);
+    assert.equal((await request("me/address", { method: "PUT", cookie: admin, body: { mood: "night", address: other } })).status, 403);
+    assert.equal((await json(await request("me/address", { cookie: admin }))).moods.find((m) => m.key === "night").current, nightBefore, "His address change never reached her");
 
     const prefs = await json(await request("me/prefs", { method: "PATCH", cookie: kiriya, body: { motion: "quiet", cornerSmall: true, hints: { install: true } } }));
     assert.equal(prefs.motion, "quiet");
     assert.equal(prefs.cornerSmall, true);
     assert.equal(prefs.sharingChosen, false);
     assert.deepEqual(prefs.sharing, { address: false, presentation: false, feeling: false, energy: false });
-    assert.equal((await json(await request("me/prefs", { cookie: admin }))).motion, null);
+    const seen = await json(await request("me/prefs", { cookie: admin }));
+    assert.equal(seen.motion, "quiet", "Josh's phone reads her choices");
+    assert.equal(seen.readOnly, true);
+    assert.equal(seen.cornerSmall, false, "The website corner's size stays his own");
+    assert.deepEqual(seen.hints, {}, "So do his one-time hints");
+    for (const body of [{ motion: "lively" }, { companion: "kaito" }, { sharing: { feeling: true } }, { motion: "lively", hints: { widget: true } }])
+      assert.equal((await json(await request("me/prefs", { method: "PATCH", cookie: admin, body }), 403)).error, "hers", JSON.stringify(body));
+    const tidied = await json(await request("me/prefs", { method: "PATCH", cookie: admin, body: { hints: { widget: true } } }));
+    assert.equal(tidied.hints.widget, true);
+    assert.equal((await json(await request("me/prefs", { cookie: kiriya }))).hints.widget, undefined, "His hints never reach hers");
+    assert.equal((await json(await request("me/prefs", { cookie: kiriya }))).motion, "quiet");
     for (const body of [{ motion: "wild" }, { sharing: { secrets: true } }, { hints: { nope: true } }, { pins: [] }])
       assert.equal((await request("me/prefs", { method: "PATCH", cookie: kiriya, body })).status, 400);
     assert.equal((await request("me/prefs", { method: "PATCH", cookie: kiriya, body: { motion: "lively" }, csrf: false })).status, 400, "Writes still need the site's own header");
     assert.equal((await request("me/prefs")).status, 401);
   });
 
-  await test("Visitors see only what she chose to share; the admin preview uses the admin's own choices", async () => {
+  await test("Visitors see only what she chose to share; Josh's preview is her page", async () => {
     const hidden = await json(await request("public/profile"));
     assert.equal(hidden.today, null, "Nothing is shared until she turns it on");
     assert.deepEqual(hidden.pins, []);
     const cached = await request("public/profile");
     assert.equal(cached.headers.get("cache-control"), "public, max-age=0, must-revalidate", "Browsers never reuse an old status");
     assert.match(cached.headers.get("vercel-cdn-cache-control"), /max-age=15/);
+
+    // Her social battery comes along with what she shares until she sets that switch herself.
+    const shares = async (sharing) => {
+      const prefs = await json(await request("me/prefs", { method: "PATCH", cookie: kiriya, body: { sharing } }));
+      return { prefs, today: (await json(await request("me/public-preview", { cookie: kiriya }))).today };
+    };
+    const withBattery = await shares({ presentation: true });
+    assert.equal(withBattery.prefs.sharing.energy, true, "Settings show the battery switch on");
+    assert.deepEqual(withBattery.today.items.map((item) => item.key), ["presentation", "energy"], "An untouched battery comes along with what she shares");
+    assert.deepEqual((await shares({ presentation: false })).today, null, "Sharing nothing hides an untouched battery too");
 
     await json(await request("me/prefs", { method: "PATCH", cookie: kiriya, body: { sharing: { feeling: true, energy: true } } }));
     const shared = await json(await request("public/profile"));
@@ -124,24 +153,17 @@ try {
     assert.deepEqual(changed.today.items.map((item) => [item.key, item.value]), [["address", "she/they"], ["energy", "Feeling good, whatsupp!"]]);
 
     assert.equal((await request("me/public-preview")).status, 401);
-    assert.equal((await json(await request("me/public-preview", { cookie: admin }))).today, null, "The admin's test copy shares nothing yet");
-    const adminShares = async (sharing) => {
-      const prefs = await json(await request("me/prefs", { method: "PATCH", cookie: admin, body: { sharing } }));
-      return { prefs, today: (await json(await request("me/public-preview", { cookie: admin }))).today };
-    };
-    const withBattery = await adminShares({ presentation: true });
-    assert.equal(withBattery.prefs.sharing.energy, true, "Settings show the battery switch on");
-    assert.deepEqual(withBattery.today.items.map((item) => item.key), ["presentation", "energy"], "An untouched battery comes along with what she shares");
-    assert.deepEqual((await adminShares({ presentation: false })).today, null, "Sharing nothing hides an untouched battery too");
-    await adminShares({ presentation: true });
-    const withoutBattery = await adminShares({ energy: false });
+    assert.deepEqual((await json(await request("me/public-preview", { cookie: admin }))).today, changed.today, "Josh's preview is her page");
+    assert.equal((await request("me/prefs", { method: "PATCH", cookie: admin, body: { sharing: { feeling: true } } })).status, 403, "Only she decides what friends see");
+    const withoutBattery = await shares({ energy: false });
     assert.equal(withoutBattery.prefs.sharing.energy, false);
-    assert.deepEqual(withoutBattery.today.items.map((item) => [item.key, item.value]), [["presentation", "Masc"]], "Switched off, the battery stays off");
-    assert.deepEqual((await json(await request("public/profile"))).today.items.map((item) => item.key), ["address", "energy"], "The admin's test never reaches visitors");
+    assert.deepEqual(withoutBattery.today.items.map((item) => [item.key, item.value]), [["address", "she/they"]], "Switched off, the battery stays off");
+    await shares({ energy: true });
+    assert.deepEqual((await json(await request("public/profile"))).today.items.map((item) => item.key), ["address", "energy"]);
     assert.equal((await json(await request("me/public-preview", { cookie: kiriya }))).today.items.length, 2);
   });
 
-  await test("Her bio, socials, loves, intro song and view counter are hers to set; the admin's stay a test copy", async () => {
+  await test("Her bio, socials, loves, intro song and view counter are hers alone to set; Josh sees hers", async () => {
     const defaults = await json(await request("public/profile"));
     assert.deepEqual(defaults.loves, ["Vocaloid", "The Apothecary Diaries", "Drawing", "Cosplay"]);
     assert.deepEqual(defaults.socials, { tiktok: null, instagram: null }, "No Discord, and nothing until she adds a handle");
@@ -172,15 +194,17 @@ try {
     assert.equal(page.views, null, "Hidden view counter sends no count");
     assert.equal(await isPublicMedia(upload.url), true, "Her uploaded intro song plays for visitors");
 
-    await json(await request("me/profile", { method: "PUT", cookie: admin, body: { bioLines: ["admin test bio"], socials: { tiktok: "admin.test", instagram: "" }, loves: ["testing"], introSong: "none", showViews: true } }));
+    const refused = await request("me/profile", { method: "PUT", cookie: admin, body: { bioLines: ["admin test bio"], socials: { tiktok: "admin.test", instagram: "" }, loves: ["testing"], introSong: "none", showViews: true } });
+    assert.equal(refused.status, 403, "Josh can't change her page");
     const stillHers = await json(await request("public/profile"));
-    assert.deepEqual(stillHers.bioLines, ["maomao's no. 1 apprentice", "drawing past bedtime"], "The admin's test bio never reaches visitors");
+    assert.deepEqual(stillHers.bioLines, ["maomao's no. 1 apprentice", "drawing past bedtime"]);
     assert.equal(stillHers.song.title, "intro test");
+    const hisView = await json(await request("me/profile", { cookie: admin }));
+    assert.deepEqual(hisView.bioLines, ["maomao's no. 1 apprentice", "drawing past bedtime"], "His settings show hers");
+    assert.equal(hisView.readOnly, true);
     const adminPreview = await json(await request("me/public-preview", { cookie: admin }));
-    assert.deepEqual(adminPreview.bioLines, ["admin test bio"]);
-    assert.deepEqual(adminPreview.socials, { tiktok: { handle: "admin.test", url: "https://www.tiktok.com/@admin.test" }, instagram: null });
-    assert.equal(adminPreview.song, null, "No intro song, no tap-to-enter screen");
-    assert.equal(typeof adminPreview.views, "number");
+    assert.deepEqual(adminPreview.bioLines, stillHers.bioLines, "His preview is her page");
+    assert.deepEqual(adminPreview.socials, stillHers.socials);
 
     for (const body of [
       { socials: { tiktok: "not a handle!", instagram: "" } },
@@ -217,9 +241,9 @@ try {
     assert.deepEqual(board.pins.map((pin) => pin.caption), ["doodle 1", "doodle 0"]);
     assert.equal(await isPublicMedia(art[0].url), true);
 
-    await json(await request(`me/pins/${art[2].id}`, { method: "PUT", cookie: admin, body: { pinned: true } }));
-    assert.equal(await isPublicMedia(art[2].url), false, "An admin test pin never opens media to visitors");
-    assert.deepEqual((await json(await request("me/public-preview", { cookie: admin }))).pins.map((pin) => pin.id), [art[2].id]);
+    assert.equal((await request(`me/pins/${art[2].id}`, { method: "PUT", cookie: admin, body: { pinned: true } })).status, 403, "Only she pins to her board");
+    assert.equal(await isPublicMedia(art[2].url), false);
+    assert.deepEqual((await json(await request("me/public-preview", { cookie: admin }))).pins.map((pin) => pin.caption), ["doodle 1", "doodle 0"], "Josh sees her board");
 
     for (const piece of art.slice(2, 6)) await json(await request(`me/pins/${piece.id}`, { method: "PUT", cookie: kiriya, body: { pinned: true } }));
     assert.equal((await json(await request(`me/pins/${art[6].id}`, { method: "PUT", cookie: kiriya, body: { pinned: true } }), 409)).error, "board_full");
@@ -443,7 +467,7 @@ try {
     for (const body of [{}, { pick: "🔋 battery · infinite" }, { battery: 9 }, { mood: "evil" }, { pronouns: "__proto__" }, { extra: true }])
       assert.equal((await request("widget/status", { method: "PUT", body, headers: bearer, csrf: false })).status, 400);
     assert.equal((await json(await request("me/mood", { cookie: kiriya }))).current.key, "iris", "Widget changes are her real check-in");
-    assert.equal((await json(await request("me/mood", { cookie: admin }))).current.key, "night");
+    assert.equal((await json(await request("me/mood", { cookie: admin }))).current.key, "iris", "And Josh's phone shows them");
     assert.match((await json(await request("widget/note", { headers: bearer, csrf: false }))).text, /^a new letter for you ✉\n\n“for today”/);
 
     const script = await json(await request("me/widget-script", { cookie: kiriya }));
@@ -457,7 +481,8 @@ try {
     assert.equal((await request("widget", { headers: bearer, csrf: false })).status, 401);
 
     const adminKey = await json(await request("me/device-keys", { method: "POST", cookie: admin, body: { label: "test phone" } }));
-    assert.equal((await json(await request("widget", { headers: { authorization: `Bearer ${adminKey.key}` }, csrf: false }))).status.presentation.label, "Masc");
+    assert.equal((await json(await request("widget", { headers: { authorization: `Bearer ${adminKey.key}` }, csrf: false }))).status.pronouns, "they/them", "His widget shows her check-in");
+    assert.equal((await request("widget/status", { method: "PUT", body: { battery: 4 }, headers: { authorization: `Bearer ${adminKey.key}` }, csrf: false })).status, 403, "and can't change it");
     const spare = await json(await request("me/device-keys", { cookie: kiriya }));
     assert.equal(spare.keys.length, 4);
     const signOut = await request("me/passphrase/sign-out-others", { method: "POST", cookie: kiriya, body: {} });

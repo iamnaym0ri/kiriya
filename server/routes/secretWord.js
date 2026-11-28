@@ -13,7 +13,13 @@ const fail = (c, error) => {
 };
 
 export const secretWordRoutes = new Hono();
-secretWordRoutes.get("/", async (c) => c.json(await todayFor(await getDb(), c.get("session").role)));
+// Josh plays to check the game (his guesses stay his); the streak he sees is hers (round 3b).
+secretWordRoutes.get("/", async (c) => {
+  const db = await getDb();
+  const person = c.get("session").role;
+  const today = await todayFor(db, person);
+  return c.json(person === "kiriya" ? today : { ...today, streak: (await todayFor(db, "kiriya")).streak, streakIsHers: true });
+});
 
 const playBody = z.object({ day: z.string().max(10), guesses: z.array(z.string().max(12)).max(6) }).strict();
 secretWordRoutes.put("/play", async (c) => {

@@ -7,7 +7,7 @@ import { APP_ICONS, appIconState, chooseAppIcon, enrolledDevice, haptic, isNativ
 import { Address, PublicProfile, Sharing } from "../settings/SettingsPage.jsx";
 import MyFaves from "../settings/MyFaves.jsx";
 import SongShelf from "../stage/SongShelf.jsx";
-import { Group, Note, Row, Screen, SwitchRow } from "./parts.jsx";
+import { Group, HersOnly, Note, Row, Screen, SwitchRow } from "./parts.jsx";
 import { rewrapForPassphraseChange } from "../../lib/chatCrypto.js";
 
 // Her settings, one pushed screen each. The bigger forms (public page, songs, faves, sharing,
@@ -87,6 +87,7 @@ function HourSelect({ label, value, hours, onChange }) {
 }
 
 export function NotificationsScreen() {
+  const admin = useIsAdmin();
   const surprises = useSurprises();
   const { support, state, settings, ownsSettings, saveSettings, message, setMessage, busy } = surprises;
   const test = useMutation({
@@ -98,7 +99,11 @@ export function NotificationsScreen() {
   const save = (patch) => saveSettings.mutate({ ...settings, ...patch });
 
   return (
-    <Screen title="notifications" subtitle="little notes, letters, the jar in the morning and his taps. every one also waits in the app, so nothing gets lost.">
+    <Screen
+      title={admin ? "notifications on this phone" : "notifications"}
+      short="notifications"
+      subtitle={admin ? "yours, on this phone: what she sends you, and the tests you try." : "little notes, letters, the jar in the morning and his taps. every one also waits in the app, so nothing gets lost."}
+    >
       {support !== "ok" ? (
         <div className="app-card">
           <p className="me-card-text">{UNAVAILABLE[support] ?? "notifications aren’t available here."}</p>
@@ -247,7 +252,7 @@ export function PassphraseForm() {
 export function PassphraseScreen() {
   const admin = useIsAdmin();
   return (
-    <Screen title={admin ? "your passphrase" : "your passphrase"} subtitle={isNativeApp() ? "the key to your little world. Face ID keeps opening it on this phone." : "the key to your little world."}>
+    <Screen title="your passphrase" subtitle={admin ? "yours, not hers: it opens the app as you." : isNativeApp() ? "the key to your little world. Face ID keeps opening it on this phone." : "the key to your little world."}>
       <PassphraseForm />
     </Screen>
   );
@@ -256,9 +261,12 @@ export function PassphraseScreen() {
 /* ---------- the website's own settings pieces, in a pushed screen ---------- */
 
 export function PageScreen() {
+  const hers = useIsAdmin();
   return (
-    <Screen title="your public page" short="public page" className="me-screen--legacy">
-      <PublicProfile />
+    <Screen title={hers ? "her public page" : "your public page"} short="public page" className="me-screen--legacy">
+      <HersOnly>
+        <PublicProfile />
+      </HersOnly>
     </Screen>
   );
 }
@@ -266,33 +274,44 @@ export function PageScreen() {
 export function SharingScreen() {
   return (
     <Screen title="what friends can see" short="friends can see" className="me-screen--legacy">
-      <Sharing />
+      <HersOnly>
+        <Sharing />
+      </HersOnly>
     </Screen>
   );
 }
 
 export function SongsScreen() {
+  const hers = useIsAdmin();
   return (
-    <Screen title="your songs" className="me-screen--legacy">
-      <div className="music-page settings-songs">
-        <SongShelf />
-      </div>
+    <Screen title={hers ? "her songs" : "your songs"} className="me-screen--legacy">
+      <HersOnly line="her own song shelf: only she changes it. songs you send her go on home ♡">
+        <div className="music-page settings-songs">
+          <SongShelf />
+        </div>
+      </HersOnly>
     </Screen>
   );
 }
 
 export function FavesScreen() {
+  const hers = useIsAdmin();
   return (
-    <Screen title="my faves" className="me-screen--legacy">
-      <MyFaves />
+    <Screen title={hers ? "her faves" : "my faves"} className="me-screen--legacy">
+      <HersOnly>
+        <MyFaves />
+      </HersOnly>
     </Screen>
   );
 }
 
 export function TalkScreen() {
+  const hers = useIsAdmin();
   return (
-    <Screen title="how the app talks about you" short="how it talks about you" className="me-screen--legacy">
-      <Address />
+    <Screen title={hers ? "how the app talks about her" : "how the app talks about you"} short="how it talks" className="me-screen--legacy">
+      <HersOnly>
+        <Address />
+      </HersOnly>
     </Screen>
   );
 }
