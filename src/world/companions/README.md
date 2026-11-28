@@ -282,7 +282,9 @@ every character, whatever way its Body draws poses.
   (Maomao's and Rotten Girl's upper body and head; Miku's upper body, skirt and arms; KAITO's upper
   body; Bamby's arms, legs and his sitting drop, which sits on its own un-animated `bamby__seat`
   group because a CSS transition never starts from a running animation). A part whose pose swaps
-  one animation for another still changes at once, as before round 3.
+  one animation for another still changes at once, as before round 3. In quiet mode and reduced
+  motion nothing glides: a change of pose dips the whole body (its wrapper's opacity to 0.35 and
+  back, composited) so it is a soft cut, never a jump.
 - **Cost** (round 3, second pass: the first version copied the whole body and cost a dropped frame
   per change on the iPhone 11). Per change now: no `getComputedStyle`, no `getAnimations`, no
   layout reads; 1–8 nodes copied (redrawn ones), 12–38 removed nodes put back for the fade, 3–23

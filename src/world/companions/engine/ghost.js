@@ -50,14 +50,23 @@ function putBack(node, parent, next, prev) {
 /**
  * Right after React drew the change: fade out what left, fade in what arrived, over `ms`.
  * `live`: the live body's wrapper. `leaving`: this body's set of parts still fading (kept between
- * calls so a burst of changes never piles up).
+ * calls so a burst of changes never piles up). `dip`: quiet mode and reduced motion, where nothing
+ * glides: the whole body dips and comes back (its wrapper's opacity, composited), so a change of
+ * pose is a soft cut rather than a jump.
  */
-export function blendChanges(watcher, live, { ms = 160, leaving = new Set() } = {}) {
+export function blendChanges(watcher, live, { ms = 160, leaving = new Set(), dip = false } = {}) {
   if (!watcher) return 0;
   const records = watcher.observer.takeRecords();
   watcher.observer.disconnect();
   const root = watcher.root;
   if (!(ms > 0) || !records.length) return 0;
+  if (dip && live) {
+    try {
+      live.animate([{ opacity: 0.35, offset: 0 }], { duration: ms + 40, easing: "cubic-bezier(0.3, 0.6, 0.4, 1)" });
+    } catch {
+      // No implicit keyframes: the change is a cut, as before.
+    }
+  }
   const inMs = Math.round(ms * 0.6);
   // The Body swapped its whole drawing (a new root element): it fades in whole.
   if (live && live.firstElementChild !== root) {

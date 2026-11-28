@@ -26,11 +26,11 @@ class PoseBlend extends Component {
     if (!pose && prev.expression === p.expression && prev.prop === p.prop) return null;
     const watcher = watch(this.live.current?.firstElementChild);
     if (!watcher) return null;
-    return { watcher, ms: pose ? p.blendMs : p.playing ? BLEND_MS.face : BLEND_MS.quiet };
+    return { watcher, ms: pose ? p.blendMs : p.playing ? BLEND_MS.face : BLEND_MS.quiet, dip: pose && !p.playing };
   }
 
   componentDidUpdate(prevProps, prevState, info) {
-    if (info) blendChanges(info.watcher, this.live.current, { ms: info.ms, leaving: this.leaving });
+    if (info) blendChanges(info.watcher, this.live.current, { ms: info.ms, leaving: this.leaving, dip: info.dip });
   }
 
   render() {
