@@ -11,6 +11,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { apiUrl, authHeaders, isBundledApp } from "./api.js";
 import { previewText } from "../../shared/chatPreview.js";
+import { cachedBytes } from "./mediaCache.js";
 import { CryptoError, aadFor, isSealedMessage, openBytes, openMessage, openPreview, openValue, sealBytes, sealMessage, sealValue } from "./chatCrypto/core.js";
 import { chatKeyState, currentKey, ensureChatKeys, hasChatKey, keyFor, subscribeChatKeys } from "./chatCrypto/keyring.js";
 
@@ -181,7 +182,8 @@ function remember(link, promise) {
 /** The bytes of one media entry, opened (sealed) or as stored. For players that need a Blob. */
 export async function mediaBlob(media) {
   if (media?.sealed?.key) {
-    const { bytes } = await fetchBytes(media.url);
+    // Sealed bytes are kept on the phone once fetched (src/lib/mediaCache.js): unreadable without the key.
+    const { bytes } = await cachedBytes(media.url, () => fetchBytes(media.url));
     return new Blob([await openBytes(bytes, media.sealed.key)], { type: media.sealed.mime ?? media.mime ?? "application/octet-stream" });
   }
   const { bytes, type } = await fetchBytes(media.url);

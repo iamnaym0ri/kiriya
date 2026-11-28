@@ -30,6 +30,8 @@ export function useMemoryShelf(shelf) {
     initialPageParam: null,
     getNextPageParam: (page) => page.next ?? undefined,
     staleTime: 30_000,
+    // Saved chat messages are opened words: kept in memory only, never in the app's device cache.
+    meta: { persist: false },
   });
 }
 

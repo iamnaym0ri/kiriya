@@ -17,6 +17,7 @@ import { snippetOf } from "./Message.jsx";
 import GifPicker from "./GifPicker.jsx";
 import { RichField, looksLikeSticker, setText as setFieldText, stickerPng } from "./RichField.jsx";
 import { ChatIcon } from "./parts.jsx";
+import { RedHeart, SIGNAL_LOOK, SignalGlyph } from "./signals.jsx";
 
 const MAX_VOICE_SECONDS = 120;
 const CAPTION_MAX = 500;
@@ -55,23 +56,52 @@ async function peaksOf(blob) {
   }
 }
 
-/** The quick signals: one tap sends a little moment ("thinking of you", a hug, a kiss…). */
+/**
+ * The quick signals: seven little moments in one row ("thinking of you", a hug, a kiss…), each in
+ * its own colour. Touching one names it in full above the row; letting go sends it with its motion.
+ */
 function Signals({ onPick, onClose }) {
+  const [hint, setHint] = useState("");
+  const [fired, setFired] = useState(null);
+  const pick = (tap) => {
+    if (fired) return;
+    setFired(tap.key);
+    setHint(tap.label);
+    onPick(tap);
+    setTimeout(onClose, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 520);
+  };
   return (
     <div className="sheet sheet--signals" role="dialog" aria-label="Send a signal">
       <div className="sheet__bar">
-        <p className="sheet__title">send a little signal ♡</p>
+        <p className="sheet__title" aria-live="polite">
+          {hint ? `${hint} ♡` : "send a little signal ♡"}
+        </p>
         <button type="button" className="sheet__close" aria-label="Close signals" onClick={onClose}>
           <ChatIcon name="close" size={18} />
         </button>
       </div>
       <div className="signals" role="group">
         {TAPS.map((tap, i) => (
-          <button key={tap.key} type="button" className="signals__tile" data-signal={tap.key} style={{ "--i": i }} onClick={() => onPick(tap)}>
-            <span className="signals__emoji" aria-hidden="true">
-              {tap.emoji}
+          <button
+            key={tap.key}
+            type="button"
+            className="signal-tile"
+            data-signal={tap.key}
+            data-fired={fired === tap.key || undefined}
+            style={{ "--i": i, "--sig": SIGNAL_LOOK[tap.key]?.color }}
+            aria-label={tap.label}
+            onPointerDown={() => !fired && setHint(tap.label)}
+            onPointerLeave={() => !fired && setHint("")}
+            onClick={() => pick(tap)}
+          >
+            <span className="signal-tile__face" aria-hidden="true">
+              <span className="signal-tile__emoji">
+                <SignalGlyph tap={tap} size={22} />
+              </span>
             </span>
-            <span className="signals__label">{tap.label}</span>
+            <span className="signal-tile__word" aria-hidden="true">
+              {SIGNAL_LOOK[tap.key]?.word ?? tap.label}
+            </span>
           </button>
         ))}
       </div>
@@ -110,6 +140,7 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
   const [elapsed, setElapsed] = useState(0);
   const ownField = useRef(null);
   const [rich] = useState(richFieldWanted);
+  const [focused, setFocused] = useState(false);
   const field = fieldRef ?? ownField;
   const picker = useRef(null);
   const chunks = useRef([]);
@@ -335,6 +366,7 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
   const ready = attachments.length > 0;
   const photosReady = attachments.some((a) => a.type !== "sticker");
   const hasText = text.trim().length > 0;
+  const typingNow = focused || hasText;
   const canSend = hasText || ready || Boolean(editing);
   const keepFocus = (event) => event.preventDefault();
   const replyName = replyTo ? (replyTo.sender === me ? "your message" : names?.[other]) : "";
@@ -343,6 +375,7 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
     <div
       className="composer"
       data-panel={panel || undefined}
+      data-typing={typingNow || undefined}
       onDragOver={(event) => event.dataTransfer?.types?.includes("Files") && event.preventDefault()}
       onDrop={(event) => {
         if (!event.dataTransfer?.files?.length) return;
@@ -417,8 +450,8 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
           <>
             {!editing && (
               <>
-                <button type="button" className="composer__tool" aria-label="Send a signal" aria-pressed={panel === "signals"} onClick={() => toggle("signals")}>
-                  <ChatIcon name="heart" />
+                <button type="button" className="composer__tool composer__signal" aria-label="Send a signal" aria-pressed={panel === "signals"} onClick={() => toggle("signals")}>
+                  <RedHeart size={23} className="composer__heart" />
                 </button>
                 <button type="button" className="composer__tool composer__tool--gif" aria-label="GIFs" aria-pressed={panel === "gif"} onClick={() => toggle("gif")}>
                   <span aria-hidden="true">GIF</span>
@@ -444,8 +477,14 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
                   label="Message"
                   placeholder={editing?.kind === "image" ? "add a caption" : photosReady ? "add a caption…" : "talk to me baby"}
                   empty={!text}
-                  onFocus={() => setPanel(null)}
-                  onBlur={() => notifyTyping("")}
+                  onFocus={() => {
+                    setPanel(null);
+                    setFocused(true);
+                  }}
+                  onBlur={() => {
+                    setFocused(false);
+                    notifyTyping("");
+                  }}
                   onText={(value) => {
                     setText(value);
                     if (!editing) notifyTyping(value);
@@ -464,8 +503,14 @@ export default function Composer({ names, me, replyTo, editing, onCancelReply, o
                 placeholder={editing?.kind === "image" ? "add a caption" : photosReady ? "add a caption…" : "talk to me baby"}
                 aria-label="Message"
                 enterKeyHint="send"
-                onFocus={() => setPanel(null)}
-                onBlur={() => notifyTyping("")}
+                onFocus={() => {
+                  setPanel(null);
+                  setFocused(true);
+                }}
+                onBlur={() => {
+                  setFocused(false);
+                  notifyTyping("");
+                }}
                 onChange={(event) => {
                   setText(event.target.value);
                   if (!editing) notifyTyping(event.target.value);

@@ -35,6 +35,7 @@ export default function GifPicker({ onPick, onClose }) {
     getNextPageParam: (page) => page.next ?? undefined,
     staleTime: 10 * 60_000,
     retry: false,
+    meta: { persist: false },
   });
   useEffect(() => scroller.current?.scrollTo?.({ top: 0 }), [term]);
   const list = gifs.data?.pages.flatMap((page) => page.gifs) ?? [];

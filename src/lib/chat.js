@@ -7,7 +7,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api.js";
 import { openIncoming, sealFile, sealOutgoing } from "./chatCrypto.js";
+import { forgetChat, loadChat, rememberRaw, saveChat } from "./chatCache.js";
 import { uploadFile } from "./uploads.js";
+import { viewingAs } from "./viewAs.js";
 
 export const chatKey = ["me", "chat", "messages"];
 export const chatPrefsKey = ["me", "chat", "prefs"];
@@ -22,7 +24,15 @@ export const newClientId = () => `${Date.now().toString(36)}-${crypto.randomUUID
 
 // Everything that arrives is opened (src/lib/chatCrypto.js) before anything renders it: pages,
 // catch-ups, a send's or edit's echo, and the summary's latest message.
-const openPage = async (page) => ({ ...page, messages: await Promise.all((page.messages ?? []).map((m) => openIncoming(m))) });
+// The server's own copy of each is remembered for the phone's sealed cache (src/lib/chatCache.js).
+const openPage = async (page) => {
+  rememberRaw(page.messages);
+  return { ...page, messages: await Promise.all((page.messages ?? []).map((m) => openIncoming(m))) };
+};
+const openOne = async (message) => {
+  rememberRaw([message]);
+  return openIncoming(message);
+};
 
 /** The photos and videos of a message, whichever shape it was stored in (one photo, or an album). */
 export function mediaItems(message) {
@@ -58,13 +68,78 @@ function keepLocal(saved, local) {
   };
 }
 
+// ---------- the chat kept on the phone ----------
+
+let primed = null;
+let saving = 0;
+
+/**
+ * Puts the chat kept on the phone back into memory (opened) as early as possible, keeps it up to
+ * date as messages come and go, and forgets it when the app locks. Safe to call from many places.
+ */
+export function primeChat(queryClient) {
+  if (primed) return primed;
+  primed = (async () => {
+    const cache = queryClient.getQueryCache();
+    cache.subscribe((event) => {
+      if (event.query.queryHash !== JSON.stringify(chatKey)) return;
+      if (event.type === "removed") return void forgetChat();
+      if (event.type !== "updated" || viewingAs()) return;
+      clearTimeout(saving);
+      saving = setTimeout(() => saveChat(queryClient.getQueryData(chatKey)).catch(() => {}), 2000);
+    });
+    window.addEventListener("kiriya:locked", () => forgetChat());
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "hidden" || viewingAs()) return;
+      clearTimeout(saving);
+      saveChat(queryClient.getQueryData(chatKey)).catch(() => {});
+    });
+    // The chat screen's own code, fetched while the phone is idle, so the first tap opens it at once.
+    setTimeout(() => import("../world/chat/ChatPage.jsx").catch(() => {}), 1500);
+    if (viewingAs() || queryClient.getQueryData(chatKey)) return;
+    const kept = await loadChat();
+    if (!kept) return;
+    const pages = await Promise.all(kept.pages.map(openPage));
+    // Someone else signed in on this phone since, or this phone can't open them yet: start fresh.
+    if (pages.some((page) => page.messages.some((m) => m.locked))) return;
+    if (!queryClient.getQueryData(chatKey)) queryClient.setQueryData(chatKey, { pages, pageParams: kept.pageParams }, { updatedAt: kept.savedAt });
+  })().catch(() => {});
+  return primed;
+}
+
+/**
+ * The newest page, fetched quietly and folded into what's shown (new messages, reactions, reads,
+ * deletions); if more arrived meanwhile than one page holds, the newest page replaces the rest.
+ */
+export async function refreshLatest(queryClient) {
+  const fresh = await api("/me/chat/messages").then(openPage);
+  const data = queryClient.getQueryData(chatKey);
+  const newest = newestServerAt(data);
+  const oldestFresh = fresh.messages[0]?.createdAt;
+  const gap = Boolean(fresh.next && oldestFresh && newest && oldestFresh > newest);
+  if (!data?.pages?.length || gap || data.pages[0].me !== fresh.me) return queryClient.setQueryData(chatKey, { pages: [fresh], pageParams: [null] });
+  const { messages, next: _next, ...meta } = fresh; // eslint-disable-line no-unused-vars
+  mergeMessages(queryClient, messages, meta);
+}
+
 export function useChatMessages() {
+  const queryClient = useQueryClient();
+  // What was already in memory (kept on the phone, or from an earlier visit) shows at once; only
+  // the newest page is fetched again, quietly. Older pages come as she scrolls up.
+  const hadData = useRef(Boolean(queryClient.getQueryData(chatKey)));
+  useEffect(() => {
+    primeChat(queryClient);
+    if (hadData.current) refreshLatest(queryClient).catch(() => {});
+  }, [queryClient]);
   return useInfiniteQuery({
     queryKey: chatKey,
     queryFn: async ({ pageParam, signal }) => openPage(await api(`/me/chat/messages${pageParam ? `?before=${encodeURIComponent(pageParam)}` : ""}`, { signal })),
     initialPageParam: null,
     getNextPageParam: (page) => page.next ?? undefined,
-    staleTime: 15_000,
+    staleTime: Infinity,
+    refetchOnMount: false,
+    // Opened words never go into the app's general cache; the sealed copy is kept by chatCache.js.
+    meta: { persist: false },
   });
 }
 
@@ -293,7 +368,7 @@ async function postMessage(message) {
     ...(message.media ? { media: cleanMedia(message.media) } : {}),
     replyTo: message.replyTo?.id ?? null,
   });
-  return openIncoming(await api("/me/chat/messages", { method: "POST", body }));
+  return openOne(await api("/me/chat/messages", { method: "POST", body }));
 }
 
 /**
@@ -405,7 +480,7 @@ export function useEditMessage() {
       // Sealed under the original message's identity (chat-room's rule), so it opens like the original.
       const sealed = await sealOutgoing({ clientId: message.clientId, kind: message.kind, body, ...(message.media ? { media: cleanMedia(message.media) } : {}) });
       const payload = { body: sealed.body, ...(sealed.enc ? { enc: sealed.enc, ...(sealed.media ? { media: sealed.media } : {}) } : {}) };
-      return openIncoming(await api(`/me/chat/messages/${message.id}`, { method: "PATCH", body: payload }));
+      return openOne(await api(`/me/chat/messages/${message.id}`, { method: "PATCH", body: payload }));
     },
     onMutate: ({ message, body }) => {
       updateMessage(queryClient, message.id, (m) => ({ ...m, body, editedAt: new Date().toISOString(), saving: true }));
@@ -494,6 +569,11 @@ const timeZone = () => {
 };
 
 export function useChatSummary({ enabled = true, every } = {}) {
+  const queryClient = useQueryClient();
+  // The tab bar asks for this as the app starts: a good moment to put the kept chat back.
+  useEffect(() => {
+    if (enabled) primeChat(queryClient);
+  }, [enabled, queryClient]);
   return useQuery({
     queryKey: chatSummaryKey,
     queryFn: async () => {
@@ -504,6 +584,8 @@ export function useChatSummary({ enabled = true, every } = {}) {
     staleTime: 30_000,
     enabled,
     refetchInterval: every ?? 60_000,
+    // Its latest message is opened words: not for the app's general cache.
+    meta: { persist: false },
   });
 }
 
