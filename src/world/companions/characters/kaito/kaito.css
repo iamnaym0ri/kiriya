@@ -37,6 +37,10 @@
 .kaito__upper {
   transform-origin: 100px 230px;
 }
+/* Round 3: sitting down and getting up glide (README.md, "Transitions"). */
+.kaito__upper {
+  transition: translate 0.3s cubic-bezier(0.3, 0.8, 0.3, 1);
+}
 .kaito__head {
   transform-origin: 100px 152px;
   rotate: 0deg;

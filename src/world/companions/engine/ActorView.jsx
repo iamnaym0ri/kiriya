@@ -1,6 +1,6 @@
 import { Component, createRef, memo, useCallback, useEffect, useLayoutEffect, useReducer, useRef, useSyncExternalStore } from "react";
 import { BLEND_MS } from "./blend.js";
-import { playGhost, snapshot } from "./ghost.js";
+import { blendChanges, watch } from "./ghost.js";
 
 // One character's DOM: its clouds, its body and its speech bubble. The actor (actor.js) moves these
 // nodes itself every frame; React only re-renders when the pose, expression, clouds or words change.
@@ -11,41 +11,34 @@ const BodySlot = memo(function BodySlot({ Body, pose, expression, facing, playin
 
 /**
  * The body, and the cross-fade between its drawings (README.md, "Transitions"; ghost.js). Just
- * before React draws a new pose, expression or prop, the old drawing is copied and faded out over
- * the new one; `blendMs` (from the actor, blend.js) says how long. `Body.blend === false` turns it
- * off for a Body that blends its own poses.
+ * before React draws a new pose, expression or prop, a watch starts on the drawing; right after,
+ * what React removed fades out where it was and what it added fades in, over `blendMs` (from the
+ * actor, blend.js). `Body.blend === false` turns it off for a Body that blends its own poses.
  */
 class PoseBlend extends Component {
   live = createRef();
-  layer = createRef();
+  leaving = new Set();
 
   getSnapshotBeforeUpdate(prev) {
     const p = this.props;
     if (!p.blend) return null;
     const pose = prev.pose !== p.pose;
-    const look = prev.expression !== p.expression || prev.prop !== p.prop;
-    if (!pose && !look) return null;
-    const snap = snapshot(this.live.current?.firstElementChild, { look: pose && p.playing });
-    if (!snap) return null;
-    const ms = pose ? p.blendMs : p.playing ? BLEND_MS.face : BLEND_MS.quiet;
-    // Only the expression or prop changed: the copy holds just what React removed or redrew, so a
-    // face that eases between expressions by itself shows that easing with nothing over it.
-    return { snap, ms, only: !pose, glide: p.playing };
+    if (!pose && prev.expression === p.expression && prev.prop === p.prop) return null;
+    const watcher = watch(this.live.current?.firstElementChild);
+    if (!watcher) return null;
+    return { watcher, ms: pose ? p.blendMs : p.playing ? BLEND_MS.face : BLEND_MS.quiet };
   }
 
   componentDidUpdate(prevProps, prevState, info) {
-    if (info) playGhost(info.snap, this.layer.current, this.live.current, info);
+    if (info) blendChanges(info.watcher, this.live.current, { ms: info.ms, leaving: this.leaving });
   }
 
   render() {
     const { Body, pose, expression, facing, playing, frame, talking, prop } = this.props;
     return (
-      <>
-        <div className="cs-pose" ref={this.live}>
-          <BodySlot Body={Body} pose={pose} expression={expression} facing={facing} playing={playing} frame={frame} talking={talking} prop={prop} />
-        </div>
-        <div className="cs-ghosts" ref={this.layer} aria-hidden="true" />
-      </>
+      <div className="cs-pose" ref={this.live}>
+        <BodySlot Body={Body} pose={pose} expression={expression} facing={facing} playing={playing} frame={frame} talking={talking} prop={prop} />
+      </div>
     );
   }
 }
