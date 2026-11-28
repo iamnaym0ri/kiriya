@@ -25,13 +25,13 @@
     is composited at sub-pixel positions from the very first frame.
   - Only transforms and opacity move; fixed vh/px distances; no filters (the misty mood's softness is
     a text-shadow, painted once). Fades happen only at the top and bottom edges of the screen.
-  - Starts are spread evenly through the fall (--k, set in PlayfulWorld.jsx), so they never clump.
-  - Seven on a phone (nine on wide screens), four in the "overwhelmed" mood.
+  - Like gentle snow (round 3): many flakes, each with its own place, size, depth, speed, start and
+    sway (PlayfulWorld.jsx FLAKES), so they never fall in rows or in step.
+  - Sixteen on a phone (twenty-two on wide screens), half in the "overwhelmed" mood.
   - Paused in place (not restarted) while the app is in the background or she is in chat; gone with
     "still" motion and with Reduce Motion (html[data-little-motion], set by PlayfulProvider).
 */
 .ambient-charms {
-  --n: 9;
   --dur: 20s;
   --sway: 7s;
   position: fixed;
@@ -41,10 +41,13 @@
   z-index: 0;
   contain: strict;
 }
+/* Each flake (PlayfulWorld.jsx FLAKES) brings its own place (--x), size (--s), depth's brightness
+   (--o), speed (--v: a share of the mood's fall time), start (--d: how far into its fall it already
+   is, so the screen is full from the first frame), sway width (--a) and sway time (--w). */
 .ambient-charms > span {
   position: absolute;
   top: -40px;
-  left: calc(3% + var(--i) * 11.5%);
+  left: var(--x, 50%);
   display: block;
   color: var(--charm-color, #a481b0);
   font: 24px/1 Georgia, serif;
@@ -53,13 +56,14 @@
   animation:
     charm-fall var(--dur) linear infinite,
     charm-sway var(--sway) ease-in-out infinite alternate;
-  animation-duration: calc(var(--dur) * (1 + (var(--i) - 4) * 0.025)), calc(var(--sway) * (1 + var(--i) * 0.07));
-  animation-delay: calc(var(--dur) * var(--k) / var(--n) * -1), calc(var(--i) * -0.9s);
+  animation-duration: calc(var(--dur) * var(--v, 1)), calc(var(--sway) * var(--w, 1));
+  animation-delay: calc(var(--dur) * var(--v, 1) * var(--d, 0) * -1), calc(var(--sway) * var(--w, 1) * var(--d, 0) * -2);
 }
 .ambient-charms > span::before {
   content: var(--charm-1, "✧");
   display: block;
-  opacity: var(--charm-peak, 0.34);
+  font-size: calc(1em * var(--s, 1));
+  opacity: calc(var(--charm-peak, 0.34) * var(--o, 1));
 }
 .ambient-charms > span:nth-child(4n + 2)::before { content: var(--charm-2, "♡"); }
 .ambient-charms > span:nth-child(4n + 3)::before { content: var(--charm-3, "✦"); }
@@ -125,12 +129,12 @@
 }
 /* Sway: a soft side-to-side, played back and forth. */
 @keyframes charm-sway {
-  from { transform: translateX(-14px) rotate(-14deg); }
-  to { transform: translateX(14px) rotate(14deg); }
+  from { transform: translateX(calc(-16px * var(--a, 1))) rotate(calc(-14deg * var(--a, 1))); }
+  to { transform: translateX(calc(16px * var(--a, 1))) rotate(calc(14deg * var(--a, 1))); }
 }
 @keyframes charm-sway-wide {
-  from { transform: translateX(-26px) rotate(-24deg); }
-  to { transform: translateX(26px) rotate(22deg); }
+  from { transform: translateX(calc(-26px * var(--a, 1))) rotate(calc(-24deg * var(--a, 1))); }
+  to { transform: translateX(calc(26px * var(--a, 1))) rotate(calc(22deg * var(--a, 1))); }
 }
 @keyframes charm-spin {
   from { transform: rotate(0deg); }
@@ -183,7 +187,7 @@ html.app-shell .ambient-charms::backdrop {
   display: none;
 }
 html.app-shell .ambient-charms > span::before {
-  opacity: min(var(--charm-peak, 0.34), 0.62);
+  opacity: calc(min(var(--charm-peak, 0.34), 0.62) * var(--o, 1));
 }
 /* The chat has its own wallpaper and a game its own world: the charms wait where they are (paused,
    not removed), so leaving doesn't restart them. */
@@ -427,14 +431,11 @@ html[data-little-motion="off"] .birthday-ribbon__track {
     height: 30px;
     font-size: 10px;
   }
-  .ambient-charms {
-    --n: 7;
-  }
   .ambient-charms > span {
-    left: calc(5% + var(--i) * 14%);
     font-size: 18px;
   }
-  .ambient-charms > span:nth-child(n + 8) {
+  /* Sixteen flakes on a phone. */
+  .ambient-charms > span:nth-child(n + 17) {
     display: none;
   }
 }

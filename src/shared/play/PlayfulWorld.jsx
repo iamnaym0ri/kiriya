@@ -16,10 +16,25 @@ import { isAppShell } from "../../lib/native.js";
 export { usePlayful } from "./PlayfulContext.js";
 export { default as BirthdayRibbon } from "./DailyRibbon.jsx";
 
-// When each charm starts, as a share of the fall (k / 7 on a phone, which shows the first seven;
-// k / 9 on wide screens): neighbours across the screen are far apart in time, so they never fall in
-// a row or a clump.
-const CHARM_ORDER = [0, 4, 1, 5, 2, 6, 3, 7, 8];
+// The charms fall like gentle snow (Josh: "like an actual snowflake falling, slow snow, gently and
+// lightly, not one line then another line"): many flakes, each with its own place, size, depth,
+// speed, start and sway, so no two move in step and they never come down in rows. The values are
+// fixed (low-discrepancy sequences, not Math.random), so every render and every phone looks alike.
+const frac = (x) => x - Math.floor(x);
+const FLAKES = Array.from({ length: 22 }, (_, i) => {
+  // Three depths: far flakes are small, faint and slow; near ones bigger, brighter, a little quicker.
+  const depth = [0, 2, 1, 0, 1, 2, 0, 1][i % 8];
+  const jitter = frac(0.29 + i * 0.2360679);
+  return {
+    x: (3 + frac(0.11 + i * 0.41421356) * 94).toFixed(2),
+    s: [0.52, 0.76, 1.0][depth] + jitter * 0.14,
+    o: [0.5, 0.78, 1][depth],
+    v: [1.55, 1.2, 0.95][depth] + jitter * 0.25,
+    d: frac(0.37 + i * 0.618034).toFixed(3),
+    a: (0.45 + frac(0.53 + i * 0.5698) * 1.0).toFixed(2),
+    w: (0.7 + frac(0.17 + i * 0.3247) * 0.9).toFixed(2),
+  };
+});
 
 export function PlayfulProvider({ children }) {
   const queryClient = useQueryClient();
@@ -195,8 +210,8 @@ function AmbientCharms() {
   }, [app]);
   const charms = (
     <div ref={ref} className="ambient-charms" aria-hidden="true">
-      {CHARM_ORDER.map((k, i) => (
-        <span key={i} style={{ "--i": i, "--k": k }} />
+      {FLAKES.map((f, i) => (
+        <span key={i} style={{ "--x": `${f.x}%`, "--s": f.s.toFixed(2), "--o": f.o, "--v": f.v.toFixed(2), "--d": f.d, "--a": f.a, "--w": f.w }} />
       ))}
     </div>
   );
