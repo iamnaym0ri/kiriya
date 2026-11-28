@@ -515,3 +515,17 @@ chat page (likely cause); confirmation pending from the recorder on Josh's phone
   (`usePrefs().data?.companion`); hidden and paused under games, the sketchbook, sheets, dialogs and
   the viewer (`data-companion-hide` for more). **Contract:** the engine reads the chat's class names
   `.chat`, `.chat__head`, `.chat-nudge`, `.composer`, `.chat__credit`, `.msg`, `.bubble`: keep them.
+
+### Round 3d (2026-11-28): snow, and the chibi stays free
+
+- **Snow** (Josh: "like an actual snowflake falling… not one line then another line"): 22 flakes
+  (16 on a phone) in three depths; every flake of one depth falls at exactly the same speed with
+  golden-ratio starts, so the gaps never close. Per-flake speeds (2078d1a) drifted into rows of 4–6
+  about 20% of the time after a couple of minutes (measured on Josh's phone); now at most 3 meet
+  (one per depth), checked over 15 simulated minutes for every feeling's speed.
+- **Companion placement**: a stricter rule set (bubbles and body never over titles, perches, a
+  per-frame guard; r3/motion ec484df + e3697ed) was built and then **not merged**. Josh: "Just let
+  the chibi do whatever around the page, that was the reason of the stay command". She roams as in
+  round 3c; "stay" is how Kiriya parks her. Don't reopen this unless Josh asks.
+- Feed test `kamui: a body slower…` holds the event loop open (AbortSignal.timeout's timer is
+  unref'd), so node:test no longer cancels it and the three after it.
