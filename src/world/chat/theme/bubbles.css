@@ -427,10 +427,10 @@
 :is(.chat, .chat-preview) .msg[data-design="jelly"] .bubble::before {
   content: "";
   position: absolute;
-  top: 3px;
+  top: 2.5px;
   left: 12px;
   width: min(38%, 70px);
-  height: 4px;
+  height: 3.5px;
   border-radius: 999px;
   background: #ffffffa6;
   pointer-events: none;

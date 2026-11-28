@@ -198,7 +198,7 @@
 .chat-preview--live {
   display: grid;
   grid-template-rows: 34px minmax(0, 1fr) 36px;
-  height: clamp(150px, 21dvh, 184px);
+  height: clamp(160px, 22dvh, 192px);
   border-radius: 20px;
   border: 1px solid var(--chat-line);
   box-shadow: 0 8px 22px -14px #1b122299;
@@ -680,7 +680,7 @@
 .look-new {
   position: absolute;
   top: 6px;
-  left: 6px;
+  right: 6px;
   padding: 2px 7px;
   border-radius: 999px;
   background: var(--sheet-accent);
