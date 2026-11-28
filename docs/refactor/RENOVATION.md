@@ -489,3 +489,17 @@ Native changes since the last phone build: the chat plugin and sealing code (App
 notification extensions; `ruby ios/scripts/add-native-targets.rb`), `supportsAdaptiveImageGlyph`,
 the splash auto-hide cap (3 s). The iOS 26.3 Simulator lacks system fonts (✧ ✦ ✿ and even 😊 draw as
 boxes with `-apple-system`): check symbols on the real iPhone before bundling a symbol font.
+
+### Round 3b (Josh on his iPhone, 2026-11-27, deployed 19:31, bundle 1.20261128.13154)
+
+Plain "sent <3" / "read ♡"; seven signals in one row, each with its own colour and motion; the
+composer's red heart beats every 3.6 s; the chat's newest pages and sealed files cached on the
+phone (encrypted at rest, 250 MB cap), scroll-back paging that holds its place, opened chat text no
+longer in the general persisted cache; theme and background shared ("ours"), bubble design and
+typing indicator per person (each message in its sender's design; typing in the typer's style);
+5 new bubble designs and 5 new typing indicators; the Maomao background is the official episode 6
+garden-party wallpaper (Josh's pick), cropped to its three panels, credit on its own line above the
+composer; the "seal our messages" bar is a slim row under the header; lighter pose blends (no full
+copies or style reads in the flip frame): on Josh's iPhone 11, home at rest went from 18 frames
+over 20 ms in 20 s to 0 (6 blends). Header-overlay report: the compact top bar is hidden on the
+chat page (likely cause); confirmation pending from the recorder on Josh's phone.
