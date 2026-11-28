@@ -18,19 +18,26 @@ export { default as BirthdayRibbon } from "./DailyRibbon.jsx";
 
 // The charms fall like gentle snow (Josh: "like an actual snowflake falling, slow snow, gently and
 // lightly, not one line then another line"): many flakes, each with its own place, size, depth,
-// speed, start and sway, so no two move in step and they never come down in rows. The values are
-// fixed (low-discrepancy sequences, not Math.random), so every render and every phone looks alike.
+// start and sway, so they never come down in rows. The values are fixed (low-discrepancy sequences,
+// not Math.random), so every render and every phone looks alike.
+// Spacing that lasts: the flakes of one depth all fall at exactly the same speed (as real flakes of
+// one size do), so the even gaps between them never close. Slightly different speeds per flake let
+// them drift into bands of 4–5 after a couple of minutes (seen on the phone, 2026-11-28). The three
+// depths move at different speeds, so at most one flake per depth can meet at the same height.
 const frac = (x) => x - Math.floor(x);
-const FLAKES = Array.from({ length: 22 }, (_, i) => {
-  // Three depths: far flakes are small, faint and slow; near ones bigger, brighter, a little quicker.
-  const depth = [0, 2, 1, 0, 1, 2, 0, 1][i % 8];
+// Far (0), middle (1) and near (2); the phone shows the first 16 (7 far, 5 middle, 4 near), larger
+// screens all 22 (10, 7, 5).
+const DEPTHS = [0, 1, 2, 0, 1, 0, 2, 0, 1, 0, 2, 1, 0, 1, 2, 0, 0, 1, 0, 2, 1, 0];
+const FLAKES = DEPTHS.map((depth, i) => {
+  // Far flakes are small, faint and slow; near ones bigger, brighter, a little quicker.
   const jitter = frac(0.29 + i * 0.2360679);
+  const k = DEPTHS.slice(0, i).filter((d) => d === depth).length; // its place among its own depth
   return {
     x: (3 + frac(0.11 + i * 0.41421356) * 94).toFixed(2),
     s: [0.52, 0.76, 1.0][depth] + jitter * 0.14,
     o: [0.5, 0.78, 1][depth],
-    v: [1.55, 1.2, 0.95][depth] + jitter * 0.25,
-    d: frac(0.37 + i * 0.618034).toFixed(3),
+    v: [1.55, 1.2, 0.95][depth],
+    d: frac([0.07, 0.41, 0.73][depth] + k * 0.618034).toFixed(3),
     a: (0.45 + frac(0.53 + i * 0.5698) * 1.0).toFixed(2),
     w: (0.7 + frac(0.17 + i * 0.3247) * 0.9).toFixed(2),
   };
