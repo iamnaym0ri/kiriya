@@ -503,3 +503,15 @@ composer; the "seal our messages" bar is a slim row under the header; lighter po
 copies or style reads in the flip frame): on Josh's iPhone 11, home at rest went from 18 frames
 over 20 ms in 20 s to 0 (6 blends). Header-overlay report: the compact top bar is hidden on the
 chat page (likely cause); confirmation pending from the recorder on Josh's phone.
+
+### Round 3c (2026-11-27): Josh observes, she's the main stage; chibis on every page
+
+- **Observer admin** (Josh's rule; memory `kiriya-observer-admin`): on Josh's phone her corner,
+  check-in, prefs (companion, animations, sharing), public page and pin board read as hers with
+  `readOnly: true`; his writes get 403 `hers`. His own phone's settings ("this phone", "you") and
+  every sender tool stay his. His game plays and sketchbook keeps are tries that never touch her
+  records (`scripts/test-her-world.mjs`).
+- **Companions everywhere**: one stage in the app shell, kept across tabs; her pick on both phones
+  (`usePrefs().data?.companion`); hidden and paused under games, the sketchbook, sheets, dialogs and
+  the viewer (`data-companion-hide` for more). **Contract:** the engine reads the chat's class names
+  `.chat`, `.chat__head`, `.chat-nudge`, `.composer`, `.chat__credit`, `.msg`, `.bubble`: keep them.
