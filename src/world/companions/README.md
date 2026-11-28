@@ -106,12 +106,15 @@ export default {
   (the engine memoises on these props).
 - The engine owns a wrapper around the body (taps, dragging, focus): don't add your own click
   handlers.
-- Changes of pose, expression and prop are blended by the engine (see "Transitions"): draw each
-  pose as it should look, give the parts CSS poses a `class`, and let the engine blend. Parts that
-  move between poses by CSS (the upper body lowering to sit, an arm's angle, a walk cycle ending)
-  glide on their own; your own CSS transitions keep working too. Mark a prop that should pop into
-  the hand with `data-cs-pop` on a plain wrapper `<g>` (optionally `--cs-pop-origin`, default
-  `50% 80%` of the prop). `Body.blend = false` opts out (a Body that blends its own poses).
+- Changes of pose, expression and prop are cross-faded by the engine (see "Transitions"): draw
+  each pose as it should look and let the engine blend what React adds and removes. Give the parts
+  that stay on screen but move between poses by CSS (the upper body lowering to sit, an arm's
+  angle) a CSS `transition` on their `translate` / `rotate` / `scale`, on an element whose pose
+  animations don't animate that same property (a transition never starts from a running
+  animation; put the offset on a plain wrapper group if they do). Turn transitions off with your
+  animations (`transition-duration: 0s` when not `playing` and under reduced motion). Mark a prop
+  that should pop into the hand with `data-cs-pop` on a plain wrapper `<g>` (optionally
+  `--cs-pop-origin`, default `50% 80%` of the prop). `Body.blend = false` opts out.
 
 ### Platform
 
@@ -264,27 +267,29 @@ first line comes with a `wave`. With none written, it uses `any`, then each one'
 Josh, round 3: "more seamless instead of abrupt". Every switch flows; the engine does it once for
 every character, whatever way its Body draws poses.
 
-- **The cross-fade** (`engine/ghost.js`, `PoseBlend` in `ActorView.jsx`). Just before React draws a
-  new pose, expression or prop, the body's DOM is copied as it looks that instant (the "ghost") and
-  a MutationObserver notes what React changes. The copy is laid over the live body with its CSS
-  clocks set to where the old ones were (a walk keeps stepping as it fades) and fades out; what
-  React removed or redrew (an arm group, a path, a prop) fades out of it, and the new parts fade in
-  on the live body. Styled parts (anything with a `class`) whose transform or opacity would jump
-  with the new pose (an animation swapped for another or for a still value) are animated from where
-  they were into whatever their CSS now says, still or moving, and the copy glides in step; parts
-  with a CSS transition of their own glide in the copy too. So nothing doubles and nothing jumps.
-  In quiet mode and reduced motion nothing glides: the copy is a plain short cross-fade.
-- **Expression or prop only**: the copy holds just what React removed or redrew (everything else
-  is pruned from it before it is styled), so the faces that ease between expressions by
-  themselves (Maomao, both Mikus, KAITO: a JS morph of the face's numbers, which can't be CSS on
-  the iPhone because WebKit has no CSS `d` for path shapes) keep their own easing with nothing over
-  them, and a face drawn per expression (Bamby) cross-fades.
-- **Cost** per change: one `cloneNode`, one observer, for a new pose a read of 20–50 styled parts'
-  transform and opacity, a few short Web Animations (opacity and transforms); nothing per frame;
-  at most two ghosts. The biggest share is the browser styling the copied SVG (a few ms in
-  WebKit on the iMac per change of pose). The live body is never made see-through.
-- **KAITO's arms** are three points per pose, so his Body sweeps them from pose to pose (0.24 s)
-  instead of cross-fading, with what the hand holds riding along.
+- **The cross-fade** (`engine/ghost.js`, `PoseBlend` in `ActorView.jsx`). Just before React draws
+  a new pose, expression or prop, a MutationObserver (with old values) starts watching the body;
+  right after, it says exactly what React changed. Parts React removed (an arm group, a prop, a
+  mark, a face drawn per expression) are put back where they were, still (their own animations and
+  transitions off, one CSS rule on `[data-cs-leaving]`), and fade out in place, then go: they keep
+  their place in the drawing (what was behind stays behind) and ride along with the body. A node
+  React redrew in place (a path's shape, a `transform` attribute) gets a one-node copy with its old
+  attributes just in front of it, which fades the same way. What React added or redrew fades in.
+  The faces that ease between expressions by themselves (Maomao, both Mikus, KAITO: a JS morph of
+  the face's numbers, which can't be CSS on the iPhone because WebKit has no CSS `d` for path
+  shapes) change nothing in the commit, so nothing is laid over them.
+- **Gliding**: parts that move between poses by CSS glide by the Body's own CSS transitions
+  (Maomao's and Rotten Girl's upper body and head; Miku's upper body, skirt and arms; KAITO's upper
+  body; Bamby's arms, legs and his sitting drop, which sits on its own un-animated `bamby__seat`
+  group because a CSS transition never starts from a running animation). A part whose pose swaps
+  one animation for another still changes at once, as before round 3.
+- **Cost** (round 3, second pass: the first version copied the whole body and cost a dropped frame
+  per change on the iPhone 11). Per change now: no `getComputedStyle`, no `getAnimations`, no
+  layout reads; 1–8 nodes copied (redrawn ones), 12–38 removed nodes put back for the fade, 3–23
+  short opacity animations; no extra style recalcs or layouts beyond the change itself (Chromium's
+  counters match the blend switched off). Before: 51–86 style reads, 3 `getAnimations`, 179–223
+  nodes copied and styled, +3 style recalcs and +2 layouts per change, and a second SVG repainting
+  every frame of the fade. `.lab/perf-model.mjs` in the motion agent's worktree measures it.
 - **Timing** (`engine/blend.js`, `BLEND_MS`): quick (90 ms) for a reaction, a crouch, take-off, the
   top of a jump, landing and being picked up; 120 ms setting off, 160 ms stopping, 150 ms a
   behaviour or a step starting, 200 ms easing into the rest pose, sitting or lying down; 150 ms a
