@@ -245,15 +245,18 @@ export function useChatLive({ live, me, enabled = true }) {
           });
           const ch = client.channels.get(CHANNEL);
           channel.current = ch;
-          ch.subscribe("message", (event) => {
+          // Each subscribe attaches the channel and returns a promise; leaving the chat before the attach
+          // finishes rejects them with "Connection closed" (harmless, but not to be left unhandled).
+          const on = (name, listener) => ch.subscribe(name, listener).catch(() => {});
+          on("message", (event) => {
             // Their message arriving ends their "typing…".
             if (event.data?.sender && event.data.sender !== me) showTyping(false);
             catchUp();
           });
-          ch.subscribe("edited", () => catchUp());
+          on("edited", () => catchUp());
           // The theme or background changed (theirs together), or their bubbles or typing style.
-          ch.subscribe("look", () => queryClient.invalidateQueries({ queryKey: chatPrefsKey }));
-          ch.subscribe("reaction", ({ data }) =>
+          on("look", () => queryClient.invalidateQueries({ queryKey: chatPrefsKey }));
+          on("reaction", ({ data }) =>
             updateMessage(queryClient, data.messageId, (m) => {
               const reactions = { ...m.reactions };
               if (data.emoji) reactions[data.role] = data.emoji;
@@ -261,11 +264,11 @@ export function useChatLive({ live, me, enabled = true }) {
               return { ...m, reactions };
             }),
           );
-          ch.subscribe("deleted", ({ data }) => updateMessage(queryClient, data.id, gone));
-          ch.subscribe("read", ({ data }) => setFirstPage(queryClient, (page) => ({ ...page, reads: { ...page.reads, [data.role]: data.at } })));
-          ch.subscribe("typing", (message) => message.clientId !== me && showTyping(!message.data?.stop));
+          on("deleted", ({ data }) => updateMessage(queryClient, data.id, gone));
+          on("read", ({ data }) => setFirstPage(queryClient, (page) => ({ ...page, reads: { ...page.reads, [data.role]: data.at } })));
+          on("typing", (message) => message.clientId !== me && showTyping(!message.data?.stop));
           const refreshPresence = () => ch.presence.get().then((members) => setOnline(members.some((m) => m.clientId !== me))).catch(() => {});
-          ch.presence.subscribe(refreshPresence);
+          ch.presence.subscribe(refreshPresence).catch(() => {});
           ch.presence.enter().then(refreshPresence).catch(() => {});
           // After a dropped connection, fetch whatever arrived meanwhile.
           client.connection.on("connected", () => catchUp());
