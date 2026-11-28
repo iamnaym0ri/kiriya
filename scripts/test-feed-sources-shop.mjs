@@ -776,7 +776,14 @@ test("kamui: a body slower than the 20 s budget fails after one request instead 
     return new Promise((_, reject) => signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true }));
   };
   const entry = defineSource({ ...news.makeKamuiCosplay({ validators: new Map() }), timeoutMs: 50 });
-  await assert.rejects(rawPage(entry, [], { send: slow }), { code: "source_request_limit" });
+  // AbortSignal.timeout's timer doesn't hold the event loop open; without this, node:test sees nothing
+  // pending and cancels this test and every one after it.
+  const keepAlive = setInterval(() => {}, 1_000);
+  try {
+    await assert.rejects(rawPage(entry, [], { send: slow }), { code: "source_request_limit" });
+  } finally {
+    clearInterval(keepAlive);
+  }
   assert.equal(sent, 1);
 });
 
