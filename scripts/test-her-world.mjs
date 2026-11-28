@@ -93,6 +93,28 @@ try {
     await json(await request("me/mood", { method: "PUT", cookie: her, body: { mood: "night", energy: 1 } }));
     assert.equal((await json(await request("me/mood", { cookie: josh }))).current.key, "night", "Her update reaches his phone");
   });
+  await test("The luck shelf on his phone shows her keepsakes and bests, with his own turns; his pulls never touch hers", async () => {
+    const drawn = await json(await request("me/games/luck/fortune", { method: "POST", cookie: her, body: {} }));
+    assert.equal(drawn.luck.fortune.count, 1);
+    await json(await request("me/games/luck/best", { method: "POST", cookie: her, body: { game: "cups", streak: 7 } }));
+    const herView = await json(await request("me/games/luck", { cookie: her }));
+    const hisView = await json(await request("me/games/luck", { cookie: josh }));
+    assert.equal(hisView.hers, true);
+    assert.equal(hisView.fortune.count, 1, "Her fortunes show on his phone");
+    assert.deepEqual(hisView.best, herView.best, "So do her bests");
+    assert.equal(hisView.fortune.today, null, "Today's slip on his phone is his own try");
+    const pulled = await json(await request("me/games/luck/capsule", { method: "POST", cookie: josh, body: { pullId: "6a3f1d5e-1b2c-4d3e-8f90-123456789abc" } }));
+    assert.equal(pulled.luck.capsule.left, hisView.capsule.left - 1, "His own turns count down");
+    assert.deepEqual(pulled.luck.capsule.charms, herView.capsule.charms, "and he still sees her charms");
+    const after = await json(await request("me/games/luck", { cookie: her }));
+    assert.deepEqual(after.capsule, herView.capsule, "His pull never reached her");
+  });
+
+  await test("The secret word on his phone shows her streak; his guesses stay his", async () => {
+    const his = await json(await request("me/games/secret-word", { cookie: josh }));
+    assert.equal(his.streakIsHers, true);
+    assert.deepEqual(his.streak, (await json(await request("me/games/secret-word", { cookie: her }))).streak);
+  });
 } finally {
   await client.close();
 }

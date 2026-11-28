@@ -49,7 +49,6 @@ function InstallGuide() {
 export function Sharing() {
   const prefs = usePrefs();
   const setPrefs = useSetPrefs();
-  const role = useSession().data?.role;
   // Switches answer the tap straight away; the saved value takes over once it's back.
   const [pending, setPending] = useState({});
   const data = prefs.data;
@@ -64,7 +63,7 @@ export function Sharing() {
           <h2 id="sharing-title">What your friends can see</h2>
           <p className="settings-card__hint">
             Your public profile can show how you are right now. Everything else in your world stays
-            behind your passphrase.{role === "admin" ? " (Admin: these are your test choices, not Kiriya’s.)" : ""}
+            behind your passphrase.
           </p>
         </div>
       </div>
@@ -554,7 +553,6 @@ const lines = (text) => text.split("\n").map((line) => line.trim()).filter(Boole
 
 export function PublicProfile() {
   const queryClient = useQueryClient();
-  const role = useSession().data?.role;
   const profile = useQuery({ queryKey: ["me", "profile"], queryFn: () => api("/me/profile") });
   const songs = useQuery({ queryKey: ["me", "songs"], queryFn: () => api("/me/songs") });
   const [draft, setDraft] = useState(null);
@@ -605,7 +603,7 @@ export function PublicProfile() {
       <h2 id="profile-title">Your public page</h2>
       <p className="settings-card__hint">
         this is what anyone sees at kiriya.love before the passphrase. change anything here, then tap
-        save ♡{role === "admin" ? " (Admin: these are your test choices, not Kiriya’s.)" : ""}
+        save ♡
       </p>
 
       <label className="settings-field">

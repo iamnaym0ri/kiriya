@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { prefsKey, usePrefs, useSetPrefs } from "../../lib/prefs.js";
 import { useIsAdmin } from "../../lib/session.js";
 import { haptic } from "../../lib/native.js";
-import { Note, Screen } from "./parts.jsx";
+import { HersOnly, Note, Screen } from "./parts.jsx";
 
 // Who keeps her company on home (docs/refactor/RENOVATION.md, "Characters"): one of the five, or
 // nobody at all. Saved to her prefs (prefs.companion), so every phone and the next launch agree.
@@ -86,7 +86,7 @@ export default function CharacterScreen() {
   const current = prefs.data?.companion ?? "maomao";
 
   function pick(id) {
-    if (id === current) return;
+    if (admin || id === current) return;
     haptic("light");
     setSaid(null);
     setPrefs.mutate({ companion: id }, { onSuccess: () => setSaid(PICKED_LINE[id]) });
@@ -96,10 +96,15 @@ export default function CharacterScreen() {
 
   return (
     <Screen
-      title="your companion"
-      subtitle={`who keeps you company on home. another one drops by for a visit now and then.${admin ? " (your pick here is your own test copy, not hers.)" : ""}`}
+      title={admin ? "her companion" : "your companion"}
+      subtitle={
+        admin
+          ? "who keeps her company. the same one walks your home too, so you see what she sees."
+          : "who keeps you company on home. another one drops by for a visit now and then."
+      }
     >
-      <div className="me-cast" role="radiogroup" aria-label="Your companion">
+      <HersOnly line="only she picks her companion ♡">
+      <div className="me-cast" role="radiogroup" aria-label={admin ? "Her companion" : "Your companion"}>
         {choices.map((choice) => {
           const Thumb = thumbs[choice.id];
           const checked = current === choice.id;
@@ -129,6 +134,7 @@ export default function CharacterScreen() {
           );
         })}
       </div>
+      </HersOnly>
       <Note>{setPrefs.isError ? "that didn’t save. try again?" : said}</Note>
     </Screen>
   );

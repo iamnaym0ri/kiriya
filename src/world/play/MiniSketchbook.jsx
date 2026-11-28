@@ -62,14 +62,15 @@ function WebSketchbook() {
       const { file, width, height } = await canvas.current.export(1600);
       const stored = await uploadFile(file, { folder: "art" });
       const art = await api("/me/artworks", { method: "POST", body: { ...stored, width, height, prompt: title.trim() || "A little birthday doodle" } });
-      return { version, id: art?.id ?? null };
+      return { version, id: art?.id ?? null, preview: Boolean(art?.preview) };
     },
-    onSuccess: ({ version }) => {
+    onSuccess: ({ version, preview }) => {
       savedRevision.current = version;
       const unchanged = revision.current === version;
       setKept(unchanged); setGallery(true);
       if (pages.current.doodle?.revision === version) Object.assign(pages.current.doodle, { savedRevision: version, kept: true });
-      setStatus(unchanged ? "Tucked into your gallery, just for you ♡" : "Saved. Your newest changes are ready to keep, too.");
+      // Josh trying it out: it works, but her gallery stays hers (server/routes/me.js).
+      setStatus(preview ? "That works ♡ (a try: only her doodles go in her gallery.)" : unchanged ? "Tucked into your gallery, just for you ♡" : "Saved. Your newest changes are ready to keep, too.");
       client.invalidateQueries({ queryKey: ["me", "artworks"] });
       if (moving) celebrate({ x: .35, y: .55 }, .3);
     },

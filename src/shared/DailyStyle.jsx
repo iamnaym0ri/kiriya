@@ -22,6 +22,74 @@ export function sinceLabel(current, today) {
   return `since ${new Intl.DateTimeFormat("en-SG", { day: "numeric", month: "short", timeZone: "Asia/Singapore" }).format(new Date(`${current.setDay}T12:00:00+08:00`))}`;
 }
 
+const timeIn = (iso) => {
+  try {
+    return new Intl.DateTimeFormat("en-SG", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Singapore" }).format(new Date(iso)).toLowerCase();
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Her corner as Josh's phone shows it (round 3b: "the little corner can only be changed by her"):
+ * her check-in, read-only, refreshed while he looks. No form, nothing to save.
+ */
+function CornerView({ data }) {
+  const current = data.current;
+  if (!current)
+    return (
+      <div className="corner-view corner-view--empty">
+        <span className="corner-view__emoji" aria-hidden="true">♡</span>
+        <p>she hasn’t checked in yet.</p>
+        <small>whatever she picks shows up here, and in the app’s colours.</small>
+      </div>
+    );
+  const level = data.energyLevels?.[current.energy];
+  const since = sinceLabel(current, data.day);
+  const at = current.setAt ? timeIn(current.setAt) : null;
+  const feeling = current.feeling;
+  return (
+    <div className="corner-view">
+      <div className="corner-view__hero">
+        <span className="corner-view__emoji" aria-hidden="true">{feeling?.emoji ?? current.face}</span>
+        <div>
+          <strong>{feeling ? feeling.label.toLowerCase() : "feeling it out"}</strong>
+          <span>{feeling?.hint ?? "no mood picked: a bit of everything."}</span>
+        </div>
+      </div>
+      <dl className="corner-view__list">
+        <div>
+          <dt>presenting</dt>
+          <dd>
+            {current.label.toLowerCase()} <span className="corner-view__face">{current.face}</span>
+          </dd>
+        </div>
+        <div>
+          <dt>pronouns</dt>
+          <dd>{current.address.label}</dd>
+        </div>
+        <div>
+          <dt>social battery</dt>
+          <dd>
+            <span className="corner-view__battery" data-energy={current.energy} aria-hidden="true">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <i key={i} data-lit={i <= current.energy || undefined} />
+              ))}
+            </span>
+            {level?.label ?? ""}
+            {level?.comment && <small>“{level.comment}”</small>}
+          </dd>
+        </div>
+        <div>
+          <dt>since</dt>
+          <dd>{since ?? (at ? `today, ${at}` : "today")}</dd>
+        </div>
+      </dl>
+      <p className="corner-view__note">only she changes this. it shows here soon after she does ♡</p>
+    </div>
+  );
+}
+
 function CornerPanel({ query, data, onClose, onPreview }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -36,11 +104,12 @@ function CornerPanel({ query, data, onClose, onPreview }) {
   }, []);
   return <section ref={ref} id="feeling-corner-panel" popover="auto" role="dialog" aria-labelledby="feeling-corner-title" className="daily-style-panel" onToggle={event => { if (event.newState === "closed") onClose(); }}>
     <header className="daily-style-panel__head">
-      <div><span className="micro-label">YOUR OWN LITTLE CORNER</span><h2 id="feeling-corner-title">{data?.labels.title ?? TITLE}</h2></div>
+      <div><span className="micro-label">{data?.readOnly ? "KIRIYA’S LITTLE CORNER" : "YOUR OWN LITTLE CORNER"}</span><h2 id="feeling-corner-title">{data?.readOnly ? "how she’s doing" : data?.labels.title ?? TITLE}</h2></div>
       <button className="icon-button" onClick={onClose} aria-label="Close your little corner"><Icon name="close" /></button>
     </header>
     {query.isError ? <div className="daily-style-panel__error"><p role="alert">Your check-in couldn’t load.</p><button className="button-plum" onClick={() => query.refetch()}>Try again</button></div>
       : !data ? <p role="status">Opening your little check-in…</p>
+      : data.readOnly ? <CornerView data={data} />
       : <Suspense fallback={<p role="status">Opening your little check-in…</p>}><Checkin data={data} onDone={onClose} onPreview={onPreview} /></Suspense>}
   </section>;
 }
@@ -227,8 +296,8 @@ function AppCornerSheet({ open, query, data, onClose, onPreview }) {
           <span className="corner-sheet__grabber" aria-hidden="true" />
           <div className="corner-sheet__head">
             <div className="corner-sheet__titles">
-              <span className="corner-sheet__label">your own little corner</span>
-              <h2 id="feeling-corner-title">{data?.labels.title ?? TITLE}</h2>
+              <span className="corner-sheet__label">{data?.readOnly ? "kiriya’s little corner" : "your own little corner"}</span>
+              <h2 id="feeling-corner-title">{data?.readOnly ? "how she’s doing" : data?.labels.title ?? TITLE}</h2>
             </div>
             <button type="button" className="corner-sheet__close" onClick={onClose} aria-label="Close your little corner">
               <Icon name="close" size={18} />
@@ -242,10 +311,10 @@ function AppCornerSheet({ open, query, data, onClose, onPreview }) {
               <button className="button-plum" onClick={() => query.refetch()}>Try again</button>
             </div>
           ) : !data ? (
-            <p className="corner-sheet__wait" role="status">Opening your little check-in…</p>
+            <p className="corner-sheet__wait" role="status">Opening the little check-in…</p>
           ) : (
             <Suspense fallback={<p className="corner-sheet__wait" role="status">Opening your little check-in…</p>}>
-              <Checkin data={data} onDone={onClose} onPreview={onPreview} />
+              {data.readOnly ? <CornerView data={data} /> : <Checkin data={data} onDone={onClose} onPreview={onPreview} />}
             </Suspense>
           )}
         </div>
@@ -262,7 +331,16 @@ export function DailyStyleProvider({ children }) {
   const allowed = Boolean(session.data?.role);
   // The public page stays exactly what visitors see; her corner lives inside her world.
   const inWorld = location.pathname.startsWith("/world");
-  const query = useQuery({ queryKey: ["me", "mood"], queryFn: () => api("/me/mood"), enabled: allowed, staleTime: 60_000 });
+  // Her check-in. On Josh's phone (read-only) it's looked at again every half minute while the app
+  // is open, and on every return, so her updates reach him promptly.
+  const query = useQuery({
+    queryKey: ["me", "mood"],
+    queryFn: () => api("/me/mood"),
+    enabled: allowed,
+    staleTime: 20_000,
+    refetchOnWindowFocus: true,
+    refetchInterval: (q) => (q.state.data?.readOnly ? 30_000 : false),
+  });
   const prefs = usePrefs();
   const setPrefs = useSetPrefs();
   const data = allowed && inWorld && query.error?.status !== 401 ? query.data : null;
@@ -295,7 +373,7 @@ export function DailyStyleProvider({ children }) {
     navigate({ pathname: location.pathname, search: params.size ? `?${params}` : "", hash: location.hash }, { replace: true });
   }, [allowed, inWorld, location, navigate]);
   const since = sinceLabel(current, data?.day);
-  return <DailyStyleContext.Provider value={{ current, day: data?.day ?? null, copy: data?.copy ?? null, allowed, inWorld, since, open, editing }}>
+  return <DailyStyleContext.Provider value={{ current, day: data?.day ?? null, copy: data?.copy ?? null, allowed, inWorld, since, open, editing, readOnly: Boolean(data?.readOnly) }}>
     {children}
     {allowed && inWorld && !isAppShell() && <aside className="daily-style-corner" data-small={small} aria-label="Your little feeling corner">
       <button className="daily-style-corner__toggle" onClick={open} aria-label={TITLE} aria-haspopup="dialog" aria-expanded={editing} aria-controls={editing ? "feeling-corner-panel" : undefined}>

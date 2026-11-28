@@ -203,8 +203,8 @@ function LockSheet({ open, onClose }) {
   );
 }
 
-/** Her settings, grouped like the iPhone's own, in lilac. Josh sees the same (as his test copy). */
-function HerSettings({ admin }) {
+/** Her settings, grouped like the iPhone's own, in lilac. */
+function HerSettings() {
   const prefs = usePrefs();
   const surprises = useSurprises();
   const { paused, reduced, toggle } = usePlayful();
@@ -219,7 +219,7 @@ function HerSettings({ admin }) {
 
   return (
     <>
-      <Group title={admin ? "her app · your test copy" : "your app"} note={admin ? "these change your own phone and your own copy, so you can try everything she can. she picks hers on her phone." : null}>
+      <Group title="your app">
         <Row to="/world/me/icon" icon="icon" tone="lilac" label="app icon" detail={icon ?? ""} />
         <Row to="/world/me/companion" icon="friend" tone="mint" label="your companion" detail={companion} />
         <Row to="/world/me/notifications" icon="bell" tone="pink" label="notifications" detail={NOTIFY_DETAIL[surprises.state] ?? ""} />
@@ -235,7 +235,7 @@ function HerSettings({ admin }) {
         <Row to="/world/me/widgets" icon="widgets" tone="sky" label="home screen widgets" />
       </Group>
 
-      <Group title={admin ? "her page · your test copy" : "your page"}>
+      <Group title="your page">
         <Row to="/world/me/page" icon="page" tone="lilac" label="your public page" hint="bio, socials, intro song" />
         <Row to="/world/me/sharing" icon="eye" tone="sky" label="what friends can see" />
         <Row to="/world/me/songs" icon="music" tone="pink" label="your songs" />
@@ -243,7 +243,7 @@ function HerSettings({ admin }) {
         <Row to="/world/me/talk" icon="speech" tone="mint" label="how the app talks about you" />
       </Group>
 
-      <Group title={admin ? "her things" : "your things"}>
+      <Group title="your things">
         <Row to="/world/letters" icon="letter" tone="pink" label="letters & your birthday gift" />
         <Row to="/world/memories" icon="photo" tone="peach" label="our memories" />
         <Row onClick={() => setSheet("stickers")} icon="sticker" tone="mint" label="sticker book" detail={stickers ? String(stickers) : ""} />
@@ -254,7 +254,7 @@ function HerSettings({ admin }) {
 
       <Group title="privacy">
         <FaceIdRow />
-        <Row to="/world/me/passphrase" icon="key" tone="lilac" label={admin ? "your passphrase" : "change your passphrase"} />
+        <Row to="/world/me/passphrase" icon="key" tone="lilac" label="change your passphrase" />
         <Row onClick={() => setSheet("others")} icon="phones" tone="sky" label="sign out my other devices" />
       </Group>
 
@@ -270,7 +270,76 @@ function HerSettings({ admin }) {
 
       <SignOutOthersSheet open={sheet === "others"} onClose={() => setSheet(null)} />
       <LockSheet open={sheet === "lock"} onClose={() => setSheet(null)} />
-      <StickerBook open={sheet === "stickers"} onClose={() => setSheet(null)} state={play.data} admin={admin} />
+      <StickerBook open={sheet === "stickers"} onClose={() => setSheet(null)} state={play.data} />
+      {credits && <Credits onClose={() => setCredits(false)} />}
+    </>
+  );
+}
+
+/**
+ * Josh's tab (round 3b: "I'm just an observer admin in the app… she is the one the app tends to
+ * here"). Her app and her things come first, as hers: he can look, only she changes them (the
+ * screens are read-only on his phone and the server refuses his writes). Then what is really his:
+ * this phone (icon, notifications, Face ID, widgets, locking it) and his own sign-in.
+ */
+function HisSettings() {
+  const prefs = usePrefs();
+  const surprises = useSurprises();
+  const { reduced } = usePlayful();
+  const icon = useIconName();
+  const [sheet, setSheet] = useState(null);
+  const [credits, setCredits] = useState(false);
+  const companion = prefs.data ? companionLabel(prefs.data.companion) : "";
+  const play = usePlayState();
+  const stickers = play.data?.collected?.length ?? 0;
+  const animations = reduced ? "reduce motion is on here" : prefs.data?.motion === "quiet" ? "she rests them" : "on";
+
+  return (
+    <>
+      <Group title="her app" note="what she has chosen. only she changes these; your phone follows hers ♡">
+        <Row to="/world/me/companion" icon="friend" tone="mint" label="her companion" detail={companion} />
+        <Row icon="sparkle" tone="butter" label="little animations" detail={animations} />
+        <Row to="/world/me/page" icon="page" tone="lilac" label="her public page" hint="bio, socials, intro song" />
+        <Row to="/world/me/sharing" icon="eye" tone="sky" label="what friends can see" />
+        <Row to="/world/me/songs" icon="music" tone="pink" label="her songs" />
+        <Row to="/world/me/faves" icon="heart" tone="peach" label="her faves" />
+        <Row to="/world/me/talk" icon="speech" tone="mint" label="how the app talks about her" />
+      </Group>
+
+      <Group title="her things">
+        <Row to="/world/letters" icon="letter" tone="pink" label="letters & her birthday gift" />
+        <Row to="/world/memories" icon="photo" tone="peach" label="our memories" />
+        <Row onClick={() => setSheet("stickers")} icon="sticker" tone="mint" label="her sticker book" detail={stickers ? String(stickers) : ""} />
+        <Row to="/world/saves" icon="bookmark" tone="lilac" label="her saves" />
+        <Row to="/world/merch" icon="bag" tone="butter" label="the merch shelf" />
+        <Row to="/?view=public" icon="eye" tone="sky" label="see her page like friends do" />
+      </Group>
+
+      <Group title="this phone" note="yours, on this phone only.">
+        <Row to="/world/me/icon" icon="icon" tone="lilac" label="app icon" detail={icon ?? ""} />
+        <Row to="/world/me/notifications" icon="bell" tone="pink" label="notifications on this phone" detail={NOTIFY_DETAIL[surprises.state] ?? ""} />
+        <FaceIdRow />
+        <Row to="/world/me/widgets" icon="widgets" tone="sky" label="home screen widgets" />
+        <Row onClick={() => setSheet("lock")} icon="lock" tone="plum" label={`lock kiriya${isNativeApp() ? " on this phone" : ""}`} danger />
+      </Group>
+
+      <Group title="you">
+        <Row to="/world/me/passphrase" icon="key" tone="lilac" label="your passphrase" />
+        <Row onClick={() => setSheet("others")} icon="phones" tone="sky" label="sign out your other devices" />
+      </Group>
+
+      <Group>
+        <Row onClick={() => setCredits(true)} icon="palette" tone="peach" label="art & credits" more />
+      </Group>
+
+      <footer className="me-foot">
+        <span className="me-foot__line">her little world, kept well.</span>
+        <span>made with love ♡ · {VERSION}</span>
+      </footer>
+
+      <SignOutOthersSheet open={sheet === "others"} onClose={() => setSheet(null)} />
+      <LockSheet open={sheet === "lock"} onClose={() => setSheet(null)} />
+      <StickerBook open={sheet === "stickers"} onClose={() => setSheet(null)} state={play.data} admin />
       {credits && <Credits onClose={() => setCredits(false)} />}
     </>
   );
@@ -300,7 +369,7 @@ export default function MeHome() {
         <ProfileCard />
         <MeetCard />
         {admin && <AdminDesk jar={jar.data} />}
-        <HerSettings admin={admin} />
+        {admin ? <HisSettings /> : <HerSettings />}
       </div>
     </div>
   );

@@ -12,6 +12,8 @@ export function usePrefs() {
     queryFn: () => api("/me/prefs"),
     enabled: Boolean(session.data?.role),
     staleTime: 60_000,
+    // Her choices (Josh's phone shows hers) catch up whenever the app comes back to the front.
+    refetchOnWindowFocus: true,
   });
 }
 
