@@ -3,7 +3,7 @@ import AppIconPicker from "./AppIconPicker.jsx";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api.js";
-import { useLock, useSession } from "../../lib/session.js";
+import { useIsAdmin, useLock, useSession } from "../../lib/session.js";
 import { usePrefs, useSetPrefs } from "../../lib/prefs.js";
 import { todayKey } from "../../lib/world.js";
 import { useSurprises } from "../../lib/surprises.js";
@@ -49,6 +49,7 @@ function InstallGuide() {
 export function Sharing() {
   const prefs = usePrefs();
   const setPrefs = useSetPrefs();
+  const hers = useIsAdmin();
   // Switches answer the tap straight away; the saved value takes over once it's back.
   const [pending, setPending] = useState({});
   const data = prefs.data;
@@ -62,8 +63,9 @@ export function Sharing() {
         <div>
           <h2 id="sharing-title">What your friends can see</h2>
           <p className="settings-card__hint">
-            Your public profile can show how you are right now. Everything else in your world stays
-            behind your passphrase.
+            {hers
+              ? "Her public profile can show how she is right now. Everything else in her world stays behind her passphrase."
+              : "Your public profile can show how you are right now. Everything else in your world stays behind your passphrase."}
           </p>
         </div>
       </div>
@@ -553,6 +555,7 @@ const lines = (text) => text.split("\n").map((line) => line.trim()).filter(Boole
 
 export function PublicProfile() {
   const queryClient = useQueryClient();
+  const hers = useIsAdmin();
   const profile = useQuery({ queryKey: ["me", "profile"], queryFn: () => api("/me/profile") });
   const songs = useQuery({ queryKey: ["me", "songs"], queryFn: () => api("/me/songs") });
   const [draft, setDraft] = useState(null);
@@ -602,8 +605,9 @@ export function PublicProfile() {
     <form className="settings-card" id="public-profile" aria-labelledby="profile-title" onSubmit={submit}>
       <h2 id="profile-title">Your public page</h2>
       <p className="settings-card__hint">
-        this is what anyone sees at kiriya.love before the passphrase. change anything here, then tap
-        save ♡
+        {hers
+          ? "this is what anyone sees at kiriya.love before the passphrase, as she set it ♡"
+          : "this is what anyone sees at kiriya.love before the passphrase. change anything here, then tap save ♡"}
       </p>
 
       <label className="settings-field">
