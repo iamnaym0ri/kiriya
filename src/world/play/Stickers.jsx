@@ -74,7 +74,9 @@ export function StickerBook({ open, onClose, state, admin }) {
   const [picked, setPicked] = useState(null);
   const collected = (state?.collected ?? []).map(details);
   const have = new Set(collected.map((sticker) => sticker.id));
-  const missing = (state?.catalogue ?? []).filter((sticker) => !have.has(sticker.id)).map(details);
+  // Still to find: the little drawer's catalogue, plus every sticker a game can give.
+  const findable = [...(state?.catalogue ?? []), ...[...GAME_STICKERS.keys()].map((id) => ({ id }))];
+  const missing = [...new Map(findable.filter((sticker) => !have.has(sticker.id)).map((sticker) => [sticker.id, sticker])).values()].map(details);
   const total = collected.length + missing.length;
   return (
     <EditSheet

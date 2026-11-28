@@ -20,6 +20,8 @@ import { usePlayful } from "../../shared/play/PlayfulWorld.jsx";
 import { Credits } from "../../shared/WorldPrimitives.jsx";
 import { EditField, EditSheet } from "../../shared/admin/AdminEdit.jsx";
 import ProfileCard from "./ProfileCard.jsx";
+import { StickerBook } from "../play/Stickers.jsx";
+import { usePlayState } from "../play/playState.js";
 import MeetCard from "./MeetCard.jsx";
 import AdminDesk from "./AdminDesk.jsx";
 import { companionLabel } from "./CharacterScreen.jsx";
@@ -210,6 +212,10 @@ function HerSettings({ admin }) {
   const [sheet, setSheet] = useState(null);
   const [credits, setCredits] = useState(false);
   const companion = prefs.data ? companionLabel(prefs.data.companion) : "";
+  // Her sticker book (games and the little drawer give them out): it lives here since play's header
+  // lost its button.
+  const play = usePlayState();
+  const stickers = play.data?.collected?.length ?? 0;
 
   return (
     <>
@@ -240,6 +246,7 @@ function HerSettings({ admin }) {
       <Group title={admin ? "her things" : "your things"}>
         <Row to="/world/letters" icon="letter" tone="pink" label="letters & your birthday gift" />
         <Row to="/world/memories" icon="photo" tone="peach" label="our memories" />
+        <Row onClick={() => setSheet("stickers")} icon="sticker" tone="mint" label="sticker book" detail={stickers ? String(stickers) : ""} />
         <Row to="/world/saves" icon="bookmark" tone="lilac" label="your saves" />
         <Row to="/world/merch" icon="bag" tone="butter" label="the merch shelf" />
         <Row to="/?view=public" icon="eye" tone="sky" label="see your page like friends do" />
@@ -263,6 +270,7 @@ function HerSettings({ admin }) {
 
       <SignOutOthersSheet open={sheet === "others"} onClose={() => setSheet(null)} />
       <LockSheet open={sheet === "lock"} onClose={() => setSheet(null)} />
+      <StickerBook open={sheet === "stickers"} onClose={() => setSheet(null)} state={play.data} admin={admin} />
       {credits && <Credits onClose={() => setCredits(false)} />}
     </>
   );
