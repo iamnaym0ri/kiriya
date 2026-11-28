@@ -25,12 +25,16 @@ export function safeInsets() {
 }
 
 // The app frame (docs/refactor/RENOVATION.md, "App layout"): fixed bars at the top (the compact bar
-// that fades in once home's title scrolls away), the home top bar and ribbon that scroll with the
-// page, the tab bar, and anything floating just above it.
-const TOP_FIXED = ['[data-companion-edge="top"]', ".app-topbar", ".app-topbar-strip"];
+// that fades in once a page's title scrolls away), home's top bar and ribbon that scroll with the
+// page, the tab bar, and anything floating just above it. The chat is a full-screen layer of its own:
+// its header (and the "seal our messages" bar under it) is the top, and its composer (with the
+// wallpaper's credit line above it) the bottom, wherever the keyboard has carried it.
+const CHAT = ".chat:not(.chat--swatch):not(.chat--layer)";
+const TOP_FIXED = ['[data-companion-edge="top"]', ".app-topbar", ".app-topbar-strip", `${CHAT} > .chat__head`, `${CHAT} > .chat-nudge`];
 const TOP_FLOW = [".world-mast", ".birthday-ribbon"];
 const BOTTOM_FIXED = ['[data-companion-edge="bottom"]', ".app-tabs"];
 const BOTTOM_FLOATING = [".listening-room", ".daily-style-corner", "[data-companion-float]"];
+const BOTTOM_RIDING = [`${CHAT} > .composer`, `${CHAT} > .chat__credit`];
 
 function rects(selectors) {
   const out = [];
@@ -67,6 +71,8 @@ export function measureBand(override = {}) {
   for (const { el, r } of rects(BOTTOM_FLOATING)) {
     if (r.top > height * 0.6 && r.top < bottom && getComputedStyle(el).position === "fixed") bottom = Math.min(bottom, r.top - 4);
   }
+  // The chat's composer rides the keyboard, so it can be anywhere in the lower three quarters.
+  for (const { r } of rects(BOTTOM_RIDING)) if (r.top > height * 0.25 && r.top < bottom) bottom = Math.min(bottom, r.top);
   if (Number.isFinite(override.top)) top = override.top;
   if (Number.isFinite(override.bottom)) bottom = override.bottom;
   return {
@@ -151,20 +157,43 @@ function textUnder(el, x, y) {
   return false;
 }
 
+/** The chat's newest messages (the last three rows), looked up at most every quarter second. */
+let newest = { at: -1, rows: null };
+function newestMessages() {
+  const now = performance.now();
+  if (now - newest.at > 250) {
+    const rows = document.querySelectorAll(`${CHAT} .msg`);
+    newest = { at: now, rows: new Set(Array.prototype.slice.call(rows, -3)) };
+  }
+  return newest.rows;
+}
+
 /**
  * 1 if what is at (x, y) under the stage is text, a control or a picture; 0 if it is just paper;
- * 4 over something marked `data-companion-never`.
+ * 4 over something marked `data-companion-never`; 3 over the chat's newest messages (row and all:
+ * what she is reading right now, so it perches clear of them, by the header or to one side), 1.5
+ * over any other message bubble.
  */
 function busyPoint(x, y) {
   if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return 0;
-  // The stage's bodies are made untouchable while probing (see busyScore), so this is the page.
-  const el = document.elementFromPoint(x, y);
+  // The topmost thing that isn't the stage itself. (elementsFromPoint, not switching the bodies'
+  // pointer-events off and on: that restyled the stage for every probe, a forced style and layout
+  // pass each time, and a decision makes dozens of probes.)
+  let el = null;
+  for (const hit of document.elementsFromPoint(x, y)) {
+    if (hit.closest("[data-companion-stage]")) continue;
+    el = hit;
+    break;
+  }
   if (!el || el === document.body || el === document.documentElement) return 0;
-  if (el.closest("[data-companion-stage]")) return 0;
   // The page's centrepiece (home's greeting and her name): never stand or talk over it. Weighed
   // well above ordinary text, so even a screen that is busy everywhere keeps it clear.
   if (el.closest("[data-companion-never]")) return 4;
   if (el.closest("[data-companion-ok]")) return 0;
+  const row = el.closest(".msg");
+  if (row && newestMessages().has(row)) return 3;
+  // Any other message: its bubble is what she reads in the chat, a little more than ordinary text.
+  if (row && el.closest(".bubble")) return 1.5;
   if (el.closest(INTERACTIVE)) return 1;
   if (el.closest(MEDIA)) return 0.7;
   return textUnder(el, x, y) ? 1 : 0;
@@ -176,11 +205,10 @@ function busyPoint(x, y) {
  * per frame.
  */
 export function busyScore(rect, stage) {
-  if (stage) stage.dataset.probing = "";
+  void stage;
   const xs = [rect.left + (rect.right - rect.left) * 0.25, rect.left + (rect.right - rect.left) * 0.75];
   const ys = [rect.top + (rect.bottom - rect.top) * 0.2, rect.top + (rect.bottom - rect.top) * 0.55, rect.top + (rect.bottom - rect.top) * 0.9];
   let sum = busyPoint((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2);
   for (const x of xs) for (const y of ys) sum += busyPoint(x, y);
-  if (stage) delete stage.dataset.probing;
   return sum / 7;
 }

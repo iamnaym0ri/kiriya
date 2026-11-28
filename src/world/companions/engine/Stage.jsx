@@ -54,17 +54,19 @@ async function pickVisitorId(hostId) {
  * character lives, plus a visitor now and then.
  *
  * - `hostId`: a character id, "none" for nobody.
- * - `active`: false pauses everything and hides the layer (home not showing).
+ * - `active`: false pauses everything and hides the layer (a sheet or a game over the page).
+ * - `page`: the page it is on (the path); a new one lays the band and levels out again from it.
  * - `options`: engine options (README.md, "Stage options"); `quiet` forces quiet mode either way.
  * - `controlRef`: receives the StageSim, for the lab.
  * - `name`, `birthday`: who the lines talk to, and whether today is her birthday.
  */
-export default function Stage({ hostId = "maomao", active = true, options, controlRef, name = "", birthday = false, onLayout, className = "" }) {
+export default function Stage({ hostId = "maomao", active = true, page = "", options, controlRef, name = "", birthday = false, onLayout, className = "" }) {
   const { moving } = usePlayful();
   const reduced = useReducedMotion();
   const lively = options?.quiet != null ? !options.quiet : moving && !reduced;
   const [actors, setActors] = useState([]);
   const [levels, setLevels] = useState([]);
+  const [aside, setAside] = useState(false);
   const layerRef = useRef(null);
   const simRef = useRef(null);
   if (!simRef.current) {
@@ -76,6 +78,7 @@ export default function Stage({ hostId = "maomao", active = true, options, contr
     });
     simRef.current.pickVisitorId = pickVisitorId;
   }
+  simRef.current.onAside = setAside;
   const sim = simRef.current;
   useImperativeHandle(controlRef, () => sim, [sim]);
 
@@ -92,6 +95,12 @@ export default function Stage({ hostId = "maomao", active = true, options, contr
   useEffect(() => {
     sim.setActive(active);
   }, [sim, active]);
+  const firstPage = useRef(page);
+  useEffect(() => {
+    if (page === firstPage.current) return;
+    firstPage.current = page;
+    sim.pageChanged();
+  }, [sim, page]);
   useEffect(() => {
     sim.name = name;
     sim.birthday = birthday;
@@ -136,7 +145,7 @@ export default function Stage({ hostId = "maomao", active = true, options, contr
           </div>
         ))}
       {actors.map((actor) => (
-        <ActorView key={actor.key} actor={actor} playing={lively && active} />
+        <ActorView key={actor.key} actor={actor} playing={lively && active && !aside} />
       ))}
     </div>
   );

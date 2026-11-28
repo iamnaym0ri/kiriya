@@ -537,3 +537,89 @@ test("Setting off and stopping lean the body a little, and it comes back upright
   run(sim, 2);
   assert.equal(host.lean, 0, "and settles upright");
 });
+
+// --- Round 3b: on every page (README.md, "Every page") -----------------------------------------------
+
+test("A new page: within a moment it walks or hops off anything she is reading", () => {
+  localStorage.clear();
+  const sim = makeStage();
+  sim.setHost(character());
+  const host = sim.host;
+  run(sim, 1.5);
+  host.interrupt([{ type: "wait", pose: "idle", seconds: [30, 30] }]);
+  run(sim, 0.1);
+  // The new page has text right where it stands, and clear room elsewhere.
+  const at = { level: host.level, x: host.x };
+  sim.options.avoidText = true;
+  sim.spotScore = (_a, level, x) => (level === at.level && Math.abs(x - at.x) < 60 ? 1 : 0);
+  sim.pageChanged();
+  run(sim, 0.7);
+  assert.notEqual(host.step?.type, "wait", "its little pause was cut short for it");
+  run(sim, 6);
+  assert.ok(host.level !== at.level || Math.abs(host.x - at.x) >= 60, "it moved somewhere clear");
+});
+
+test("Nowhere clear of what she is reading: it steps aside, and comes back when there is room", () => {
+  localStorage.clear();
+  const sim = makeStage();
+  sim.setHost(character());
+  const host = sim.host;
+  run(sim, 1.5);
+  host.interrupt([{ type: "rest", seconds: [30, 30] }]);
+  run(sim, 0.1);
+  sim.options.avoidText = true;
+  let busy = 3; // the chat's newest messages, everywhere (the keyboard is up)
+  sim.spotScore = () => busy;
+  let told = null;
+  sim.onAside = (on) => (told = on);
+  sim.pageChanged();
+  run(sim, 0.7);
+  assert.equal(sim.aside, true, "stepped aside");
+  assert.equal(told, true);
+  assert.ok(sim.ticker.reasons.includes("aside"), "and paused");
+  sim.recheckAside();
+  assert.equal(sim.aside, true, "still nowhere clear");
+  busy = 0; // the keyboard went down
+  sim.recheckAside();
+  assert.equal(sim.aside, false, "back");
+  assert.ok(!sim.ticker.reasons.includes("aside"));
+});
+
+test("When its level moves (a new page, the keyboard) it glides there instead of jumping", () => {
+  localStorage.clear();
+  const sim = makeStage();
+  sim.setHost(character());
+  const host = sim.host;
+  run(sim, 1.5);
+  for (let i = 0; i < 600 && host.level == null; i++) sim.tick(1 / 60);
+  host.interrupt([{ type: "wait", pose: "idle", seconds: [30, 30] }]);
+  run(sim, 0.05);
+  host.glideFrom(40);
+  assert.equal(host.glideY, 40, "starts where it was");
+  run(sim, 0.15);
+  assert.ok(host.glideY > 0 && host.glideY < 40, "on its way");
+  run(sim, 0.2);
+  assert.equal(host.glideY, 0, "there");
+  // Quiet mode: just there.
+  sim.setLively(false);
+  host.glideFrom(40);
+  assert.equal(host.glideY, 0);
+});
+
+test("Each decision looks under only a few spots once its time budget is spent", () => {
+  localStorage.clear();
+  const sim = makeStage();
+  sim.setHost(character());
+  const host = sim.host;
+  run(sim, 1);
+  let looks = 0;
+  sim.spotScore = () => {
+    looks++;
+    const until = performance.now() + 2; // a slow page: each look takes 2 ms
+    while (performance.now() < until);
+    return 0.5;
+  };
+  host.planMove(null, { force: true, better: 0.9, anyLevel: true });
+  assert.ok(looks >= 3, "always at least three spots");
+  assert.ok(looks <= 4, `stopped once the budget was spent (${looks} looks)`);
+});

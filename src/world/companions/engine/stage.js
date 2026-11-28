@@ -1,6 +1,6 @@
 // The stage: the band of screen the characters live in, its invisible levels, who is on it, the
 // visits, and the one frame loop that runs them all (README.md documents every option).
-import { Actor } from "./actor.js";
+import { Actor, SCORE_BUDGET_MS } from "./actor.js";
 import { buildLevels, busyScore, measureBand } from "./levels.js";
 import { placeSpot, readStay } from "./stay.js";
 import { createTicker } from "./ticker.js";
@@ -86,15 +86,29 @@ export class StageSim {
       this.relayoutAt = this.time + 0.15;
       if (!this.ticker.running) this.layout();
     };
-    this.onScroll = () => {
+    this.onScroll = (event) => {
+      if (layer.contains?.(event.target)) return;
+      if (this.aside) {
+        clearTimeout(this.asideTimer);
+        this.asideTimer = setTimeout(() => this.recheckAside(), 700);
+      }
       this.scrollAt = this.time;
-      // Scrolling the page closes the tap menu.
+      // Scrolling the page (or any list on it, like the chat's) closes the tap menu.
       for (const actor of this.actors) actor.closeMenu("scroll");
     };
+    // The keyboard and anything else that moves the bars (the chat's composer rides the keyboard):
+    // look again at once, and again once it has settled.
+    this.onViewport = () => this.relayoutSoon();
+    this.bodyWatch = typeof MutationObserver === "function" ? new MutationObserver(this.onViewport) : null;
+    this.bodyWatch?.observe(document.body, { attributes: true, attributeFilter: ["class", "data-page", "data-tab"] });
     document.addEventListener("visibilitychange", this.onVisibility);
     addEventListener("resize", this.onResize);
     addEventListener("orientationchange", this.onResize);
-    addEventListener("scroll", this.onScroll, { passive: true });
+    // Capture: scrolls inside any scroller (the chat's list) as well as the page's own.
+    document.addEventListener("scroll", this.onScroll, { capture: true, passive: true });
+    window.visualViewport?.addEventListener("resize", this.onViewport);
+    document.addEventListener("focusin", this.onViewport);
+    document.addEventListener("focusout", this.onViewport);
     this.onVisibility();
     this.layout();
     this.ticker.block("unmounted", false);
@@ -106,8 +120,48 @@ export class StageSim {
     document.removeEventListener("visibilitychange", this.onVisibility);
     removeEventListener("resize", this.onResize);
     removeEventListener("orientationchange", this.onResize);
-    removeEventListener("scroll", this.onScroll);
+    document.removeEventListener("scroll", this.onScroll, { capture: true });
+    window.visualViewport?.removeEventListener("resize", this.onViewport);
+    document.removeEventListener("focusin", this.onViewport);
+    document.removeEventListener("focusout", this.onViewport);
+    this.bodyWatch?.disconnect();
+    for (const timer of this.timers ?? []) clearTimeout(timer);
+    this.timers = [];
     this.remember();
+  }
+
+  /** Lays the band and levels out again now (if running) and once a moving bar has settled. */
+  relayoutSoon() {
+    if (this.ticker.running) this.relayoutAt = this.time;
+    this.later([340]);
+  }
+
+  /** Real-time re-layouts (they run even while the clock is paused, so a hidden stage is ready). */
+  later(delays) {
+    this.timers = (this.timers ?? []).filter(Boolean);
+    for (const ms of delays) {
+      const timer = setTimeout(() => {
+        this.timers = this.timers.filter((t) => t !== timer);
+        this.layout();
+      }, ms);
+      this.timers.push(timer);
+    }
+  }
+
+  /**
+   * She went to another page (README.md, "Every page"): the same stage carries on there. Its band and
+   * levels come from the new page's bars (they arrive over a moment, with the page's chunk and data),
+   * and once they have, the host checks it isn't standing on anything she might read or tap.
+   */
+  pageChanged() {
+    for (const actor of this.actors) actor.closeMenu("away");
+    this.layout();
+    this.later([90, 450, 1200]);
+    // Once the page has arrived, a prompt look at what it is standing on (and again a beat later).
+    this.pageMoveAt = this.time + 0.6;
+    this.scrollAt = this.time;
+    this.lastAvoid = -Infinity;
+    this.lastComfort = 0;
   }
 
   setOptions(options = {}) {
@@ -153,24 +207,46 @@ export class StageSim {
     this.band = band;
     const tallest = Math.max(96, ...this.actors.map((a) => a.c.size.height * scale * (a.c.scale ?? 1)));
     const widest = Math.max(80, ...this.actors.map((a) => a.c.size.width * scale * (a.c.scale ?? 1)));
+    // The deepest cloud on stage (measured, or estimated until it is) stays clear of the bottom bar.
+    const cloud = Math.max(18, ...this.actors.map((a) => a.cloudDepth ?? a.estimatedCloud?.() ?? 18));
     const levels = buildLevels(band, {
       count: typeof this.options.levels === "number" ? this.options.levels : undefined,
       custom: Array.isArray(this.options.levels) ? this.options.levels : undefined,
       bodyWidth: widest,
       bodyHeight: tallest,
+      platformDepth: cloud,
     });
     const changed = levels.length !== this.levels.length || levels.some((l, i) => Math.abs(l.y - this.levels[i].y) > 1 || Math.abs(l.x0 - this.levels[i].x0) > 1 || Math.abs(l.x1 - this.levels[i].x1) > 1);
     this.levels = levels;
+    // Too little room between the bars (a short screen with the keyboard up): nobody, until there is.
+    const cramped = band.bottom - band.top < tallest + 40;
+    if (cramped !== Boolean(this.cramped)) {
+      this.cramped = cramped;
+      this.ticker.block("cramped", cramped);
+      if (cramped) this.layer.dataset.cramped = "";
+      else delete this.layer.dataset.cramped;
+    }
     if (sizeChanged) for (const actor of this.actors) actor.resize();
+    if (this.aside) queueMicrotask(() => this.recheckAside());
     if (changed) {
       for (const actor of this.actors) {
         if (actor.level == null) continue;
         // Told to stay: back to its spot on the new levels (same level from the bottom, same share
         // of the width), however the screen changed.
-        const spot = actor.staying && actor.spot ? placeSpot(actor.spot, levels, band) : null;
+        let spot = actor.staying && actor.spot ? placeSpot(actor.spot, levels, band) : null;
+        // Staying, but its spot on this page is over what she is reading right now (the chat's
+        // newest messages, a page's centrepiece): here it sits somewhere clear instead. Its own
+        // spot is kept, so the next page puts it back there.
+        if (spot && this.options.avoidText && this.spotScore(actor, spot.level, spot.x) >= 1.5) {
+          const clear = this.findSpot(actor);
+          if (clear) spot = { level: clear.level, x: clear.x };
+        }
         const index = spot ? spot.level : Math.min(actor.level, levels.length - 1);
+        const fromY = actor.y;
         actor.level = index;
         actor.y = levels[index].y;
+        // A new page, or the bars moving (the keyboard): it glides to where its level is now.
+        actor.glideFrom(fromY - actor.y);
         actor.x = spot ? spot.x : clamp(actor.x, levels[index].x0, levels[index].x1);
         actor.tilesDirty = true;
         actor.fadeTiles(0, true);
@@ -178,6 +254,8 @@ export class StageSim {
         actor.write(true);
       }
       this.onLayout(levels, band);
+      // The bars moved or the page changed under it: a prompt look at what it now stands on.
+      if (this.actors.length) this.pageMoveAt = Math.min(this.pageMoveAt ?? Infinity, this.time + 0.5);
     }
   }
 
@@ -195,11 +273,16 @@ export class StageSim {
   /** The best place to stand right now: clear of text, low-ish, a little random. */
   findSpot(actor, { prefer } = {}) {
     let best = null;
-    for (let i = 0; i < this.levels.length; i++) {
-      const level = this.levels[i];
-      for (let k = 0; k < 4; k++) {
+    // Round the levels (lowest first) a spot at a time, within the same time budget as a move.
+    const deadline = performance.now() + SCORE_BUDGET_MS * 1.5;
+    let scored = 0;
+    for (let k = 0; k < 4; k++) {
+      for (let i = 0; i < this.levels.length; i++) {
+        if (scored >= 4 && performance.now() > deadline) return best;
+        const level = this.levels[i];
         const x = level.x0 + ((k + 0.25 + Math.random() * 0.5) / 4) * (level.x1 - level.x0);
         const cost = this.spotScore(actor, i, x) * 2 + (i / this.levels.length) * 0.35 + Math.random() * 0.3 + (prefer != null && i !== prefer ? 0.3 : 0);
+        scored++;
         if (!best || cost < best.cost) best = { level: i, x, cost };
       }
     }
@@ -457,7 +540,10 @@ export class StageSim {
     }
     if (changed) this.publish();
     this.updateVisit();
-    this.avoidAfterScroll();
+    if (this.pageMoveAt != null && this.time >= this.pageMoveAt) {
+      this.pageMoveAt = null;
+      this.avoidAfterScroll({ urgent: true });
+    } else this.avoidAfterScroll();
   }
 
   /**
@@ -465,24 +551,62 @@ export class StageSim {
    * and every few seconds while it rests, the host checks what it is standing over; if that is
    * text or a button and a clearly clearer spot exists, it walks (or hops) there.
    */
-  avoidAfterScroll() {
+  avoidAfterScroll({ urgent = false } = {}) {
     const scrolled = this.scrollAt != null && this.time - this.scrollAt >= 0.7;
-    if (this.scrollAt != null && !scrolled) return;
-    if (scrolled) {
-      this.scrollAt = null;
-      this.relayoutAt = this.time;
-    } else if (this.time - this.lastComfort < 5) return;
+    if (!urgent) {
+      if (this.scrollAt != null && !scrolled) return;
+      if (scrolled) {
+        this.scrollAt = null;
+        this.relayoutAt = this.time;
+      } else if (this.time - this.lastComfort < 5) return;
+    }
     this.lastComfort = this.time;
     const host = this.host;
-    // Never in the middle of something she asked for (the menu, its action) or told it (stay).
-    const busy = host.step?.type === "wait" || host.step?.type === "hold" || (host.step?.type === "act" && host.step.solid);
-    if (!host || !this.lively || this.visit || host.staying || host.menu || host.level == null || host.mode !== "rest" || busy || this.time - this.lastAvoid < 6) return;
+    // Never in the middle of something she asked for (the menu, its action) or told it (stay). Just
+    // after a new page (urgent), a little pause or a walk of its own may be cut short for it.
+    const asked = host?.step?.type === "hold" || (host?.step?.type === "act" && host.step.solid);
+    const pausing = !urgent && host?.step?.type === "wait";
+    const moving = urgent ? !["rest", "walk", "turn"].includes(host?.mode) : host?.mode !== "rest";
+    if (!host || !this.lively || this.visit || host.staying || host.menu || host.level == null || moving || asked || pausing || (!urgent && this.time - this.lastAvoid < 6)) return;
     if (!this.options.avoidText) return;
     const here = this.spotScore(host, host.level, host.x);
     if (here < 0.35) return;
-    const steps = host.planMove(null, { force: true, better: here - 0.25 });
-    if (!steps.length) return;
+    const steps = host.planMove(null, { force: true, better: here - 0.25, anyLevel: urgent });
+    if (!steps.length) {
+      // Over what she is reading right now, and nowhere clearer on this screen (the chat with the
+      // keyboard up shows only the newest messages): it steps aside until there is room again.
+      if (urgent && here >= 1.5) this.setAside(true);
+      return;
+    }
     this.lastAvoid = this.time;
     host.interrupt([...steps, { type: "rest" }]);
+  }
+
+  /**
+   * Stepped aside (README.md, "Every page"): faded out and paused, nothing running. Every re-layout
+   * (the keyboard going down, another page) and the end of every scroll looks again, and it comes
+   * back as soon as its spot is clear of what she is reading.
+   */
+  setAside(on) {
+    if (Boolean(this.aside) === on) return;
+    this.aside = on;
+    this.ticker.block("aside", on);
+    if (this.layer) {
+      if (on) this.layer.dataset.aside = "";
+      else delete this.layer.dataset.aside;
+    }
+    if (on) for (const actor of this.actors) actor.closeMenu("away");
+    this.onAside?.(on);
+  }
+
+  /** While stepped aside: is its spot clear again? (Runs on real-time triggers: the clock is paused.) */
+  recheckAside() {
+    if (!this.aside) return;
+    const host = this.host;
+    if (!host || host.level == null || this.spotScore(host, host.level, host.x) < 1.5) {
+      this.setAside(false);
+      // Back on the stage: one more look, in case somewhere is clearer still.
+      this.pageMoveAt = this.time + 0.4;
+    }
   }
 }

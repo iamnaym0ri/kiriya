@@ -4,13 +4,27 @@
 .cs-stage {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  /* Above every page's own layers (the chat is a fixed layer at 100), below the top bar (110), the
+     tab bar (130) and every sheet, pop-up and viewer (far above; engine/cover.js hides the stage
+     while one is open anyway). */
+  z-index: 105;
   pointer-events: none;
   overflow: hidden;
   contain: layout style;
+  animation: cs-fade-in 220ms ease-out both;
 }
-.cs-stage[hidden] {
+.cs-stage[hidden],
+.cs-stage[data-cramped] {
   display: none;
+}
+/* Stepped aside (nowhere clear of what she is reading): faded out, then out of the way entirely. */
+.cs-stage[data-aside] {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 220ms ease-in, visibility 0s linear 220ms;
+}
+.cs-stage[data-aside] * {
+  pointer-events: none !important;
 }
 
 .cs-actor,
@@ -93,10 +107,6 @@
 }
 .cs-stage:not([data-lively]) .cs-pose [data-cs-pop] {
   animation: cs-fade-in 160ms ease-out both;
-}
-/* While the engine looks at what is under a spot, the bodies let hit-testing through. */
-.cs-stage[data-probing] .cs-body {
-  pointer-events: none;
 }
 .cs-body:focus-visible {
   outline: 2px dashed var(--theme-accent, #9a6cba);
