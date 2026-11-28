@@ -142,6 +142,21 @@
   cursor: pointer;
   transition: background-color 0.18s ease, color 0.18s ease;
 }
+.look-tabs button {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1px;
+}
+.look-tabs button small {
+  font: 600 9.5px/1 var(--font-ui, system-ui), sans-serif;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+.look-tabs button[data-whose="ours"] small {
+  color: var(--sheet-accent);
+  opacity: 1;
+}
 .look-tabs button[aria-selected="true"] {
   background: var(--sheet-bg);
   color: var(--sheet-ink);
@@ -183,7 +198,7 @@
 .chat-preview--live {
   display: grid;
   grid-template-rows: 34px minmax(0, 1fr) 36px;
-  height: clamp(150px, 21dvh, 184px);
+  height: clamp(160px, 22dvh, 192px);
   border-radius: 20px;
   border: 1px solid var(--chat-line);
   box-shadow: 0 8px 22px -14px #1b122299;
@@ -637,4 +652,39 @@
   .look-card {
     transition: none;
   }
+}
+
+/* whose choice it is (round 4): the theme and background are theirs together, the rest each person's own */
+.look-who {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--sheet-ink) 85%, transparent);
+}
+.look-who__tag {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sheet-ink) 8%, transparent);
+  color: var(--sheet-ink);
+  font: 700 11px/1.2 var(--font-ui, system-ui), sans-serif;
+  white-space: nowrap;
+}
+.look-who[data-who="ours"] .look-who__tag {
+  background: var(--sheet-accent);
+  color: var(--chat-accent-ink, #fff);
+}
+.look-new {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--sheet-accent);
+  color: var(--chat-accent-ink, #fff);
+  font: 700 10px/1.4 var(--font-ui, system-ui), sans-serif;
+  pointer-events: none;
 }

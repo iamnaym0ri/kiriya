@@ -368,8 +368,9 @@ uploadRoutes.get("/resolve", async (c) => {
 
 // ---------- official wallpapers (chat backgrounds), only ever served after login ----------
 // Miku: Crypton's official V6 art, used under its character guideline §E(3) (non-commercial,
-// credit shown, never distributed publicly). Maomao: the anime's official phone wallpaper (Halloween
-// 2025), resized only, © line kept. See docs/refactor/WALLPAPERS.md. Literal URLs let Vercel bundle them.
+// credit shown, never distributed publicly). Maomao: the anime's official episode 6 phone wallpaper (the
+// garden party, made up), cropped to its three panels; the © line is shown by the chat and Art & credits.
+// See docs/refactor/WALLPAPERS.md. Literal URLs let Vercel bundle them.
 const WALLPAPER_FILES = {
   miku: new URL("../assets/wallpapers/miku.webp", import.meta.url),
   maomao: new URL("../assets/wallpapers/maomao.webp", import.meta.url),

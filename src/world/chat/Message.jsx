@@ -169,7 +169,7 @@ function Status({ message, readByThem, actions, canRetry }) {
  * One message. `actions` is one stable object: { hold(message, element), reply(message),
  * jump(id), open(slides, index), tapBack(key), retry(message), discard(message) }.
  */
-export const Message = memo(function Message({ message, me, names, first, last, showStatus, readByThem, arrive, flash, leaving, preview, canRetry, actions }) {
+export const Message = memo(function Message({ message, me, names, first, last, showStatus, readByThem, arrive, flash, leaving, preview, canRetry, actions, design }) {
   const mine = message.sender === me;
   const row = useRef(null);
   const swipe = useRef(null);
@@ -287,6 +287,7 @@ export const Message = memo(function Message({ message, me, names, first, last, 
       ref={row}
       className="msg"
       data-kind={message.kind}
+      data-design={design}
       data-mine={mine || undefined}
       data-first={first || undefined}
       data-last={last || undefined}

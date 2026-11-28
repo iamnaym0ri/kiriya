@@ -6,7 +6,7 @@ import { sealFile, sealPrivate, useChatKeys } from "../../lib/chatCrypto.js";
 import { shrinkImage, uploadFile } from "../../lib/uploads.js";
 import { haptic, isNativeApp } from "../../lib/native.js";
 import { useViewingAs } from "../../lib/session.js";
-import { TypingIndicator } from "./parts.jsx";
+import { TypingIndicator } from "./theme/Typing.jsx";
 import { WALLPAPERS } from "./wallpapers.js";
 import Sheet from "./theme/Sheet.jsx";
 import { BackdropThumb, LivePreview, MiniBubbles } from "./theme/Preview.jsx";
@@ -16,12 +16,24 @@ import "./theme/sheet.css";
 
 export { BUBBLES };
 
+// Round 4: the theme and background are theirs together; bubbles, typing and the lock are each person's own.
 const TABS = [
-  ["theme", "theme"],
-  ["bubbles", "bubbles"],
-  ["background", "background"],
-  ["privacy", "privacy"],
+  ["theme", "theme", "ours"],
+  ["background", "background", "ours"],
+  ["bubbles", "bubbles", "yours"],
+  ["privacy", "privacy", "yours"],
 ];
+
+/** Says plainly whose choice this is. */
+function Who({ ours, children }) {
+  return (
+    <p className="look-who" data-who={ours ? "ours" : "yours"}>
+      <span className="look-who__tag">{ours ? "♡ ours" : "just yours"}</span>
+      <span>{children}</span>
+    </p>
+  );
+}
+const labelOf = (list, key) => list.find((item) => item.key === key)?.label ?? key;
 
 /**
  * Saves a change to her look at once on this screen (and the chat behind the sheet), and on the
@@ -85,28 +97,37 @@ function ThemePicker({ prefs, set }) {
 }
 
 function BubblePicker({ prefs, set, name }) {
+  const theirs = prefs.theirs ?? {};
   return (
     <>
-      <div className="look-grid look-grid--bubbles" role="radiogroup" aria-label="Bubbles">
+      <Who>
+        your messages wear your bubbles on both phones; {name}’s wear {name}’s ({labelOf(BUBBLES, theirs.bubble ?? "lilac")}).
+      </Who>
+      <div className="look-grid look-grid--bubbles" role="radiogroup" aria-label="Your bubbles">
         {BUBBLES.map((bubble) => {
           const on = (prefs.bubble ?? "lilac") === bubble.key;
           return (
             <button key={bubble.key} type="button" role="radio" aria-checked={on} className="look-card look-card--bubble" onClick={() => (haptic("light"), set({ bubble: bubble.key }))}>
               <MiniBubbles theme={prefs.theme ?? "lilac"} bubble={bubble.key} background="plain" />
               <span className="look-card__label">{bubble.label}</span>
+              {bubble.fresh && !on && <span className="look-new">new</span>}
               {on && <Check />}
             </button>
           );
         })}
       </div>
-      <h3 className="look-heading">while {name} is typing</h3>
-      <div className="look-grid look-grid--typing" role="radiogroup" aria-label="Typing indicator">
+      <h3 className="look-heading">when you’re typing, {name} sees…</h3>
+      <Who>
+        you pick how your “typing…” looks to {name}; {name} picks theirs ({labelOf(TYPING, theirs.typing ?? "hearts")}).
+      </Who>
+      <div className="look-grid look-grid--typing" role="radiogroup" aria-label="How your typing looks">
         {TYPING.map((typing) => {
           const on = (prefs.typing ?? "hearts") === typing.key;
           return (
             <button key={typing.key} type="button" role="radio" aria-checked={on} className="look-card look-card--typing" onClick={() => set({ typing: typing.key })}>
-              <TypingIndicator style={typing.key} name={name} />
+              <TypingIndicator style={typing.key} name="you" />
               <span className="look-card__label">{typing.label}</span>
+              {typing.fresh && !on && <span className="look-new">new</span>}
               {on && <Check />}
             </button>
           );
@@ -220,7 +241,10 @@ function BackgroundPicker({ prefs, set, onError }) {
   );
 }
 
-/** Her (or his) own look for the chat, and the chat's privacy. Each person's choice changes only their own screen. */
+/**
+ * The chat's look and privacy. The theme and background are theirs together (either of them
+ * changes it for both); the bubbles, the typing indicator and the lock are each person's own.
+ */
 export default function ChatLook({ prefs: initial, name, onClose }) {
   const prefs = useChatPrefs().data ?? initial ?? {};
   const [tab, setTab] = useState("theme");
@@ -236,9 +260,10 @@ export default function ChatLook({ prefs: initial, name, onClose }) {
     <div className="look-top">
       <LivePreview prefs={prefs} name={name} onMovePhoto={tab === "background" ? (change, options) => set({ photo: { ...photoSettings(prefs), ...change } }, options) : null} />
       <div className="look-tabs" role="tablist" aria-label="What to change">
-        {TABS.map(([key, label]) => (
-          <button key={key} type="button" role="tab" id={`look-tab-${key}`} aria-selected={tab === key} aria-controls="look-panel" onClick={() => setTab(key)}>
-            {label}
+        {TABS.map(([key, label, whose]) => (
+          <button key={key} type="button" role="tab" id={`look-tab-${key}`} aria-selected={tab === key} aria-controls="look-panel" data-whose={whose} onClick={() => setTab(key)}>
+            <span>{label}</span>
+            <small>{whose === "ours" ? "♡ ours" : "yours"}</small>
           </button>
         ))}
       </div>
@@ -248,9 +273,19 @@ export default function ChatLook({ prefs: initial, name, onClose }) {
     <Sheet title="make it yours ♡" onClose={onClose} className="chat-look-sheet" header={preview}>
       <div id="look-panel" role="tabpanel" aria-labelledby={`look-tab-${tab}`} className="look-panel">
         {viewing && <p className="look-note">just peeking at her side ♡ this is how her chat looks.</p>}
-        {tab === "theme" && <ThemePicker prefs={prefs} set={set} />}
+        {tab === "theme" && (
+          <>
+            <Who ours>change it and it changes for {name} too, right away.</Who>
+            <ThemePicker prefs={prefs} set={set} />
+          </>
+        )}
         {tab === "bubbles" && <BubblePicker prefs={prefs} set={set} name={name} />}
-        {tab === "background" && <BackgroundPicker prefs={prefs} set={set} onError={setError} />}
+        {tab === "background" && (
+          <>
+            <Who ours>one background for both of you: {name} sees what you pick.</Who>
+            <BackgroundPicker prefs={prefs} set={set} onError={setError} />
+          </>
+        )}
         {tab === "privacy" && <LockSettings prefs={prefs} set={set} name={name} faceId={isNativeApp()} />}
       </div>
       {error && (

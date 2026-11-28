@@ -15,7 +15,7 @@ export const THEMES = [
   { key: "sky", label: "cloudy sky", note: "soft blue", swatch: ["#eef4fd", "#376aae", "#ffffff"] },
 ];
 
-/** Bubble designs (the names she already knows). */
+/** Bubble designs: each person's own (their messages look this way on both phones). */
 export const BUBBLES = [
   { key: "lilac", label: "soft & round" },
   { key: "paper", label: "paper notes" },
@@ -26,6 +26,11 @@ export const BUBBLES = [
   { key: "fairy", label: "fairy dust" },
   { key: "gothic", label: "dark & gothic" },
   { key: "lovey", label: "lovey-dovey" },
+  { key: "cloud", label: "fluffy cloud", fresh: true },
+  { key: "stamp", label: "love stamp", fresh: true },
+  { key: "ribbon", label: "ribbon bow", fresh: true },
+  { key: "melody", label: "melody", fresh: true },
+  { key: "jelly", label: "glossy jelly", fresh: true },
 ];
 
 /** Backgrounds. "theme" follows whichever theme is on. */
@@ -45,6 +50,11 @@ export const TYPING = [
   { key: "maomao", label: "maomao grinding" },
   { key: "pencil", label: "pencil scribble" },
   { key: "dots", label: "classic dots" },
+  { key: "bunny", label: "bunny hop", fresh: true },
+  { key: "paws", label: "kitty paws", fresh: true },
+  { key: "notes", label: "humming", fresh: true },
+  { key: "stars", label: "twinkle stars", fresh: true },
+  { key: "boba", label: "bubble tea", fresh: true },
 ];
 
 export const PHOTO_DEFAULTS = { x: 50, y: 50, zoom: 1, dim: 0.35, blur: 0 };
@@ -64,8 +74,9 @@ export function photoSettings(prefs) {
 }
 
 /**
- * What the .chat root (or a preview of it) carries for someone's prefs: data-theme, data-bubble,
- * data-background and the background's variables. Spread it onto the element.
+ * What the .chat root (or a preview of it) carries for someone's prefs: data-theme and
+ * data-background (theirs together), data-bubble / data-bubble-theirs (each person's own; the
+ * bubbles themselves are drawn per message, .msg[data-design]), and the background's variables.
  */
 export function chatLook(prefs = {}) {
   const theme = known(THEMES, prefs.theme, "lilac");
@@ -82,5 +93,6 @@ export function chatLook(prefs = {}) {
     style["--photo-blur"] = `${photo.blur}px`;
   }
   if (WALLPAPERS[background]) style["--chat-wallpaper"] = `url("${wallpaperUrl(background, prefs)}")`;
-  return { "data-theme": theme, "data-bubble": bubble, "data-background": background, style };
+  const theirs = known(BUBBLES, prefs.theirs?.bubble, "lilac");
+  return { "data-theme": theme, "data-bubble": bubble, "data-bubble-theirs": theirs, "data-background": background, style };
 }

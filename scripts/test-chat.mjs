@@ -295,15 +295,20 @@ try {
     assert.equal(chat.chatNotification({ kind: "image", body: "", media: { items: [{ type: "video" }] } }, "Kiriya").body, "🎬 a video");
   });
 
-  await test("Each of them keeps their own look; only known themes and their own uploads are accepted", async () => {
-    const { wallpapers, ...prefs } = await json(await request("me/chat/prefs", { cookie: her }));
+  await test("Their look: the theme and background are shared, bubbles and typing each their own; only known choices are accepted", async () => {
+    const { wallpapers, theirs, ...prefs } = await json(await request("me/chat/prefs", { cookie: her }));
     assert.deepEqual(prefs, chat.DEFAULT_PREFS);
-    assert.deepEqual(wallpapers, { miku: "/api/uploads/wallpapers/miku?v=1", maomao: "/api/uploads/wallpapers/maomao?v=1" });
+    assert.deepEqual(theirs, { bubble: "lilac", typing: "hearts" });
+    assert.deepEqual(wallpapers, { miku: "/api/uploads/wallpapers/miku?v=1", maomao: "/api/uploads/wallpapers/maomao?v=2" });
     const saved = await json(await request("me/chat/prefs", { method: "PUT", cookie: her, body: { bubble: "cat", typing: "maomao", background: "photo", backgroundUrl: "/api/uploads/media?path=backgrounds%2F1-ab.webp" } }));
     assert.deepEqual([saved.bubble, saved.typing, saved.background], ["cat", "maomao", "photo"]);
-    assert.equal((await json(await request("me/chat/prefs", { cookie: josh }))).bubble, "lilac", "his look is separate");
+    const his = await json(await request("me/chat/prefs", { cookie: josh }));
+    assert.equal(his.bubble, "lilac", "his bubbles are his own");
+    assert.equal(his.background, "photo", "the background is theirs together");
+    assert.deepEqual(his.theirs, { bubble: "cat", typing: "maomao" });
     assert.equal((await request("me/chat/prefs", { method: "PUT", cookie: her, body: { bubble: "neon" } })).status, 400);
     assert.equal((await request("me/chat/prefs", { method: "PUT", cookie: her, body: { backgroundUrl: "https://x.example/a.png" } })).status, 400);
+    await json(await request("me/chat/prefs", { method: "PUT", cookie: her, body: { background: "theme", backgroundUrl: null } }));
   });
 
   await test("Our memories freeze a copy; notes stay private to whoever they were sent to", async () => {

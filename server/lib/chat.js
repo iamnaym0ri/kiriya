@@ -20,14 +20,17 @@ export const TEXT_MAX = 4000;
 const PAGE = 40;
 const TAPS_PER_HOUR = 30;
 
-// Each person's look for the chat (src/world/chat/theme): a whole-chat theme, a bubble design, a
-// background (her own photo placed, zoomed, dimmed or blurred), the typing indicator, and the
-// chat lock (src/world/chat/lock).
+// The chat's look (src/world/chat/theme). Round 4 (Josh): the theme and the background are theirs
+// together (one setting, either of them changes it for both); the bubble design and the typing
+// indicator are each person's own, and the other phone draws them that way too (her messages in her
+// bubbles, his in his; his typing in the style he chose). The chat lock stays each person's own.
 export const THEMES = ["lilac", "white", "cream", "dark", "love", "miku", "herbal", "sky"];
-export const BUBBLES = ["lilac", "paper", "pixel", "kawaii", "cat", "flowers", "fairy", "gothic", "lovey"];
+export const BUBBLES = ["lilac", "paper", "pixel", "kawaii", "cat", "flowers", "fairy", "gothic", "lovey", "cloud", "stamp", "ribbon", "melody", "jelly"];
 export const BACKGROUNDS = ["theme", "plain", "petals", "hearts", "clouds", "notebook", "night", "photo", "miku", "maomao"];
-export const TYPING = ["hearts", "maomao", "pencil", "dots"];
+export const TYPING = ["hearts", "maomao", "pencil", "dots", "bunny", "paws", "notes", "stars", "boba"];
 export const LOCK_AFTER = [0, 60, 300];
+export const SHARED_PREFS = ["theme", "background", "backgroundUrl", "backgroundKey", "photo"];
+export const PERSONAL_PREFS = ["bubble", "typing", "lock"];
 export const DEFAULT_PREFS = {
   theme: "lilac",
   bubble: "lilac",
@@ -38,6 +41,7 @@ export const DEFAULT_PREFS = {
   typing: "hearts",
   lock: { on: false, after: 60, previews: false },
 };
+const SHARED_ROW = "shared";
 
 async function settingValue(db, key) {
   const [row] = await db.select({ value: schema.settings.value }).from(schema.settings).where(eq(schema.settings.key, key));
@@ -491,17 +495,52 @@ const prefsSchema = z
     lock: z.object({ on: z.boolean(), after: z.union(LOCK_AFTER.map((n) => z.literal(n))), previews: z.boolean() }).strict().optional(),
   })
   .strict();
-export async function readPrefs(db, role) {
+const pick = (value, keys) => Object.fromEntries(keys.filter((key) => value?.[key] !== undefined).map((key) => [key, value[key]]));
+async function prefsRow(db, role) {
   const [row] = await db.select().from(schema.chatPrefs).where(eq(schema.chatPrefs.role, role));
-  return { ...DEFAULT_PREFS, ...(row?.prefs ?? {}) };
+  return row?.prefs ?? null;
 }
-export async function savePrefs(db, role, input) {
-  const next = { ...(await readPrefs(db, role)), ...prefsSchema.parse(input) };
+async function writePrefsRow(db, role, prefs) {
   await db
     .insert(schema.chatPrefs)
-    .values({ role, prefs: next })
-    .onConflictDoUpdate({ target: schema.chatPrefs.role, set: { prefs: next, updatedAt: new Date() } });
-  return next;
+    .values({ role, prefs })
+    .onConflictDoUpdate({ target: schema.chatPrefs.role, set: { prefs, updatedAt: new Date() } });
+}
+
+/**
+ * Their shared look. The first time it's read (round 4), the theme and background Josh had chosen
+ * become theirs together: Kiriya hasn't opened the app yet, so his choice is the one in use.
+ */
+export async function sharedLook(db) {
+  const stored = await prefsRow(db, SHARED_ROW);
+  if (stored) return { ...pick(DEFAULT_PREFS, SHARED_PREFS), ...pick(stored, SHARED_PREFS) };
+  const fromJosh = pick((await prefsRow(db, "admin")) ?? {}, SHARED_PREFS);
+  const look = { ...pick(DEFAULT_PREFS, SHARED_PREFS), ...fromJosh };
+  await db.insert(schema.chatPrefs).values({ role: SHARED_ROW, prefs: look }).onConflictDoNothing({ target: schema.chatPrefs.role });
+  return { ...pick(DEFAULT_PREFS, SHARED_PREFS), ...pick((await prefsRow(db, SHARED_ROW)) ?? look, SHARED_PREFS) };
+}
+
+/**
+ * Everything a phone needs to draw the chat for `role`: the shared theme and background, this
+ * person's own bubbles, typing indicator and lock, and the other person's bubbles and typing
+ * indicator (`theirs`), so their messages and their "typing…" look the way they chose.
+ */
+export async function readPrefs(db, role) {
+  const [shared, mine, theirs] = await Promise.all([sharedLook(db), prefsRow(db, role), prefsRow(db, other(role))]);
+  const own = { ...pick(DEFAULT_PREFS, PERSONAL_PREFS), ...pick(mine ?? {}, PERSONAL_PREFS) };
+  return { ...shared, ...own, theirs: { bubble: theirs?.bubble ?? DEFAULT_PREFS.bubble, typing: theirs?.typing ?? DEFAULT_PREFS.typing } };
+}
+
+/** Saves a change: the theme and background for both of them, the rest for this person. Tells the other phone. */
+export async function savePrefs(db, role, input) {
+  const data = prefsSchema.parse(input);
+  const shared = pick(data, SHARED_PREFS);
+  const personal = pick(data, PERSONAL_PREFS);
+  if (Object.keys(shared).length) await writePrefsRow(db, SHARED_ROW, { ...(await sharedLook(db)), ...shared });
+  if (Object.keys(personal).length) await writePrefsRow(db, role, { ...((await prefsRow(db, role)) ?? {}), ...personal });
+  // The other phone redraws at once (Ably); without Ably it re-reads the look every little while.
+  if (Object.keys(shared).length || data.bubble || data.typing) await publish("look", { by: role, at: new Date().toISOString() }).catch(() => {});
+  return readPrefs(db, role);
 }
 
 // ---------- stickers they upload ----------

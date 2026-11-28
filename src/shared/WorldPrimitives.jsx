@@ -187,11 +187,11 @@ export function Credits({ onClose }) {
         . 「初音ミク」はクリプトン・フューチャー・メディア株式会社の著作物です。 © Crypton Future Media, INC. www.piapro.net
       </p>
       <p>
-        Maomao background: official “Halloween Art 2025” wallpaper from{" "}
-        <a href="https://kusuriyanohitorigoto.jp/season2/gallery/eventvisual_251031.php" target="_blank" rel="noreferrer">
+        Maomao background: the official episode 6 wallpaper (the garden party) from{" "}
+        <a href="https://kusuriyanohitorigoto.jp/season1/special/" target="_blank" rel="noreferrer">
           the Apothecary Diaries anime site
         </a>
-        , kept private to this site. ©日向夏・イマジカインフォス／「薬屋のひとりごと」製作委員会
+        , cropped and kept private to this site. ©日向夏・イマジカインフォス／「薬屋のひとりごと」製作委員会
       </p>
       <p>
         Animated stickers:{" "}

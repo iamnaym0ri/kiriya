@@ -5,7 +5,7 @@ export const MIKU_CREDIT = "「初音ミク」はクリプトン・フューチ�
 export const MAOMAO_CREDIT = "©日向夏・イマジカインフォス／「薬屋のひとりごと」製作委員会";
 export const WALLPAPERS = {
   miku: { label: "miku", url: "/api/uploads/wallpapers/miku?v=1", credit: MIKU_CREDIT },
-  maomao: { label: "maomao", url: "/api/uploads/wallpapers/maomao?v=1", credit: MAOMAO_CREDIT },
+  maomao: { label: "maomao, garden party", url: "/api/uploads/wallpapers/maomao?v=2", credit: MAOMAO_CREDIT },
 };
 /** The link to show: the server's copy when it sent one (signed inside the iPhone app), else ours. */
 export const wallpaperUrl = (key, prefs) => prefs?.wallpapers?.[key] ?? WALLPAPERS[key]?.url;

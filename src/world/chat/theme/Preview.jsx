@@ -8,6 +8,9 @@ import { useChatLook } from "./useChatLook.js";
  */
 export function LivePreview({ prefs, name, onMovePhoto }) {
   const look = useChatLook(prefs);
+  // Both of their bubbles, each in its owner's design: theirs on the left, mine on the right.
+  const mine = look["data-bubble"];
+  const theirs = look["data-bubble-theirs"];
   const start = useRef(null);
   const movable = look["data-background"] === "photo" && Boolean(onMovePhoto);
   const photo = prefs.photo ?? { x: 50, y: 50 };
@@ -43,16 +46,10 @@ export function LivePreview({ prefs, name, onMovePhoto }) {
         </span>
       </span>
       <span className="chat-preview__list" aria-hidden="true">
-        <span className="chat__day">
-          <span>today</span>
+        <span className="msg" data-first data-last data-design={theirs}>
+          <span className="bubble">good morning ♡ sleep ok?</span>
         </span>
-        <span className="msg" data-first data-last>
-          <span className="bubble">good morning ♡ did you sleep ok?</span>
-        </span>
-        <span className="msg" data-mine data-first>
-          <span className="bubble">i dreamed about you</span>
-        </span>
-        <span className="msg" data-mine data-last>
+        <span className="msg" data-mine data-first data-last data-design={mine}>
           <span className="bubble">come over later? 🍓</span>
           <span className="msg__status">read ♡</span>
         </span>
@@ -70,10 +67,10 @@ export function MiniBubbles({ theme, bubble, background = "plain", words = ["hi 
   return (
     <span className="chat-preview chat-preview--mini" data-theme={theme} data-bubble={bubble} data-background={background} aria-hidden="true">
       <span className="chat__backdrop" />
-      <span className="msg" data-first data-last>
+      <span className="msg" data-first data-last data-design={bubble}>
         <span className="bubble">{words[0]}</span>
       </span>
-      <span className="msg" data-mine data-first data-last>
+      <span className="msg" data-mine data-first data-last data-design={bubble}>
         <span className="bubble">{words[1]}</span>
       </span>
     </span>

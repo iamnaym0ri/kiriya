@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "../../../lib/api.js";
+import { chatPrefsKey } from "../../../lib/chat.js";
 import { sealHistory, useChatKeys } from "../../../lib/chatCrypto.js";
 import { setNativePrivacy } from "../../../lib/chatCrypto/native.js";
 import { useViewingAs } from "../../../lib/session.js";
@@ -10,6 +12,11 @@ import { KeyScreen, LockScreen } from "./LockScreen.jsx";
 import { PassphraseForm } from "./PassphraseForm.jsx";
 import { lockPrefs, markBack, markLeft, markUnlocked, relock, rememberLockLocally, stillOpen } from "./lockState.js";
 
+/**
+ * "Seal our messages": a slim bar tucked under the header (the message list starts below it, so it
+ * never covers a message). It opens into the passphrase form in place; "later" hides it until the
+ * chat is opened again.
+ */
 function SetUpNudge({ onClose }) {
   const [open, setOpen] = useState(false);
   return (
@@ -18,14 +25,19 @@ function SetUpNudge({ onClose }) {
         <>
           <p>type your passphrase once and your messages get sealed end to end, on both your phones ♡</p>
           <PassphraseForm submitLabel="seal our messages" autoFocus onDone={onClose} />
-          <button type="button" className="look-pill" data-quiet onClick={onClose}>
-            later
+          <button type="button" className="look-pill" data-quiet onClick={() => setOpen(false)}>
+            not now
           </button>
         </>
       ) : (
-        <button type="button" className="chat-nudge__pill" onClick={() => setOpen(true)}>
-          <span aria-hidden="true">🔒</span> seal our messages
-        </button>
+        <>
+          <button type="button" className="chat-nudge__open" onClick={() => setOpen(true)}>
+            <span aria-hidden="true">🔒</span> seal our messages
+          </button>
+          <button type="button" className="chat-nudge__later" onClick={onClose} aria-label="Hide for now">
+            later
+          </button>
+        </>
       )}
     </div>
   );
@@ -42,6 +54,9 @@ export function useChatRoom(prefs) {
   const viewing = useViewingAs();
   const keys = useChatKeys();
   const look = useChatLook(prefs);
+  // The theme and background are theirs together: a change on the other phone arrives live (Ably's
+  // "look" event, src/lib/chat.js); without Ably, the look is read again every little while.
+  useQuery({ queryKey: chatPrefsKey, queryFn: () => api("/me/chat/prefs"), refetchInterval: 20_000, refetchOnWindowFocus: true, staleTime: 10_000 });
   const lock = lockPrefs(prefs);
   const lockOn = lock.on && !viewing;
   const [open, setOpen] = useState(() => !lockOn || stillOpen(lock.after));
@@ -111,5 +126,9 @@ export function useChatRoom(prefs) {
   if (lockOn && !open) screen = <LockScreen onOpen={unlock} keyLocked={keys.status === "locked"} />;
   else if (keys.status === "locked") screen = <KeyScreen />;
   const overlay = keys.status === "plain" && !keys.setUp && !viewing && !nudgeGone ? <SetUpNudge onClose={() => setNudgeGone(true)} /> : null;
-  return { look, screen, overlay, lock: relock };
+  // Round 4: each person's bubbles are drawn their way on both phones, and "typing…" in the style
+  // the person typing chose.
+  const designs = { mine: prefs?.bubble ?? "lilac", theirs: prefs?.theirs?.bubble ?? "lilac" };
+  const theirTyping = prefs?.theirs?.typing ?? "hearts";
+  return { look, screen, overlay, designs, theirTyping, lock: relock };
 }
