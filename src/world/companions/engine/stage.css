@@ -60,24 +60,16 @@
   width: 100%;
   height: 100%;
 }
-/* The live drawing and, over it, the fading copies of the last one (ghost.js, README.md
-   "Transitions"). Both fill the body box exactly, so the two drawings line up to the pixel. */
-.cs-pose > *,
-.cs-ghost > * {
+/* The live drawing (ghost.js, README.md "Transitions"). Parts on their way out are put back where
+   they were for a moment and fade: still (no animations or transitions of their own, which would
+   restart as they went back in), never taking a touch. */
+.cs-pose > * {
   width: 100%;
   height: 100%;
 }
-.cs-ghosts {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.cs-ghost {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.cs-ghost * {
+.cs-pose :is([data-cs-leaving], [data-cs-leaving] *) {
+  animation: none !important;
+  transition: none !important;
   pointer-events: none !important;
 }
 /* A prop or mark a Body marks with data-cs-pop pops into its hand rather than blinking in. */

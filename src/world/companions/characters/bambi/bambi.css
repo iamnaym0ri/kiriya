@@ -67,6 +67,19 @@
 .bamby__ground {
   transform-origin: 100px 231px;
 }
+/* Round 3: sitting down and getting up glide, and so do the arms and legs between still poses
+   (README.md, "Transitions"). */
+.bamby__seat {
+  transition: translate 0.3s cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+.bamby__arm--l,
+.bamby__arm--r,
+.bamby__fore--l,
+.bamby__fore--r,
+.bamby__leg--l,
+.bamby__leg--r {
+  transition: rotate 0.24s cubic-bezier(0.3, 0.8, 0.3, 1);
+}
 
 /* --- Always: breathing, blinking, the hair tuft ------------------------------------------------ */
 .bamby__bob {
@@ -556,8 +569,10 @@
 
 /* --- sit: on the cloud's surface, legs over the front edge, swinging -------------------------- */
 .bamby[data-sitting] .bamby__bob {
-  translate: 0 31px;
   animation: none;
+}
+.bamby[data-sitting] .bamby__seat {
+  translate: 0 31px;
 }
 .bamby[data-sitting] .bamby__ground {
   opacity: 0;
@@ -2202,11 +2217,13 @@
 .bamby[data-motion="off"] *,
 .bamby[data-motion="off"] {
   animation: none !important;
+  transition-duration: 0s !important;
 }
 @media (prefers-reduced-motion: reduce) {
   .bamby *,
   .bamby {
     animation: none !important;
+    transition-duration: 0s !important;
   }
 }
 

@@ -27,6 +27,17 @@
 .hmiku__leek {
   transform-origin: 0 0;
 }
+/* Round 3: sitting down and getting up glide, and so do her arms between still poses
+   (README.md, "Transitions"). */
+.hmiku__upper {
+  transition: translate 0.3s cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+.hmiku__skirt {
+  transition: scale 0.3s cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+.hmiku__arm {
+  transition: rotate 0.24s cubic-bezier(0.3, 0.8, 0.3, 1);
+}
 
 /* ---- resting shapes ---------------------------------------------------------------------------- */
 .hmiku__arm--r {
@@ -836,10 +847,12 @@
 .hmiku[data-motion="off"] *,
 .hmiku[data-motion="off"] {
   animation: none !important;
+  transition-duration: 0s !important;
 }
 @media (prefers-reduced-motion: reduce) {
   .hmiku * {
     animation: none !important;
+    transition-duration: 0s !important;
   }
 }
 
