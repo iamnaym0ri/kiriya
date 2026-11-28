@@ -463,10 +463,11 @@ export default function ChatPage() {
   const background = room.look["data-background"];
 
   return (
-    <div ref={shell} className="chat" data-app={app || undefined} {...room.look} data-locked={room.screen ? "" : undefined}>
-      {room.screen ?? room.overlay}
+    <div ref={shell} className="chat" data-app={app || undefined} {...room.look} data-locked={room.screen ? "" : undefined} data-nudge={room.overlay ? "" : undefined}>
+      {room.screen}
       <div className="chat__backdrop" aria-hidden="true" />
       <ChatHeader name={names[other]} online={live.online} typing={live.typing} app={app} onOpenDesign={() => setDesignOpen(true)} />
+      {room.overlay /* "seal our messages": a slim bar under the header; the list starts below it */}
       <MessageScroller.Provider autoScroll defaultScrollPosition="end">
         <Thread
           list={list}

@@ -12,6 +12,11 @@ import { KeyScreen, LockScreen } from "./LockScreen.jsx";
 import { PassphraseForm } from "./PassphraseForm.jsx";
 import { lockPrefs, markBack, markLeft, markUnlocked, relock, rememberLockLocally, stillOpen } from "./lockState.js";
 
+/**
+ * "Seal our messages": a slim bar tucked under the header (the message list starts below it, so it
+ * never covers a message). It opens into the passphrase form in place; "later" hides it until the
+ * chat is opened again.
+ */
 function SetUpNudge({ onClose }) {
   const [open, setOpen] = useState(false);
   return (
@@ -20,14 +25,19 @@ function SetUpNudge({ onClose }) {
         <>
           <p>type your passphrase once and your messages get sealed end to end, on both your phones ♡</p>
           <PassphraseForm submitLabel="seal our messages" autoFocus onDone={onClose} />
-          <button type="button" className="look-pill" data-quiet onClick={onClose}>
-            later
+          <button type="button" className="look-pill" data-quiet onClick={() => setOpen(false)}>
+            not now
           </button>
         </>
       ) : (
-        <button type="button" className="chat-nudge__pill" onClick={() => setOpen(true)}>
-          <span aria-hidden="true">🔒</span> seal our messages
-        </button>
+        <>
+          <button type="button" className="chat-nudge__open" onClick={() => setOpen(true)}>
+            <span aria-hidden="true">🔒</span> seal our messages
+          </button>
+          <button type="button" className="chat-nudge__later" onClick={onClose} aria-label="Hide for now">
+            later
+          </button>
+        </>
       )}
     </div>
   );
