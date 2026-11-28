@@ -14,6 +14,7 @@ import { BACKDROPS, Backdrop, DRAWERS, EYE_COLOURS, EYE_STYLES, HAIR, HAIR_COLOU
 import { DEFAULT_LOOK, addLook, inSet, isWearing, lookName, pushHistory, removeLook, surprise, takeOff, tidyLook, wear, wearSet } from "./logic.js";
 import "../_kit/kit.css";
 import "./paper-doll.css";
+import { useIsAdmin } from "../../../../../lib/session.js";
 
 // The paper doll: a chibi doll, a big wardrobe in drawers, themed sets, her look (hair, eyes, face)
 // and the scene behind her. Tap or drag a piece onto her, drag one off to take it off, undo and redo
@@ -445,6 +446,8 @@ function Lookbook({ open, looks, onClose, onWear, onKeep, onRemove }) {
 
 /** "Saved to your lookbook ♡", and the look as a picture for her gallery or Josh's chat. */
 function KeepSheet({ keeping, onClose }) {
+  // On Josh's phone a keep is only a try: her gallery holds her pieces alone.
+  const admin = useIsAdmin();
   const { partner, toChat, toDoodles } = useArtShare();
   const openGallery = useOpenGallery();
   const svgRef = useRef(null);
@@ -484,7 +487,7 @@ function KeepSheet({ keeping, onClose }) {
   const error = toChat.error || toDoodles.error;
   const sendLabel = toChat.isPending ? "sending…" : toChat.isSuccess ? `sent to ${partner} ♡` : `send to ${partner}`;
   return (
-    <Sheet open={Boolean(keeping)} title={kept ? "in your gallery ♡" : keeping?.fromBook ? "a look from your lookbook" : "saved to your lookbook ♡"} onClose={onClose}>
+    <Sheet open={Boolean(keeping)} title={kept ? (admin ? "a try ♡ only hers go in her gallery" : "in your gallery ♡") : keeping?.fromBook ? "a look from your lookbook" : "saved to your lookbook ♡"} onClose={onClose}>
       {keeping && (
         <div className="pd-keep">
           <div className="pd-keep__card">

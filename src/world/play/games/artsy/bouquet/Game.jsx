@@ -13,6 +13,7 @@ import { CARD_BOX, RIBBONS, Ribbon, WRAPS, WrapBack, WrapFront } from "./wraps.j
 import { CARD_MAX, CARD_PRESETS, H, MAX_FLOWERS, W, addFlower, arrange, bouquetName, duplicate, handleTo, headTransform, moveTo, pinchTo, placeNew, pushHistory, removeItem, shelve, stemPath, surprise, tidyCard, toBack, toFront, turnOf, unshelve, updateItem } from "./logic.js";
 import "../_kit/kit.css";
 import "./bouquet.css";
+import { useIsAdmin } from "../../../../../lib/session.js";
 
 // The bouquet maker: tap flowers into a fan (they land where they look nice), drag to move, pinch or
 // the little handle to size and turn, pick a wrap, a ribbon and a card, then tie it up: it goes on
@@ -498,6 +499,8 @@ function ShelfSheet({ open, shelf, onClose, onOpen, onRemove }) {
 }
 
 function FinishedSheet({ entry, svgRef, onClose, onAnother }) {
+  // On Josh's phone a keep is only a try: her gallery holds her pieces alone.
+  const admin = useIsAdmin();
   const { partner, toChat, toDoodles } = useArtShare();
   const openGallery = useOpenGallery();
   const [preview, setPreview] = useState(null);
@@ -529,7 +532,7 @@ function FinishedSheet({ entry, svgRef, onClose, onAnother }) {
   const error = toChat.error || toDoodles.error;
   const sendLabel = toChat.isPending ? "sending…" : toChat.isSuccess ? `sent to ${partner} ♡` : `send to ${partner}`;
   return (
-    <Sheet open={Boolean(entry)} title={kept ? "in your gallery ♡" : "tied with a bow ♡"} onClose={onClose} className="bq-done">
+    <Sheet open={Boolean(entry)} title={kept ? (admin ? "a try ♡ only hers go in her gallery" : "in your gallery ♡") : "tied with a bow ♡"} onClose={onClose} className="bq-done">
       {entry && (
         <div className="bq-finish">
           <div className="bq-finish__card">

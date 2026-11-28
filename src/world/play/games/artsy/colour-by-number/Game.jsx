@@ -11,6 +11,7 @@ import PictureArt, { paintPicture, regionSpots } from "./PictureArt.jsx";
 import { MAX_ZOOM, canFill, decodeIds, hintRegion, labelSpots, nextColour, progress, toPicture, viewBox, zoomAround } from "./logic.js";
 import "../_kit/kit.css";
 import "./colour-by-number.css";
+import { useIsAdmin } from "../../../../../lib/session.js";
 
 const EMPTY = { current: null, fills: {}, finished: {} };
 
@@ -157,6 +158,8 @@ function FinishedSheet({ picture, saved, onClose, onAgain }) {
 }
 
 function ShareButtons({ partner, toChat, toDoodles, onChat, onKeep }) {
+  // On Josh's phone a keep is only a try: her gallery holds her pieces alone.
+  const admin = useIsAdmin();
   const error = toChat.error || toDoodles.error;
   return (
     <>
@@ -165,7 +168,7 @@ function ShareButtons({ partner, toChat, toDoodles, onChat, onKeep }) {
           {toChat.isPending ? "sending…" : toChat.isSuccess ? `sent to ${partner} ♡` : `send to ${partner} ♡`}
         </button>
         <button type="button" className="artsy-secondary" disabled={toDoodles.isPending || toDoodles.isSuccess} onClick={onKeep}>
-          {toDoodles.isPending ? "keeping…" : toDoodles.isSuccess ? "in your gallery ✓" : "keep in my gallery"}
+          {toDoodles.isPending ? "keeping…" : toDoodles.isSuccess ? (admin ? "a try ✓ (only hers go in her gallery)" : "in your gallery ✓") : admin ? "keep (a try)" : "keep in my gallery"}
         </button>
       </div>
       {error && <p className="artsy-error" role="alert">{error.message || "That didn’t go through. Try again?"}</p>}

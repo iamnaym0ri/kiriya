@@ -9,6 +9,7 @@ import { BRUSHES, PALETTES, PAPERS, SIZE, SIZES, SIZE_NAMES, SLICE_CHOICES, isBl
 import { paintDrawing, paintStroke } from "./render.js";
 import "../_kit/kit.css";
 import "./kaleidoscope.css";
+import { useIsAdmin } from "../../../../../lib/session.js";
 
 // The kaleidoscope: one stroke inside the round plate is turned and mirrored into a flower.
 // Layout, top to bottom: undo / redo / clear and spin / save; the plate (a coach mark until her
@@ -419,6 +420,8 @@ function Coach({ n, mirror, calm, leaving, night }) {
 }
 
 function ShareSheet({ open, onClose, make, onSent, onKept, onFresh }) {
+  // On Josh's phone a keep is only a try: her gallery holds her pieces alone.
+  const admin = useIsAdmin();
   const { partner, toChat, toDoodles } = useArtShare();
   const openGallery = useOpenGallery();
   const [preview, setPreview] = useState(null);
@@ -450,7 +453,7 @@ function ShareSheet({ open, onClose, make, onSent, onKept, onFresh }) {
       <div className="kal-share" data-kept={kept ? "true" : undefined}>
         <div className="kal-share__frame">
           <div className="kal-share__preview">{preview ? <img src={preview} alt="your kaleidoscope" /> : <span className="artsy-hand">turning it into a picture…</span>}</div>
-          {kept && <span className="kal-share__stamp artsy-hand">in your gallery ♡</span>}
+          {kept && <span className="kal-share__stamp artsy-hand">{admin ? "a try ♡ only hers go in her gallery" : "in your gallery ♡"}</span>}
         </div>
         {kept ? (
           <div className="kal-share__buttons">
