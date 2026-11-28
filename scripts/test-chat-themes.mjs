@@ -35,24 +35,28 @@ for (const { selector, decls } of themesCss) {
 const bubbleVars = {};
 const comboVars = {};
 const paint = {};
+// Bubble designs are keyed on the message row (.msg[data-design="…"], round 4): a row's own block
+// sets its colours; a ":is(.chat, .chat-preview) … .bubble" rule may paint a gradient over them.
 for (const { selector, decls } of bubblesCss) {
-  const bubble = /\[data-bubble="(\w+)"\]/.exec(selector)?.[1];
+  const bubble = /\[data-design="(\w+)"\]/.exec(selector)?.[1];
   if (!bubble) continue;
-  const theme = /\.chat\[data-theme="(\w+)"\]/.exec(selector)?.[1];
-  const first = selector.split(",")[0].trim();
-  if (!first.includes(" ")) {
+  const theme = /\[data-theme="(\w+)"\]/.exec(selector)?.[1];
+  const tail = selector.replace(/:is\((?:[^()]|\([^()]*\))*\)/g, "").trim();
+  if (!/\.bubble/.test(tail)) {
     const vars = Object.fromEntries(Object.entries(decls).filter(([name]) => name.startsWith("--chat-")));
     if (theme) comboVars[`${theme}/${bubble}`] = { ...(comboVars[`${theme}/${bubble}`] ?? {}), ...vars };
     else bubbleVars[bubble] = { ...(bubbleVars[bubble] ?? {}), ...vars };
-  } else if (/ \.bubble(?::not\(\.chat-preview \*\))?$/.test(first) && decls["background-image"]) {
-    const side = first.includes("[data-mine]") ? "mine" : "theirs";
+  } else if (/ \.bubble$/.test(tail) && decls["background-image"]) {
+    const side = tail.includes("[data-mine]") ? "mine" : "theirs";
     paint[`${theme ?? "*"}/${bubble}/${side}`] = decls["background-image"].match(/#[0-9a-f]{3,8}\b/gi) ?? [];
   }
 }
 
 // The parser really found what it checks (a guard against a test that passes on nothing).
 assert.equal(Object.keys(themeVars).length, THEMES.length);
-for (const key of ["*/kawaii/mine", "*/kawaii/theirs", "*/fairy/mine", "*/lovey/mine"]) assert(paint[key]?.length >= 2, key);
+for (const key of ["*/kawaii/mine", "*/kawaii/theirs", "*/fairy/mine", "*/lovey/mine", "*/melody/mine", "*/jelly/mine"]) assert(paint[key]?.length >= 2, key);
+assert.equal(bubbleVars.ribbon?.["--chat-mine-ink"], "#561b3a");
+assert(BUBBLES.length >= 14, "five new bubble designs");
 assert.equal(comboVars["dark/paper"]?.["--chat-theirs"], "#2c2620");
 
 const solid = (value) => {

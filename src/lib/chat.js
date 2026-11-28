@@ -176,6 +176,8 @@ export function useChatLive({ live, me, enabled = true }) {
             catchUp();
           });
           ch.subscribe("edited", () => catchUp());
+          // The theme or background changed (theirs together), or their bubbles or typing style.
+          ch.subscribe("look", () => queryClient.invalidateQueries({ queryKey: chatPrefsKey }));
           ch.subscribe("reaction", ({ data }) =>
             updateMessage(queryClient, data.messageId, (m) => {
               const reactions = { ...m.reactions };

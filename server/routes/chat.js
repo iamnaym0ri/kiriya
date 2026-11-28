@@ -133,7 +133,7 @@ chatRoutes.get("/realtime", async (c) => {
 });
 
 // The wallpaper links ride along so the iPhone app receives them signed (see lib/mediaLinks.js).
-const WALLPAPER_LINKS = { miku: "/api/uploads/wallpapers/miku?v=1", maomao: "/api/uploads/wallpapers/maomao?v=1" };
+const WALLPAPER_LINKS = { miku: "/api/uploads/wallpapers/miku?v=1", maomao: "/api/uploads/wallpapers/maomao?v=2" };
 chatRoutes.get("/prefs", async (c) => c.json({ ...(await readPrefs(await getDb(), role(c))), wallpapers: WALLPAPER_LINKS }));
 chatRoutes.put("/prefs", async (c) => {
   try {

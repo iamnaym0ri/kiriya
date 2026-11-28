@@ -36,7 +36,8 @@ import { Message } from "./Message.jsx";
 import { openViewer } from "./viewer.js";
 import { useChatRoom } from "./lock/useChatRoom.jsx";
 import { WALLPAPERS } from "./wallpapers.js";
-import { ChatIcon, TypingIndicator } from "./parts.jsx";
+import { ChatIcon } from "./parts.jsx";
+import { TypingIndicator } from "./theme/Typing.jsx";
 import "./Chat.css";
 
 const GROUP_GAP_MS = 5 * 60 * 1000;
@@ -74,7 +75,7 @@ function glide(root, before, { skip } = {}) {
   });
 }
 
-function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loadingOlder, onOlder, actions, preview, flashId, viewport, jumpRef }) {
+function Thread({ list, me, names, reads, typing, typingStyle, designs, hasOlder, loadingOlder, onOlder, actions, preview, flashId, viewport, jumpRef }) {
   const { scrollToMessage, scrollToEnd } = useMessageScroller();
   jumpRef.current = scrollToMessage;
   const content = useRef(null);
@@ -205,6 +206,7 @@ function Thread({ list, me, names, reads, typing, typingStyle, hasOlder, loading
                   preview={preview}
                   canRetry={message.failed ? canRetry(message) : false}
                   actions={actions}
+                  design={message.sender === me ? designs.mine : designs.theirs}
                 />
               </MessageScroller.Item>
             );
@@ -467,7 +469,8 @@ export default function ChatPage() {
           names={names}
           reads={first?.reads}
           typing={live.typing}
-          typingStyle={prefs.typing}
+          typingStyle={room.theirTyping}
+          designs={room.designs}
           hasOlder={messages.hasNextPage}
           loadingOlder={messages.isFetchingNextPage}
           onOlder={() => messages.fetchNextPage()}

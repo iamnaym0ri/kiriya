@@ -1,21 +1,23 @@
-/* Bubble designs (round 3): how the bubbles themselves look, on top of the whole-chat theme
-   (themes.css). Most designs take the theme's own colours and add their shape and ornaments; a few
-   (kawaii, fairy, gothic, lovey) bring their own colours, always with ink that passes WCAG AA on
-   every stop (scripts/test-chat-themes.mjs). Ornaments are decorations only: pseudo-elements,
-   aria-hidden by nature, never in the way of a tap. Selectors carry [data-theme] so they win over
-   the chat's older built-in bubble rules. Motion is opacity/transform only and stops for
-   prefers-reduced-motion. */
+/* Bubble designs. Round 4 (Josh): each person picks their own, and both phones draw each person's
+   messages in that person's design, so a design is keyed on the message row: .msg[data-design="…"]
+   (ChatPage gives each row its sender's choice; previews do the same). The side still decides the
+   colour pairing: a design's "mine" colours on the right, its "theirs" colours on the left.
+   Most designs take the theme's colours and add their shape and ornaments; some (kawaii, fairy,
+   gothic, lovey, ribbon, melody, jelly) bring their own palette, always with ink that passes WCAG AA
+   on every stop (scripts/test-chat-themes.mjs). Ornaments are pseudo-elements: decoration only,
+   never in the way of a tap. Motion is opacity/transform only and stops for Reduce Motion. */
 
-/* ---------- soft lilac: the theme's colours, round and calm ---------- */
-.chat[data-theme][data-bubble="lilac"] .bubble,
-.chat-preview[data-bubble="lilac"] .bubble {
+:is(.chat, .chat-preview) .msg[data-design] .bubble {
   border-radius: var(--chat-radius);
+}
+
+/* ---------- soft & round: the theme's colours, round and calm ---------- */
+:is(.chat, .chat-preview) .msg[data-design="lilac"] .bubble {
   box-shadow: 0 1px 2px #2a173a1f;
 }
 
 /* ---------- paper notes: lined notepaper, a strip of washi tape, a handwritten feel ---------- */
-.chat[data-theme][data-bubble="paper"],
-.chat-preview[data-bubble="paper"] {
+.msg[data-design="paper"] {
   --chat-mine: #fff0d9;
   --chat-mine-ink: #4a3156;
   --chat-theirs: #fffdf6;
@@ -24,8 +26,7 @@
   --paper-line: #b9a58a33;
   --paper-tape: #f2b8cf99;
 }
-.chat[data-theme="dark"][data-bubble="paper"],
-.chat-preview[data-theme="dark"][data-bubble="paper"] {
+:is(.chat[data-theme="dark"] .msg:not(.chat-preview *), .chat-preview[data-theme="dark"] .msg)[data-design="paper"] {
   --chat-mine: #3b3026;
   --chat-mine-ink: #f6eadb;
   --chat-theirs: #2c2620;
@@ -33,9 +34,7 @@
   --paper-line: #f6eadb1f;
   --paper-tape: #c9a8ea66;
 }
-.chat[data-theme][data-bubble="paper"] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="paper"] .bubble {
-  border-radius: 4px 7px 5px 6px;
+:is(.chat, .chat-preview) .msg[data-design="paper"] .bubble {
   background-image: repeating-linear-gradient(transparent 0 23px, var(--paper-line) 23px 24px);
   background-position: 0 6px;
   box-shadow: 0 1px 0 #00000014, 0 3px 6px -3px #3b2a1a33;
@@ -44,11 +43,10 @@
   line-height: 24px;
 }
 /* a voice note's waveform reads better without the ruled lines through it */
-.chat[data-theme][data-bubble="paper"] .bubble--voice:not(.chat-preview *) {
+:is(.chat, .chat-preview) .msg[data-design="paper"] .bubble--voice {
   background-image: none;
 }
-.chat[data-theme][data-bubble="paper"] .msg[data-first] .bubble:not(.chat-preview *)::before,
-.chat-preview[data-bubble="paper"] .msg[data-first] .bubble::before {
+:is(.chat, .chat-preview) .msg[data-design="paper"][data-first] .bubble::before {
   content: "";
   position: absolute;
   top: -6px;
@@ -60,21 +58,21 @@
   border-radius: 1px;
   pointer-events: none;
 }
-.chat[data-theme][data-bubble="paper"] .msg[data-mine][data-first] .bubble:not(.chat-preview *)::before,
-.chat-preview[data-bubble="paper"] .msg[data-mine][data-first] .bubble::before {
+:is(.chat, .chat-preview) .msg[data-design="paper"][data-mine][data-first] .bubble::before {
   left: auto;
   right: 14px;
   transform: rotate(5deg);
 }
 
 /* ---------- pixel retro: square pixels, a stepped border, the dotted game font ---------- */
-.chat[data-theme][data-bubble="pixel"],
-.chat-preview[data-bubble="pixel"] {
+.msg[data-design="pixel"] {
   --chat-radius: 0px;
-}
-.chat[data-theme][data-bubble="pixel"] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="pixel"] .bubble {
   --px: color-mix(in srgb, var(--chat-theirs-ink) 72%, transparent);
+}
+.msg[data-design="pixel"][data-mine] {
+  --px: color-mix(in srgb, var(--chat-mine) 55%, #1b1024);
+}
+:is(.chat, .chat-preview) .msg[data-design="pixel"] .bubble {
   margin: 4px;
   border-radius: 0 !important;
   font-family: "DotGothic16", var(--font-ui, system-ui), sans-serif;
@@ -87,32 +85,24 @@
     4px 0 0 0 var(--px),
     5px 8px 0 0 #00000026;
 }
-.chat[data-theme][data-bubble="pixel"] .msg[data-mine] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="pixel"] .msg[data-mine] .bubble {
-  --px: color-mix(in srgb, var(--chat-mine) 55%, #1b1024);
-}
 
 /* ---------- sparkly kawaii: candy gradients and a little sparkle ---------- */
-.chat[data-theme][data-bubble="kawaii"],
-.chat-preview[data-bubble="kawaii"] {
+.msg[data-design="kawaii"] {
   --chat-mine: #ffc8e1;
   --chat-mine-ink: #4a1f45;
   --chat-theirs: #fdfaff;
   --chat-theirs-ink: #3d2a52;
   --chat-radius: 22px;
 }
-.chat[data-theme][data-bubble="kawaii"] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="kawaii"] .bubble {
+:is(.chat, .chat-preview) .msg[data-design="kawaii"] .bubble {
   background-image: linear-gradient(135deg, #fdfaff, #e6f4ff);
   border: 1.5px solid #ffffff;
   box-shadow: 0 2px 8px -2px #b77ad466;
 }
-.chat[data-theme][data-bubble="kawaii"] .msg[data-mine] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="kawaii"] .msg[data-mine] .bubble {
+:is(.chat, .chat-preview) .msg[data-design="kawaii"][data-mine] .bubble {
   background-image: linear-gradient(135deg, #ffc8e1, #dcc6ff);
 }
-.chat[data-theme][data-bubble="kawaii"] .msg[data-last] .bubble:not(.chat-preview *)::after,
-.chat-preview[data-bubble="kawaii"] .msg[data-last] .bubble::after {
+:is(.chat, .chat-preview) .msg[data-design="kawaii"][data-last] .bubble::after {
   content: "✦";
   position: absolute;
   right: -8px;
@@ -123,26 +113,25 @@
   pointer-events: none;
   animation: bubble-twinkle 2.6s ease-in-out infinite;
 }
-.chat[data-theme][data-bubble="kawaii"] .msg[data-mine][data-last] .bubble:not(.chat-preview *)::after,
-.chat-preview[data-bubble="kawaii"] .msg[data-mine][data-last] .bubble::after {
+:is(.chat, .chat-preview) .msg[data-design="kawaii"][data-mine][data-last] .bubble::after {
   right: auto;
   left: -8px;
   color: #a77cf0;
 }
 
 /* ---------- kitty: ears on the first bubble, a paw by the last ---------- */
-.chat[data-theme][data-bubble="cat"],
-.chat-preview[data-bubble="cat"] {
+.msg[data-design="cat"] {
   --chat-radius: 22px;
+  --ear: var(--chat-theirs);
 }
-.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="cat"] .msg[data-first] .bubble {
+.msg[data-design="cat"][data-mine] {
+  --ear: var(--chat-mine);
+}
+:is(.chat, .chat-preview) .msg[data-design="cat"][data-first] .bubble {
   margin-top: 9px;
 }
-.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble:not(.chat-preview *)::before,
-.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble:not(.chat-preview *)::after,
-.chat-preview[data-bubble="cat"] .msg[data-first] .bubble::before,
-.chat-preview[data-bubble="cat"] .msg[data-first] .bubble::after {
+:is(.chat, .chat-preview) .msg[data-design="cat"][data-first] .bubble::before,
+:is(.chat, .chat-preview) .msg[data-design="cat"][data-first] .bubble::after {
   content: "";
   position: absolute;
   top: -8px;
@@ -153,40 +142,27 @@
   border-bottom: 11px solid var(--ear);
   pointer-events: none;
 }
-.chat[data-theme][data-bubble="cat"] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="cat"] .bubble {
-  --ear: var(--chat-theirs);
-}
-.chat[data-theme][data-bubble="cat"] .msg[data-mine] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="cat"] .msg[data-mine] .bubble {
-  --ear: var(--chat-mine);
-}
-.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble:not(.chat-preview *)::before,
-.chat-preview[data-bubble="cat"] .msg[data-first] .bubble::before {
+:is(.chat, .chat-preview) .msg[data-design="cat"][data-first] .bubble::before {
   left: 12px;
   transform: rotate(-12deg);
 }
-.chat[data-theme][data-bubble="cat"] .msg[data-first] .bubble:not(.chat-preview *)::after,
-.chat-preview[data-bubble="cat"] .msg[data-first] .bubble::after {
+:is(.chat, .chat-preview) .msg[data-design="cat"][data-first] .bubble::after {
   left: 30px;
   transform: rotate(12deg);
 }
-.chat[data-theme][data-bubble="cat"] .msg[data-last] .msg__status:not(.chat-preview *)::before {
+:is(.chat, .chat-preview) .msg[data-design="cat"][data-last] .msg__status::before {
   content: "🐾 ";
 }
 
 /* ---------- flowers: a dotted petal edge and a small bloom in the corner ---------- */
-.chat[data-theme][data-bubble="flowers"],
-.chat-preview[data-bubble="flowers"] {
+.msg[data-design="flowers"] {
   --chat-radius: 22px;
 }
-.chat[data-theme][data-bubble="flowers"] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="flowers"] .bubble {
+:is(.chat, .chat-preview) .msg[data-design="flowers"] .bubble {
   outline: 1.5px dotted color-mix(in srgb, var(--chat-accent) 45%, transparent);
   outline-offset: 2px;
 }
-.chat[data-theme][data-bubble="flowers"] .msg[data-last] .bubble:not(.chat-preview *)::after,
-.chat-preview[data-bubble="flowers"] .msg[data-last] .bubble::after {
+:is(.chat, .chat-preview) .msg[data-design="flowers"][data-last] .bubble::after {
   content: "✿";
   position: absolute;
   right: -7px;
@@ -194,36 +170,31 @@
   font-size: 17px;
   line-height: 1;
   color: #ee8fb4;
-  text-shadow: 0 0 0 #fff, 1px 1px 0 #ffffffaa;
+  text-shadow: 1px 1px 0 #ffffffaa;
   pointer-events: none;
 }
-.chat[data-theme][data-bubble="flowers"] .msg[data-mine][data-last] .bubble:not(.chat-preview *)::after,
-.chat-preview[data-bubble="flowers"] .msg[data-mine][data-last] .bubble::after {
+:is(.chat, .chat-preview) .msg[data-design="flowers"][data-mine][data-last] .bubble::after {
   right: auto;
   left: -7px;
   color: #8fbf6f;
 }
 
 /* ---------- fairy dust: soft iridescence and drifting sparkles ---------- */
-.chat[data-theme][data-bubble="fairy"],
-.chat-preview[data-bubble="fairy"] {
+.msg[data-design="fairy"] {
   --chat-mine: #ecdfff;
   --chat-mine-ink: #3a2858;
   --chat-theirs: #fdfbff;
   --chat-theirs-ink: #3a2858;
   --chat-radius: 24px;
 }
-.chat[data-theme][data-bubble="fairy"] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="fairy"] .bubble {
+:is(.chat, .chat-preview) .msg[data-design="fairy"] .bubble {
   background-image: linear-gradient(120deg, #fdfbff, #f1eaff);
   box-shadow: 0 0 0 1px #ffffffcc inset, 0 3px 12px -4px #9f7fe066;
 }
-.chat[data-theme][data-bubble="fairy"] .msg[data-mine] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="fairy"] .msg[data-mine] .bubble {
+:is(.chat, .chat-preview) .msg[data-design="fairy"][data-mine] .bubble {
   background-image: linear-gradient(120deg, #e6d8ff, #ffe2f3 48%, #dcf3ff);
 }
-.chat[data-theme][data-bubble="fairy"] .msg[data-last] .bubble:not(.chat-preview *)::after,
-.chat-preview[data-bubble="fairy"] .msg[data-last] .bubble::after {
+:is(.chat, .chat-preview) .msg[data-design="fairy"][data-last] .bubble::after {
   content: "⋆ ˚ ✧";
   position: absolute;
   right: 8px;
@@ -236,27 +207,23 @@
 }
 
 /* ---------- dark & gothic: ink-dark bubbles, a fine double edge, a fleuron ---------- */
-.chat[data-theme][data-bubble="gothic"],
-.chat-preview[data-bubble="gothic"] {
+.msg[data-design="gothic"] {
   --chat-mine: #3a1730;
   --chat-mine-ink: #f6dbe8;
   --chat-theirs: #1d1622;
   --chat-theirs-ink: #ebdff2;
   --chat-radius: 3px;
 }
-.chat[data-theme][data-bubble="gothic"] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="gothic"] .bubble {
+:is(.chat, .chat-preview) .msg[data-design="gothic"] .bubble {
   border-radius: 3px !important;
   border: 3px double #7d5a86;
   font-family: var(--font-literary, Georgia), serif;
   box-shadow: 0 2px 10px -4px #000000aa;
 }
-.chat[data-theme][data-bubble="gothic"] .msg[data-mine] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="gothic"] .msg[data-mine] .bubble {
+:is(.chat, .chat-preview) .msg[data-design="gothic"][data-mine] .bubble {
   border-color: #9c4b74;
 }
-.chat[data-theme][data-bubble="gothic"] .msg[data-last] .bubble:not(.chat-preview *)::after,
-.chat-preview[data-bubble="gothic"] .msg[data-last] .bubble::after {
+:is(.chat, .chat-preview) .msg[data-design="gothic"][data-last] .bubble::after {
   content: "❦";
   position: absolute;
   right: -6px;
@@ -267,20 +234,17 @@
 }
 
 /* ---------- lovey-dovey: hot-pink candy and a heart for a tail ---------- */
-.chat[data-theme][data-bubble="lovey"],
-.chat-preview[data-bubble="lovey"] {
+.msg[data-design="lovey"] {
   --chat-mine: #c42d64;
   --chat-mine-ink: #ffffff;
   --chat-theirs: #ffe3ee;
   --chat-theirs-ink: #66193b;
   --chat-radius: 22px;
 }
-.chat[data-theme][data-bubble="lovey"] .msg[data-mine] .bubble:not(.chat-preview *),
-.chat-preview[data-bubble="lovey"] .msg[data-mine] .bubble {
+:is(.chat, .chat-preview) .msg[data-design="lovey"][data-mine] .bubble {
   background-image: linear-gradient(135deg, #cc3169, #ad1c53);
 }
-.chat[data-theme][data-bubble="lovey"] .msg[data-last] .bubble:not(.chat-preview *)::after,
-.chat-preview[data-bubble="lovey"] .msg[data-last] .bubble::after {
+:is(.chat, .chat-preview) .msg[data-design="lovey"][data-last] .bubble::after {
   content: "♥";
   position: absolute;
   left: -6px;
@@ -290,11 +254,186 @@
   color: #ffb5cf;
   pointer-events: none;
 }
-.chat[data-theme][data-bubble="lovey"] .msg[data-mine][data-last] .bubble:not(.chat-preview *)::after,
-.chat-preview[data-bubble="lovey"] .msg[data-mine][data-last] .bubble::after {
+:is(.chat, .chat-preview) .msg[data-design="lovey"][data-mine][data-last] .bubble::after {
   left: auto;
   right: -6px;
   color: #ad1c53;
+}
+
+/* ---------- fluffy cloud (new): pillowy, puffs on top, a thought-bubble tail ---------- */
+.msg[data-design="cloud"] {
+  --chat-radius: 26px;
+  --puff: var(--chat-theirs);
+}
+.msg[data-design="cloud"][data-mine] {
+  --puff: var(--chat-mine);
+}
+:is(.chat, .chat-preview) .msg[data-design="cloud"] .bubble {
+  border-radius: 26px !important;
+  box-shadow: 0 4px 12px -6px color-mix(in srgb, var(--chat-accent) 45%, transparent);
+}
+:is(.chat, .chat-preview) .msg[data-design="cloud"][data-first] .bubble {
+  margin-top: 8px;
+}
+:is(.chat, .chat-preview) .msg[data-design="cloud"][data-first] .bubble::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 14px;
+  width: 48px;
+  height: 20px;
+  background:
+    radial-gradient(circle at 9px 12px, var(--puff) 8px, transparent 8.6px),
+    radial-gradient(circle at 24px 10px, var(--puff) 10px, transparent 10.6px),
+    radial-gradient(circle at 39px 12px, var(--puff) 8px, transparent 8.6px);
+  pointer-events: none;
+}
+:is(.chat, .chat-preview) .msg[data-design="cloud"][data-mine][data-first] .bubble::before {
+  left: auto;
+  right: 14px;
+}
+:is(.chat, .chat-preview) .msg[data-design="cloud"][data-last] .bubble::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  bottom: -9px;
+  width: 16px;
+  height: 14px;
+  background:
+    radial-gradient(circle at 10px 4px, var(--puff) 4px, transparent 4.6px),
+    radial-gradient(circle at 3px 11px, var(--puff) 2.5px, transparent 3px);
+  pointer-events: none;
+}
+:is(.chat, .chat-preview) .msg[data-design="cloud"][data-mine][data-last] .bubble::after {
+  left: auto;
+  right: -4px;
+  transform: scaleX(-1);
+}
+
+/* ---------- love stamp (new): a postage stamp's dashed edge and a heart postmark ---------- */
+.msg[data-design="stamp"] {
+  --chat-radius: 5px;
+}
+:is(.chat, .chat-preview) .msg[data-design="stamp"] .bubble {
+  padding: 12px 18px;
+  border-radius: 5px !important;
+  outline: 2px dashed color-mix(in srgb, var(--chat-theirs-ink) 30%, transparent);
+  outline-offset: -6px;
+  box-shadow: 0 0 0 3px var(--chat-theirs), 0 2px 6px 2px #2a173a29;
+}
+:is(.chat, .chat-preview) .msg[data-design="stamp"][data-mine] .bubble {
+  outline-color: color-mix(in srgb, var(--chat-mine-ink) 38%, transparent);
+  box-shadow: 0 0 0 3px var(--chat-mine), 0 2px 6px 2px #2a173a29;
+}
+:is(.chat, .chat-preview) .msg[data-design="stamp"][data-first] .bubble::after {
+  content: "♥";
+  position: absolute;
+  top: -11px;
+  right: -9px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid #c84a7a;
+  border-radius: 50%;
+  background: #fffaf3e6;
+  color: #c84a7a;
+  font-size: 12px;
+  line-height: 1;
+  transform: rotate(-14deg);
+  pointer-events: none;
+}
+:is(.chat, .chat-preview) .msg[data-design="stamp"][data-mine][data-first] .bubble::after {
+  right: auto;
+  left: -9px;
+  transform: rotate(12deg);
+}
+
+/* ---------- ribbon bow (new): satin pink and a bow on top ---------- */
+.msg[data-design="ribbon"] {
+  --chat-mine: #ffd3e5;
+  --chat-mine-ink: #561b3a;
+  --chat-theirs: #fff4f8;
+  --chat-theirs-ink: #5b1f3e;
+  --chat-radius: 20px;
+}
+:is(.chat, .chat-preview) .msg[data-design="ribbon"] .bubble {
+  border: 1.5px solid #f7b3cd;
+  box-shadow: 0 2px 8px -3px #e0709a59;
+}
+:is(.chat, .chat-preview) .msg[data-design="ribbon"][data-first] .bubble {
+  margin-top: 8px;
+}
+:is(.chat, .chat-preview) .msg[data-design="ribbon"][data-first] .bubble::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 12px;
+  width: 30px;
+  height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 18'%3E%3Cpath d='M15 9C11 3 3 1 2 5s3 9 13 4Z' fill='%23ff8fb8' stroke='%23d9537f' stroke-width='1.1'/%3E%3Cpath d='M15 9c4-6 12-8 13-4s-3 9-13 4Z' fill='%23ff8fb8' stroke='%23d9537f' stroke-width='1.1'/%3E%3Cpath d='M14 10l-3 7 3-1 1 2 1-8Z' fill='%23ff7aa8'/%3E%3Cpath d='M16 10l3 7-3-1-1 2-1-8Z' fill='%23ff7aa8'/%3E%3Ccircle cx='15' cy='9' r='2.6' fill='%23ffb3cf' stroke='%23d9537f' stroke-width='1.1'/%3E%3C/svg%3E") center / contain no-repeat;
+  pointer-events: none;
+}
+:is(.chat, .chat-preview) .msg[data-design="ribbon"][data-mine][data-first] .bubble::before {
+  left: auto;
+  right: 12px;
+}
+
+/* ---------- melody (new): Miku's teal, and notes drifting up from the last bubble ---------- */
+.msg[data-design="melody"] {
+  --chat-mine: #0d7770;
+  --chat-mine-ink: #ffffff;
+  --chat-theirs: #e6faf8;
+  --chat-theirs-ink: #0e4440;
+  --chat-radius: 20px;
+}
+:is(.chat, .chat-preview) .msg[data-design="melody"] .bubble {
+  box-shadow: 0 2px 8px -3px #13867e66;
+}
+:is(.chat, .chat-preview) .msg[data-design="melody"][data-mine] .bubble {
+  background-image: linear-gradient(135deg, #0f7e77, #0b6c66);
+}
+:is(.chat, .chat-preview) .msg[data-design="melody"][data-last] .bubble::after {
+  content: "♪ ♫";
+  position: absolute;
+  top: -13px;
+  right: 6px;
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: #ff6fae;
+  pointer-events: none;
+  animation: bubble-drift 3.2s ease-in-out infinite;
+}
+:is(.chat, .chat-preview) .msg[data-design="melody"][data-mine][data-last] .bubble::after {
+  right: auto;
+  left: 6px;
+}
+
+/* ---------- glossy jelly (new): candy-shine bubbles with a highlight on top ---------- */
+.msg[data-design="jelly"] {
+  --chat-mine: #7647d0;
+  --chat-mine-ink: #ffffff;
+  --chat-theirs: #efe7ff;
+  --chat-theirs-ink: #382263;
+  --chat-radius: 22px;
+}
+:is(.chat, .chat-preview) .msg[data-design="jelly"] .bubble {
+  box-shadow: inset 0 -3px 0 #2a173a1f, 0 4px 10px -5px #5b3aa866;
+}
+:is(.chat, .chat-preview) .msg[data-design="jelly"][data-mine] .bubble {
+  background-image: linear-gradient(180deg, #7f51d9, #6c3dc6);
+  box-shadow: inset 0 -3px 0 #00000033, 0 4px 12px -5px #5b3aa8aa;
+}
+:is(.chat, .chat-preview) .msg[data-design="jelly"] .bubble::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 12px;
+  width: min(38%, 70px);
+  height: 4px;
+  border-radius: 999px;
+  background: #ffffffa6;
+  pointer-events: none;
 }
 
 /* ---------- shared motion ---------- */
@@ -321,8 +460,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .chat[data-theme] .bubble:not(.chat-preview *)::after,
-  .chat-preview .bubble::after {
+  .msg[data-design] .bubble::after {
     animation: none !important;
   }
 }

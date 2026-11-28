@@ -1,5 +1,10 @@
 # Official Miku and Maomao wallpapers for the private chat background
 
+> **2026-11-27, round 4:** Josh replaced the Halloween 2025 Maomao (he read her tool as a scythe)
+> with the season 1 episode 6 wallpaper gift, Maomao made up for the garden party
+> (`season1/special/img/wall/06/03.jpg`), cropped to its three panels: the dark band at the top and
+> the logo/© band at the bottom removed, so the © line now shows in the chat and Art & credits.
+
 Researched 2026-11-24. Research only: nothing in the repo was changed. For inspection, images were downloaded to the session scratchpad (`dl-sonicwire/`, `dl-piapro/`, `dl-kusuriya/`, `view/`) and not into the repo. Dimensions were read from the real files or from live byte-range requests. This is not legal advice.
 
 **Use case.** A non-commercial background in a private web app and iPhone app built by one person for his partner. Two people use it, and the images are not redistributed.
