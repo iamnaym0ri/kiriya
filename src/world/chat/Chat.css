@@ -237,13 +237,25 @@
   transform: scale(0.7) translateY(8px);
   pointer-events: none;
 }
+/* The chat's rows, fixed by name so optional ones (the "seal our messages" bar, an official
+   wallpaper's credit) never push the others out of place: an absent row is simply 0 tall. */
+.chat:not(.chat--layer) {
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+}
+.chat:not(.chat--layer) > .chat__head { grid-row: 1; }
+.chat:not(.chat--layer) > .chat-nudge { grid-row: 2; }
+.chat:not(.chat--layer) > .chat__scroller { grid-row: 3; }
+/* An official wallpaper's credit: its own slim line between the messages and the composer, so it
+   never sits on a message. */
+.chat:not(.chat--layer) > .chat__credit { grid-row: 4; }
+.chat:not(.chat--layer) > .composer { grid-row: 5; }
 .chat__credit {
-  position: absolute;
-  right: 12px;
-  top: 64px;
+  position: relative;
   z-index: 2;
-  max-width: 70%;
+  justify-self: end;
+  max-width: 86%;
   margin: 0;
+  padding: 1px 12px 2px;
   font-size: 8.5px;
   line-height: 1.3;
   color: color-mix(in srgb, var(--chat-meta) 80%, transparent);
@@ -2003,9 +2015,6 @@ html.app-shell .chat__head {
 }
 html.app-shell .chat__viewport {
   padding: 8px max(8px, env(safe-area-inset-right)) 10px max(8px, env(safe-area-inset-left));
-}
-html.app-shell .chat__credit {
-  top: calc(env(safe-area-inset-top) + 58px);
 }
 html.app-shell .chat__toast {
   top: calc(env(safe-area-inset-top) + 64px);

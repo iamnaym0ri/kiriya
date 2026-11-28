@@ -123,9 +123,7 @@ dialog.chat-lock::backdrop {
 
 /* "seal our messages": a slim bar in the chat's own grid, right under the header. The message list
    starts below it, so it never covers a message or the header's status. */
-.chat[data-nudge] {
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
-}
+/* (Its row is fixed in Chat.css, with the chat's other rows.) */
 .chat-nudge {
   position: relative;
   z-index: 3;
