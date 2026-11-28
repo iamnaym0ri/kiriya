@@ -37,8 +37,9 @@ widgetRoutes.use("*", async (c, next) => {
 const link = (path) => new URL(path, env.siteUrl).toString();
 const clean = (text) => String(text ?? "").normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
 
+// The check-in shown is always hers (round 3b: Josh's phone shows her world); only her keys change it.
 async function snapshot(db, person) {
-  const [{ current }, notes] = await Promise.all([readCheckin(db, localDay(), person), inbox(db, person, { limit: 20 })]);
+  const [{ current }, notes] = await Promise.all([readCheckin(db, localDay(), "kiriya"), inbox(db, person, { limit: 20 })]);
   const latest = notes.notes[0];
   const battery = current ? ENERGY_LEVELS[current.energy] : null;
   return {
@@ -121,6 +122,7 @@ const statusBody = z
   .strict();
 
 widgetRoutes.put("/status", async (c) => {
+  if (c.get("person") !== "kiriya") return c.json({ error: "hers", message: "only kiriya can change her little corner ♡" }, 403);
   const parsed = statusBody.safeParse(await c.req.json().catch(() => null));
   const change = parsed.success ? resolve(parsed.data) : null;
   if (!change) return c.json({ error: "bad_choice", message: "That isn’t one of the choices. Try picking from the list again." }, 400);
