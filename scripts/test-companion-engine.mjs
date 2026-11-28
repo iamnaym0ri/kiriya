@@ -546,6 +546,7 @@ test("A new page: within a moment it walks or hops off anything she is reading",
   sim.setHost(character());
   const host = sim.host;
   run(sim, 1.5);
+  for (let i = 0; i < 1200 && !(host.level != null && host.mode === "rest"); i++) sim.tick(1 / 60);
   host.interrupt([{ type: "wait", pose: "idle", seconds: [30, 30] }]);
   run(sim, 0.1);
   // The new page has text right where it stands, and clear room elsewhere.
@@ -555,8 +556,13 @@ test("A new page: within a moment it walks or hops off anything she is reading",
   sim.pageChanged();
   run(sim, 0.7);
   assert.notEqual(host.step?.type, "wait", "its little pause was cut short for it");
-  run(sim, 6);
-  assert.ok(host.level !== at.level || Math.abs(host.x - at.x) >= 60, "it moved somewhere clear");
+  let reached = false;
+  for (let i = 0; i < 60 * 6 && !reached; i++) {
+    sim.tick(1 / 60);
+    // Off it (walking on to a clear spot it chose, or there): an unhurried walk can take a while.
+    reached = host.level !== at.level || Math.abs(host.x - at.x) >= 60;
+  }
+  assert.ok(reached, "it left for somewhere clear");
 });
 
 test("Nowhere clear of what she is reading: it steps aside, and comes back when there is room", () => {
@@ -591,9 +597,11 @@ test("When its level moves (a new page, the keyboard) it glides there instead of
   sim.setHost(character());
   const host = sim.host;
   run(sim, 1.5);
-  for (let i = 0; i < 600 && host.level == null; i++) sim.tick(1 / 60);
+  // At rest on a level (not crouching for a hop it would still take).
+  for (let i = 0; i < 1200 && !(host.level != null && host.mode === "rest"); i++) sim.tick(1 / 60);
   host.interrupt([{ type: "wait", pose: "idle", seconds: [30, 30] }]);
   run(sim, 0.05);
+  assert.equal(host.mode, "rest");
   host.glideFrom(40);
   assert.equal(host.glideY, 40, "starts where it was");
   run(sim, 0.15);

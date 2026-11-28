@@ -567,6 +567,8 @@ export class StageSim {
     const asked = host?.step?.type === "hold" || (host?.step?.type === "act" && host.step.solid);
     const pausing = !urgent && host?.step?.type === "wait";
     const moving = urgent ? !["rest", "walk", "turn"].includes(host?.mode) : host?.mode !== "rest";
+    // Mid-hop or being carried when the page changed: look again once its feet are down.
+    if (urgent && host && moving && host.mode !== "held") this.pageMoveAt = this.time + 0.4;
     if (!host || !this.lively || this.visit || host.staying || host.menu || host.level == null || moving || asked || pausing || (!urgent && this.time - this.lastAvoid < 6)) return;
     if (!this.options.avoidText) return;
     const here = this.spotScore(host, host.level, host.x);
