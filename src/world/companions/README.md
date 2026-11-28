@@ -1,7 +1,8 @@
 # Companions: the engine and the character contract
 
-Her character lives on the app's home section (`CompanionHost.jsx` mounts it, app only; the website
-keeps `src/world/mascot/MaomaoCompanion.jsx`). This file is the contract between the engine
+Her character lives on every page of the app (round 3b; `CompanionHost.jsx` mounts one stage for
+the whole app shell, app only; the website keeps `src/world/mascot/MaomaoCompanion.jsx`). See
+"Every page". This file is the contract between the engine
 (`engine/`, owner: the stage agent) and the five characters (`characters/<id>/`, one agent each).
 `docs/refactor/RENOVATION.md` → "Companions" holds the agreed names; this file is the detail.
 
@@ -12,9 +13,10 @@ keeps `src/world/mascot/MaomaoCompanion.jsx`). This file is the contract between
 
 ## How it looks and moves
 
-- A fixed layer over home, between everything at the top (home's top bar and ribbon, the compact
-  bar that fades in when home scrolls, the status bar) and the tab bar (plus anything fixed just
-  above it). The band does not move while she scrolls. Only bodies take touches.
+- A fixed layer over the page, between everything at the top (home's top bar and ribbon, the
+  compact bar that fades in when a page scrolls, the chat's header, the status bar) and the tab bar
+  (plus anything fixed just above it, and the chat's composer). The band does not move while she
+  scrolls. Only bodies take touches.
 - **Levels**: 2 to 6 invisible floors across the band (as many as fit about every 150 px), the
   bottom and top running the full width and the ones between leaning left and right in turn. A
   character always stands on a level.
@@ -262,6 +264,48 @@ A pair lives in the file of whoever speaks first. When B visits A, the engine pi
 among A's `with.B` pairs and B's `with.A` pairs (longer exchanges alternate the same way). The
 first line comes with a `wave`. With none written, it uses `any`, then each one's `visit` lines.
 
+## Every page
+
+Josh, round 3b: "Make the chibis available in every page." One stage for the whole app shell
+(`CompanionHost.jsx` in `WorldShell`'s `AppShell`), mounted once and kept across tabs and pushed
+screens, so the character keeps its spot, its stay and what it was doing; visitors too.
+
+- **Her pick on both phones**: `usePrefs().data?.companion` (default `"maomao"`, `"none"` shows
+  nobody). On Josh's phone `GET /me/prefs` answers with her prefs, so it is her choice there too. The
+  engine never writes prefs; stay spots live in each phone's localStorage.
+- **Each page's band** (`levels.js`, `measureBand`): under the top bar (or home's top bar and
+  ribbon, or the chat's header and its "seal our messages" bar), above the tab bar (or the chat's
+  composer and the wallpaper's credit line, wherever the keyboard has carried them). Pages can add
+  their own edges with `data-companion-edge="top" | "bottom"`. A new page (`Stage`'s `page` prop)
+  lays the band and levels out again at once and as its chunk and data arrive (90, 450, 1200 ms);
+  so does the keyboard (visual viewport, focus, `body` classes; now and once it has settled), and
+  the character glides onto its moved level (0.3 s) rather than jumping. Too little room between
+  the bars: nobody, until there is.
+- **Care on every page**: about 0.6 s after a new page (or any re-layout) it takes a prompt look at
+  what it stands on and walks or hops off text, controls and pictures, to the clearest spot it finds
+  anywhere on the page (a little pause of its own may be cut short for it). In the chat the newest
+  three messages weigh 3 (row and all) and other bubbles 1.5, so it perches by the header or to one
+  side; if nowhere on screen is clear of what she is reading (the chat with the keyboard up), it
+  **steps aside** (fades out and pauses) and comes back as soon as a re-layout or a scroll leaves
+  room. Told to stay, if its spot on a page lands on the newest messages or a page's centrepiece it
+  sits somewhere clear on that page, keeping its own spot for the next. It keeps unprompted thoughts
+  to itself when every place a bubble could go would cover what she is reading. Scrolls inside any
+  scroller (the chat's list) count as scrolling.
+- **Sheets, pop-ups, viewers and games** (`engine/cover.js`): while any is open the whole stage is
+  hidden and paused (bodies stop their animations too) and comes back where it was: dialogs
+  (`role="dialog"`, `aria-modal`, `<dialog open>`), the photo viewer (`.pswp`), the game sheet
+  (games, the sketchbook and the other play sheets: `html.game-sheet-open`, `.game-sheet`), and
+  anything marked `data-companion-hide`. Josh: "Not inside games." The dev labs
+  (`/world/companion-lab`, `/world/game-lab`) have no app stage.
+- **Layering**: the stage is at z-index 105: above every page's own layers (the chat is a fixed
+  layer at 100), below the top bar (110), the tab bar (130) and every sheet.
+- **Cost**: one rAF loop as before (0.03–0.2 ms of JS a frame on the iMac in WebKit), paused while
+  hidden, covered or stepped aside. Looking under spots (busyScore) uses `elementsFromPoint` and
+  skips the stage's own parts (it used to switch the bodies' pointer-events off and on for every
+  look, which restyled the stage each time); each decision looks under spots for at most about
+  3 ms (`SCORE_BUDGET_MS`, always at least three spots), so a long page on a slower phone compares
+  fewer spots rather than drop a frame. `window.__companionApp` is the running stage in dev.
+
 ## Transitions
 
 Josh, round 3: "more seamless instead of abrupt". Every switch flows; the engine does it once for
@@ -351,8 +395,9 @@ action: {
 
 ## Stage options
 
-`<Stage hostId active options name birthday controlRef />` (`engine/Stage.jsx`). `CompanionHost`
-uses the defaults; the lab sets the rest.
+`<Stage hostId active page options name birthday controlRef />` (`engine/Stage.jsx`).
+`CompanionHost` passes `active` (nothing over the page), `page` (the path) and uses the default
+options; the lab sets the rest.
 
 | option | default | meaning |
 | --- | --- | --- |

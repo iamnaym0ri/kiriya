@@ -16,6 +16,9 @@ import { createLinePicker, fillName, greetTopics, readMs } from "./talk.js";
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const between = ([lo, hi]) => lo + Math.random() * (hi - lo);
 const near = (a, b, eps = 0.01) => Math.abs(a - b) < eps;
+const now = () => (typeof performance !== "undefined" ? performance.now() : Date.now());
+/** How long one decision may spend looking under candidate spots (ms; always at least three spots). */
+export const SCORE_BUDGET_MS = 3;
 /** The pose a behaviour or a behaviour's step opens with (null for anything else). */
 const firstPose = (step) => {
   if (step?.type === "behave" && !step.resumed) return step.b.steps?.[0]?.pose ?? step.b.pose;
@@ -110,6 +113,8 @@ export class Actor {
     this.bubbleRect = null;
     this.bounce = null; // { t0, count, height, every, hops }: little hops on the spot
     this.hopY = 0;
+    this.glide = null; // { from, t0 }: easing onto a level that moved (a new page, the keyboard)
+    this.glideY = 0;
 
     this.tiles = [];
     this.ride = null; // { id, state, at } for "ride" platforms: the one cloud it sits on
@@ -142,8 +147,20 @@ export class Actor {
     this.els = {};
   }
 
+  /** Its cloud's real depth below the feet arrived (ActorView): lay out again if it was off. */
+  cloudMeasured(depth) {
+    const was = this.cloudDepth ?? this.estimatedCloud();
+    this.cloudDepth = depth;
+    if (Math.abs(depth - was) > 2) this.stage.relayoutAt = this.time;
+  }
+  /** Until it has been measured: clouds are about a third as deep as they are wide. */
+  estimatedCloud() {
+    return this.pw * 0.36 - this.surface;
+  }
+
   /** Body and platform sizes at the stage's current scale. */
   resize() {
+    this.cloudDepth = null;
     const scale = this.stage.scale * (this.c.scale ?? 1);
     this.scale = scale;
     this.w = this.c.size.width * scale;
@@ -227,6 +244,26 @@ export class Actor {
     if (aside) this.stage.lastAside = this.time;
     return line;
   }
+  /**
+   * How busy the clearest place for a bubble would be (above, right or left of the head, at a
+   * typical bubble's size), 0..4. A few probes, only when it is about to think aloud.
+   */
+  bubbleRoomBusy() {
+    const band = this.stage.band;
+    const w = 190;
+    const h = 52;
+    const head = this.y - this.h;
+    const top = clamp(head + this.h * 0.12, band.top + 8, band.bottom - 8 - h);
+    const spots = [
+      { left: clamp(this.x - w / 2, band.left + 8, band.right - 8 - w), top: head - 8 - h },
+      { left: this.x + this.w * 0.42, top },
+      { left: this.x - this.w * 0.42 - w, top },
+    ].filter((r) => r.top >= band.top + 8 && r.left >= band.left + 8 && r.left + w <= band.right - 8);
+    if (!spots.length) return 0;
+    let best = Infinity;
+    for (const r of spots) best = Math.min(best, busyScore({ left: r.left, top: r.top, right: r.left + w, bottom: r.top + h }, this.stage.layer));
+    return best;
+  }
   hush() {
     this.view.set({ bubble: null, talking: false });
     this.bubbleRect = null;
@@ -235,6 +272,9 @@ export class Actor {
   /** Something unprompted: the behaviour's topic, now and then something sweet. */
   muse(topic) {
     if (this.time - this.stage.lastAside < this.stage.chatGap) return;
+    // Thinking aloud is never worth covering what she is reading (the chat's messages, a page's
+    // text): if every place a bubble could go here is busy, it keeps the thought to itself.
+    if (this.stage.options?.avoidText !== false && this.bubbleRoomBusy() >= 0.8) return;
     const topics = [];
     if (this.stage.birthday && Math.random() < 0.3) topics.push("birthday");
     if (Math.random() < 0.22) topics.push("sweet");
@@ -358,15 +398,18 @@ export class Actor {
   }
 
   /** A path to a good spot: a walk on this level, or hops (or a float) to another one. */
-  planMove(b = null, { force = false, better = null } = {}) {
+  planMove(b = null, { force = false, better = null, anyLevel = false } = {}) {
     const levels = this.stage.levels;
     if (this.level == null || !levels.length) return [];
     let targets;
     if (b?.level === "top") targets = [levels.length - 1];
     else if (b?.level === "bottom") targets = [0];
     else if (better != null) {
-      // Getting off something she wants to read: look here and on the levels either side.
-      targets = [this.level, this.level + 1, this.level - 1].filter((i) => i >= 0 && i < levels.length);
+      // Getting off something she wants to read: look here and on the levels either side (on a new
+      // page, anywhere on it: dense pages often have their only clear room further off).
+      targets = anyLevel
+        ? [this.level, ...levels.map((_, i) => i).filter((i) => i !== this.level)]
+        : [this.level, this.level + 1, this.level - 1].filter((i) => i >= 0 && i < levels.length);
     } else if (levels.length > 1 && Math.random() < this.m.jumpiness) {
       const up = this.level + 1 < levels.length;
       const down = this.level > 0;
@@ -374,7 +417,7 @@ export class Actor {
     } else targets = [this.level];
     const reach = this.stage.band.width * this.m.wander;
     // A handful of candidates along each level, judged by what's underneath and how far away.
-    const candidates = [];
+    const spots = [];
     for (const target of targets) {
       const level = levels[target];
       const count = targets.length > 1 ? 4 : 6;
@@ -382,10 +425,21 @@ export class Actor {
         const x = i < count / 2
           ? clamp(this.x + (Math.random() * 2 - 1) * reach, level.x0, level.x1)
           : level.x0 + Math.random() * (level.x1 - level.x0);
-        const busy = this.stage.spotScore(this, target, x);
-        const cost = busy * 2 + (Math.abs(x - this.x) / this.stage.band.width) * 0.5 + (target === this.level ? 0 : 0.2) + Math.random() * 0.25;
-        candidates.push({ target, x, cost, busy });
+        spots.push({ target, x });
       }
+    }
+    // Looking under each spot is the costly part (busyScore): spread over the levels, and within a
+    // small time budget, so a long page on a slower phone compares fewer spots rather than drop a frame.
+    const byLevel = targets.map((target) => spots.filter((spot) => spot.target === target));
+    const order = [];
+    for (let i = 0; order.length < spots.length; i++) for (const list of byLevel) if (list[i]) order.push(list[i]);
+    const deadline = now() + SCORE_BUDGET_MS;
+    const candidates = [];
+    for (const { target, x } of order) {
+      if (candidates.length >= 3 && now() > deadline) break;
+      const busy = this.stage.spotScore(this, target, x);
+      const cost = busy * 2 + (Math.abs(x - this.x) / this.stage.band.width) * 0.5 + (target === this.level ? 0 : 0.2) + Math.random() * 0.25;
+      candidates.push({ target, x, cost, busy });
     }
     // Moving off something only makes sense if the new spot is clearly clearer.
     const pool = better != null ? candidates.filter((c) => c.busy <= better) : candidates;
@@ -932,6 +986,20 @@ export class Actor {
     writeStay(this.c.id, this.spot);
   }
 
+  /**
+   * Its level moved under it by `dy` px (a new page's layout, a bar that moved): it eases there
+   * over 0.3 s instead of jumping, clouds and all, unless it is quiet (then it is just there).
+   */
+  glideFrom(dy) {
+    if (!this.lively || Math.abs(dy) < 2 || this.opacity < 0.05) {
+      this.glide = null;
+      this.glideY = 0;
+      return;
+    }
+    this.glide = { from: dy + this.glideY, t0: this.time };
+    this.glideY = this.glide.from;
+  }
+
   /** Little hops on the spot (a dance, a happy bounce): the feet never leave their level. */
   startBounce(bounce) {
     this.bounce = { t0: this.time, count: bounce.count, height: bounce.height ?? 9, every: bounce.every ?? 0.36, hops: 0 };
@@ -1201,6 +1269,14 @@ export class Actor {
       }
     }
     this.hopY = hop;
+    if (this.glide) {
+      const p = clamp((t - this.glide.t0) / 0.3, 0, 1);
+      this.glideY = this.glide.from * Math.pow(1 - p, 3);
+      if (p >= 1 || !lively || this.level == null) {
+        this.glide = null;
+        this.glideY = 0;
+      }
+    }
     if (this.opacity !== this.opacityTarget) {
       const step = this.opacityRate * dt;
       this.opacity = this.opacity < this.opacityTarget ? Math.min(this.opacityTarget, this.opacity + step) : Math.max(this.opacityTarget, this.opacity - step);
@@ -1226,7 +1302,7 @@ export class Actor {
     if (!root) return;
     const bob = this.m.bob && this.lively && this.level != null && this.mode !== "held" ? Math.sin(this.time * 2.4 + this.bobPhase) * this.m.bob * this.scale : 0;
     const x = Math.round(this.x * 10) / 10;
-    const y = Math.round((this.y + bob - this.hopY) * 10) / 10;
+    const y = Math.round((this.y + bob - this.hopY + this.glideY) * 10) / 10;
     const rootKey = `${x},${y}`;
     if (force || rootKey !== this.lastRoot) {
       root.style.transform = `translate3d(${x}px, ${y}px, 0)`;

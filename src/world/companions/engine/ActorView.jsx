@@ -49,8 +49,18 @@ const PlatformSlot = memo(function PlatformSlot({ Platform, width, state, facing
 
 function Tile({ actor, tile, playing, facing }) {
   const { c, m, pw, surface } = actor;
+  // How far its cloud reaches below its feet, measured once (levels keep that clear of the bars).
+  const measure = useCallback(
+    (el) => {
+      if (!el || actor.cloudDepth != null) return;
+      const depth = el.offsetHeight - surface;
+      if (depth > 0) actor.cloudMeasured?.(depth);
+    },
+    [actor, surface],
+  );
   return (
     <div
+      ref={measure}
       className="cs-tile"
       data-state={tile.state}
       data-fx={m.platformFx}
