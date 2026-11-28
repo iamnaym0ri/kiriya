@@ -3,7 +3,7 @@
 // the left to reply (it follows the finger, ticks once at the point where letting go replies, and
 // springs back).
 import { memo, useRef } from "react";
-import { tapByKey } from "../../../shared/taps.js";
+import { tapByKey, tapWords } from "../../../shared/taps.js";
 import { haptic } from "../../lib/native.js";
 import { mediaItems } from "../../lib/chat.js";
 import { Album, GifMedia, QuoteThumb, StickerMedia } from "./media.jsx";
@@ -79,7 +79,7 @@ function Signal({ message, mine, names, onTapBack, preview }) {
       <span className="signal__words">
         <strong>{mine ? `you sent ${tap.label}` : `${names[message.sender]} sent ${tap.label}`}</strong>
         <small>
-          {tap.note} · {time(message.createdAt)}
+          {tapWords(tap, message.sender).note} · {time(message.createdAt)}
         </small>
       </span>
       {!mine && !preview && (

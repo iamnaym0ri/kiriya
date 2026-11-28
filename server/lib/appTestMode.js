@@ -10,7 +10,7 @@
 // (src/lib/chat.js newClientId: a base-36 timestamp first).
 import { eq } from "drizzle-orm";
 import { schema } from "../db/client.js";
-import { tapByKey } from "../../shared/taps.js";
+import { tapByKey, tapCategory, tapWords } from "../../shared/taps.js";
 import { sendToSubscribers } from "../push/webpush.js";
 import { notificationPreview } from "./loveNotes.js";
 
@@ -87,16 +87,18 @@ export async function interceptTestSend(db, role, data, { after = (task) => task
 /** One sample of each kind, as it would look on her phone. */
 export const SAMPLE_KINDS = ["chat", "tap", "letter", "note", "jar", "reminder"];
 
-function sample(kind, names, { tap = "thinking" } = {}) {
+function sample(kind, names, { tap = "thinking", from = "kiriya" } = {}) {
   const her = names?.kiriya ?? "Kiriya";
   const him = names?.admin ?? "Josh";
   switch (kind) {
     case "chat":
       return { title: her, body: "test: how’s your day going? ♡", navigate: "/world/chat", kind: "chat", threadId: "chat" };
     case "tap": {
-      // Any of the seven signals (shared/taps.js), so each one's sound and buttons can be tried.
+      // Any of the seven signals (shared/taps.js), so each one's sound and buttons can be tried: as hers
+      // arrive on his phone, or (from: "admin") as his own words and buttons will arrive on hers.
       const signal = tapByKey[tap] ?? tapByKey.thinking;
-      return { title: signal.push.replace("{from}", her), body: `${signal.kaomoji}  ${signal.note}`, navigate: "/world/chat", kind: "tap", tap: signal.key, threadId: "chat" };
+      const words = tapWords(signal, from, from === "admin" ? him : her);
+      return { title: words.title, body: `${signal.kaomoji}  ${words.note}`, navigate: "/world/chat", kind: "tap", tap: signal.key, category: tapCategory(signal.key, from), threadId: "chat" };
     }
     case "letter":
       return {
@@ -144,8 +146,8 @@ function sample(kind, names, { tap = "thinking" } = {}) {
 }
 
 /** Sends one sample to Josh's test devices only, switching test mode on so its buttons can't reach her. */
-export async function tryNotification(db, kind, names, { now = new Date(), send = sendToSubscribers, tap } = {}) {
-  const message = sample(kind, names, { tap });
+export async function tryNotification(db, kind, names, { now = new Date(), send = sendToSubscribers, tap, from } = {}) {
+  const message = sample(kind, names, { tap, from });
   if (!message) return null;
   const mode = (await testMode(db, now)).on ? await testMode(db, now) : await setTestMode(db, true, now);
   const push = await send(db, message, { role: "admin", ttlSeconds: 600 });

@@ -395,6 +395,10 @@ await test("A signal's push plays its own sound and offers itself straight back"
   const heart = apnsNotification({ title: "Josh is thinking of you ♡", body: "(˘︶˘)♡  right now, and always", kind: "tap", tap: "thinking" });
   assert.equal(heart.aps.sound, "SignalsWidget-thinking.caf");
   assert.equal(heart.aps.category, "TAP");
+  // Her hug on his phone carries its own button set; a made-up category is never passed on.
+  assert.equal(apnsNotification({ title: "t", body: "b", kind: "tap", tap: "hug", category: "TAP_HUG_FOR_JOSH" }).aps.category, "TAP_HUG_FOR_JOSH");
+  assert.equal(apnsNotification({ title: "t", body: "b", kind: "tap", tap: "hug", category: "<script>" }).aps.category, "TAP_HUG");
+  assert.equal(apnsNotification({ title: "t", body: "b", kind: "tap", tap: "thinking", category: "TAP" }).aps.category, "TAP");
   const unknown = apnsNotification({ title: "t", body: "b", kind: "tap", tap: "nope" });
   assert.equal(unknown.aps.sound, "tap.caf");
   assert.equal(unknown.payload.tap, undefined);

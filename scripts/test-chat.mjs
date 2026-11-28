@@ -295,6 +295,22 @@ try {
     assert.equal(chat.chatNotification({ kind: "image", body: "", media: { items: [{ type: "video" }] } }, "Kiriya").body, "🎬 a video");
   });
 
+  await test("Signals speak in each sender's own words, with the buttons that go with them (Josh, 2026-11-28)", async () => {
+    const his = (body) => chat.chatNotification({ kind: "tap", body, sender: "admin", id: "m" }, "Josh");
+    const hers = (body) => chat.chatNotification({ kind: "tap", body, sender: "kiriya", id: "m" }, "Kiriya");
+    assert.deepEqual([his("thinking").title, his("thinking").body], ["Josh is thinking of you ♡", "(˘︶˘)♡  Cause I love you soo much!"]);
+    assert.deepEqual([his("hug").title, his("hug").body, his("hug").category], ["Josh sent you a big hug 🫂", "(っ´▽`)っ  I'm hugging u now babyy can u feel itt?", "TAP_HUG"]);
+    assert.equal(his("kiss").body, "(˘ ³˘)♥  mwaaaaaahhh");
+    assert.deepEqual([his("morning").title, his("morning").body], ["morning babyyy❤️", "(＾▽＾)ノ  sleep well hunn?"]);
+    assert.deepEqual([his("night").title, his("night").body], ["goodnight my lovee❤️😌", "(－ω－)zZ  sleeep well"]);
+    assert.deepEqual([his("miss").title, his("miss").body], ["Josh misses you 🥺", "(｡•︿•｡)  Come here babyy🥺❤️"]);
+    assert.deepEqual([his("water").title, his("water").body], ["Josh says: drink some water 💧", "(˘▽˘)っ旦  a little sip, for me?"]);
+    assert.deepEqual([hers("thinking").title, hers("thinking").body, hers("thinking").category], ["Kiriya is thinking of you ♡", "(˘︶˘)♡  and I love u moreee🥹", "TAP"]);
+    assert.deepEqual([hers("hug").body, hers("hug").category], ["(っ´▽`)っ  squeezing u reallyy tightt, hug me backk🥺", "TAP_HUG_FOR_JOSH"]);
+    assert.deepEqual([hers("morning").title, hers("night").title, hers("kiss").category], ["good morninggg babe☀️🥰", "nightyy night baby🌙", "TAP_KISS"]);
+    assert.equal(hers("water").body, "(˘▽˘)っ旦  stay hydratedd for mee💧");
+  });
+
   await test("Their look: the theme and background are shared, bubbles and typing each their own; only known choices are accepted", async () => {
     const { wallpapers, theirs, ...prefs } = await json(await request("me/chat/prefs", { cookie: her }));
     assert.deepEqual(prefs, chat.DEFAULT_PREFS);

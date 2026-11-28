@@ -50,16 +50,20 @@ enum KiriyaNotificationCategories {
 
         // One of his signals: "Send one back ❤️" sends a ♡, and every signal but ♡ also offers itself
         // straight back (a hug for a hug). The server sends those as TAP_<KEY>; ♡ stays TAP.
+        // Her hug on his phone has its own button, TAP_HUG_FOR_JOSH (shared/taps.js tapCategory).
         let backs: [(key: String, title: String, icon: String)] = [
-            ("hug", "Hug back 🫂", "figure.2.arms.open"),
+            ("hug", "Yess I cann", "figure.2.arms.open"),
             ("kiss", "Kiss back 😘", "heart.circle"),
             ("morning", "Good morning ☀️", "sun.max"),
             ("night", "Goodnight 🌙", "moon.stars"),
             ("miss", "Miss you too 🥺", "heart"),
             ("water", "You too 💧", "drop"),
         ]
-        let signals = backs.map { back in
-            category("TAP_\(back.key.uppercased())",
+        let theirs: [(id: String, key: String, title: String, icon: String)] =
+            backs.map { ("TAP_\($0.key.uppercased())", $0.key, $0.title, $0.icon) }
+            + [("TAP_HUG_FOR_JOSH", "hug", "Hugging u tighterr", "figure.2.arms.open")]
+        let signals = theirs.map { back in
+            category(back.id,
                      [UNNotificationAction(identifier: "BACK_\(back.key)", title: back.title, options: [],
                                            icon: UNNotificationActionIcon(systemImageName: back.icon)), heart],
                      hidden: "a little tap ♡")

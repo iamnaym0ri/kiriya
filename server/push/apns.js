@@ -69,7 +69,7 @@ export function letterPayload(letter) {
   return letter.lockedUntil || !letter.text ? out : fitText({ ...out, text: String(letter.text) });
 }
 
-export function apnsNotification({ title, body, navigate = "/world", kind = null, tap = null, threadId = null, messageId = null, note: fullNote = null, letter = null, sealed = null }, { ttlSeconds = 6 * 60 * 60, now = Date.now(), badge = null } = {}) {
+export function apnsNotification({ title, body, navigate = "/world", kind = null, tap = null, category = null, threadId = null, messageId = null, note: fullNote = null, letter = null, sealed = null }, { ttlSeconds = 6 * 60 * 60, now = Date.now(), badge = null } = {}) {
   const style = KINDS[kind] ?? {};
   // A "thinking of you" signal: which one (hug, kiss…), when the message says.
   const signal = kind === "tap" && tapByKey[tap] ? tap : null;
@@ -84,8 +84,10 @@ export function apnsNotification({ title, body, navigate = "/world", kind = null
   note.priority = 10;
   note.expiry = Math.floor(now / 1000) + ttlSeconds;
   if (style.category) note.category = style.category;
-  // Every signal but ♡ offers itself straight back ("Hug back 🫂"; ios/App/App/KiriyaNotifications.swift).
-  if (signal && signal !== "thinking") note.category = `TAP_${signal.toUpperCase()}`;
+  // Every signal but ♡ offers itself straight back ("Kiss back 😘"; ios/App/App/KiriyaNotifications.swift);
+  // the message names its category when the buttons depend on who sent it (shared/taps.js tapCategory).
+  if (signal && /^TAP(_[A-Z_]+)?$/.test(category ?? "")) note.category = category;
+  else if (signal && signal !== "thinking") note.category = `TAP_${signal.toUpperCase()}`;
   if (threadId ?? style.thread) note.threadId = threadId ?? style.thread;
   // Letters, little notes and the jar get dressed up on the phone (an envelope or jar picture) by
   // the app's notification service extension, which needs permission to edit the notification.

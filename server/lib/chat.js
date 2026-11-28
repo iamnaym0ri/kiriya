@@ -2,7 +2,7 @@ import { and, asc, count, desc, eq, gt, gte, inArray, isNull, lt, or, sql } from
 import { z } from "zod";
 import { schema } from "../db/client.js";
 import { kiriya } from "../content/kiriya.js";
-import { TAPS, tapByKey } from "../../shared/taps.js";
+import { TAPS, tapByKey, tapCategory, tapWords } from "../../shared/taps.js";
 import { STICKER_PACKS } from "../../shared/stickers.js";
 import { isUploadUrl } from "./media.js";
 import { notificationPreview } from "./loveNotes.js";
@@ -273,7 +273,9 @@ export function chatNotification(message, from) {
   if (message.enc && message.kind !== "tap") return sealedNotification(message, from);
   if (message.kind === "tap") {
     const tap = tapByKey[message.body];
-    return { title: tap.push.replace("{from}", from), body: `${tap.kaomoji}  ${tap.note}`, navigate: "/world/chat", kind: "tap", tap: tap.key, threadId: "chat", messageId: message.id };
+    // Each of them in their own words (shared/taps.js), with the buttons that go with them.
+    const words = tapWords(tap, message.sender, from);
+    return { title: words.title, body: `${tap.kaomoji}  ${words.note}`, navigate: "/world/chat", kind: "tap", tap: tap.key, category: tapCategory(tap.key, message.sender), threadId: "chat", messageId: message.id };
   }
   // From before both of them had keys: "📷 4 photos: look!!", "🎬 a video", or the words of a text.
   const body = message.kind === "text" ? notificationPreview(message.body, 140) : previewText({ kind: message.kind, body: notificationPreview(message.body, 100), media: message.media });
